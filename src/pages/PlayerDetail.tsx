@@ -1,10 +1,15 @@
 import { ArrowLeft } from 'lucide-react'
 import { Link, useParams } from 'react-router-dom'
 import { StatusChip } from '../components/StatusChip'
-import { Card, Placeholder } from '../components/ui'
+import { Placeholder } from '../components/ui'
 import { usePlayer, useSnapshots } from '../data/hooks'
 import { Tooltip } from '../components/Tooltip'
-import { ATTRIBUTE_INFO, PROFILE_LAYOUT, isGoalkeeper } from '../data/attributeInfo'
+import {
+  ATTRIBUTE_INFO,
+  PROFILE_COLUMNS,
+  attributeLabel,
+  isGoalkeeper,
+} from '../data/attributeInfo'
 import { STATUS_LABELS } from '../import/fields'
 import { attrColor, attrNumber, formatAttr } from '../lib/attributes'
 
@@ -18,10 +23,17 @@ export function PlayerDetail() {
 
   // Compare with the previous import to show development
   const previous = snapshots && snapshots.length > 1 ? snapshots[snapshots.length - 2] : null
-  const layout = PROFILE_LAYOUT[isGoalkeeper(p.positions) ? 'goalkeepers' : 'outfield']
-  const groups = layout
-    .map((g) => [g.label, g.attributes.filter((n) => p.attributes[n] !== undefined)] as const)
-    .filter(([, names]) => names.length > 0)
+  // FM layout: three columns, each with one or more sections; empty sections hidden
+  const columns = PROFILE_COLUMNS[isGoalkeeper(p.positions) ? 'goalkeepers' : 'outfield']
+    .map((col) =>
+      col
+        .map((s) => ({
+          ...s,
+          attributes: s.attributes.filter((n) => p.attributes[n] !== undefined),
+        }))
+        .filter((s) => s.attributes.length > 0),
+    )
+    .filter((col) => col.length > 0)
 
   return (
     <>
@@ -61,41 +73,55 @@ export function PlayerDetail() {
         {p.extra.selection && <Info label="Selection" value={p.extra.selection} />}
       </dl>
 
-      <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
-        {groups.map(([group, names]) => (
-          <Card key={group}>
-            <h2 className="mb-2 text-sm font-semibold text-muted">{group}</h2>
-            <ul className="grid gap-0.5 text-sm">
-              {names.map((n) => {
-                const now = attrNumber(p.attributes[n])
-                const before = previous ? attrNumber(previous.attributes[n]) : null
-                const diff = now !== null && before !== null ? now - before : 0
-                return (
-                  <li key={n} className="flex min-h-8 items-center justify-between gap-2">
-                    <Tooltip text={ATTRIBUTE_INFO[n]?.description ?? n}>
-                      <span tabIndex={0} className="cursor-help">
-                        {n}
-                      </span>
-                    </Tooltip>
-                    <span className="flex items-center gap-2 tabular-nums">
-                      {diff !== 0 && (
-                        <span
-                          className={diff > 0 ? 'text-xs text-emerald-400' : 'text-xs text-red-400'}
-                        >
-                          {diff > 0 ? `+${diff}` : diff}
-                        </span>
-                      )}
-                      <span
-                        className={`w-10 text-right font-semibold ${attrColor(p.attributes[n])}`}
+      <div className="grid gap-x-5 gap-y-4 md:grid-cols-2 xl:grid-cols-3">
+        {columns.map((col) => (
+          <div key={col[0].label} className="grid content-start gap-4">
+            {col.map((section) => (
+              <section key={section.label}>
+                <h2 className="mb-1 border-b border-border pb-1 text-xs font-semibold text-muted">
+                  {section.label}
+                </h2>
+                <ul className="text-sm">
+                  {section.attributes.map((n) => {
+                    const now = attrNumber(p.attributes[n])
+                    const before = previous ? attrNumber(previous.attributes[n]) : null
+                    const diff = now !== null && before !== null ? now - before : 0
+                    return (
+                      <li
+                        key={n}
+                        className="flex min-h-9 items-center justify-between gap-2 px-3 odd:bg-surface even:bg-surface/40"
                       >
-                        {formatAttr(p.attributes[n])}
-                      </span>
-                    </span>
-                  </li>
-                )
-              })}
-            </ul>
-          </Card>
+                        <Tooltip
+                          title={attributeLabel(n)}
+                          text={ATTRIBUTE_INFO[n]?.description ?? n}
+                        >
+                          <span tabIndex={0} className="cursor-help">
+                            {attributeLabel(n)}
+                          </span>
+                        </Tooltip>
+                        <span className="flex items-center gap-2 tabular-nums">
+                          {diff !== 0 && (
+                            <span
+                              className={
+                                diff > 0 ? 'text-xs text-emerald-400' : 'text-xs text-red-400'
+                              }
+                            >
+                              {diff > 0 ? `+${diff}` : diff}
+                            </span>
+                          )}
+                          <span
+                            className={`w-10 rounded bg-surface-2 py-0.5 text-center font-semibold ${attrColor(p.attributes[n])}`}
+                          >
+                            {formatAttr(p.attributes[n])}
+                          </span>
+                        </span>
+                      </li>
+                    )
+                  })}
+                </ul>
+              </section>
+            ))}
+          </div>
         ))}
       </div>
 

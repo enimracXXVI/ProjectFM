@@ -8,6 +8,8 @@
 export interface AttributeInfo {
   /** Short column header, as in FM's squad attributes view. */
   abbr: string
+  /** Display name when it differs from the stored key. */
+  label?: string
   description: string
 }
 
@@ -74,6 +76,7 @@ export const ATTRIBUTE_INFO: Record<string, AttributeInfo> = {
   },
   Positioning: { abbr: 'Pos', description: 'Defensive awareness: taking up the right position.' },
   'Team Work': {
+    label: 'Teamwork',
     abbr: 'Tea',
     description: 'Willingness to follow tactics and work for team-mates.',
   },
@@ -173,64 +176,55 @@ const GOALKEEPING = [
   'Throwing',
 ]
 
-/** Squad table column order, as in FM's squad attributes view. */
-export const TABLE_LAYOUT: Record<'outfield' | 'goalkeepers', AttributeSection[]> = {
+const TECHNICAL = [
+  'Crossing',
+  'Dribbling',
+  'Finishing',
+  'First Touch',
+  'Heading',
+  'Long Shots',
+  'Marking',
+  'Passing',
+  'Tackling',
+  'Technique',
+]
+const SET_PIECES = ['Corners', 'Free Kick Taking', 'Long Throws', 'Penalty Taking']
+const GK_TECHNICAL = ['Free Kick Taking', 'Penalty Taking', 'Technique']
+
+export type Role = 'outfield' | 'goalkeepers'
+
+/**
+ * FM player attributes screen: three columns, each with one or more sections.
+ * The squad table uses the same sections, left to right.
+ */
+export const PROFILE_COLUMNS: Record<Role, AttributeSection[][]> = {
   outfield: [
-    {
-      label: 'Technical',
-      attributes: [
-        'Crossing',
-        'Dribbling',
-        'Finishing',
-        'First Touch',
-        'Heading',
-        'Long Shots',
-        'Marking',
-        'Passing',
-        'Tackling',
-        'Technique',
-      ],
-    },
-    {
-      label: 'Set Pieces',
-      attributes: ['Corners', 'Free Kick Taking', 'Long Throws', 'Penalty Taking'],
-    },
-    { label: 'Mental', attributes: MENTAL },
-    { label: 'Physical', attributes: PHYSICAL },
+    [
+      { label: 'Technical', attributes: TECHNICAL },
+      { label: 'Set Pieces', attributes: SET_PIECES },
+    ],
+    [{ label: 'Mental', attributes: MENTAL }],
+    [{ label: 'Physical', attributes: PHYSICAL }],
   ],
   goalkeepers: [
-    { label: 'Goalkeeping', attributes: GOALKEEPING },
-    { label: 'Mental', attributes: MENTAL },
-    { label: 'Physical', attributes: PHYSICAL },
+    [{ label: 'Goalkeeping', attributes: GOALKEEPING }],
+    [{ label: 'Mental', attributes: MENTAL }],
+    [
+      { label: 'Physical', attributes: PHYSICAL },
+      { label: 'Technical', attributes: GK_TECHNICAL },
+    ],
   ],
 }
 
-/** Player profile layout, as in FM's player attributes screen. */
-export const PROFILE_LAYOUT: Record<'outfield' | 'goalkeepers', AttributeSection[]> = {
-  outfield: [
-    {
-      label: 'Technical',
-      attributes: [
-        'Corners',
-        'Crossing',
-        'Dribbling',
-        'Finishing',
-        'First Touch',
-        'Free Kick Taking',
-        'Heading',
-        'Long Shots',
-        'Long Throws',
-        'Marking',
-        'Passing',
-        'Penalty Taking',
-        'Tackling',
-        'Technique',
-      ],
-    },
-    { label: 'Mental', attributes: MENTAL },
-    { label: 'Physical', attributes: PHYSICAL },
-  ],
-  goalkeepers: TABLE_LAYOUT.goalkeepers,
+/** Squad table column order: the profile sections flattened left to right. */
+export const TABLE_LAYOUT: Record<Role, AttributeSection[]> = {
+  outfield: PROFILE_COLUMNS.outfield.flat(),
+  goalkeepers: PROFILE_COLUMNS.goalkeepers.flat(),
+}
+
+/** Name as FM displays it (stored keys follow the export headers). */
+export function attributeLabel(name: string): string {
+  return ATTRIBUTE_INFO[name]?.label ?? name
 }
 
 /** Descriptions for other squad-table columns and labels. */

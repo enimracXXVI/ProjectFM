@@ -5,7 +5,13 @@ import { Link } from 'react-router-dom'
 import { StatusChip } from '../components/StatusChip'
 import { Tooltip } from '../components/Tooltip'
 import { PageHeader, Placeholder } from '../components/ui'
-import { ATTRIBUTE_INFO, FIELD_INFO, TABLE_LAYOUT, isGoalkeeper } from '../data/attributeInfo'
+import {
+  ATTRIBUTE_INFO,
+  FIELD_INFO,
+  TABLE_LAYOUT,
+  attributeLabel,
+  isGoalkeeper,
+} from '../data/attributeInfo'
 import type { PlayerRow } from '../data/db'
 import { usePlayers } from '../data/hooks'
 import { attrColor, attrNumber, formatAttr } from '../lib/attributes'
@@ -186,7 +192,7 @@ export function Squad() {
               <thead className="bg-surface-2 text-left text-xs tracking-wide text-muted uppercase">
                 {view === 'attributes' && (
                   <tr className="border-b border-border">
-                    <th className="sticky left-0 z-[1] bg-surface-2" />
+                    <th className="sticky left-0 z-[1] bg-surface-2 shadow-[inset_-1px_0_0_var(--color-border)]" />
                     {sections.map((s) => (
                       <th
                         key={s.label}
@@ -224,7 +230,7 @@ export function Squad() {
                             key={a}
                             col={a}
                             label={ATTRIBUTE_INFO[a]?.abbr ?? a.slice(0, 3)}
-                            title={a}
+                            title={attributeLabel(a)}
                             info={ATTRIBUTE_INFO[a]?.description}
                             sort={sort}
                             onSort={toggleSort}
@@ -239,9 +245,13 @@ export function Squad() {
                 {players.map((p) => (
                   <tr
                     key={p.id}
-                    className={clsx('hover:bg-surface-2', !p.in_squad && 'opacity-50')}
+                    className={clsx(
+                      'group bg-surface hover:bg-surface-2',
+                      // Fade former players' cells (not the row: the frozen cell must stay opaque)
+                      !p.in_squad && '[&>td]:text-muted [&>td>*]:opacity-50',
+                    )}
                   >
-                    <td className="sticky left-0 z-[1] bg-inherit px-4 py-2.5 whitespace-nowrap">
+                    <td className="sticky left-0 z-[1] bg-surface px-4 py-2.5 whitespace-nowrap shadow-[inset_-1px_0_0_var(--color-border)] group-hover:bg-surface-2">
                       <Link to={`/squad/${p.id}`} className="font-medium hover:text-accent">
                         {p.name}
                       </Link>{' '}
@@ -250,9 +260,11 @@ export function Squad() {
                     {view === 'profile'
                       ? PROFILE_COLS.map((c) => (
                           <td key={c.key} className="px-4 py-2.5 whitespace-nowrap text-muted">
-                            {c.key === 'height_cm' && p.height_cm
-                              ? `${p.height_cm} cm`
-                              : (c.get(p) ?? '–')}
+                            <span>
+                              {c.key === 'height_cm' && p.height_cm
+                                ? `${p.height_cm} cm`
+                                : (c.get(p) ?? '–')}
+                            </span>
                           </td>
                         ))
                       : sections.flatMap((s) =>
@@ -265,7 +277,7 @@ export function Squad() {
                                 attrColor(p.attributes[a]),
                               )}
                             >
-                              {formatAttr(p.attributes[a])}
+                              <span>{formatAttr(p.attributes[a])}</span>
                             </td>
                           )),
                         )}
@@ -356,7 +368,7 @@ function SortHeader({
   return (
     <th
       className={clsx(
-        sticky && 'sticky left-0 z-[1] bg-surface-2',
+        sticky && 'sticky left-0 z-[1] bg-surface-2 shadow-[inset_-1px_0_0_var(--color-border)]',
         compact ? 'px-1.5 text-center' : 'px-4',
         separator && 'border-l-2 border-border',
       )}
