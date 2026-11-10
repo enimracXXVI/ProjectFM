@@ -1,7 +1,6 @@
 import { PageHeader } from '../components/ui'
 import { scoutTargets } from '../data/mock'
 import type { ScoutStatus } from '../data/types'
-import { useCareer } from '../lib/career'
 import { formatMoney } from '../lib/format'
 
 const columns: { status: ScoutStatus; label: string }[] = [
@@ -12,12 +11,11 @@ const columns: { status: ScoutStatus; label: string }[] = [
 ]
 
 export function Scouting() {
-  const { current } = useCareer()
-  const targets = scoutTargets.filter((t) => t.careerId === current.id)
+  const targets = scoutTargets
 
   return (
     <>
-      <PageHeader title="Scouting" subtitle="Drag & drop between columns coming soon" />
+      <PageHeader title="Scouting" subtitle="Sample data · real scouting board coming soon" />
       {/* Horizontal swipe between columns on phones, grid on desktop */}
       <div className="-mx-4 flex snap-x snap-mandatory scroll-px-4 gap-3 overflow-x-auto px-4 pb-2 md:mx-0 md:grid md:grid-cols-4 md:overflow-visible md:px-0">
         {columns.map(({ status, label }) => {

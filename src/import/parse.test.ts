@@ -56,7 +56,10 @@ describe('parsePlayers edge cases', () => {
 
   it('reads attribute ranges from partly scouted players', () => {
     const r = parsePlayers(
-      page('<th>Name</th><th>Pace</th><th>Flair</th>', '<td>X</td><td>11-14</td><td data-s="9|12">9-12</td>'),
+      page(
+        '<th>Name</th><th>Pace</th><th>Flair</th>',
+        '<td>X</td><td>11-14</td><td data-s="9|12">9-12</td>',
+      ),
     )
     expect(r.players[0].attributes).toEqual({ Pace: [11, 14], Flair: [9, 12] })
   })

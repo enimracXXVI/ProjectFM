@@ -10,24 +10,6 @@ export function Achievements() {
   )
 }
 
-export function Import() {
-  return (
-    <>
-      <PageHeader title="Import" subtitle="Load FM exports (Print Screen → Web Page)" />
-      <Placeholder>HTML import with column mapping — coming soon</Placeholder>
-    </>
-  )
-}
-
-export function SettingsPage() {
-  return (
-    <>
-      <PageHeader title="Settings" />
-      <Placeholder>Account, backup and export — coming soon</Placeholder>
-    </>
-  )
-}
-
 export function NotFound() {
   return (
     <>

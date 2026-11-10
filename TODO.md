@@ -6,12 +6,15 @@
 - [x] Sample squad export (attributes) — saved in `src/import/fixtures/`.
 - [ ] More sample exports: squad **stats** view (apps, goals, ratings), **contract/finance** view (value, wage, expiry), **GK attributes**, **staff** view, **scouting/shortlist** view.
 - [ ] Own icons / logo — replace files in `public/icons/` (see README there).
-- [ ] Supabase: run `supabase/migrations/0001_init.sql`, set auth URLs, add GitHub variables, share URL + publishable key.
+- [x] Supabase project + schema.
+- [ ] Supabase auth: URL configuration + add `{{ .Token }}` to Magic Link email template; disable sign-ups after first login.
 
 ## Next up
 
-- [ ] Supabase schema + auth, replace mock data, local cache for offline read.
-- [ ] FM HTML importer with column mapping.
+- [x] Login (magic link / code), careers, squad import, squad + player pages.
+- [ ] Local cache for offline read.
+- [ ] Manual column mapping override in importer (saved per view).
+- [ ] Staff and scouting backed by Supabase + import.
 - [ ] Squad table: sorting, filtering, column picker (TanStack Table + Virtual).
 - [ ] Scouting board drag & drop (dnd-kit).
 - [ ] Dashboard charts, achievements, season timeline.

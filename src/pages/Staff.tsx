@@ -1,15 +1,13 @@
 import { PageHeader } from '../components/ui'
 import { staff } from '../data/mock'
-import { useCareer } from '../lib/career'
 import { formatWage } from '../lib/format'
 
 export function Staff() {
-  const { current } = useCareer()
-  const list = staff.filter((s) => s.careerId === current.id)
+  const list = staff
 
   return (
     <>
-      <PageHeader title="Staff" subtitle={`${list.length} members`} />
+      <PageHeader title="Staff" subtitle="Sample data · staff import coming soon" />
       <ul className="grid gap-2 sm:grid-cols-2 xl:grid-cols-3">
         {list.map((s) => (
           <li key={s.id} className="border-border bg-surface rounded-xl border p-4">

@@ -3,6 +3,7 @@ import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import { BrowserRouter } from 'react-router-dom'
 import App from './App.tsx'
+import { AuthProvider } from './lib/auth.tsx'
 import { CareerProvider } from './lib/career.tsx'
 import './index.css'
 
@@ -12,9 +13,11 @@ createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <QueryClientProvider client={queryClient}>
       <BrowserRouter basename={import.meta.env.BASE_URL}>
-        <CareerProvider>
-          <App />
-        </CareerProvider>
+        <AuthProvider>
+          <CareerProvider>
+            <App />
+          </CareerProvider>
+        </AuthProvider>
       </BrowserRouter>
     </QueryClientProvider>
   </StrictMode>,

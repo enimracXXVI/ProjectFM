@@ -5,6 +5,7 @@ import { useCareer } from '../lib/career'
 
 export function TopBar() {
   const { careers, current, setCurrentId } = useCareer()
+  const currentId = current?.id ?? ''
   const searchRef = useRef<HTMLInputElement>(null)
 
   // Desktop shortcut: "/" focuses global search
@@ -33,7 +34,7 @@ export function TopBar() {
         </label>
         <select
           id="career-select"
-          value={current.id}
+          value={currentId}
           onChange={(e) => setCurrentId(e.target.value)}
           className="border-border bg-surface min-h-11 max-w-[45vw] truncate rounded-lg border px-3 text-sm md:max-w-xs"
         >
