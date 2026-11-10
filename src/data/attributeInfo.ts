@@ -1,8 +1,7 @@
 /**
- * Attribute abbreviations, descriptions and screen layouts.
- *
- * To change a description: edit the `description` text below (GitHub web editor works fine)
- * and commit to main. Keep the attribute names exactly as they are.
+ * Default attribute names, abbreviations, descriptions and layouts (FM's own order).
+ * These are only the starting point: everything can be changed in the app under
+ * Settings → Attributes and Settings → Layout, which is stored per user in Supabase.
  */
 
 export interface AttributeInfo {
@@ -295,17 +294,6 @@ export const PROFILE_COLUMNS: Record<Role, AttributeSection[][]> = {
       { label: 'Technical', attributes: GK_TECHNICAL },
     ],
   ],
-}
-
-/** Squad table column order: the profile sections flattened left to right. */
-export const TABLE_LAYOUT: Record<Role, AttributeSection[]> = {
-  outfield: PROFILE_COLUMNS.outfield.flat(),
-  goalkeepers: PROFILE_COLUMNS.goalkeepers.flat(),
-}
-
-/** Name as FM displays it (stored keys follow the export headers). */
-export function attributeLabel(name: string): string {
-  return ATTRIBUTE_INFO[name]?.label ?? name
 }
 
 /** Descriptions for other squad-table columns and labels. */

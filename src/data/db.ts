@@ -10,6 +10,10 @@ export interface Career {
   start_season: string | null
   current_season: string | null
   notes: string | null
+  crest_url: string | null
+  kit_home_url: string | null
+  kit_away_url: string | null
+  kit_third_url: string | null
   created_at: string
 }
 

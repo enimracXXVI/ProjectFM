@@ -1,7 +1,9 @@
+import { clsx } from 'clsx'
 import { Search, Settings, Upload } from 'lucide-react'
 import { useEffect, useRef } from 'react'
 import { Link } from 'react-router-dom'
 import { useCareer } from '../lib/career'
+import { Crest } from './Crest'
 
 export function TopBar() {
   const { careers, current, setCurrentId } = useCareer()
@@ -25,10 +27,19 @@ export function TopBar() {
   return (
     <header className="sticky top-0 z-10 border-b border-border bg-bg/95 pt-safe backdrop-blur">
       <div className="flex h-16 items-center gap-3 px-4 md:px-8">
-        <span className="text-lg font-bold tracking-tight md:hidden">
+        <span
+          className={clsx(
+            'text-lg font-bold tracking-tight md:hidden',
+            current?.crest_url && 'hidden',
+          )}
+        >
           P<span className="text-accent">FM</span>
         </span>
 
+        <Crest
+          url={current?.crest_url}
+          className={clsx('size-8', !current?.crest_url && 'hidden md:block')}
+        />
         <label className="sr-only" htmlFor="career-select">
           Current career
         </label>

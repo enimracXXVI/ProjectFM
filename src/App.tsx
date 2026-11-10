@@ -12,6 +12,9 @@ import { Login } from './pages/Login'
 import { PlayerDetail } from './pages/PlayerDetail'
 import { Scouting } from './pages/Scouting'
 import { SettingsPage } from './pages/Settings'
+import { AttributesSettings } from './pages/settings/Attributes'
+import { LayoutSettings } from './pages/settings/Layout'
+import { StatusesSettings } from './pages/settings/Statuses'
 import { Achievements, NotFound } from './pages/Simple'
 import { Squad } from './pages/Squad'
 import { Staff } from './pages/Staff'
@@ -46,6 +49,9 @@ function SignedIn() {
         <Route path="careers" element={<Careers />} />
         <Route path="import" element={<Import />} />
         <Route path="settings" element={<SettingsPage />} />
+        <Route path="settings/statuses" element={<StatusesSettings />} />
+        <Route path="settings/attributes" element={<AttributesSettings />} />
+        <Route path="settings/layout" element={<LayoutSettings />} />
         <Route path="*" element={<NotFound />} />
       </Route>
     </Routes>

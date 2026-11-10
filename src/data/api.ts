@@ -1,5 +1,5 @@
 import { supabase } from '../lib/supabase'
-import type { ImportedPlayer } from '../import/parse'
+import type { ImportedPlayer, ParseResult } from '../import/parse'
 import type { Career, ImportRow, PlayerRow, SnapshotRow } from './db'
 
 function check<T>(res: { data: T | null; error: { message: string } | null }): T {
@@ -17,7 +17,12 @@ export async function createCareer(input: NewCareer): Promise<Career> {
   return check(await supabase.from('careers').insert(input).select().single())
 }
 
-export async function updateCareer(id: string, patch: Partial<NewCareer>): Promise<Career> {
+export type CareerImageSlot = 'crest_url' | 'kit_home_url' | 'kit_away_url' | 'kit_third_url'
+
+export async function updateCareer(
+  id: string,
+  patch: Partial<NewCareer> & Partial<Record<CareerImageSlot, string | null>>,
+): Promise<Career> {
   return check(await supabase.from('careers').update(patch).eq('id', id).select().single())
 }
 
@@ -60,10 +65,56 @@ export interface ImportSummary {
   left: number
 }
 
+const CORE_FIELDS = [
+  'fm_uid',
+  'name',
+  'positions',
+  'squad_number',
+  'age',
+  'nation',
+  'second_nation',
+  'height_cm',
+  'left_foot',
+  'right_foot',
+  'personality',
+] as const satisfies readonly (keyof ImportedPlayer)[]
+
+type ExistingPlayer = Pick<
+  PlayerRow,
+  (typeof CORE_FIELDS)[number] | 'id' | 'attributes' | 'extra' | 'in_squad'
+>
+
+/**
+ * Combines an imported row with what is already stored, so importing a different FM view
+ * (e.g. stats or contracts) never wipes data that view doesn't contain.
+ * Columns present in the file win, even when empty (e.g. an injury that has healed).
+ */
+export function mergePlayer(
+  existing: ExistingPlayer | undefined,
+  incoming: ImportedPlayer,
+  present: { core: Set<string>; attributes: Set<string>; extra: Set<string> },
+): Omit<ImportedPlayer, never> {
+  if (!existing) return incoming
+  const merged = { ...incoming } as Record<string, unknown>
+  for (const f of CORE_FIELDS) {
+    if (!present.core.has(f)) merged[f] = existing[f]
+  }
+  const attributes = { ...existing.attributes }
+  for (const a of present.attributes) delete attributes[a]
+  const extra = { ...existing.extra }
+  for (const e of present.extra) delete extra[e]
+  return {
+    ...(merged as unknown as ImportedPlayer),
+    attributes: { ...attributes, ...incoming.attributes },
+    extra: { ...extra, ...incoming.extra },
+  }
+}
+
 /**
  * Saves parsed players into a career.
- * Matches on FM Unique ID (falls back to name), records a snapshot per player for
- * development history, and for squad views marks players missing from the file as gone.
+ * Matches on FM Unique ID (falls back to name), merges with stored data, records a
+ * snapshot per player for development history, and for full-squad imports marks
+ * players missing from the file as gone.
  */
 export async function importPlayers(opts: {
   careerId: string
@@ -71,13 +122,28 @@ export async function importPlayers(opts: {
   viewType: string
   fileName: string
   players: ImportedPlayer[]
+  columns: ParseResult['columns']
   markMissingAsLeft: boolean
 }): Promise<ImportSummary> {
-  const { careerId, season, viewType, fileName, players, markMissingAsLeft } = opts
+  const { careerId, season, viewType, fileName, players, columns, markMissingAsLeft } = opts
+
+  const present = {
+    core: new Set<string>(),
+    attributes: new Set<string>(),
+    extra: new Set<string>(),
+  }
+  for (const { target } of columns) {
+    if (target.kind === 'core') present.core.add(target.field)
+    else if (target.kind === 'attribute') present.attributes.add(target.name)
+    else present.extra.add(target.key)
+  }
 
   const existing = check(
-    await supabase.from('players').select('id, fm_uid, name, in_squad').eq('career_id', careerId),
-  ) as Pick<PlayerRow, 'id' | 'fm_uid' | 'name' | 'in_squad'>[]
+    await supabase
+      .from('players')
+      .select(['id', 'attributes', 'extra', 'in_squad', ...CORE_FIELDS].join(', '))
+      .eq('career_id', careerId),
+  ) as unknown as ExistingPlayer[]
   const byUid = new Map(existing.filter((p) => p.fm_uid != null).map((p) => [p.fm_uid, p]))
   const byName = new Map(existing.map((p) => [p.name.toLowerCase(), p]))
 
@@ -95,23 +161,29 @@ export async function importPlayers(opts: {
       .single(),
   ) as { id: string }
 
-  const rows = players.map((p) => {
+  const matched = players.map((p) => {
     const match = (p.fm_uid != null && byUid.get(p.fm_uid)) || byName.get(p.name.toLowerCase())
-    return { ...(match ? { id: match.id } : {}), career_id: careerId, ...p, in_squad: true }
+    return { incoming: p, match: match || undefined }
   })
-  const added = rows.filter((r) => !('id' in r)).length
+  const updates = matched
+    .filter((m) => m.match)
+    .map(({ incoming, match }) => ({
+      id: match!.id,
+      career_id: careerId,
+      ...mergePlayer(match, incoming, present),
+      in_squad: true,
+    }))
+  const inserts = matched
+    .filter((m) => !m.match)
+    .map(({ incoming }) => ({ career_id: careerId, ...incoming, in_squad: true }))
 
-  // Split so each batch has the same columns (PostgREST bulk insert requirement).
-  const withId = rows.filter((r) => 'id' in r)
-  const withoutId = rows.filter((r) => !('id' in r))
+  // Separate batches: PostgREST bulk writes need the same columns in every row
   const saved: Pick<PlayerRow, 'id' | 'fm_uid' | 'name'>[] = []
-  if (withId.length) {
-    saved.push(...check(await supabase.from('players').upsert(withId).select('id, fm_uid, name')))
+  if (updates.length) {
+    saved.push(...check(await supabase.from('players').upsert(updates).select('id, fm_uid, name')))
   }
-  if (withoutId.length) {
-    saved.push(
-      ...check(await supabase.from('players').insert(withoutId).select('id, fm_uid, name')),
-    )
+  if (inserts.length) {
+    saved.push(...check(await supabase.from('players').insert(inserts).select('id, fm_uid, name')))
   }
 
   const savedId = (p: ImportedPlayer) =>
@@ -139,5 +211,38 @@ export async function importPlayers(opts: {
     }
   }
 
-  return { added, updated: saved.length - added, left }
+  return { added: inserts.length, updated: updates.length, left }
+}
+
+const BUCKET = 'career-images'
+
+/** Path inside the bucket from a public URL, so old files can be deleted. */
+function storagePath(url: string | null): string | null {
+  const marker = `/object/public/${BUCKET}/`
+  const i = url?.indexOf(marker) ?? -1
+  return url && i >= 0 ? decodeURIComponent(url.slice(i + marker.length)) : null
+}
+
+/** Uploads a crest/kit image, stores its URL on the career and removes the previous file. */
+export async function setCareerImage(
+  career: Career,
+  slot: CareerImageSlot,
+  file: Blob | null,
+): Promise<Career> {
+  let url: string | null = null
+  if (file) {
+    const { data: auth } = await supabase.auth.getUser()
+    if (!auth.user) throw new Error('Not signed in')
+    const ext = file.type === 'image/svg+xml' ? 'svg' : file.type.split('/')[1] || 'png'
+    const path = `${auth.user.id}/${career.id}/${slot.replace('_url', '')}-${Date.now()}.${ext}`
+    const { error } = await supabase.storage
+      .from(BUCKET)
+      .upload(path, file, { contentType: file.type, cacheControl: '31536000' })
+    if (error) throw new Error(error.message)
+    url = supabase.storage.from(BUCKET).getPublicUrl(path).data.publicUrl
+  }
+  const updated = await updateCareer(career.id, { [slot]: url })
+  const old = storagePath(career[slot])
+  if (old) await supabase.storage.from(BUCKET).remove([old]) // best effort
+  return updated
 }

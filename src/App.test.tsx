@@ -26,6 +26,10 @@ const career = (id: string, club: string): Career => ({
   start_season: '2026/27',
   current_season: '2026/27',
   notes: null,
+  crest_url: null,
+  kit_home_url: null,
+  kit_away_url: null,
+  kit_third_url: null,
   created_at: '',
 })
 

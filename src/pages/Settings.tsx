@@ -1,4 +1,6 @@
+import { ChevronRight } from 'lucide-react'
 import { useState, type FormEvent } from 'react'
+import { Link } from 'react-router-dom'
 import { Button, ErrorText, Field } from '../components/form'
 import { Card, PageHeader } from '../components/ui'
 import { useAuth } from '../lib/auth'
@@ -28,6 +30,30 @@ export function SettingsPage() {
     <>
       <PageHeader title="Settings" />
       <div className="grid max-w-md gap-4">
+        <Card>
+          <h2 className="mb-2 font-semibold">Customise</h2>
+          <ul className="grid">
+            {[
+              ['/settings/statuses', 'Statuses', 'Meaning and colour of FM status codes'],
+              ['/settings/attributes', 'Attributes', 'Names, short headers and descriptions'],
+              ['/settings/layout', 'Layout', 'Grouping and order of attributes'],
+            ].map(([to, label, hint]) => (
+              <li key={to}>
+                <Link
+                  to={to}
+                  className="-mx-2 flex min-h-12 items-center gap-3 rounded-lg px-2 hover:bg-surface-2"
+                >
+                  <span className="flex-1">
+                    <span className="block text-sm font-medium">{label}</span>
+                    <span className="block text-xs text-muted">{hint}</span>
+                  </span>
+                  <ChevronRight className="size-4 text-muted" aria-hidden />
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </Card>
+
         <Card>
           <p className="text-sm text-muted">Signed in as</p>
           <p className="font-medium break-all">{session?.user.email}</p>

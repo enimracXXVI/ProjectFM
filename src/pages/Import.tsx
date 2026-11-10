@@ -49,6 +49,7 @@ export function Import() {
         viewType: file!.result.table.viewType,
         fileName: file!.name,
         players: file!.result.players,
+        columns: file!.result.columns,
         markMissingAsLeft: fullSquad,
       }),
     onSuccess: (s) => {

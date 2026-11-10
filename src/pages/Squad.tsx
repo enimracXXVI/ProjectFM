@@ -5,17 +5,13 @@ import { Link } from 'react-router-dom'
 import { StatusChip } from '../components/StatusChip'
 import { Tooltip } from '../components/Tooltip'
 import { PageHeader, Placeholder } from '../components/ui'
-import {
-  ATTRIBUTE_INFO,
-  FIELD_INFO,
-  TABLE_LAYOUT,
-  attributeLabel,
-  isGoalkeeper,
-} from '../data/attributeInfo'
+import { FIELD_INFO, isGoalkeeper } from '../data/attributeInfo'
+import { attributeLabel, tableSections } from '../data/config'
 import type { PlayerRow } from '../data/db'
 import { usePlayers } from '../data/hooks'
 import { attrColor, attrNumber, formatAttr } from '../lib/attributes'
 import { useCurrentCareer } from '../lib/career'
+import { useConfig } from '../lib/config'
 
 type View = 'profile' | 'attributes'
 type Role = 'outfield' | 'goalkeepers'
@@ -40,6 +36,7 @@ const PROFILE_KEYS = new Set(PROFILE_COLS.map((c) => c.key))
 
 export function Squad() {
   const career = useCurrentCareer()
+  const config = useConfig()
   const { data, isPending, error } = usePlayers(career.id)
   const [view, setView] = useState<View>('profile')
   const [role, setRole] = useState<Role>('outfield')
@@ -74,7 +71,7 @@ export function Squad() {
   // Only sections/columns that have data for the players shown
   const sections = useMemo(
     () =>
-      TABLE_LAYOUT[role]
+      tableSections(config.layout, role)
         .map((s) => ({
           ...s,
           attributes: s.attributes.filter((a) =>
@@ -82,7 +79,7 @@ export function Squad() {
           ),
         }))
         .filter((s) => s.attributes.length > 0),
-    [role, players],
+    [role, players, config.layout],
   )
 
   // Attributes read best highest-first; text/profile columns lowest-first
@@ -193,9 +190,9 @@ export function Squad() {
                 {view === 'attributes' && (
                   <tr className="border-b border-border">
                     <th className="sticky left-0 z-[1] bg-surface-2 shadow-[inset_-1px_0_0_var(--color-border)]" />
-                    {sections.map((s) => (
+                    {sections.map((s, i) => (
                       <th
-                        key={s.label}
+                        key={i}
                         colSpan={s.attributes.length}
                         className="border-l-2 border-border px-2 pt-2 pb-1 text-center font-semibold text-text/80"
                       >
@@ -229,9 +226,9 @@ export function Squad() {
                           <SortHeader
                             key={a}
                             col={a}
-                            label={ATTRIBUTE_INFO[a]?.abbr ?? a.slice(0, 3)}
-                            title={attributeLabel(a)}
-                            info={ATTRIBUTE_INFO[a]?.description}
+                            label={config.attributes[a]?.abbr || a.slice(0, 3)}
+                            title={attributeLabel(config, a)}
+                            info={config.attributes[a]?.description || undefined}
                             sort={sort}
                             onSort={toggleSort}
                             compact

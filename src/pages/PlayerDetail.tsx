@@ -4,19 +4,17 @@ import { StatusChip } from '../components/StatusChip'
 import { Placeholder } from '../components/ui'
 import { usePlayer, useSnapshots } from '../data/hooks'
 import { Tooltip } from '../components/Tooltip'
-import {
-  ATTRIBUTE_INFO,
-  PROFILE_COLUMNS,
-  attributeLabel,
-  isGoalkeeper,
-} from '../data/attributeInfo'
-import { statusLabel } from '../data/statusInfo'
+import { isGoalkeeper } from '../data/attributeInfo'
+import { attributeLabel } from '../data/config'
+import { useConfig } from '../lib/config'
 import { attrColor, attrNumber, formatAttr } from '../lib/attributes'
 
 export function PlayerDetail() {
   const { id = '' } = useParams()
+  const config = useConfig()
   const { data: p, isPending, error } = usePlayer(id)
-  const { data: snapshots } = useSnapshots(id)
+  const { data: allSnapshots } = useSnapshots(id)
+  const snapshots = allSnapshots?.filter((s) => Object.keys(s.attributes).length > 0)
 
   if (isPending) return <p className="text-sm text-muted">Loading…</p>
   if (error || !p) return <Placeholder>{error?.message ?? 'Player not found'}</Placeholder>
@@ -25,7 +23,7 @@ export function PlayerDetail() {
   const latest = snapshots?.at(-1) ?? null
   const previous = snapshots && snapshots.length > 1 ? snapshots[snapshots.length - 2] : null
   // FM layout: three columns, each with one or more sections; empty sections hidden
-  const columns = PROFILE_COLUMNS[isGoalkeeper(p.positions) ? 'goalkeepers' : 'outfield']
+  const columns = config.layout[isGoalkeeper(p.positions) ? 'goalkeepers' : 'outfield']
     .map((col) =>
       col
         .map((s) => ({
@@ -69,16 +67,16 @@ export function PlayerDetail() {
         <Info label="Right foot" value={p.right_foot} />
         <Info label="Personality" value={p.personality} />
         {p.extra.status && (
-          <Info label="Status" value={statusLabel(p.extra.status) ?? p.extra.status} />
+          <Info label="Status" value={config.statuses[p.extra.status]?.label || p.extra.status} />
         )}
         {p.extra.selection && <Info label="Selection" value={p.extra.selection} />}
       </dl>
 
       <div className="grid gap-x-5 gap-y-4 md:grid-cols-2 xl:grid-cols-3">
-        {columns.map((col) => (
-          <div key={col[0].label} className="grid content-start gap-4">
-            {col.map((section) => (
-              <section key={section.label}>
+        {columns.map((col, ci) => (
+          <div key={ci} className="grid content-start gap-4">
+            {col.map((section, si) => (
+              <section key={si}>
                 <h2 className="mb-1 border-b border-border pb-1 text-xs font-semibold text-muted">
                   {section.label}
                 </h2>
@@ -93,11 +91,11 @@ export function PlayerDetail() {
                         className="flex min-h-9 items-center justify-between gap-2 px-3 odd:bg-surface even:bg-surface/40"
                       >
                         <Tooltip
-                          title={attributeLabel(n)}
-                          text={ATTRIBUTE_INFO[n]?.description ?? n}
+                          title={attributeLabel(config, n)}
+                          text={config.attributes[n]?.description || attributeLabel(config, n)}
                         >
                           <span tabIndex={0} className="cursor-help">
-                            {attributeLabel(n)}
+                            {attributeLabel(config, n)}
                           </span>
                         </Tooltip>
                         <span className="flex items-center gap-2 tabular-nums">
