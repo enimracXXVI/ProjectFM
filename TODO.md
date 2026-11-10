@@ -3,9 +3,10 @@
 ## Pending from user
 
 - [ ] Enable GitHub Pages: repo Settings → Pages → Source: **GitHub Actions** (one-time).
-- [ ] Sample FM27 HTML export (Print Screen → Web Page) of squad, staff and scouting views — needed to build the importer parser against real output.
+- [x] Sample squad export (attributes) — saved in `src/import/fixtures/`.
+- [ ] More sample exports: squad **stats** view (apps, goals, ratings), **contract/finance** view (value, wage, expiry), **GK attributes**, **staff** view, **scouting/shortlist** view.
 - [ ] Own icons / logo — replace files in `public/icons/` (see README there).
-- [ ] Supabase account (free) — needed when wiring the backend.
+- [ ] Supabase: run `supabase/migrations/0001_init.sql`, set auth URLs, add GitHub variables, share URL + publishable key.
 
 ## Next up
 
