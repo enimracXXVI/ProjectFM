@@ -8,7 +8,13 @@ import { PageHeader, Placeholder } from '../components/ui'
 import { deleteStaff, saveStaff, type StaffInput } from '../data/api'
 import type { StaffRow } from '../data/db'
 import { useStaff } from '../data/hooks'
-import { SCOUT_KEY_ATTRIBUTES, STAFF_ROLES, STAFF_SECTIONS, ratingColor } from '../data/staffInfo'
+import {
+  SCOUT_KEY_ATTRIBUTES,
+  STAFF_ROLES,
+  STAFF_SCALE_RANGES,
+  STAFF_SECTIONS,
+  ratingColor,
+} from '../data/staffInfo'
 import { useCurrentCareer } from '../lib/career'
 import { useConfig } from '../lib/config'
 
@@ -177,7 +183,9 @@ function StaffForm({ existing }: { existing: StaffRow | null }) {
                     >
                       <option value="">–</option>
                       {config.staffScale.map((w) => (
-                        <option key={w}>{w}</option>
+                        <option key={w} value={w}>
+                          {STAFF_SCALE_RANGES[w] ? `${w} (${STAFF_SCALE_RANGES[w]})` : w}
+                        </option>
                       ))}
                     </select>
                   </li>

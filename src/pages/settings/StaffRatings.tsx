@@ -1,7 +1,7 @@
 import { ChevronDown, ChevronUp, Plus, Trash2 } from 'lucide-react'
 import { useState } from 'react'
 import { SettingsShell } from '../../components/SettingsShell'
-import { ratingColor } from '../../data/staffInfo'
+import { STAFF_SCALE_RANGES, ratingColor } from '../../data/staffInfo'
 import { useConfig } from '../../lib/config'
 import { useSaveConfig } from '../../lib/useSaveConfig'
 
@@ -53,6 +53,7 @@ export function StaffRatingsSettings() {
           words={words}
           onChange={setWords}
           colorFor={(w) => ratingColor(w, clean(words))}
+          noteFor={(w) => STAFF_SCALE_RANGES[w]}
         />
         <WordList
           title="Scouting knowledge levels"
@@ -71,12 +72,15 @@ function WordList({
   words,
   onChange,
   colorFor,
+  noteFor,
 }: {
   title: string
   hint: string
   words: string[]
   onChange: (w: string[]) => void
   colorFor?: (w: string) => string
+  /** Small text after a word, e.g. its 1–20 range. */
+  noteFor?: (w: string) => string | undefined
 }) {
   const move = (i: number, d: -1 | 1) => {
     const n = [...words]
@@ -96,6 +100,11 @@ function WordList({
               onChange={(e) => onChange(words.map((x, j) => (j === i ? e.target.value : x)))}
               className={`${input} font-semibold ${colorFor?.(w.trim()) ?? ''}`}
             />
+            {noteFor && (
+              <span className="w-12 shrink-0 text-right text-xs text-muted tabular-nums">
+                {noteFor(w.trim()) ?? ''}
+              </span>
+            )}
             <button
               type="button"
               className={iconBtn}

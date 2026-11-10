@@ -37,22 +37,40 @@ export const SCOUT_KEY_ATTRIBUTES = [
   'Judging Player Potential',
 ]
 
-/**
- * Rating words, worst to best. Only the words seen in FM so far; the order is
- * unconfirmed and can be fixed in Settings → Staff ratings.
- */
+/** Rating words, worst to best, as FM27 shows staff attributes. */
 export const DEFAULT_STAFF_SCALE = [
   'Unsuited',
-  'Average',
   'Reasonable',
   'Competent',
+  'Average',
   'Good',
   'Very Good',
   'Outstanding',
+  'Elite',
 ]
 
-/** Scouting knowledge levels, lowest to highest. Only "Complete" is confirmed so far. */
-export const DEFAULT_KNOWLEDGE_LEVELS = ['Complete']
+/** The 1–20 values behind each default rating word. */
+export const STAFF_SCALE_RANGES: Record<string, string> = {
+  Unsuited: '0–3',
+  Reasonable: '4–6',
+  Competent: '7–9',
+  Average: '10–11',
+  Good: '12–14',
+  'Very Good': '15–17',
+  Outstanding: '18–19',
+  Elite: '20',
+}
+
+/** Scouting knowledge levels, lowest to highest. */
+export const DEFAULT_KNOWLEDGE_LEVELS = [
+  'Minimal',
+  'Average',
+  'Above Average',
+  'Very Good',
+  'Extensive',
+  'Exceptional',
+  'Complete',
+]
 
 export const STAFF_ROLES = ['Scout', 'Chief Scout'] as const
 
