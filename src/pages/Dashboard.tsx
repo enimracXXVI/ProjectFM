@@ -27,15 +27,17 @@ export function Dashboard() {
         <Stat label="Injured" value={injured} />
       </div>
       {squad.length === 0 && (
-        <Placeholder>
-          <span className="block">
-            Start by{' '}
-            <Link to="/import" className="text-accent underline">
-              importing your squad
-            </Link>
-            .
-          </span>
-        </Placeholder>
+        <div className="mt-6">
+          <Placeholder>
+            <span className="block">
+              Start by{' '}
+              <Link to="/import" className="text-accent underline">
+                importing your squad
+              </Link>
+              .
+            </span>
+          </Placeholder>
+        </div>
       )}
       <div className="mt-6 grid gap-3 lg:grid-cols-2">
         <Placeholder>Season timeline chart — coming soon</Placeholder>

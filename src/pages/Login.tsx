@@ -1,9 +1,14 @@
+import { clsx } from 'clsx'
 import { useState, type FormEvent } from 'react'
 import { Button, ErrorText, Field } from '../components/form'
-import { sendLoginEmail, verifyLoginCode } from '../lib/authActions'
+import { sendLoginEmail, signInWithPassword, verifyLoginCode } from '../lib/authActions'
+
+type Mode = 'password' | 'email'
 
 export function Login() {
+  const [mode, setMode] = useState<Mode>('password')
   const [email, setEmail] = useState('')
+  const [password, setPassword] = useState('')
   const [code, setCode] = useState('')
   const [sent, setSent] = useState(false)
   const [busy, setBusy] = useState(false)
@@ -22,6 +27,17 @@ export function Login() {
     }
   }
 
+  const emailField = (
+    <Field
+      label="Email"
+      type="email"
+      autoComplete="email"
+      required
+      value={email}
+      onChange={(e) => setEmail(e.target.value)}
+    />
+  )
+
   return (
     <div className="pt-safe grid min-h-full place-items-center px-4">
       <div className="w-full max-w-sm">
@@ -30,19 +46,56 @@ export function Login() {
         </h1>
         <p className="text-muted mb-6 text-sm">Your Football Manager careers, on every device.</p>
 
-        {!sent ? (
+        <div className="border-border mb-4 grid grid-cols-2 rounded-lg border p-0.5" role="tablist">
+          {(
+            [
+              ['password', 'Password'],
+              ['email', 'Email link'],
+            ] as const
+          ).map(([m, label]) => (
+            <button
+              key={m}
+              type="button"
+              role="tab"
+              aria-selected={mode === m}
+              onClick={() => (setMode(m), setError(null))}
+              className={clsx(
+                'min-h-10 rounded-md text-sm',
+                mode === m ? 'bg-surface-2 text-text' : 'text-muted',
+              )}
+            >
+              {label}
+            </button>
+          ))}
+        </div>
+
+        {mode === 'password' ? (
+          <form
+            className="grid gap-3"
+            onSubmit={(e) => run(e, () => signInWithPassword(email, password))}
+          >
+            {emailField}
+            <Field
+              label="Password"
+              type="password"
+              autoComplete="current-password"
+              required
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+            />
+            <Button type="submit" disabled={busy}>
+              {busy ? 'Signing in…' : 'Sign in'}
+            </Button>
+            <p className="text-muted text-xs">
+              No password yet? Use “Email link” once, then set one in Settings.
+            </p>
+          </form>
+        ) : !sent ? (
           <form
             className="grid gap-3"
             onSubmit={(e) => run(e, async () => (await sendLoginEmail(email), setSent(true)))}
           >
-            <Field
-              label="Email"
-              type="email"
-              autoComplete="email"
-              required
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-            />
+            {emailField}
             <Button type="submit" disabled={busy}>
               {busy ? 'Sending…' : 'Email me a sign-in link'}
             </Button>
@@ -50,18 +103,17 @@ export function Login() {
         ) : (
           <form className="grid gap-3" onSubmit={(e) => run(e, () => verifyLoginCode(email, code))}>
             <p className="text-sm">
-              Sent to <strong>{email}</strong>. Open the link in the email, or type the code from it
-              here (best when using the installed app).
+              Sent to <strong>{email}</strong>. Open the link in the email to sign in.
             </p>
             <Field
-              label="Code"
+              label="Code (if your email shows one)"
               inputMode="numeric"
               autoComplete="one-time-code"
               value={code}
               onChange={(e) => setCode(e.target.value.trim())}
             />
             <Button type="submit" disabled={busy || code.length < 6}>
-              {busy ? 'Checking…' : 'Sign in'}
+              {busy ? 'Checking…' : 'Sign in with code'}
             </Button>
             <Button type="button" variant="ghost" onClick={() => setSent(false)}>
               Use a different email

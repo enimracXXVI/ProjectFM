@@ -52,7 +52,7 @@ describe('App', () => {
   it('shows the login screen when signed out', () => {
     auth.session = null
     renderAt('/')
-    expect(screen.getByRole('button', { name: 'Email me a sign-in link' })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Sign in' })).toBeInTheDocument()
   })
 
   it('asks to create a career when there are none', async () => {

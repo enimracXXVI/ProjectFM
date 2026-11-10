@@ -23,3 +23,13 @@ export async function signOut(): Promise<void> {
   // Full reload drops all cached data from the previous account.
   window.location.assign(import.meta.env.BASE_URL)
 }
+
+export async function signInWithPassword(email: string, password: string): Promise<void> {
+  const { error } = await supabase.auth.signInWithPassword({ email, password })
+  if (error) throw error
+}
+
+export async function setPassword(password: string): Promise<void> {
+  const { error } = await supabase.auth.updateUser({ password })
+  if (error) throw error
+}
