@@ -13,7 +13,7 @@ export function Tooltip({
   children,
 }: {
   title?: string
-  text: string
+  text?: string
   children: ReactNode
 }) {
   const id = useId()
@@ -82,7 +82,11 @@ export function Tooltip({
             style={{ left: pos.x, top: pos.y }}
             className="pointer-events-none fixed z-50 w-max max-w-64 -translate-x-1/2 rounded-lg border border-border bg-surface-2 px-3 py-2 text-left text-xs font-normal tracking-normal text-text normal-case shadow-lg"
           >
-            {title && <span className="mb-0.5 block font-semibold">{title}</span>}
+            {title && (
+              <span className={text ? 'mb-0.5 block font-semibold' : 'block font-semibold'}>
+                {title}
+              </span>
+            )}
             {text}
           </span>,
           document.body,

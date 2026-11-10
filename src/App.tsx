@@ -13,6 +13,7 @@ import { PlayerDetail } from './pages/PlayerDetail'
 import { Scouting } from './pages/Scouting'
 import { SettingsPage } from './pages/Settings'
 import { AttributesSettings } from './pages/settings/Attributes'
+import { ColumnsSettings } from './pages/settings/Columns'
 import { LayoutSettings } from './pages/settings/Layout'
 import { StatusesSettings } from './pages/settings/Statuses'
 import { Achievements, NotFound } from './pages/Simple'
@@ -52,6 +53,7 @@ function SignedIn() {
         <Route path="settings/statuses" element={<StatusesSettings />} />
         <Route path="settings/attributes" element={<AttributesSettings />} />
         <Route path="settings/layout" element={<LayoutSettings />} />
+        <Route path="settings/columns" element={<ColumnsSettings />} />
         <Route path="*" element={<NotFound />} />
       </Route>
     </Routes>

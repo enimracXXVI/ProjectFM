@@ -6,7 +6,6 @@ import { StatusChip } from '../components/StatusChip'
 import { Tooltip } from '../components/Tooltip'
 import { PageHeader, Placeholder } from '../components/ui'
 import { FIELD_INFO, isGoalkeeper } from '../data/attributeInfo'
-import { CONTRACT_VIEW, STATS_VIEW, type ExtraView } from '../data/columns'
 import { attributeLabel, tableSections } from '../data/config'
 import type { PlayerRow } from '../data/db'
 import { usePlayers } from '../data/hooks'
@@ -16,8 +15,6 @@ import { useConfig } from '../lib/config'
 import { sortValue } from '../lib/values'
 
 type View = 'profile' | 'attributes' | 'contract' | 'stats'
-
-const EXTRA_VIEWS: Partial<Record<View, ExtraView>> = { contract: CONTRACT_VIEW, stats: STATS_VIEW }
 type Role = 'outfield' | 'goalkeepers'
 type SortKey = { col: string; asc: boolean }
 
@@ -92,7 +89,7 @@ export function Squad() {
   )
 
   // Contract / stats columns that have data
-  const extraView = EXTRA_VIEWS[view]
+  const extraView = view === 'contract' || view === 'stats' ? config.views[view] : undefined
   const extraCols = useMemo(
     () =>
       (extraView?.columns ?? []).filter((c) => players.some((p) => p.extra[c.key] !== undefined)),
@@ -237,8 +234,9 @@ export function Squad() {
                           key={c.key}
                           col={`x:${c.key}`}
                           label={c.short}
-                          title={c.key}
-                          info={c.short !== c.key ? c.key : undefined}
+                          title={c.label || c.key}
+                          info={c.description || undefined}
+                          showTitleOnly
                           sort={sort}
                           onSort={toggleSort}
                           compact
@@ -386,6 +384,7 @@ function SortHeader({
   sticky,
   compact,
   separator,
+  showTitleOnly,
 }: {
   col: string
   label: string
@@ -396,6 +395,8 @@ function SortHeader({
   sticky?: boolean
   compact?: boolean
   separator?: boolean
+  /** Show the tooltip even without a description (title only) when it adds information. */
+  showTitleOnly?: boolean
 }) {
   const active = sort.col === col
   const Icon = sort.asc ? ChevronUp : ChevronDown
@@ -422,7 +423,7 @@ function SortHeader({
       )}
       aria-sort={active ? (sort.asc ? 'ascending' : 'descending') : 'none'}
     >
-      {info ? (
+      {info || (showTitleOnly && title && title !== label) ? (
         <Tooltip title={title} text={info}>
           {button}
         </Tooltip>

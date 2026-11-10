@@ -34,9 +34,14 @@ export function SettingsPage() {
           <h2 className="mb-2 font-semibold">Customise</h2>
           <ul className="grid">
             {[
-              ['/settings/statuses', 'Statuses', 'Meaning and colour of FM status codes'],
+              [
+                '/settings/statuses',
+                'Statuses',
+                'Meaning, description and colours of FM status codes',
+              ],
               ['/settings/attributes', 'Attributes', 'Names, short headers and descriptions'],
               ['/settings/layout', 'Layout', 'Grouping and order of attributes'],
+              ['/settings/columns', 'Contract & Stats', 'Columns, order, names and tooltips'],
             ].map(([to, label, hint]) => (
               <li key={to}>
                 <Link

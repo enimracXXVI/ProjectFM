@@ -8,7 +8,13 @@ export interface ExtraColumn {
   key: string
   /** Short header for the squad table. */
   short: string
+  /** Full name, shown as the tooltip title (defaults to the FM header). */
+  label?: string
+  /** Shown in the tooltip under the title. */
+  description?: string
 }
+
+export type ExtraViewKey = 'contract' | 'stats'
 
 export interface ExtraView {
   label: string
@@ -91,6 +97,20 @@ export const STATS_VIEW: ExtraView = {
     'Crs A/90',
   ].map((key) => ({ key, short: key })),
 }
+
+export const DEFAULT_VIEWS: Record<ExtraViewKey, ExtraView> = {
+  contract: CONTRACT_VIEW,
+  stats: STATS_VIEW,
+}
+
+/** Extra keys with their own place in the app (not offered as Contract/Stats columns). */
+export const RESERVED_EXTRA_KEYS = new Set([
+  'selection',
+  'status',
+  'Ability',
+  'Potential',
+  'Nation code',
+])
 
 /** Coach star ratings shown with the profile. */
 export const RATING_KEYS = ['Ability', 'Potential'] as const

@@ -5,7 +5,6 @@ import { Placeholder } from '../components/ui'
 import { usePlayer, useSnapshots } from '../data/hooks'
 import { Tooltip } from '../components/Tooltip'
 import { isGoalkeeper } from '../data/attributeInfo'
-import { CONTRACT_VIEW, STATS_VIEW } from '../data/columns'
 import { attributeLabel } from '../data/config'
 import { useConfig } from '../lib/config'
 import { attrColor, attrNumber, formatAttr } from '../lib/attributes'
@@ -17,7 +16,7 @@ export function PlayerDetail() {
   const { data: allSnapshots } = useSnapshots(id)
   const snapshots = allSnapshots?.filter((s) => Object.keys(s.attributes).length > 0)
   const latestStats = allSnapshots
-    ?.filter((s) => STATS_VIEW.columns.some((c) => s.extra?.[c.key] !== undefined))
+    ?.filter((s) => config.views.stats.columns.some((c) => s.extra?.[c.key] !== undefined))
     .at(-1)
 
   if (isPending) return <p className="text-sm text-muted">Loading…</p>
@@ -78,18 +77,23 @@ export function PlayerDetail() {
         {p.extra.Potential && <Info label="Potential" value={`${p.extra.Potential} ★`} />}
       </dl>
 
-      {[CONTRACT_VIEW, STATS_VIEW].map((view) => {
+      {[config.views.contract, config.views.stats].map((view) => {
         const items = view.columns.filter((c) => p.extra[c.key] !== undefined)
         if (items.length === 0) return null
         return (
           <section key={view.label} className="mb-5">
             <h2 className="mb-1 border-b border-border pb-1 text-xs font-semibold text-muted">
               {view.label}
-              {view === STATS_VIEW && latestStats?.season ? ` · ${latestStats.season}` : ''}
+              {view === config.views.stats && latestStats?.season ? ` · ${latestStats.season}` : ''}
             </h2>
             <dl className="grid grid-cols-2 gap-2 text-sm sm:grid-cols-3 lg:grid-cols-5">
               {items.map((c) => (
-                <Info key={c.key} label={c.key} value={p.extra[c.key]} />
+                <Info
+                  key={c.key}
+                  label={c.label || c.key}
+                  value={p.extra[c.key]}
+                  description={c.description}
+                />
               ))}
             </dl>
           </section>
@@ -160,10 +164,28 @@ export function PlayerDetail() {
   )
 }
 
-function Info({ label, value }: { label: string; value: string | null }) {
+function Info({
+  label,
+  value,
+  description,
+}: {
+  label: string
+  value: string | null
+  description?: string
+}) {
   return (
     <div className="rounded-lg border border-border bg-surface px-3 py-2">
-      <dt className="text-xs text-muted">{label}</dt>
+      <dt className="text-xs text-muted">
+        {description ? (
+          <Tooltip title={label} text={description}>
+            <span tabIndex={0} className="cursor-help">
+              {label}
+            </span>
+          </Tooltip>
+        ) : (
+          label
+        )}
+      </dt>
       <dd className="font-medium">{value ?? '–'}</dd>
     </div>
   )

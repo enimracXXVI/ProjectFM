@@ -6,7 +6,8 @@ import {
   type AttributeSection,
   type Role,
 } from './attributeInfo'
-import { DEFAULT_STATUSES, type StatusInfo } from './statusInfo'
+import { DEFAULT_VIEWS, type ExtraView, type ExtraViewKey } from './columns'
+import { DEFAULT_STATUSES, normalizeStatus, type StatusInfo } from './statusInfo'
 
 export type Layout = Record<Role, AttributeSection[][]>
 
@@ -15,6 +16,7 @@ export interface AppConfig {
   statuses: Record<string, StatusInfo>
   attributes: Record<string, AttributeInfo>
   layout: Layout
+  views: Record<ExtraViewKey, ExtraView>
 }
 
 export type ConfigKey = keyof AppConfig
@@ -23,6 +25,7 @@ export const DEFAULT_CONFIG: AppConfig = {
   statuses: DEFAULT_STATUSES,
   attributes: ATTRIBUTE_INFO,
   layout: PROFILE_COLUMNS,
+  views: DEFAULT_VIEWS,
 }
 
 type Stored = Partial<{ [K in ConfigKey]: AppConfig[K] }>
@@ -30,7 +33,12 @@ type Stored = Partial<{ [K in ConfigKey]: AppConfig[K] }>
 /** Applies the user's saved settings on top of the defaults. */
 export function mergeConfig(stored: Stored): AppConfig {
   return {
-    statuses: stored.statuses ?? DEFAULT_CONFIG.statuses,
+    statuses: Object.fromEntries(
+      Object.entries(stored.statuses ?? DEFAULT_CONFIG.statuses).map(([k, v]) => [
+        k,
+        normalizeStatus(v),
+      ]),
+    ),
     // Per attribute, so new defaults (e.g. a new attribute) still appear
     attributes: Object.fromEntries(
       Object.entries(DEFAULT_CONFIG.attributes).map(([k, v]) => [
@@ -39,6 +47,7 @@ export function mergeConfig(stored: Stored): AppConfig {
       ]),
     ),
     layout: stored.layout ?? DEFAULT_CONFIG.layout,
+    views: { ...DEFAULT_CONFIG.views, ...stored.views },
   }
 }
 

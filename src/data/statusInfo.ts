@@ -3,26 +3,47 @@
  * Users add and edit codes in the app under Settings → Statuses.
  */
 
-export const STATUS_TONES = ['gray', 'red', 'amber', 'emerald', 'sky', 'violet'] as const
-export type StatusTone = (typeof STATUS_TONES)[number]
-
 export interface StatusInfo {
+  /** Meaning, shown as the tooltip title. */
   label: string
-  tone: StatusTone
+  description: string
+  /** Badge background colour (hex). */
+  bg: string
+  /** Badge text colour (hex). */
+  fg: string
+}
+
+export const DEFAULT_BADGE = {
+  bg: '#18233b',
+  fg: '#8a97b3',
 }
 
 export const DEFAULT_STATUSES: Record<string, StatusInfo> = {
   Inj: {
     label: 'Injured',
-    tone: 'red',
+    description: '',
+    bg: '#4c1d24',
+    fg: '#fca5a5',
   },
 }
 
-export const TONE_CLASSES: Record<StatusTone, string> = {
-  gray: 'bg-surface-2 text-muted',
-  red: 'bg-red-500/15 text-red-300',
-  amber: 'bg-amber-500/15 text-amber-300',
-  emerald: 'bg-emerald-500/15 text-emerald-300',
-  sky: 'bg-sky-500/15 text-sky-300',
-  violet: 'bg-violet-500/15 text-violet-300',
+// Colours used by the first version of the Statuses page, before hex colours
+const LEGACY_TONES: Record<string, { bg: string; fg: string }> = {
+  gray: DEFAULT_BADGE,
+  red: { bg: '#4c1d24', fg: '#fca5a5' },
+  amber: { bg: '#4a3517', fg: '#fcd34d' },
+  emerald: { bg: '#123d33', fg: '#6ee7b7' },
+  sky: { bg: '#123a52', fg: '#7dd3fc' },
+  violet: { bg: '#2e2457', fg: '#c4b5fd' },
+}
+
+/** Fills in missing fields of a stored status (also upgrades the old colour names). */
+export function normalizeStatus(s: Partial<StatusInfo> & { tone?: string }): StatusInfo {
+  const legacy = LEGACY_TONES[s.tone ?? ''] ?? DEFAULT_BADGE
+  return {
+    label: s.label ?? '',
+    description: s.description ?? '',
+    bg: s.bg ?? legacy.bg,
+    fg: s.fg ?? legacy.fg,
+  }
 }
