@@ -15,7 +15,10 @@ export interface AttributeInfo {
 
 export const ATTRIBUTE_INFO: Record<string, AttributeInfo> = {
   // Technical
-  Crossing: { abbr: 'Cro', description: 'Accuracy of crosses into the box from wide areas.' },
+  Crossing: {
+    abbr: 'Cro',
+    description: 'Accuracy of crosses into the box from wide areas.',
+  },
   Dribbling: {
     abbr: 'Dri',
     description: 'Ability to run with the ball and beat opponents in possession.',
@@ -28,7 +31,10 @@ export const ATTRIBUTE_INFO: Record<string, AttributeInfo> = {
     abbr: 'Fir',
     description: 'How well the player controls the ball when receiving it.',
   },
-  Heading: { abbr: 'Hea', description: 'Accuracy and power of headers, attacking and defending.' },
+  Heading: {
+    abbr: 'Hea',
+    description: 'Accuracy and power of headers, attacking and defending.',
+  },
   'Long Shots': {
     abbr: 'Lon',
     description: 'Ability to score or test the keeper from outside the box.',
@@ -37,20 +43,35 @@ export const ATTRIBUTE_INFO: Record<string, AttributeInfo> = {
     abbr: 'Mar',
     description: 'Ability to stay close to an opponent and deny them the ball.',
   },
-  Passing: { abbr: 'Pas', description: 'Accuracy and range of passing.' },
+  Passing: {
+    abbr: 'Pas',
+    description: 'Accuracy and range of passing.',
+  },
   Tackling: {
     abbr: 'Tck',
     description: 'Ability to win the ball cleanly in a challenge without fouling.',
   },
-  Technique: { abbr: 'Tec', description: 'Overall quality of touch and execution of skills.' },
+  Technique: {
+    abbr: 'Tec',
+    description: 'Overall quality of touch and execution of skills.',
+  },
   // Set pieces
-  Corners: { abbr: 'Cor', description: 'Quality of corner kick delivery.' },
+  Corners: {
+    abbr: 'Cor',
+    description: 'Quality of corner kick delivery.',
+  },
   'Free Kick Taking': {
     abbr: 'Fre',
     description: 'Ability to score or deliver well from direct free kicks.',
   },
-  'Long Throws': { abbr: 'L Th', description: 'Distance and accuracy of throw-ins into the box.' },
-  'Penalty Taking': { abbr: 'Pen', description: 'Ability to score from the penalty spot.' },
+  'Long Throws': {
+    abbr: 'L Th',
+    description: 'Distance and accuracy of throw-ins into the box.',
+  },
+  'Penalty Taking': {
+    abbr: 'Pen',
+    description: 'Ability to score from the penalty spot.',
+  },
   // Mental
   Aggression: {
     abbr: 'Agg',
@@ -64,39 +85,84 @@ export const ATTRIBUTE_INFO: Record<string, AttributeInfo> = {
     abbr: 'Bra',
     description: 'Willingness to put the body on the line, e.g. diving headers or blocks.',
   },
-  Composure: { abbr: 'Cmp', description: 'Calmness with the ball under pressure.' },
-  Concentration: { abbr: 'Cnt', description: 'Ability to stay focused for the whole match.' },
-  Decisions: { abbr: 'Dec', description: 'Quality of choices made on the ball and off it.' },
-  Determination: { abbr: 'Det', description: 'Drive to succeed and keep fighting when behind.' },
-  Flair: { abbr: 'Fla', description: 'Creativity and ability to try the unexpected.' },
-  Leadership: { abbr: 'Ldr', description: 'Ability to inspire and organise team-mates.' },
+  Composure: {
+    abbr: 'Cmp',
+    description: 'Calmness with the ball under pressure.',
+  },
+  Concentration: {
+    abbr: 'Cnt',
+    description: 'Ability to stay focused for the whole match.',
+  },
+  Decisions: {
+    abbr: 'Dec',
+    description: 'Quality of choices made on the ball and off it.',
+  },
+  Determination: {
+    abbr: 'Det',
+    description: 'Drive to succeed and keep fighting when behind.',
+  },
+  Flair: {
+    abbr: 'Fla',
+    description: 'Creativity and ability to try the unexpected.',
+  },
+  Leadership: {
+    abbr: 'Ldr',
+    description: 'Ability to inspire and organise team-mates.',
+  },
   'Off The Ball': {
     abbr: 'OtB',
     description: 'Movement into dangerous positions without the ball.',
   },
-  Positioning: { abbr: 'Pos', description: 'Defensive awareness: taking up the right position.' },
+  Positioning: {
+    abbr: 'Pos',
+    description: 'Defensive awareness: taking up the right position.',
+  },
   'Team Work': {
     label: 'Teamwork',
     abbr: 'Tea',
     description: 'Willingness to follow tactics and work for team-mates.',
   },
-  Vision: { abbr: 'Vis', description: 'Ability to see passing options others would miss.' },
+  Vision: {
+    abbr: 'Vis',
+    description: 'Ability to see passing options others would miss.',
+  },
   'Work Rate': {
     abbr: 'Wor',
     description: 'Willingness to keep running and working for the team.',
   },
   // Physical
-  Acceleration: { abbr: 'Acc', description: 'How quickly the player reaches top speed.' },
-  Agility: { abbr: 'Agi', description: 'Ability to start, stop and change direction quickly.' },
-  Balance: { abbr: 'Bal', description: 'Ability to stay on their feet under physical pressure.' },
-  'Jumping Reach': { abbr: 'Jum', description: 'How high the player can reach when jumping.' },
+  Acceleration: {
+    abbr: 'Acc',
+    description: 'How quickly the player reaches top speed.',
+  },
+  Agility: {
+    abbr: 'Agi',
+    description: 'Ability to start, stop and change direction quickly.',
+  },
+  Balance: {
+    abbr: 'Bal',
+    description: 'Ability to stay on their feet under physical pressure.',
+  },
+  'Jumping Reach': {
+    abbr: 'Jum',
+    description: 'How high the player can reach when jumping.',
+  },
   'Natural Fitness': {
     abbr: 'Nat',
     description: 'How well fitness is kept and how quickly the player recovers.',
   },
-  Pace: { abbr: 'Pac', description: 'Top running speed.' },
-  Stamina: { abbr: 'Sta', description: 'Ability to keep up physical effort through a full match.' },
-  Strength: { abbr: 'Str', description: 'Physical power to hold off or push past opponents.' },
+  Pace: {
+    abbr: 'Pac',
+    description: 'Top running speed.',
+  },
+  Stamina: {
+    abbr: 'Sta',
+    description: 'Ability to keep up physical effort through a full match.',
+  },
+  Strength: {
+    abbr: 'Str',
+    description: 'Physical power to hold off or push past opponents.',
+  },
   // Goalkeeping
   'Aerial Reach': {
     abbr: 'Aer',
@@ -106,13 +172,22 @@ export const ATTRIBUTE_INFO: Record<string, AttributeInfo> = {
     abbr: 'Cmd',
     description: 'Authority in coming off the line to claim balls in the box.',
   },
-  Communication: { abbr: 'Com', description: 'How well the keeper organises the defence.' },
+  Communication: {
+    abbr: 'Com',
+    description: 'How well the keeper organises the defence.',
+  },
   Eccentricity: {
     abbr: 'Ecc',
     description: 'Tendency to do the unexpected, e.g. dribble out or leave the box.',
   },
-  Handling: { abbr: 'Han', description: 'Ability to catch and hold the ball cleanly.' },
-  Kicking: { abbr: 'Kic', description: 'Distance and accuracy of kicks from hand and goal kicks.' },
+  Handling: {
+    abbr: 'Han',
+    description: 'Ability to catch and hold the ball cleanly.',
+  },
+  Kicking: {
+    abbr: 'Kic',
+    description: 'Distance and accuracy of kicks from hand and goal kicks.',
+  },
   'One On Ones': {
     abbr: '1v1',
     description: 'Ability to deal with an attacker running through on goal.',
@@ -121,12 +196,18 @@ export const ATTRIBUTE_INFO: Record<string, AttributeInfo> = {
     abbr: 'Pun',
     description: 'Tendency to punch the ball away rather than catch it.',
   },
-  Reflexes: { abbr: 'Ref', description: 'Speed of reaction to shots and deflections.' },
+  Reflexes: {
+    abbr: 'Ref',
+    description: 'Speed of reaction to shots and deflections.',
+  },
   'Rushing Out (Tendency)': {
     abbr: 'TRO',
     description: 'Tendency to rush off the line to close down attackers.',
   },
-  Throwing: { abbr: 'Thr', description: 'Distance and accuracy of throws.' },
+  Throwing: {
+    abbr: 'Thr',
+    description: 'Distance and accuracy of throws.',
+  },
 }
 
 export interface AttributeSection {

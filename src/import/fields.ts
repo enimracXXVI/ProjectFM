@@ -133,18 +133,3 @@ export function classifyHeader(header: string): ColumnTarget {
   if (attribute) return { kind: 'attribute', name: attribute }
   return { kind: 'extra', key: EXTRA_LOOKUP.get(key) ?? header.trim() }
 }
-
-/** Status flags in FM's "Inf" column. */
-export const STATUS_LABELS: Record<string, string> = {
-  Inj: 'Injured',
-  Wnt: 'Wanted',
-  Lng: 'Loan listed',
-  Trn: 'Transfer listed',
-  PR: 'Player retired / retiring',
-  nEU: 'Non-EU',
-  Sus: 'Suspended',
-  Unh: 'Unhappy',
-  Int: 'On international duty',
-  Ln: 'On loan',
-  Yth: 'Youth',
-}

@@ -10,7 +10,7 @@ import {
   attributeLabel,
   isGoalkeeper,
 } from '../data/attributeInfo'
-import { STATUS_LABELS } from '../import/fields'
+import { statusLabel } from '../data/statusInfo'
 import { attrColor, attrNumber, formatAttr } from '../lib/attributes'
 
 export function PlayerDetail() {
@@ -22,6 +22,7 @@ export function PlayerDetail() {
   if (error || !p) return <Placeholder>{error?.message ?? 'Player not found'}</Placeholder>
 
   // Compare with the previous import to show development
+  const latest = snapshots?.at(-1) ?? null
   const previous = snapshots && snapshots.length > 1 ? snapshots[snapshots.length - 2] : null
   // FM layout: three columns, each with one or more sections; empty sections hidden
   const columns = PROFILE_COLUMNS[isGoalkeeper(p.positions) ? 'goalkeepers' : 'outfield']
@@ -68,7 +69,7 @@ export function PlayerDetail() {
         <Info label="Right foot" value={p.right_foot} />
         <Info label="Personality" value={p.personality} />
         {p.extra.status && (
-          <Info label="Status" value={STATUS_LABELS[p.extra.status] ?? p.extra.status} />
+          <Info label="Status" value={statusLabel(p.extra.status) ?? p.extra.status} />
         )}
         {p.extra.selection && <Info label="Selection" value={p.extra.selection} />}
       </dl>
@@ -125,10 +126,14 @@ export function PlayerDetail() {
         ))}
       </div>
 
-      <p className="mt-4 text-xs text-muted">
-        {snapshots?.length ?? 0} import{snapshots?.length === 1 ? '' : 's'} recorded
-        {previous ? ' · changes shown against the previous import' : ''}
-      </p>
+      {latest && (
+        <p className="mt-4 text-xs text-muted">
+          Last updated {new Date(latest.created_at).toLocaleDateString()}
+          {latest.season ? ` · season ${latest.season}` : ''}
+          {previous &&
+            ` · changes compared with ${new Date(previous.created_at).toLocaleDateString()}`}
+        </p>
+      )}
     </>
   )
 }
