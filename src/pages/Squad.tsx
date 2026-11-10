@@ -3,14 +3,16 @@ import { ChevronDown, ChevronUp } from 'lucide-react'
 import { useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { StatusChip } from '../components/StatusChip'
+import { Tooltip } from '../components/Tooltip'
 import { PageHeader, Placeholder } from '../components/ui'
+import { ATTRIBUTE_INFO, FIELD_INFO, TABLE_LAYOUT, isGoalkeeper } from '../data/attributeInfo'
 import type { PlayerRow } from '../data/db'
 import { usePlayers } from '../data/hooks'
-import { ATTRIBUTE_GROUPS } from '../import/fields'
 import { attrColor, attrNumber, formatAttr } from '../lib/attributes'
 import { useCurrentCareer } from '../lib/career'
 
 type View = 'profile' | 'attributes'
+type Role = 'outfield' | 'goalkeepers'
 type SortKey = { col: string; asc: boolean }
 
 const PROFILE_COLS: {
@@ -28,16 +30,13 @@ const PROFILE_COLS: {
   { key: 'personality', label: 'Personality', get: (p) => p.personality },
 ]
 
-const ATTR_COLS = [
-  ...ATTRIBUTE_GROUPS.Technical,
-  ...ATTRIBUTE_GROUPS.Mental,
-  ...ATTRIBUTE_GROUPS.Physical,
-]
+const PROFILE_KEYS = new Set(PROFILE_COLS.map((c) => c.key))
 
 export function Squad() {
   const career = useCurrentCareer()
   const { data, isPending, error } = usePlayers(career.id)
   const [view, setView] = useState<View>('profile')
+  const [role, setRole] = useState<Role>('outfield')
   const [filter, setFilter] = useState('')
   const [showLeft, setShowLeft] = useState(false)
   const [sort, setSort] = useState<SortKey>({ col: 'squad_number', asc: true })
@@ -47,6 +46,7 @@ export function Squad() {
     const list = (data ?? []).filter(
       (p) =>
         (showLeft || p.in_squad) &&
+        (view === 'profile' || isGoalkeeper(p.positions) === (role === 'goalkeepers')) &&
         (!q || p.name.toLowerCase().includes(q) || (p.positions ?? '').toLowerCase().includes(q)),
     )
     const value = (p: PlayerRow): string | number | null => {
@@ -63,11 +63,26 @@ export function Squad() {
         typeof x === 'number' && typeof y === 'number' ? x - y : String(x).localeCompare(String(y))
       return sort.asc ? r : -r
     })
-  }, [data, filter, showLeft, sort])
+  }, [data, filter, showLeft, sort, view, role])
 
+  // Only sections/columns that have data for the players shown
+  const sections = useMemo(
+    () =>
+      TABLE_LAYOUT[role]
+        .map((s) => ({
+          ...s,
+          attributes: s.attributes.filter((a) =>
+            players.some((p) => p.attributes[a] !== undefined),
+          ),
+        }))
+        .filter((s) => s.attributes.length > 0),
+    [role, players],
+  )
+
+  // Attributes read best highest-first; text/profile columns lowest-first
   const toggleSort = (col: string) =>
     setSort((s) =>
-      s.col === col ? { col, asc: !s.asc } : { col, asc: !ATTR_COLS.includes(col as never) },
+      s.col === col ? { col, asc: !s.asc } : { col, asc: col === 'name' || PROFILE_KEYS.has(col) },
     )
 
   if (isPending) return <PageHeader title="Squad" subtitle="Loading…" />
@@ -81,7 +96,7 @@ export function Squad() {
         title="Squad"
         subtitle={`${total} players · ${career.current_season ?? ''}`}
         actions={
-          <Link to="/import" className="text-accent text-sm font-semibold">
+          <Link to="/import" className="text-sm font-semibold text-accent">
             Import squad
           </Link>
         }
@@ -104,29 +119,31 @@ export function Squad() {
               aria-label="Filter players"
               value={filter}
               onChange={(e) => setFilter(e.target.value)}
-              className="border-border bg-surface min-h-11 flex-1 rounded-lg border px-3 text-base md:max-w-xs md:text-sm"
+              className="min-h-11 flex-1 rounded-lg border border-border bg-surface px-3 text-base md:max-w-xs md:text-sm"
             />
-            <div
-              className="border-border hidden rounded-lg border p-0.5 md:flex"
-              role="group"
-              aria-label="Columns"
-            >
-              {(['profile', 'attributes'] as const).map((v) => (
-                <button
-                  key={v}
-                  type="button"
-                  aria-pressed={view === v}
-                  onClick={() => setView(v)}
-                  className={clsx(
-                    'min-h-10 rounded-md px-3 text-sm capitalize',
-                    view === v ? 'bg-surface-2 text-text' : 'text-muted',
-                  )}
-                >
-                  {v}
-                </button>
-              ))}
+            <div className="hidden gap-2 md:flex">
+              <Segmented
+                label="Columns"
+                value={view}
+                onChange={setView}
+                options={[
+                  ['profile', 'Profile'],
+                  ['attributes', 'Attributes'],
+                ]}
+              />
+              {view === 'attributes' && (
+                <Segmented
+                  label="Players"
+                  value={role}
+                  onChange={setRole}
+                  options={[
+                    ['outfield', 'Outfield'],
+                    ['goalkeepers', 'Goalkeepers'],
+                  ]}
+                />
+              )}
             </div>
-            <label className="text-muted flex min-h-11 items-center gap-2 text-sm">
+            <label className="flex min-h-11 items-center gap-2 text-sm text-muted">
               <input
                 type="checkbox"
                 checked={showLeft}
@@ -143,19 +160,19 @@ export function Squad() {
                 <Link
                   to={`/squad/${p.id}`}
                   className={clsx(
-                    'border-border bg-surface active:bg-surface-2 block rounded-xl border p-3',
+                    'block rounded-xl border border-border bg-surface p-3 active:bg-surface-2',
                     !p.in_squad && 'opacity-50',
                   )}
                 >
                   <div className="flex items-center gap-2">
-                    <span className="text-muted w-6 text-right text-sm tabular-nums">
+                    <span className="w-6 text-right text-sm text-muted tabular-nums">
                       {p.squad_number ?? ''}
                     </span>
                     <span className="font-semibold">{p.name}</span>
                     <StatusChip code={p.extra.status} />
-                    <span className="text-muted ml-auto text-sm">{p.age}</span>
+                    <span className="ml-auto text-sm text-muted">{p.age}</span>
                   </div>
-                  <p className="text-muted mt-0.5 pl-8 text-xs">
+                  <p className="mt-0.5 pl-8 text-xs text-muted">
                     {p.positions} · {p.nation}
                   </p>
                 </Link>
@@ -164,69 +181,103 @@ export function Squad() {
           </ul>
 
           {/* Tablet / desktop: table */}
-          <div className="border-border hidden overflow-x-auto rounded-xl border md:block">
+          <div className="hidden overflow-x-auto rounded-xl border border-border md:block">
             <table className="w-full text-sm">
-              <thead className="bg-surface-2 text-muted text-left text-xs tracking-wide uppercase">
+              <thead className="bg-surface-2 text-left text-xs tracking-wide text-muted uppercase">
+                {view === 'attributes' && (
+                  <tr className="border-b border-border">
+                    <th className="sticky left-0 z-[1] bg-surface-2" />
+                    {sections.map((s) => (
+                      <th
+                        key={s.label}
+                        colSpan={s.attributes.length}
+                        className="border-l-2 border-border px-2 pt-2 pb-1 text-center font-semibold text-text/80"
+                      >
+                        {s.label}
+                      </th>
+                    ))}
+                  </tr>
+                )}
                 <tr>
-                  <SortHeader col="name" label="Player" sort={sort} onSort={toggleSort} sticky />
+                  <SortHeader
+                    col="name"
+                    label="Player"
+                    info={FIELD_INFO.Player}
+                    sort={sort}
+                    onSort={toggleSort}
+                    sticky
+                  />
                   {view === 'profile'
                     ? PROFILE_COLS.map((c) => (
                         <SortHeader
                           key={c.key}
                           col={c.key}
                           label={c.label}
+                          info={FIELD_INFO[c.label]}
                           sort={sort}
                           onSort={toggleSort}
                         />
                       ))
-                    : ATTR_COLS.map((a) => (
-                        <SortHeader
-                          key={a}
-                          col={a}
-                          label={short(a)}
-                          title={a}
-                          sort={sort}
-                          onSort={toggleSort}
-                          compact
-                        />
-                      ))}
+                    : sections.flatMap((s) =>
+                        s.attributes.map((a, i) => (
+                          <SortHeader
+                            key={a}
+                            col={a}
+                            label={ATTRIBUTE_INFO[a]?.abbr ?? a.slice(0, 3)}
+                            title={a}
+                            info={ATTRIBUTE_INFO[a]?.description}
+                            sort={sort}
+                            onSort={toggleSort}
+                            compact
+                            separator={i === 0}
+                          />
+                        )),
+                      )}
                 </tr>
               </thead>
-              <tbody className="divide-border bg-surface divide-y tabular-nums">
+              <tbody className="divide-y divide-border bg-surface tabular-nums">
                 {players.map((p) => (
                   <tr
                     key={p.id}
                     className={clsx('hover:bg-surface-2', !p.in_squad && 'opacity-50')}
                   >
                     <td className="sticky left-0 z-[1] bg-inherit px-4 py-2.5 whitespace-nowrap">
-                      <Link to={`/squad/${p.id}`} className="hover:text-accent font-medium">
+                      <Link to={`/squad/${p.id}`} className="font-medium hover:text-accent">
                         {p.name}
                       </Link>{' '}
                       <StatusChip code={p.extra.status} />
                     </td>
                     {view === 'profile'
                       ? PROFILE_COLS.map((c) => (
-                          <td key={c.key} className="text-muted px-4 py-2.5 whitespace-nowrap">
+                          <td key={c.key} className="px-4 py-2.5 whitespace-nowrap text-muted">
                             {c.key === 'height_cm' && p.height_cm
                               ? `${p.height_cm} cm`
                               : (c.get(p) ?? '–')}
                           </td>
                         ))
-                      : ATTR_COLS.map((a) => (
-                          <td
-                            key={a}
-                            className={clsx(
-                              'px-1.5 py-2.5 text-center font-semibold',
-                              attrColor(p.attributes[a]),
-                            )}
-                          >
-                            {formatAttr(p.attributes[a])}
-                          </td>
-                        ))}
+                      : sections.flatMap((s) =>
+                          s.attributes.map((a, i) => (
+                            <td
+                              key={a}
+                              className={clsx(
+                                'px-1.5 py-2.5 text-center font-semibold',
+                                i === 0 && 'border-l-2 border-border',
+                                attrColor(p.attributes[a]),
+                              )}
+                            >
+                              {formatAttr(p.attributes[a])}
+                            </td>
+                          )),
+                        )}
                   </tr>
                 ))}
               </tbody>
             </table>
+            {players.length === 0 && (
+              <p className="bg-surface px-4 py-6 text-center text-sm text-muted">
+                No {view === 'attributes' ? role : 'players'} match.
+              </p>
+            )}
           </div>
         </>
       )}
@@ -234,50 +285,90 @@ export function Squad() {
   )
 }
 
-/** "Free Kick Taking" -> "Fre", "Off The Ball" -> "OtB": FM-style short headers. */
-function short(name: string): string {
-  const words = name.split(' ')
-  return words.length > 1
-    ? words.map((w, i) => (i === 0 ? w[0].toUpperCase() : w[0])).join('')
-    : name.slice(0, 3)
+function Segmented<T extends string>({
+  label,
+  value,
+  onChange,
+  options,
+}: {
+  label: string
+  value: T
+  onChange: (v: T) => void
+  options: [T, string][]
+}) {
+  return (
+    <div className="flex rounded-lg border border-border p-0.5" role="group" aria-label={label}>
+      {options.map(([v, text]) => (
+        <button
+          key={v}
+          type="button"
+          aria-pressed={value === v}
+          onClick={() => onChange(v)}
+          className={clsx(
+            'min-h-10 rounded-md px-3 text-sm',
+            value === v ? 'bg-surface-2 text-text' : 'text-muted hover:text-text',
+          )}
+        >
+          {text}
+        </button>
+      ))}
+    </div>
+  )
 }
 
 function SortHeader({
   col,
   label,
   title,
+  info,
   sort,
   onSort,
   sticky,
   compact,
+  separator,
 }: {
   col: string
   label: string
   title?: string
+  info?: string
   sort: SortKey
   onSort: (col: string) => void
   sticky?: boolean
   compact?: boolean
+  separator?: boolean
 }) {
   const active = sort.col === col
   const Icon = sort.asc ? ChevronUp : ChevronDown
+  const button = (
+    <button
+      type="button"
+      aria-label={title ?? label}
+      onClick={() => onSort(col)}
+      className={clsx(
+        'inline-flex min-h-10 items-center gap-0.5 whitespace-nowrap uppercase',
+        active && 'text-text',
+      )}
+    >
+      {label}
+      {active && <Icon className="size-3.5" aria-hidden />}
+    </button>
+  )
   return (
     <th
-      className={clsx(sticky && 'bg-surface-2 sticky left-0 z-[1]', compact ? 'px-1.5' : 'px-4')}
+      className={clsx(
+        sticky && 'sticky left-0 z-[1] bg-surface-2',
+        compact ? 'px-1.5 text-center' : 'px-4',
+        separator && 'border-l-2 border-border',
+      )}
       aria-sort={active ? (sort.asc ? 'ascending' : 'descending') : 'none'}
     >
-      <button
-        type="button"
-        title={title}
-        onClick={() => onSort(col)}
-        className={clsx(
-          'inline-flex min-h-10 items-center gap-0.5 uppercase',
-          active && 'text-text',
-        )}
-      >
-        {label}
-        {active && <Icon className="size-3.5" aria-hidden />}
-      </button>
+      {info ? (
+        <Tooltip title={title} text={info}>
+          {button}
+        </Tooltip>
+      ) : (
+        button
+      )}
     </th>
   )
 }

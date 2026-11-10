@@ -54,9 +54,9 @@ function SignedIn() {
 
 function FirstCareer() {
   return (
-    <div className="pt-safe mx-auto grid min-h-full max-w-xl content-center gap-4 px-4 py-8">
+    <div className="mx-auto grid min-h-full max-w-xl content-center gap-4 px-4 py-8 pt-safe">
       <h1 className="text-2xl font-bold tracking-tight">Create your first career</h1>
-      <p className="text-muted text-sm">
+      <p className="text-sm text-muted">
         One career per FM save. You can add more later and switch between them.
       </p>
       <CareerForm />

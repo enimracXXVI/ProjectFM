@@ -80,9 +80,9 @@ export function Import() {
           dragging ? 'border-accent bg-accent/5' : 'border-border hover:border-muted',
         )}
       >
-        <FileUp className="text-muted size-8" aria-hidden />
+        <FileUp className="size-8 text-muted" aria-hidden />
         <span className="font-semibold">Choose an FM export</span>
-        <span className="text-muted text-sm">
+        <span className="text-sm text-muted">
           <span className="hidden md:inline">or drop it here · </span>.html web page export of your
           squad view
         </span>
@@ -98,15 +98,15 @@ export function Import() {
       </div>
 
       {summary && (
-        <Card className="border-accent/50 mt-4">
-          <p className="text-accent font-semibold">Import complete</p>
+        <Card className="mt-4 border-accent/50">
+          <p className="font-semibold text-accent">Import complete</p>
           <p className="mt-1 text-sm">
             {summary.added} added · {summary.updated} updated
             {summary.left ? ` · ${summary.left} marked as left the club` : ''}
           </p>
           <Link
             to="/squad"
-            className="text-accent mt-2 inline-block text-sm font-semibold underline"
+            className="mt-2 inline-block text-sm font-semibold text-accent underline"
           >
             View squad
           </Link>
@@ -116,7 +116,7 @@ export function Import() {
       {file && counts && (
         <Card className="mt-4">
           <h2 className="font-semibold">{file.name}</h2>
-          <p className="text-muted mt-1 text-sm">
+          <p className="mt-1 text-sm text-muted">
             View: <strong className="text-text">{file.result.table.viewType}</strong> ·{' '}
             {file.result.players.length} players · {counts.core} profile columns ·{' '}
             {counts.attributes} attributes
@@ -129,14 +129,14 @@ export function Import() {
             </p>
           ))}
 
-          <div className="border-border mt-3 max-h-64 overflow-auto rounded-lg border">
+          <div className="mt-3 max-h-64 overflow-auto rounded-lg border border-border">
             <table className="w-full text-sm">
-              <tbody className="divide-border divide-y">
+              <tbody className="divide-y divide-border">
                 {file.result.players.map((p) => (
                   <tr key={p.fm_uid ?? p.name}>
                     <td className="px-3 py-1.5 font-medium whitespace-nowrap">{p.name}</td>
-                    <td className="text-muted px-3 py-1.5 whitespace-nowrap">{p.positions}</td>
-                    <td className="text-muted px-3 py-1.5 text-right tabular-nums">{p.age}</td>
+                    <td className="px-3 py-1.5 whitespace-nowrap text-muted">{p.positions}</td>
+                    <td className="px-3 py-1.5 text-right text-muted tabular-nums">{p.age}</td>
                   </tr>
                 ))}
               </tbody>
@@ -173,12 +173,12 @@ export function Import() {
 
       {!!imports.data?.length && (
         <section className="mt-8">
-          <h2 className="text-muted mb-2 text-sm font-semibold">Recent imports</h2>
+          <h2 className="mb-2 text-sm font-semibold text-muted">Recent imports</h2>
           <ul className="grid gap-1 text-sm">
             {imports.data.map((i) => (
               <li
                 key={i.id}
-                className="bg-surface flex flex-wrap justify-between gap-2 rounded-lg px-3 py-2"
+                className="flex flex-wrap justify-between gap-2 rounded-lg bg-surface px-3 py-2"
               >
                 <span className="truncate">{i.file_name}</span>
                 <span className="text-muted">

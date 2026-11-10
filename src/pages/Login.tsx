@@ -39,14 +39,14 @@ export function Login() {
   )
 
   return (
-    <div className="pt-safe grid min-h-full place-items-center px-4">
+    <div className="grid min-h-full place-items-center px-4 pt-safe">
       <div className="w-full max-w-sm">
         <h1 className="mb-1 text-3xl font-bold tracking-tight">
           Project<span className="text-accent">FM</span>
         </h1>
-        <p className="text-muted mb-6 text-sm">Your Football Manager careers, on every device.</p>
+        <p className="mb-6 text-sm text-muted">Your Football Manager careers, on every device.</p>
 
-        <div className="border-border mb-4 grid grid-cols-2 rounded-lg border p-0.5" role="tablist">
+        <div className="mb-4 grid grid-cols-2 rounded-lg border border-border p-0.5" role="tablist">
           {(
             [
               ['password', 'Password'],
@@ -86,7 +86,7 @@ export function Login() {
             <Button type="submit" disabled={busy}>
               {busy ? 'Signing in…' : 'Sign in'}
             </Button>
-            <p className="text-muted text-xs">
+            <p className="text-xs text-muted">
               No password yet? Use “Email link” once, then set one in Settings.
             </p>
           </form>

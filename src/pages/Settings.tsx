@@ -29,7 +29,7 @@ export function SettingsPage() {
       <PageHeader title="Settings" />
       <div className="grid max-w-md gap-4">
         <Card>
-          <p className="text-muted text-sm">Signed in as</p>
+          <p className="text-sm text-muted">Signed in as</p>
           <p className="font-medium break-all">{session?.user.email}</p>
           <Button variant="ghost" className="mt-3" onClick={() => signOut()}>
             Sign out
@@ -38,7 +38,7 @@ export function SettingsPage() {
 
         <Card>
           <h2 className="font-semibold">Password</h2>
-          <p className="text-muted mt-1 mb-3 text-sm">
+          <p className="mt-1 mb-3 text-sm text-muted">
             Set a password to sign in on any device, including the installed app, without waiting
             for an email.
           </p>
@@ -64,7 +64,7 @@ export function SettingsPage() {
             <Button type="submit" disabled={state.busy}>
               {state.busy ? 'Saving…' : 'Save password'}
             </Button>
-            {state.done && <p className="text-accent text-sm">Password saved.</p>}
+            {state.done && <p className="text-sm text-accent">Password saved.</p>}
             <ErrorText error={state.error} />
           </form>
         </Card>

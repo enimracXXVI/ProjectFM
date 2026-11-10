@@ -30,13 +30,13 @@ export function Careers() {
               onClick={() => setCurrentId(c.id)}
               aria-current={c.id === current?.id}
               className={clsx(
-                'bg-surface w-full rounded-xl border p-4 text-left transition-colors',
+                'w-full rounded-xl border bg-surface p-4 text-left transition-colors',
                 c.id === current?.id ? 'border-accent' : 'border-border hover:border-muted',
               )}
             >
               <p className="font-semibold">{c.name}</p>
-              <p className="text-accent text-sm">{c.club}</p>
-              <p className="text-muted mt-1 text-xs">
+              <p className="text-sm text-accent">{c.club}</p>
+              <p className="mt-1 text-xs text-muted">
                 {[c.nation, [c.start_season, c.current_season].filter(Boolean).join(' → ')]
                   .filter(Boolean)
                   .join(' · ')}
