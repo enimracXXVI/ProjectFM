@@ -6,6 +6,7 @@ import { useAuth } from './lib/auth'
 import { useCareer } from './lib/career'
 import { CareerForm } from './pages/CareerForm'
 import { Careers } from './pages/Careers'
+import { Compare } from './pages/Compare'
 import { Dashboard } from './pages/Dashboard'
 import { Development } from './pages/Development'
 import { Import } from './pages/Import'
@@ -53,6 +54,7 @@ function SignedIn() {
         <Route path="squad/:id" element={<PlayerDetail />} />
         <Route path="staff" element={<Staff />} />
         <Route path="development" element={<Development />} />
+        <Route path="compare" element={<Compare />} />
         <Route path="staff/:id" element={<StaffEdit />} />
         <Route path="scouting" element={<Scouting />} />
         <Route path="scouting/:regionId" element={<ScoutingRegion />} />

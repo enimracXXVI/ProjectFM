@@ -33,6 +33,6 @@
 - [ ] Run `supabase/migrations/0004_staff_reputation.sql`.
 - [x] Development page: rank squad by attribute gains over the last N imports, trend per player.
 - [x] Role-fit score (0–100 per FM27 role) with editable roles, tiers and factors.
-- [ ] Head-to-head comparison: up to 5 players, radar charts + attribute table.
+- [x] Head-to-head comparison: up to 5 players, radar charts + attribute table.
 - [ ] Scouting by role: rank scouted players for a role, filters (age, value, personality, attribute minimums), strengths/weaknesses, impact on best XI.
 - [ ] Load FM27 save file in the browser (all players in the save) via fmsave (MIT) in Pyodide. Hidden values: Settings switch (as in game vs everything). Needs: test save from user (63 MB, send split in 25 MB parts), storage plan for the world database.

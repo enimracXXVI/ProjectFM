@@ -139,6 +139,9 @@ export function Squad() {
             <Link to="/development" className="text-sm font-semibold text-accent">
               Development
             </Link>
+            <Link to="/compare" className="text-sm font-semibold text-accent">
+              Compare
+            </Link>
             <Link to="/import" className="text-sm font-semibold text-accent">
               Import squad
             </Link>

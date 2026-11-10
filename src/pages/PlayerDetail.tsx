@@ -1,5 +1,5 @@
-import { ArrowLeft } from 'lucide-react'
-import { Link, useParams } from 'react-router-dom'
+import { ArrowLeft, Scale } from 'lucide-react'
+import { Link, useNavigate, useParams } from 'react-router-dom'
 import { RoleFitPanel } from '../components/RoleFitPanel'
 import { StatusChip } from '../components/StatusChip'
 import { Placeholder } from '../components/ui'
@@ -7,12 +7,14 @@ import { usePlayer, useSnapshots } from '../data/hooks'
 import { Tooltip } from '../components/Tooltip'
 import { isGoalkeeper } from '../data/attributeInfo'
 import { attributeLabel } from '../data/config'
+import { compareUrlWith } from '../lib/compare'
 import { useConfig } from '../lib/config'
 import { attrColor, attrNumber, formatAttr } from '../lib/attributes'
 
 export function PlayerDetail() {
   const { id = '' } = useParams()
   const config = useConfig()
+  const navigate = useNavigate()
   const { data: p, isPending, error } = usePlayer(id)
   const { data: allSnapshots } = useSnapshots(id)
   const snapshots = allSnapshots?.filter((s) => Object.keys(s.attributes).length > 0)
@@ -48,6 +50,13 @@ export function PlayerDetail() {
       </Link>
 
       <div className="mb-5 flex flex-wrap items-center gap-3">
+        <button
+          type="button"
+          onClick={() => navigate(compareUrlWith(p.id))}
+          className="order-last ml-auto inline-flex min-h-11 items-center gap-2 rounded-lg border border-border px-4 text-sm font-semibold hover:bg-surface-2"
+        >
+          <Scale className="size-4" aria-hidden /> Compare
+        </button>
         {p.squad_number != null && (
           <span className="grid size-12 place-items-center rounded-xl bg-accent/15 text-lg font-bold text-accent">
             {p.squad_number}
