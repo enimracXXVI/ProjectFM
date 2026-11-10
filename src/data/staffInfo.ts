@@ -85,3 +85,6 @@ export function ratingColor(word: string | undefined, scale: string[]): string {
   if (t >= 0.2) return 'text-amber-400'
   return 'text-red-400'
 }
+
+/** Reputation levels seen on FM27 staff so far; the field also accepts any other text. */
+export const KNOWN_REPUTATIONS = ['Obscure', 'Local', 'Regional', 'National']

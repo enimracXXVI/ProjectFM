@@ -257,7 +257,7 @@ export async function listStaff(careerId: string): Promise<StaffRow[]> {
     await supabase
       .from('staff')
       .select(
-        'id, career_id, name, role, age, nation, personality, attributes, knowledge, notes, created_at',
+        'id, career_id, name, role, age, nation, personality, reputation, attributes, knowledge, notes, created_at',
       )
       .eq('career_id', careerId)
       .order('name'),

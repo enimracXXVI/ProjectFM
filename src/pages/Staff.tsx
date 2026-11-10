@@ -39,7 +39,7 @@ export function Staff() {
               <p className="font-semibold">{s.name}</p>
               <p className="text-sm text-accent">{s.role ?? 'Staff'}</p>
               <p className="mt-1 text-xs text-muted">
-                {[s.age, s.nation, s.personality].filter(Boolean).join(' · ')}
+                {[s.age, s.nation, s.reputation, s.personality].filter(Boolean).join(' · ')}
               </p>
               {isPending ? null : (
                 <dl className="mt-2 grid gap-0.5 text-xs">

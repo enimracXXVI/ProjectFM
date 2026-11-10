@@ -1,5 +1,6 @@
 import { ArrowLeft } from 'lucide-react'
 import { Link, useParams } from 'react-router-dom'
+import { RoleFitPanel } from '../components/RoleFitPanel'
 import { StatusChip } from '../components/StatusChip'
 import { Placeholder } from '../components/ui'
 import { usePlayer, useSnapshots } from '../data/hooks'
@@ -76,6 +77,8 @@ export function PlayerDetail() {
         {p.extra.Ability && <Info label="Ability" value={`${p.extra.Ability} ★`} />}
         {p.extra.Potential && <Info label="Potential" value={`${p.extra.Potential} ★`} />}
       </dl>
+
+      <RoleFitPanel attributes={p.attributes} positions={p.positions} />
 
       {[config.views.contract, config.views.stats].map((view) => {
         const items = view.columns.filter((c) => p.extra[c.key] !== undefined)

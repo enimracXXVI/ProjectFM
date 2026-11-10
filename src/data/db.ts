@@ -41,6 +41,7 @@ export interface StaffRow {
   age: number | null
   nation: string | null
   personality: string | null
+  reputation: string | null
   attributes: Record<string, string>
   knowledge: KnowledgeEntry[]
   notes: string | null

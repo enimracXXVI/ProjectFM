@@ -9,6 +9,7 @@ import { deleteStaff, saveStaff, type StaffInput } from '../data/api'
 import type { StaffRow } from '../data/db'
 import { useStaff } from '../data/hooks'
 import {
+  KNOWN_REPUTATIONS,
   SCOUT_KEY_ATTRIBUTES,
   STAFF_ROLES,
   STAFF_SCALE_RANGES,
@@ -27,6 +28,7 @@ const empty: StaffInput = {
   age: null,
   nation: null,
   personality: null,
+  reputation: null,
   attributes: {},
   knowledge: [],
   notes: null,
@@ -55,6 +57,7 @@ function StaffForm({ existing }: { existing: StaffRow | null }) {
           age: existing.age,
           nation: existing.nation,
           personality: existing.personality,
+          reputation: existing.reputation,
           attributes: existing.attributes,
           knowledge: existing.knowledge,
           notes: existing.notes,
@@ -147,7 +150,18 @@ function StaffForm({ existing }: { existing: StaffRow | null }) {
           value={form.personality ?? ''}
           onChange={(e) => set('personality', e.target.value || null)}
         />
+        <Field
+          label="Reputation"
+          list="reputations"
+          value={form.reputation ?? ''}
+          onChange={(e) => set('reputation', e.target.value || null)}
+        />
       </div>
+      <datalist id="reputations">
+        {KNOWN_REPUTATIONS.map((r) => (
+          <option key={r} value={r} />
+        ))}
+      </datalist>
       <datalist id="countries">
         {countries.map((c) => (
           <option key={c} value={c} />

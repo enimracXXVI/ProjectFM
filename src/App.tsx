@@ -18,6 +18,8 @@ import { SettingsPage } from './pages/Settings'
 import { AttributesSettings } from './pages/settings/Attributes'
 import { ColumnsSettings } from './pages/settings/Columns'
 import { RegionsSettings } from './pages/settings/Regions'
+import { RoleWeightsSettings } from './pages/settings/RoleWeights'
+import { RolesSettings } from './pages/settings/Roles'
 import { StaffRatingsSettings } from './pages/settings/StaffRatings'
 import { LayoutSettings } from './pages/settings/Layout'
 import { StatusesSettings } from './pages/settings/Statuses'
@@ -63,6 +65,8 @@ function SignedIn() {
         <Route path="settings/layout" element={<LayoutSettings />} />
         <Route path="settings/columns" element={<ColumnsSettings />} />
         <Route path="settings/regions" element={<RegionsSettings />} />
+        <Route path="settings/roles" element={<RolesSettings />} />
+        <Route path="settings/role-weights" element={<RoleWeightsSettings />} />
         <Route path="settings/staff-ratings" element={<StaffRatingsSettings />} />
         <Route path="*" element={<NotFound />} />
       </Route>

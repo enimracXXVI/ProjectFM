@@ -7,7 +7,9 @@ import {
   type Role,
 } from './attributeInfo'
 import { DEFAULT_VIEWS, type ExtraView, type ExtraViewKey } from './columns'
+import { DEFAULT_ROLE_WEIGHTS, type RoleWeights } from '../lib/roleFit'
 import { DEFAULT_REGIONS, type Region } from './regions'
+import { DEFAULT_ROLES, type RoleDef } from './roles'
 import { DEFAULT_KNOWLEDGE_LEVELS, DEFAULT_STAFF_SCALE } from './staffInfo'
 import { DEFAULT_STATUSES, normalizeStatus, type StatusInfo } from './statusInfo'
 
@@ -24,6 +26,8 @@ export interface AppConfig {
   staffScale: string[]
   /** Scouting knowledge levels, lowest to highest. */
   knowledgeLevels: string[]
+  roles: RoleDef[]
+  roleWeights: RoleWeights
 }
 
 export type ConfigKey = keyof AppConfig
@@ -36,6 +40,8 @@ export const DEFAULT_CONFIG: AppConfig = {
   regions: DEFAULT_REGIONS,
   staffScale: DEFAULT_STAFF_SCALE,
   knowledgeLevels: DEFAULT_KNOWLEDGE_LEVELS,
+  roles: DEFAULT_ROLES,
+  roleWeights: DEFAULT_ROLE_WEIGHTS,
 }
 
 type Stored = Partial<{ [K in ConfigKey]: AppConfig[K] }>
@@ -61,6 +67,8 @@ export function mergeConfig(stored: Stored): AppConfig {
     regions: stored.regions ?? DEFAULT_CONFIG.regions,
     staffScale: stored.staffScale ?? DEFAULT_CONFIG.staffScale,
     knowledgeLevels: stored.knowledgeLevels ?? DEFAULT_CONFIG.knowledgeLevels,
+    roles: stored.roles ?? DEFAULT_CONFIG.roles,
+    roleWeights: { ...DEFAULT_CONFIG.roleWeights, ...stored.roleWeights },
   }
 }
 

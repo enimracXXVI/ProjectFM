@@ -42,6 +42,12 @@ export function SettingsPage() {
               ['/settings/attributes', 'Attributes', 'Names, short headers and descriptions'],
               ['/settings/layout', 'Layout', 'Grouping and order of attributes'],
               ['/settings/columns', 'Contract & Stats', 'Columns, order, names and tooltips'],
+              ['/settings/roles', 'Roles', 'FM27 roles, positions, key and preferred attributes'],
+              [
+                '/settings/role-weights',
+                'Role weights',
+                'Importance tiers and factors for role scores',
+              ],
               ['/settings/regions', 'Regions', 'Scouting regions, countries and borders'],
               [
                 '/settings/staff-ratings',
