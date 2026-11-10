@@ -154,6 +154,14 @@ create trigger mappings_touch      before update on public.import_mappings for e
 -- ---------------------------------------------------------------------------
 -- Row Level Security: each user sees and edits only their own rows.
 -- ---------------------------------------------------------------------------
+alter table public.careers          enable row level security;
+alter table public.players          enable row level security;
+alter table public.player_snapshots enable row level security;
+alter table public.staff            enable row level security;
+alter table public.scout_targets    enable row level security;
+alter table public.imports          enable row level security;
+alter table public.import_mappings  enable row level security;
+
 do $$
 declare t text;
 begin
@@ -161,7 +169,6 @@ begin
     'careers', 'players', 'player_snapshots', 'staff',
     'scout_targets', 'imports', 'import_mappings'
   ] loop
-    execute format('alter table public.%I enable row level security', t);
     execute format(
       'create policy "own rows" on public.%I for all to authenticated
          using (user_id = (select auth.uid()))
