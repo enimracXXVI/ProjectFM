@@ -1,5 +1,12 @@
 import { useQuery } from '@tanstack/react-query'
-import { getPlayer, listImports, listPlayers, listSnapshots, listStaff } from './api'
+import {
+  getPlayer,
+  listCareerSnapshots,
+  listImports,
+  listPlayers,
+  listSnapshots,
+  listStaff,
+} from './api'
 
 export const usePlayers = (careerId: string) =>
   useQuery({ queryKey: ['players', careerId], queryFn: () => listPlayers(careerId) })
@@ -15,3 +22,9 @@ export const useImports = (careerId: string) =>
 
 export const useStaff = (careerId: string) =>
   useQuery({ queryKey: ['staff', careerId], queryFn: () => listStaff(careerId) })
+
+export const useCareerSnapshots = (careerId: string) =>
+  useQuery({
+    queryKey: ['snapshots', 'career', careerId],
+    queryFn: () => listCareerSnapshots(careerId),
+  })

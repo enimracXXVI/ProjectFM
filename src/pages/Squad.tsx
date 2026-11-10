@@ -115,9 +115,14 @@ export function Squad() {
         title="Squad"
         subtitle={`${total} players · ${career.current_season ?? ''}`}
         actions={
-          <Link to="/import" className="text-sm font-semibold text-accent">
-            Import squad
-          </Link>
+          <div className="flex gap-4">
+            <Link to="/development" className="text-sm font-semibold text-accent">
+              Development
+            </Link>
+            <Link to="/import" className="text-sm font-semibold text-accent">
+              Import squad
+            </Link>
+          </div>
         }
       />
 

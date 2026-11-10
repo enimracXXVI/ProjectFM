@@ -7,6 +7,7 @@ import { useCareer } from './lib/career'
 import { CareerForm } from './pages/CareerForm'
 import { Careers } from './pages/Careers'
 import { Dashboard } from './pages/Dashboard'
+import { Development } from './pages/Development'
 import { Import } from './pages/Import'
 import { Login } from './pages/Login'
 import { PlayerDetail } from './pages/PlayerDetail'
@@ -49,6 +50,7 @@ function SignedIn() {
         <Route path="squad" element={<Squad />} />
         <Route path="squad/:id" element={<PlayerDetail />} />
         <Route path="staff" element={<Staff />} />
+        <Route path="development" element={<Development />} />
         <Route path="staff/:id" element={<StaffEdit />} />
         <Route path="scouting" element={<Scouting />} />
         <Route path="scouting/:regionId" element={<ScoutingRegion />} />

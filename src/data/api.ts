@@ -1,3 +1,4 @@
+import type { DevSnapshot } from '../lib/development'
 import { supabase } from '../lib/supabase'
 import type { ImportedPlayer, ParseResult } from '../import/parse'
 import type { Career, ImportRow, PlayerRow, ScoutingNetwork, SnapshotRow, StaffRow } from './db'
@@ -285,4 +286,16 @@ export async function deleteStaff(career: Career, id: string): Promise<void> {
 
 export async function saveScouting(careerId: string, scouting: ScoutingNetwork): Promise<void> {
   check(await supabase.from('careers').update({ scouting }).eq('id', careerId))
+}
+
+/** All attribute snapshots of a career (for the development page). */
+export async function listCareerSnapshots(careerId: string): Promise<DevSnapshot[]> {
+  return check(
+    await supabase
+      .from('player_snapshots')
+      .select('player_id, created_at, season, attributes')
+      .eq('career_id', careerId)
+      .neq('attributes', '{}')
+      .order('created_at'),
+  )
 }
