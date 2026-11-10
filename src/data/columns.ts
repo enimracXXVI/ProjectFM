@@ -112,6 +112,7 @@ export const RESERVED_EXTRA_KEYS = new Set([
   'Ability',
   'Potential',
   'Nation code',
+  'team',
   ...HIDDEN_EXTRA_KEYS,
 ])
 

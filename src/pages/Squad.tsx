@@ -3,11 +3,13 @@ import { ChevronDown, ChevronUp } from 'lucide-react'
 import { useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { StatusChip } from '../components/StatusChip'
+import { TeamBadge, TeamSelect } from '../components/TeamSelect'
 import { Tooltip } from '../components/Tooltip'
 import { PageHeader, Placeholder } from '../components/ui'
 import { FIELD_INFO, isGoalkeeper } from '../data/attributeInfo'
 import { attributeLabel, tableSections } from '../data/config'
 import type { PlayerRow } from '../data/db'
+import { TEAMS, teamOf, type Team } from '../data/teams'
 import { usePlayers } from '../data/hooks'
 import { attrColor, attrNumber, formatAttr } from '../lib/attributes'
 import { useCurrentCareer } from '../lib/career'
@@ -54,6 +56,7 @@ export function Squad() {
   const [role, setRole] = useState<Role>('outfield')
   const [filter, setFilter] = useState('')
   const [showLeft, setShowLeft] = useState(false)
+  const [team, setTeam] = useState<'all' | Team>('all')
   const [sort, setSort] = useState<SortKey>({ col: 'squad_number', asc: true })
   const profileCols = useMemo(
     () => (config.showHidden ? [...PROFILE_COLS, ...HIDDEN_COLS] : PROFILE_COLS),
@@ -81,6 +84,7 @@ export function Squad() {
     const list = (data ?? []).filter(
       (p) =>
         (showLeft || p.in_squad) &&
+        (team === 'all' || teamOf(p) === team) &&
         (view !== 'attributes' || isGoalkeeper(p.positions) === (role === 'goalkeepers')) &&
         (!q || p.name.toLowerCase().includes(q) || (p.positions ?? '').toLowerCase().includes(q)),
     )
@@ -102,7 +106,7 @@ export function Squad() {
         typeof x === 'number' && typeof y === 'number' ? x - y : String(x).localeCompare(String(y))
       return sort.asc ? r : -r
     })
-  }, [data, filter, showLeft, sort, view, role, fits, profileCols])
+  }, [data, filter, showLeft, sort, view, role, fits, profileCols, team])
 
   // Only sections/columns that have data for the players shown
   const sections = useMemo(
@@ -229,6 +233,12 @@ export function Squad() {
                 />
               )}
             </div>
+            <Segmented
+              label="Team"
+              value={team}
+              onChange={setTeam}
+              options={[['all', 'All'], ...TEAMS.map(([t, l]) => [t, l] as [Team, string])]}
+            />
             <label className="flex min-h-11 items-center gap-2 text-sm text-muted">
               <input
                 type="checkbox"
@@ -255,6 +265,7 @@ export function Squad() {
                       {p.squad_number ?? ''}
                     </span>
                     <span className="font-semibold">{p.name}</span>
+                    <TeamBadge player={p} />
                     <StatusChip code={p.extra.status} />
                     <span className="ml-auto text-sm text-muted">{p.age}</span>
                   </div>
@@ -334,16 +345,19 @@ export function Squad() {
                       />
                     ))
                   ) : view === 'profile' ? (
-                    profileCols.map((c) => (
-                      <SortHeader
-                        key={c.key}
-                        col={c.key}
-                        label={c.label}
-                        info={FIELD_INFO[c.label]}
-                        sort={sort}
-                        onSort={toggleSort}
-                      />
-                    ))
+                    <>
+                      <th className="px-4 uppercase">Team</th>
+                      {profileCols.map((c) => (
+                        <SortHeader
+                          key={c.key}
+                          col={c.key}
+                          label={c.label}
+                          info={FIELD_INFO[c.label]}
+                          sort={sort}
+                          onSort={toggleSort}
+                        />
+                      ))}
+                    </>
                   ) : (
                     sections.flatMap((s) =>
                       s.attributes.map((a, i) => (
@@ -377,7 +391,7 @@ export function Squad() {
                       <Link to={`/squad/${p.id}`} className="font-medium hover:text-accent">
                         {p.name}
                       </Link>{' '}
-                      <StatusChip code={p.extra.status} />
+                      <TeamBadge player={p} /> <StatusChip code={p.extra.status} />
                     </td>
                     {view === 'roles' ? (
                       <>
@@ -404,17 +418,23 @@ export function Squad() {
                         </td>
                       ))
                     ) : view === 'profile' ? (
-                      profileCols.map((c) => (
-                        <td key={c.key} className="px-4 py-2.5 whitespace-nowrap text-muted">
-                          <span>
-                            {c.key === 'height_cm' && p.height_cm
-                              ? `${p.height_cm} cm`
-                              : STAR_KEYS.has(c.key)
-                                ? (p.extra[c.label] ?? '–')
-                                : (c.get(p) ?? '–')}
-                          </span>
-                        </td>
-                      ))
+                      [
+                        <td key="team" className="px-4 py-1.5">
+                          <TeamSelect player={p} />
+                        </td>,
+                      ].concat(
+                        profileCols.map((c) => (
+                          <td key={c.key} className="px-4 py-2.5 whitespace-nowrap text-muted">
+                            <span>
+                              {c.key === 'height_cm' && p.height_cm
+                                ? `${p.height_cm} cm`
+                                : STAR_KEYS.has(c.key)
+                                  ? (p.extra[c.label] ?? '–')
+                                  : (c.get(p) ?? '–')}
+                            </span>
+                          </td>
+                        )),
+                      )
                     ) : (
                       sections.flatMap((s) =>
                         s.attributes.map((a, i) => (

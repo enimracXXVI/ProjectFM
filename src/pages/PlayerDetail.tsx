@@ -2,6 +2,7 @@ import { ArrowLeft, Scale } from 'lucide-react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import { RoleFitPanel } from '../components/RoleFitPanel'
 import { StatusChip } from '../components/StatusChip'
+import { TeamSelect } from '../components/TeamSelect'
 import { Placeholder } from '../components/ui'
 import { usePlayer, useSnapshots } from '../data/hooks'
 import { Tooltip } from '../components/Tooltip'
@@ -76,6 +77,11 @@ export function PlayerDetail() {
           </p>
         </div>
       </div>
+
+      <label className="mb-4 flex items-center gap-2 text-sm">
+        <span className="text-muted">Team</span>
+        <TeamSelect player={p} />
+      </label>
 
       <dl className="mb-5 grid grid-cols-2 gap-2 text-sm sm:grid-cols-4">
         <Info label="Height" value={p.height_cm ? `${p.height_cm} cm` : null} />

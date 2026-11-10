@@ -1,4 +1,5 @@
 import type { DevSnapshot } from '../lib/development'
+import type { Team } from './teams'
 import { supabase } from '../lib/supabase'
 import { DUMP_PRESENT, type DumpSummary } from '../import/dump'
 import type { CoreField } from '../import/fields'
@@ -408,4 +409,12 @@ export async function importDump(opts: {
     }
   }
   return { players, scoutsAdded, scoutsUpdated }
+}
+
+/** Moves a player between first team, U21 and U18 (kept in extra, untouched by imports). */
+export async function setPlayerTeam(player: PlayerRow, team: Team): Promise<void> {
+  const extra = { ...player.extra }
+  if (team === 'first') delete extra.team
+  else extra.team = team
+  check(await supabase.from('players').update({ extra }).eq('id', player.id))
 }
