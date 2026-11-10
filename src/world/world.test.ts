@@ -25,6 +25,21 @@ describe('world file', () => {
   })
 })
 
+describe('placeholder players', () => {
+  it('leaves out clubless people with an unset reputation and unreadable names', () => {
+    const base = dump.players[0]
+    const w = buildWorld({
+      ...dump,
+      players: [
+        { ...base, id: 1, name: '?', club: undefined, worldRep: 65535 } as never,
+        { ...base, id: 2, name: 'Free Agent', club: undefined, worldRep: 1200 } as never,
+        { ...base, id: 3, name: 'Real Player', club: 'Some FC', worldRep: 65535 } as never,
+      ],
+    })
+    expect(w.rows.map((r) => r[0])).toEqual([2, 3])
+  })
+})
+
 describe('nations and regions', () => {
   const region = regionLookup(DEFAULT_REGIONS)
   it('matches the dump spellings to region countries', () => {

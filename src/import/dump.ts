@@ -241,7 +241,7 @@ export interface DumpSummary {
 export function summarizeDump(dump: Dump, knownUids: number[]): DumpSummary {
   const club = dump.meta.myClub
   if (!club) throw new Error('This dump does not say which club you manage.')
-  const mine = dump.players.filter((p) => p.club === club)
+  const mine = dump.players.filter((p) => p.club === club && p.name !== '?')
   const scouts = dump.staff.filter(
     (s) => s.club === club && (s.jobId === JOB_SCOUT || s.jobId === JOB_CHIEF_SCOUT),
   )

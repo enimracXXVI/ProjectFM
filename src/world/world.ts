@@ -5,7 +5,13 @@
  */
 import { ATTRIBUTE_INFO } from '../data/attributeInfo'
 import type { Region } from '../data/regions'
-import { HIDDEN_PLAYER_ATTRS, playerFromDump, type Dump, type DumpMeta } from '../import/dump'
+import {
+  HIDDEN_PLAYER_ATTRS,
+  playerFromDump,
+  type Dump,
+  type DumpMeta,
+  type DumpPerson,
+} from '../import/dump'
 import type { AttributeValue } from '../import/parse'
 
 export const WORLD_VERSION = 1
@@ -45,9 +51,23 @@ export interface WorldFile {
   rows: WorldRow[]
 }
 
+/** FM's "not set" marker for reputation. */
+const UNSET_REP = 0xffff
+
+/**
+ * Leaves out people FM has generated but not brought into the game yet: no club and an
+ * unset reputation (their names are not readable, the dump shows "?"). FMSuperScout's own
+ * app hides the same players.
+ */
+export function isActivePlayer(p: DumpPerson): boolean {
+  const rep = (p as unknown as { worldRep?: number }).worldRep
+  if (!p.club && rep === UNSET_REP) return false
+  return p.name !== '?'
+}
+
 /** Builds the world file from a parsed dump. */
 export function buildWorld(dump: Dump): WorldFile {
-  const rows: WorldRow[] = dump.players.map((p) => {
+  const rows: WorldRow[] = dump.players.filter(isActivePlayer).map((p) => {
     const ip = playerFromDump(p)
     const num = (v: AttributeValue | undefined) => (typeof v === 'number' ? v : 0)
     const raw = p as unknown as Record<string, unknown>
