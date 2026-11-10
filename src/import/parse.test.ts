@@ -74,3 +74,35 @@ describe('parsePlayers edge cases', () => {
     expect(() => parsePlayers(page('<th>Age</th>', '<td>20</td>'))).toThrow(/Player/)
   })
 })
+
+describe('other FM views', () => {
+  it('reads the contract view into extra fields', async () => {
+    const { default: html } = await import('./fixtures/squad-contract.html?raw')
+    const r = parsePlayers(html)
+    const pote = r.players.find((p) => p.name === 'Pote')!
+    expect(pote.fm_uid).toBe(29192705)
+    expect(pote.extra).toMatchObject({
+      Wage: '€2.84M p/a',
+      Expires: '30/6/2030',
+      'Transfer Value': '€71M - €86M',
+      'Minimum Fee Release Clause': '€80,000,000',
+      'Playing Time': 'Important Player',
+    })
+    expect(pote.extra['Sell On Fee Percentage']).toBeUndefined()
+  })
+
+  it('keeps 3-letter nation codes apart from the full nation name', async () => {
+    const { default: html } = await import('./fixtures/squad-stats.html?raw')
+    const r = parsePlayers(html)
+    const p = r.players.find((x) => x.name === 'Franco Mastantuono')!
+    expect(p.nation).toBeNull()
+    expect(p.extra['Nation code']).toBe('ARG')
+    expect(p.extra).toMatchObject({ Apps: '0', 'xG/90': '0.00', Ability: '3.5', Potential: '5.0' })
+    expect(p.extra.Rating).toBeUndefined()
+    expect(r.columns.find((c) => c.header === 'Nation')!.target).toEqual({
+      kind: 'extra',
+      key: 'Nation code',
+    })
+    expect(r.warnings[0]).toMatch(/Unique ID/)
+  })
+})

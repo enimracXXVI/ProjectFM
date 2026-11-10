@@ -105,7 +105,17 @@ const INT_FIELDS = new Set<CoreField>(['fm_uid', 'squad_number', 'age', 'height_
 /** Parses an FM squad/player export into players ready to save. */
 export function parsePlayers(html: string): ParseResult {
   const table = parseHtmlTable(html)
-  const columns = table.headers.map((header) => ({ header, target: classifyHeader(header) }))
+  const columns = table.headers.map((header, i) => {
+    const target = classifyHeader(header)
+    // Some views list nationality as a 3-letter code ("ITA"); keep it apart from the full name
+    if (target.kind === 'core' && target.field === 'nation') {
+      const values = table.rows.map((r) => r[i]?.text ?? '').filter((v) => !EMPTY.has(v))
+      if (values.length > 0 && values.every((v) => /^[A-Z]{3}$/.test(v))) {
+        return { header, target: { kind: 'extra', key: 'Nation code' } as ColumnTarget }
+      }
+    }
+    return { header, target }
+  })
   const warnings: string[] = []
 
   const nameCol = columns.findIndex((c) => c.target.kind === 'core' && c.target.field === 'name')

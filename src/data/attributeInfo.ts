@@ -308,6 +308,8 @@ export const FIELD_INFO: Record<string, string> = {
   Right: 'Right foot strength.',
   Personality: 'Personality type, which affects development, morale and dressing room influence.',
   Selection: 'Position or bench slot in the current team selection.',
+  Ability: 'Current ability star rating from your coaches.',
+  Potential: 'Potential ability star rating from your coaches.',
 }
 
 /** True for players whose only listed position is goalkeeper. */

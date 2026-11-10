@@ -42,7 +42,7 @@ export async function listSnapshots(playerId: string): Promise<SnapshotRow[]> {
   return check(
     await supabase
       .from('player_snapshots')
-      .select('id, player_id, season, age, attributes, created_at')
+      .select('id, player_id, season, age, attributes, extra, created_at')
       .eq('player_id', playerId)
       .order('created_at'),
   )

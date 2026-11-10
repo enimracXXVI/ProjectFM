@@ -43,6 +43,7 @@ export interface SnapshotRow {
   season: string | null
   age: number | null
   attributes: Record<string, AttributeValue>
+  extra?: Record<string, string>
   created_at: string
 }
 

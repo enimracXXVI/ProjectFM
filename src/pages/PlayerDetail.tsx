@@ -5,6 +5,7 @@ import { Placeholder } from '../components/ui'
 import { usePlayer, useSnapshots } from '../data/hooks'
 import { Tooltip } from '../components/Tooltip'
 import { isGoalkeeper } from '../data/attributeInfo'
+import { CONTRACT_VIEW, STATS_VIEW } from '../data/columns'
 import { attributeLabel } from '../data/config'
 import { useConfig } from '../lib/config'
 import { attrColor, attrNumber, formatAttr } from '../lib/attributes'
@@ -15,6 +16,9 @@ export function PlayerDetail() {
   const { data: p, isPending, error } = usePlayer(id)
   const { data: allSnapshots } = useSnapshots(id)
   const snapshots = allSnapshots?.filter((s) => Object.keys(s.attributes).length > 0)
+  const latestStats = allSnapshots
+    ?.filter((s) => STATS_VIEW.columns.some((c) => s.extra?.[c.key] !== undefined))
+    .at(-1)
 
   if (isPending) return <p className="text-sm text-muted">Loading…</p>
   if (error || !p) return <Placeholder>{error?.message ?? 'Player not found'}</Placeholder>
@@ -70,7 +74,27 @@ export function PlayerDetail() {
           <Info label="Status" value={config.statuses[p.extra.status]?.label || p.extra.status} />
         )}
         {p.extra.selection && <Info label="Selection" value={p.extra.selection} />}
+        {p.extra.Ability && <Info label="Ability" value={`${p.extra.Ability} ★`} />}
+        {p.extra.Potential && <Info label="Potential" value={`${p.extra.Potential} ★`} />}
       </dl>
+
+      {[CONTRACT_VIEW, STATS_VIEW].map((view) => {
+        const items = view.columns.filter((c) => p.extra[c.key] !== undefined)
+        if (items.length === 0) return null
+        return (
+          <section key={view.label} className="mb-5">
+            <h2 className="mb-1 border-b border-border pb-1 text-xs font-semibold text-muted">
+              {view.label}
+              {view === STATS_VIEW && latestStats?.season ? ` · ${latestStats.season}` : ''}
+            </h2>
+            <dl className="grid grid-cols-2 gap-2 text-sm sm:grid-cols-3 lg:grid-cols-5">
+              {items.map((c) => (
+                <Info key={c.key} label={c.key} value={p.extra[c.key]} />
+              ))}
+            </dl>
+          </section>
+        )
+      })}
 
       <div className="grid gap-x-5 gap-y-4 md:grid-cols-2 xl:grid-cols-3">
         {columns.map((col, ci) => (

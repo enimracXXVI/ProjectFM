@@ -6,14 +6,18 @@ import { StatusChip } from '../components/StatusChip'
 import { Tooltip } from '../components/Tooltip'
 import { PageHeader, Placeholder } from '../components/ui'
 import { FIELD_INFO, isGoalkeeper } from '../data/attributeInfo'
+import { CONTRACT_VIEW, STATS_VIEW, type ExtraView } from '../data/columns'
 import { attributeLabel, tableSections } from '../data/config'
 import type { PlayerRow } from '../data/db'
 import { usePlayers } from '../data/hooks'
 import { attrColor, attrNumber, formatAttr } from '../lib/attributes'
 import { useCurrentCareer } from '../lib/career'
 import { useConfig } from '../lib/config'
+import { sortValue } from '../lib/values'
 
-type View = 'profile' | 'attributes'
+type View = 'profile' | 'attributes' | 'contract' | 'stats'
+
+const EXTRA_VIEWS: Partial<Record<View, ExtraView>> = { contract: CONTRACT_VIEW, stats: STATS_VIEW }
 type Role = 'outfield' | 'goalkeepers'
 type SortKey = { col: string; asc: boolean }
 
@@ -30,7 +34,11 @@ const PROFILE_COLS: {
   { key: 'left_foot', label: 'Left', get: (p) => p.left_foot },
   { key: 'right_foot', label: 'Right', get: (p) => p.right_foot },
   { key: 'personality', label: 'Personality', get: (p) => p.personality },
+  { key: 'ability', label: 'Ability', get: (p) => sortValue(p.extra.Ability) },
+  { key: 'potential', label: 'Potential', get: (p) => sortValue(p.extra.Potential) },
 ]
+
+const STAR_KEYS = new Set(['ability', 'potential'])
 
 const PROFILE_KEYS = new Set(PROFILE_COLS.map((c) => c.key))
 
@@ -54,6 +62,7 @@ export function Squad() {
     )
     const value = (p: PlayerRow): string | number | null => {
       if (sort.col === 'name') return p.name
+      if (sort.col.startsWith('x:')) return sortValue(p.extra[sort.col.slice(2)])
       const profile = PROFILE_COLS.find((c) => c.key === sort.col)
       return profile ? profile.get(p) : attrNumber(p.attributes[sort.col])
     }
@@ -82,10 +91,20 @@ export function Squad() {
     [role, players, config.layout],
   )
 
+  // Contract / stats columns that have data
+  const extraView = EXTRA_VIEWS[view]
+  const extraCols = useMemo(
+    () =>
+      (extraView?.columns ?? []).filter((c) => players.some((p) => p.extra[c.key] !== undefined)),
+    [extraView, players],
+  )
+
   // Attributes read best highest-first; text/profile columns lowest-first
   const toggleSort = (col: string) =>
     setSort((s) =>
-      s.col === col ? { col, asc: !s.asc } : { col, asc: col === 'name' || PROFILE_KEYS.has(col) },
+      s.col === col
+        ? { col, asc: !s.asc }
+        : { col, asc: col === 'name' || (PROFILE_KEYS.has(col) && !STAR_KEYS.has(col)) },
     )
 
   if (isPending) return <PageHeader title="Squad" subtitle="Loading…" />
@@ -132,6 +151,8 @@ export function Squad() {
                 options={[
                   ['profile', 'Profile'],
                   ['attributes', 'Attributes'],
+                  ['contract', 'Contract'],
+                  ['stats', 'Stats'],
                 ]}
               />
               {view === 'attributes' && (
@@ -210,32 +231,45 @@ export function Squad() {
                     onSort={toggleSort}
                     sticky
                   />
-                  {view === 'profile'
-                    ? PROFILE_COLS.map((c) => (
+                  {extraView
+                    ? extraCols.map((c) => (
                         <SortHeader
                           key={c.key}
-                          col={c.key}
-                          label={c.label}
-                          info={FIELD_INFO[c.label]}
+                          col={`x:${c.key}`}
+                          label={c.short}
+                          title={c.key}
+                          info={c.short !== c.key ? c.key : undefined}
                           sort={sort}
                           onSort={toggleSort}
+                          compact
                         />
                       ))
-                    : sections.flatMap((s) =>
-                        s.attributes.map((a, i) => (
+                    : view === 'profile'
+                      ? PROFILE_COLS.map((c) => (
                           <SortHeader
-                            key={a}
-                            col={a}
-                            label={config.attributes[a]?.abbr || a.slice(0, 3)}
-                            title={attributeLabel(config, a)}
-                            info={config.attributes[a]?.description || undefined}
+                            key={c.key}
+                            col={c.key}
+                            label={c.label}
+                            info={FIELD_INFO[c.label]}
                             sort={sort}
                             onSort={toggleSort}
-                            compact
-                            separator={i === 0}
                           />
-                        )),
-                      )}
+                        ))
+                      : sections.flatMap((s) =>
+                          s.attributes.map((a, i) => (
+                            <SortHeader
+                              key={a}
+                              col={a}
+                              label={config.attributes[a]?.abbr || a.slice(0, 3)}
+                              title={attributeLabel(config, a)}
+                              info={config.attributes[a]?.description || undefined}
+                              sort={sort}
+                              onSort={toggleSort}
+                              compact
+                              separator={i === 0}
+                            />
+                          )),
+                        )}
                 </tr>
               </thead>
               <tbody className="divide-y divide-border bg-surface tabular-nums">
@@ -254,30 +288,38 @@ export function Squad() {
                       </Link>{' '}
                       <StatusChip code={p.extra.status} />
                     </td>
-                    {view === 'profile'
-                      ? PROFILE_COLS.map((c) => (
-                          <td key={c.key} className="px-4 py-2.5 whitespace-nowrap text-muted">
-                            <span>
-                              {c.key === 'height_cm' && p.height_cm
-                                ? `${p.height_cm} cm`
-                                : (c.get(p) ?? '–')}
-                            </span>
+                    {extraView
+                      ? extraCols.map((c) => (
+                          <td key={c.key} className="px-2 py-2.5 text-center whitespace-nowrap">
+                            <span>{p.extra[c.key] ?? '–'}</span>
                           </td>
                         ))
-                      : sections.flatMap((s) =>
-                          s.attributes.map((a, i) => (
-                            <td
-                              key={a}
-                              className={clsx(
-                                'px-1.5 py-2.5 text-center font-semibold',
-                                i === 0 && 'border-l-2 border-border',
-                                attrColor(p.attributes[a]),
-                              )}
-                            >
-                              <span>{formatAttr(p.attributes[a])}</span>
+                      : view === 'profile'
+                        ? PROFILE_COLS.map((c) => (
+                            <td key={c.key} className="px-4 py-2.5 whitespace-nowrap text-muted">
+                              <span>
+                                {c.key === 'height_cm' && p.height_cm
+                                  ? `${p.height_cm} cm`
+                                  : STAR_KEYS.has(c.key)
+                                    ? (p.extra[c.label] ?? '–')
+                                    : (c.get(p) ?? '–')}
+                              </span>
                             </td>
-                          )),
-                        )}
+                          ))
+                        : sections.flatMap((s) =>
+                            s.attributes.map((a, i) => (
+                              <td
+                                key={a}
+                                className={clsx(
+                                  'px-1.5 py-2.5 text-center font-semibold',
+                                  i === 0 && 'border-l-2 border-border',
+                                  attrColor(p.attributes[a]),
+                                )}
+                              >
+                                <span>{formatAttr(p.attributes[a])}</span>
+                              </td>
+                            )),
+                          )}
                   </tr>
                 ))}
               </tbody>
@@ -285,6 +327,15 @@ export function Squad() {
             {players.length === 0 && (
               <p className="bg-surface px-4 py-6 text-center text-sm text-muted">
                 No {view === 'attributes' ? role : 'players'} match.
+              </p>
+            )}
+            {extraView && extraCols.length === 0 && players.length > 0 && (
+              <p className="bg-surface px-4 py-6 text-center text-sm text-muted">
+                No {extraView.label.toLowerCase()} data yet.{' '}
+                <Link to="/import" className="text-accent underline">
+                  Import
+                </Link>{' '}
+                an FM {extraView.label.toLowerCase()} view.
               </p>
             )}
           </div>
