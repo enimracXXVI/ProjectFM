@@ -6,8 +6,11 @@ import { Link } from 'react-router-dom'
 import { Button, ErrorText, Field } from '../components/form'
 import { Card, PageHeader } from '../components/ui'
 import { importPlayers, type ImportSummary } from '../data/api'
-import { useImports } from '../data/hooks'
+import { useImports, usePlayers } from '../data/hooks'
+import type { DumpSummary } from '../import/dump'
 import { parsePlayers, type ParseResult } from '../import/parse'
+import { readDump } from '../import/readDump'
+import { DumpImport } from './DumpImport'
 import { useCurrentCareer } from '../lib/career'
 
 export function Import() {
@@ -20,11 +23,29 @@ export function Import() {
   const [fullSquad, setFullSquad] = useState(true)
   const [dragging, setDragging] = useState(false)
   const [summary, setSummary] = useState<ImportSummary | null>(null)
+  const [dump, setDump] = useState<DumpSummary | null>(null)
+  const [reading, setReading] = useState(false)
+  const { data: knownPlayers } = usePlayers(career.id)
 
   const load = async (f: File | undefined) => {
     if (!f) return
     setSummary(null)
     setParseError(null)
+    setDump(null)
+    if (/\.json$/i.test(f.name)) {
+      // FMSuperScout dump.json
+      setFile(null)
+      setReading(true)
+      try {
+        const uids = (knownPlayers ?? []).map((p) => p.fm_uid).filter((u): u is number => u != null)
+        setDump(await readDump(f, uids))
+      } catch (err) {
+        setParseError(err)
+      } finally {
+        setReading(false)
+      }
+      return
+    }
     try {
       const result = parsePlayers(await f.text())
       setFile({ name: f.name, result })
@@ -84,19 +105,26 @@ export function Import() {
         <FileUp className="size-8 text-muted" aria-hidden />
         <span className="font-semibold">Choose an FM export</span>
         <span className="text-sm text-muted">
-          <span className="hidden md:inline">or drop it here · </span>.html web page export of your
-          squad view
+          <span className="hidden md:inline">or drop it here · </span>.html web page export of a
+          squad view, or FMSuperScout's dump.json
         </span>
         <input
           type="file"
-          accept=".html,.htm,text/html"
+          accept=".html,.htm,text/html,.json,application/json"
           className="sr-only"
           onChange={(e) => (load(e.target.files?.[0]), (e.target.value = ''))}
         />
       </label>
       <div className="mt-3">
         <ErrorText error={parseError} />
+        {reading && (
+          <p className="text-sm text-muted" role="status">
+            Reading dump.json… this can take a few seconds for a large database.
+          </p>
+        )}
       </div>
+
+      {dump && <DumpImport summary={dump} onDone={() => setDump(null)} />}
 
       {summary && (
         <Card className="mt-4 border-accent/50">

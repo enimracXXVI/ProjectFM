@@ -4,6 +4,8 @@ import { Link } from 'react-router-dom'
 import { Button, ErrorText, Field } from '../components/form'
 import { Card, PageHeader } from '../components/ui'
 import { useAuth } from '../lib/auth'
+import { useConfig } from '../lib/config'
+import { useSaveConfig } from '../lib/useSaveConfig'
 import { setPassword, signOut } from '../lib/authActions'
 
 export function SettingsPage() {
@@ -30,6 +32,8 @@ export function SettingsPage() {
     <>
       <PageHeader title="Settings" />
       <div className="grid max-w-md gap-4">
+        <HiddenValuesCard />
+
         <Card>
           <h2 className="mb-2 font-semibold">Customise</h2>
           <ul className="grid">
@@ -113,5 +117,32 @@ export function SettingsPage() {
         </Card>
       </div>
     </>
+  )
+}
+
+function HiddenValuesCard() {
+  const { showHidden } = useConfig()
+  const { save } = useSaveConfig('showHidden')
+  return (
+    <Card>
+      <label className="flex items-start gap-3">
+        <input
+          type="checkbox"
+          className="mt-1 size-5"
+          checked={showHidden}
+          disabled={save.isPending}
+          onChange={(e) => save.mutate(e.target.checked)}
+        />
+        <span>
+          <span className="block font-semibold">Show hidden values</span>
+          <span className="block text-sm text-muted">
+            CA/PA, hidden attributes (consistency, injury proneness…) and personality values from
+            FMSuperScout imports. FM normally hides these; leave off to see only what the game
+            shows.
+          </span>
+        </span>
+      </label>
+      <ErrorText error={save.error} />
+    </Card>
   )
 }

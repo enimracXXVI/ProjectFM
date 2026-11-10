@@ -28,6 +28,8 @@ export interface AppConfig {
   knowledgeLevels: string[]
   roles: RoleDef[]
   roleWeights: RoleWeights
+  /** Show values FM keeps hidden (CA/PA, hidden attributes, personality values). */
+  showHidden: boolean
 }
 
 export type ConfigKey = keyof AppConfig
@@ -42,6 +44,7 @@ export const DEFAULT_CONFIG: AppConfig = {
   knowledgeLevels: DEFAULT_KNOWLEDGE_LEVELS,
   roles: DEFAULT_ROLES,
   roleWeights: DEFAULT_ROLE_WEIGHTS,
+  showHidden: false,
 }
 
 type Stored = Partial<{ [K in ConfigKey]: AppConfig[K] }>
@@ -69,6 +72,7 @@ export function mergeConfig(stored: Stored): AppConfig {
     knowledgeLevels: stored.knowledgeLevels ?? DEFAULT_CONFIG.knowledgeLevels,
     roles: stored.roles ?? DEFAULT_CONFIG.roles,
     roleWeights: { ...DEFAULT_CONFIG.roleWeights, ...stored.roleWeights },
+    showHidden: stored.showHidden ?? DEFAULT_CONFIG.showHidden,
   }
 }
 

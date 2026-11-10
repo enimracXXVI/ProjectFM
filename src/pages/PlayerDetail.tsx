@@ -6,10 +6,13 @@ import { Placeholder } from '../components/ui'
 import { usePlayer, useSnapshots } from '../data/hooks'
 import { Tooltip } from '../components/Tooltip'
 import { isGoalkeeper } from '../data/attributeInfo'
+import { HIDDEN_PLAYER_ATTRS, PERSONALITY_KEYS } from '../import/dump'
 import { attributeLabel } from '../data/config'
 import { compareUrlWith } from '../lib/compare'
 import { useConfig } from '../lib/config'
 import { attrColor, attrNumber, formatAttr } from '../lib/attributes'
+
+const HIDDEN_LIST = [...HIDDEN_PLAYER_ATTRS, ...PERSONALITY_KEYS.map(([, label]) => label)]
 
 export function PlayerDetail() {
   const { id = '' } = useParams()
@@ -85,7 +88,22 @@ export function PlayerDetail() {
         {p.extra.selection && <Info label="Selection" value={p.extra.selection} />}
         {p.extra.Ability && <Info label="Ability" value={`${p.extra.Ability} ★`} />}
         {p.extra.Potential && <Info label="Potential" value={`${p.extra.Potential} ★`} />}
+        {config.showHidden && p.extra.CA && <Info label="CA" value={p.extra.CA} />}
+        {config.showHidden && p.extra.PA && <Info label="PA" value={p.extra.PA} />}
       </dl>
+
+      {config.showHidden && HIDDEN_LIST.some((k) => p.extra[k]) && (
+        <section className="mb-5">
+          <h2 className="mb-1 border-b border-border pb-1 text-xs font-semibold text-muted">
+            Hidden attributes and personality
+          </h2>
+          <dl className="grid grid-cols-2 gap-2 text-sm sm:grid-cols-4 lg:grid-cols-7">
+            {HIDDEN_LIST.filter((k) => p.extra[k]).map((k) => (
+              <Info key={k} label={k} value={p.extra[k]} />
+            ))}
+          </dl>
+        </section>
+      )}
 
       <RoleFitPanel attributes={p.attributes} positions={p.positions} />
 

@@ -36,9 +36,15 @@ const PROFILE_COLS: {
   { key: 'potential', label: 'Potential', get: (p) => sortValue(p.extra.Potential) },
 ]
 
-const STAR_KEYS = new Set(['ability', 'potential'])
+const HIDDEN_COLS: typeof PROFILE_COLS = [
+  { key: 'ca', label: 'CA', get: (p) => sortValue(p.extra.CA) },
+  { key: 'pa', label: 'PA', get: (p) => sortValue(p.extra.PA) },
+]
 
-const PROFILE_KEYS = new Set(PROFILE_COLS.map((c) => c.key))
+// Shown as stored text, sorted highest first
+const STAR_KEYS = new Set(['ability', 'potential', 'ca', 'pa'])
+
+const PROFILE_KEYS = new Set([...PROFILE_COLS, ...HIDDEN_COLS].map((c) => c.key))
 
 export function Squad() {
   const career = useCurrentCareer()
@@ -49,6 +55,10 @@ export function Squad() {
   const [filter, setFilter] = useState('')
   const [showLeft, setShowLeft] = useState(false)
   const [sort, setSort] = useState<SortKey>({ col: 'squad_number', asc: true })
+  const profileCols = useMemo(
+    () => (config.showHidden ? [...PROFILE_COLS, ...HIDDEN_COLS] : PROFILE_COLS),
+    [config.showHidden],
+  )
   const [roleId, setRoleId] = useState(config.roles[0]?.id ?? '')
   const selectedRole = config.roles.find((r) => r.id === roleId) ?? config.roles[0]
 
@@ -80,7 +90,7 @@ export function Squad() {
       if (sort.col === 'r:sel') return fits.get(p.id)?.sel ?? null
       if (sort.col === 'r:ip') return fits.get(p.id)?.ip?.score ?? null
       if (sort.col === 'r:oop') return fits.get(p.id)?.oop?.score ?? null
-      const profile = PROFILE_COLS.find((c) => c.key === sort.col)
+      const profile = profileCols.find((c) => c.key === sort.col)
       return profile ? profile.get(p) : attrNumber(p.attributes[sort.col])
     }
     return list.sort((a, b) => {
@@ -92,7 +102,7 @@ export function Squad() {
         typeof x === 'number' && typeof y === 'number' ? x - y : String(x).localeCompare(String(y))
       return sort.asc ? r : -r
     })
-  }, [data, filter, showLeft, sort, view, role, fits])
+  }, [data, filter, showLeft, sort, view, role, fits, profileCols])
 
   // Only sections/columns that have data for the players shown
   const sections = useMemo(
@@ -324,7 +334,7 @@ export function Squad() {
                       />
                     ))
                   ) : view === 'profile' ? (
-                    PROFILE_COLS.map((c) => (
+                    profileCols.map((c) => (
                       <SortHeader
                         key={c.key}
                         col={c.key}
@@ -394,7 +404,7 @@ export function Squad() {
                         </td>
                       ))
                     ) : view === 'profile' ? (
-                      PROFILE_COLS.map((c) => (
+                      profileCols.map((c) => (
                         <td key={c.key} className="px-4 py-2.5 whitespace-nowrap text-muted">
                           <span>
                             {c.key === 'height_cm' && p.height_cm

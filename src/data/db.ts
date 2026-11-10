@@ -36,6 +36,7 @@ export interface KnowledgeEntry {
 export interface StaffRow {
   id: string
   career_id: string
+  fm_uid: number | null
   name: string
   role: string | null
   age: number | null

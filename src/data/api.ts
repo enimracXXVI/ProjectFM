@@ -1,5 +1,7 @@
 import type { DevSnapshot } from '../lib/development'
 import { supabase } from '../lib/supabase'
+import { DUMP_PRESENT, type DumpSummary } from '../import/dump'
+import type { CoreField } from '../import/fields'
 import type { ImportedPlayer, ParseResult } from '../import/parse'
 import type { Career, ImportRow, PlayerRow, ScoutingNetwork, SnapshotRow, StaffRow } from './db'
 
@@ -250,14 +252,14 @@ export async function setCareerImage(
 
 // --- Staff (scouts) ---
 
-export type StaffInput = Omit<StaffRow, 'id' | 'career_id' | 'created_at'>
+export type StaffInput = Omit<StaffRow, 'id' | 'career_id' | 'created_at' | 'fm_uid'>
 
 export async function listStaff(careerId: string): Promise<StaffRow[]> {
   return check(
     await supabase
       .from('staff')
       .select(
-        'id, career_id, name, role, age, nation, personality, reputation, attributes, knowledge, notes, created_at',
+        'id, career_id, fm_uid, name, role, age, nation, personality, reputation, attributes, knowledge, notes, created_at',
       )
       .eq('career_id', careerId)
       .order('name'),
@@ -298,4 +300,111 @@ export async function listCareerSnapshots(careerId: string): Promise<DevSnapshot
       .neq('attributes', '{}')
       .order('created_at'),
   )
+}
+
+// --- FMSuperScout dump import ---
+
+export interface DumpImportResult {
+  players: ImportSummary
+  scoutsAdded: number
+  scoutsUpdated: number
+}
+
+/**
+ * Saves a dump: chosen squad players (merged like any import, plus hidden values),
+ * marks squad players now at another club as gone, and updates or adds scouts.
+ */
+export async function importDump(opts: {
+  career: Career
+  summary: DumpSummary
+  includeOtherTeams: boolean
+  season: string | null
+}): Promise<DumpImportResult> {
+  const { career, summary, includeOtherTeams, season } = opts
+  const chosen = summary.players
+    .filter((p) => includeOtherTeams || p.level === 'first')
+    .map((p) => p.player)
+
+  const attributeNames = new Set(chosen.flatMap((p) => Object.keys(p.attributes)))
+  const columns: ParseResult['columns'] = [
+    ...[...DUMP_PRESENT.core].map((field) => ({
+      header: field,
+      target: { kind: 'core' as const, field: field as CoreField },
+    })),
+    ...[...attributeNames].map((name) => ({
+      header: name,
+      target: { kind: 'attribute' as const, name },
+    })),
+    ...[...DUMP_PRESENT.extra].map((key) => ({
+      header: key,
+      target: { kind: 'extra' as const, key },
+    })),
+  ]
+  const players = await importPlayers({
+    careerId: career.id,
+    season,
+    viewType: 'FMSuperScout',
+    fileName: 'dump.json',
+    players: chosen,
+    columns,
+    markMissingAsLeft: false,
+  })
+
+  // Players whose current club in FM is no longer yours (sold, released or loaned out)
+  const myClub = summary.meta.myClub
+  const gone = Object.entries(summary.clubOf)
+    .filter(([, club]) => club !== myClub)
+    .map(([uid]) => Number(uid))
+  if (gone.length) {
+    const res = check(
+      await supabase
+        .from('players')
+        .update({ in_squad: false })
+        .eq('career_id', career.id)
+        .eq('in_squad', true)
+        .in('fm_uid', gone)
+        .select('id'),
+    ) as { id: string }[]
+    players.left += res.length
+  }
+
+  // Scouts: match on Unique ID, then on name (scouts typed in by hand have no ID yet)
+  const staff = await listStaff(career.id)
+  let scoutsAdded = 0
+  let scoutsUpdated = 0
+  for (const s of summary.scouts) {
+    const match =
+      staff.find((x) => x.fm_uid === s.fm_uid) ??
+      staff.find((x) => x.name.toLowerCase() === s.name.toLowerCase())
+    if (match) {
+      check(
+        await supabase
+          .from('staff')
+          .update({
+            fm_uid: s.fm_uid,
+            role: s.role,
+            age: s.age ?? match.age,
+            nation: match.nation ?? s.nation,
+            // Authority is not in the dump, so the value entered by hand stays
+            attributes: { ...match.attributes, ...s.attributes },
+          })
+          .eq('id', match.id),
+      )
+      scoutsUpdated++
+    } else {
+      check(
+        await supabase.from('staff').insert({
+          career_id: career.id,
+          fm_uid: s.fm_uid,
+          name: s.name,
+          role: s.role,
+          age: s.age,
+          nation: s.nation,
+          attributes: s.attributes,
+        }),
+      )
+      scoutsAdded++
+    }
+  }
+  return { players, scoutsAdded, scoutsUpdated }
 }
