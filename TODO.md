@@ -26,7 +26,9 @@
 
 ## Roadmap (agreed)
 
-- [ ] Scouting network: scout limit, regions → countries, head of region + scouts (questions pending).
+- [x] Scouting network v1: scout limit per season, regions → countries (editable), head of region (bordering regions only) + scouts with focus countries, staff entry with FM rating words and scouting knowledge.
+- [ ] Run `supabase/migrations/0003_scouting_network.sql`.
+- [ ] Confirm FM27 staff rating scale order and knowledge levels (Settings → Staff ratings).
 - [ ] Development page: rank squad by attribute gains over the last N imports, trend per player.
 - [ ] Role-fit score (0–100 per FM role) with editable attribute weights; own implementation (FM-Player-Analyzer is GPL-3, ideas only).
 - [ ] Head-to-head comparison: up to 5 players, radar charts + attribute table.

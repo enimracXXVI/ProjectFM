@@ -1,55 +1,128 @@
-import { PageHeader } from '../components/ui'
-import { scoutTargets } from '../data/mock'
-import type { ScoutStatus } from '../data/types'
-import { formatMoney } from '../lib/format'
-
-const columns: { status: ScoutStatus; label: string }[] = [
-  { status: 'watching', label: 'Watching' },
-  { status: 'bid', label: 'Bid' },
-  { status: 'signed', label: 'Signed' },
-  { status: 'rejected', label: 'Rejected' },
-]
+import { clsx } from 'clsx'
+import { ChevronRight, Crown } from 'lucide-react'
+import { Link } from 'react-router-dom'
+import { ErrorText } from '../components/form'
+import { Card, PageHeader, Placeholder } from '../components/ui'
+import { useStaff } from '../data/hooks'
+import { useCurrentCareer } from '../lib/career'
+import { useConfig } from '../lib/config'
+import { headedRegions, isScout, useSaveScouting } from '../lib/scouting'
 
 export function Scouting() {
-  const targets = scoutTargets
+  const career = useCurrentCareer()
+  const { regions } = useConfig()
+  const { data: staff, isPending } = useStaff(career.id)
+  const save = useSaveScouting(career)
+  const net = career.scouting ?? {}
+  const season = career.current_season ?? 'current'
+  const limit = net.limits?.[season]
+
+  const scouts = (staff ?? []).filter(isScout)
+  const byId = new Map((staff ?? []).map((s) => [s.id, s]))
+  const unassigned = scouts.filter(
+    (s) => !net.scouts?.[s.id] && headedRegions(net, s.id).length === 0,
+  )
+  const over = limit != null && scouts.length > limit
+
+  const setLimit = (value: string) => {
+    const n = value === '' ? undefined : Math.max(0, Number(value) || 0)
+    const limits = { ...net.limits }
+    if (n === undefined) delete limits[season]
+    else limits[season] = n
+    save.mutate({ ...net, limits })
+  }
 
   return (
     <>
-      <PageHeader title="Scouting" subtitle="Sample data · real scouting board coming soon" />
-      {/* Horizontal swipe between columns on phones, grid on desktop */}
-      <div className="-mx-4 flex snap-x snap-mandatory scroll-px-4 gap-3 overflow-x-auto px-4 pb-2 md:mx-0 md:grid md:grid-cols-4 md:overflow-visible md:px-0">
-        {columns.map(({ status, label }) => {
-          const items = targets.filter((t) => t.status === status)
+      <PageHeader title="Scouting network" subtitle={`Season ${season}`} />
+
+      <Card className="mb-5">
+        <div className="flex flex-wrap items-end gap-4">
+          <label className="grid gap-1 text-sm">
+            <span className="text-muted">Scouts allowed by the board</span>
+            <input
+              type="number"
+              min={0}
+              inputMode="numeric"
+              defaultValue={limit ?? ''}
+              key={`${season}-${limit}`}
+              onBlur={(e) => e.target.value !== String(limit ?? '') && setLimit(e.target.value)}
+              className="min-h-11 w-28 rounded-lg border border-border bg-surface-2 px-3 text-base"
+            />
+          </label>
+          <div className="min-w-48 flex-1">
+            <p className="text-sm">
+              <span className={clsx('text-2xl font-semibold tabular-nums', over && 'text-red-400')}>
+                {scouts.length}
+              </span>
+              <span className="text-muted"> / {limit ?? '–'} scouts employed</span>
+            </p>
+            {limit != null && limit > 0 && (
+              <div className="mt-1 h-2 overflow-hidden rounded-full bg-surface-2">
+                <div
+                  className={clsx('h-full rounded-full', over ? 'bg-red-500' : 'bg-accent')}
+                  style={{ width: `${Math.min(100, (scouts.length / limit) * 100)}%` }}
+                />
+              </div>
+            )}
+          </div>
+        </div>
+        <p className="mt-2 text-xs text-muted">
+          Counts staff with the role Scout (heads of region included, Chief Scout not).
+        </p>
+        <ErrorText error={save.error} />
+      </Card>
+
+      {!isPending && scouts.length === 0 && (
+        <Placeholder>
+          No scouts yet.{' '}
+          <Link to="/staff/new" className="text-accent underline">
+            Add a scout
+          </Link>{' '}
+          to start building the network.
+        </Placeholder>
+      )}
+
+      {unassigned.length > 0 && (
+        <Card className="mb-5 border-amber-500/40">
+          <p className="text-sm font-semibold">Not assigned ({unassigned.length})</p>
+          <p className="mt-1 text-sm text-muted">{unassigned.map((s) => s.name).join(', ')}</p>
+        </Card>
+      )}
+
+      <ul className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
+        {regions.map((r) => {
+          const head = byId.get(net.heads?.[r.id] ?? '')
+          const regionScouts = Object.entries(net.scouts ?? {}).filter(([, a]) => a.region === r.id)
+          const covered = new Set(regionScouts.flatMap(([, a]) => a.countries))
           return (
-            <section
-              key={status}
-              aria-label={label}
-              className="w-[80vw] max-w-xs shrink-0 snap-start rounded-xl border border-border bg-surface p-3 md:w-auto md:max-w-none"
-            >
-              <h2 className="mb-2 flex items-center justify-between text-sm font-semibold">
-                {label}
-                <span className="rounded-full bg-surface-2 px-2 text-xs text-muted">
-                  {items.length}
-                </span>
-              </h2>
-              <ul className="grid gap-2">
-                {items.map((t) => (
-                  <li key={t.id} className="rounded-lg bg-surface-2 p-3">
-                    <p className="font-medium">{t.name}</p>
-                    <p className="text-xs text-muted">
-                      {t.position} · {t.age} · {t.club}
-                    </p>
-                    <p className="mt-1 text-xs">
-                      <span className="text-accent">{'★'.repeat(Math.floor(t.rating))}</span>{' '}
-                      {formatMoney(t.value)}
-                    </p>
-                  </li>
-                ))}
-              </ul>
-            </section>
+            <li key={r.id}>
+              <Link
+                to={`/scouting/${r.id}`}
+                className="flex h-full items-start gap-3 rounded-xl border border-border bg-surface p-4 hover:border-muted"
+              >
+                <div className="min-w-0 flex-1">
+                  <p className="font-semibold">{r.name}</p>
+                  <p
+                    className={clsx(
+                      'mt-1 flex items-center gap-1 text-sm',
+                      head ? 'text-text' : 'text-amber-400',
+                    )}
+                  >
+                    <Crown className="size-3.5 shrink-0" aria-hidden />
+                    {head ? head.name : 'No head of region'}
+                  </p>
+                  <p className="mt-1 text-xs text-muted">
+                    {regionScouts.length} scout{regionScouts.length === 1 ? '' : 's'} ·{' '}
+                    {covered.size} / {r.countries.length} countries covered
+                  </p>
+                </div>
+                <ChevronRight className="mt-1 size-4 text-muted" aria-hidden />
+              </Link>
+            </li>
           )
         })}
-      </div>
+      </ul>
     </>
   )
 }

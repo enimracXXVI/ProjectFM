@@ -42,6 +42,12 @@ export function SettingsPage() {
               ['/settings/attributes', 'Attributes', 'Names, short headers and descriptions'],
               ['/settings/layout', 'Layout', 'Grouping and order of attributes'],
               ['/settings/columns', 'Contract & Stats', 'Columns, order, names and tooltips'],
+              ['/settings/regions', 'Regions', 'Scouting regions, countries and borders'],
+              [
+                '/settings/staff-ratings',
+                'Staff ratings',
+                'Rating words and scouting knowledge levels',
+              ],
             ].map(([to, label, hint]) => (
               <li key={to}>
                 <Link

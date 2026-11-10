@@ -11,7 +11,7 @@ export function Field({
       <span className="text-muted">{label}</span>
       <input
         {...props}
-        className="min-h-11 rounded-lg border border-border bg-surface-2 px-3 text-base text-text placeholder:text-muted/60 md:text-sm"
+        className="min-h-11 w-full min-w-0 rounded-lg border border-border bg-surface-2 px-3 text-base text-text placeholder:text-muted/60 md:text-sm"
       />
     </label>
   )

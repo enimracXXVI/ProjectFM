@@ -30,6 +30,7 @@ const career = (id: string, club: string): Career => ({
   kit_home_url: null,
   kit_away_url: null,
   kit_third_url: null,
+  scouting: {},
   created_at: '',
 })
 

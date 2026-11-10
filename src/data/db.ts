@@ -14,6 +14,36 @@ export interface Career {
   kit_home_url: string | null
   kit_away_url: string | null
   kit_third_url: string | null
+  scouting: ScoutingNetwork
+  created_at: string
+}
+
+/** Scouting network of a career (careers.scouting). */
+export interface ScoutingNetwork {
+  /** Scouts allowed by the board, per season. */
+  limits?: Record<string, number>
+  /** Head of each region: region id → staff id. */
+  heads?: Record<string, string>
+  /** Scouts: staff id → region and the countries they focus on. */
+  scouts?: Record<string, { region: string; countries: string[] }>
+}
+
+export interface KnowledgeEntry {
+  nation: string
+  level: string
+}
+
+export interface StaffRow {
+  id: string
+  career_id: string
+  name: string
+  role: string | null
+  age: number | null
+  nation: string | null
+  personality: string | null
+  attributes: Record<string, string>
+  knowledge: KnowledgeEntry[]
+  notes: string | null
   created_at: string
 }
 

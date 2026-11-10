@@ -1,6 +1,6 @@
 import { supabase } from '../lib/supabase'
 import type { ImportedPlayer, ParseResult } from '../import/parse'
-import type { Career, ImportRow, PlayerRow, SnapshotRow } from './db'
+import type { Career, ImportRow, PlayerRow, ScoutingNetwork, SnapshotRow, StaffRow } from './db'
 
 function check<T>(res: { data: T | null; error: { message: string } | null }): T {
   if (res.error) throw new Error(res.error.message)
@@ -245,4 +245,44 @@ export async function setCareerImage(
   const old = storagePath(career[slot])
   if (old) await supabase.storage.from(BUCKET).remove([old]) // best effort
   return updated
+}
+
+// --- Staff (scouts) ---
+
+export type StaffInput = Omit<StaffRow, 'id' | 'career_id' | 'created_at'>
+
+export async function listStaff(careerId: string): Promise<StaffRow[]> {
+  return check(
+    await supabase
+      .from('staff')
+      .select(
+        'id, career_id, name, role, age, nation, personality, attributes, knowledge, notes, created_at',
+      )
+      .eq('career_id', careerId)
+      .order('name'),
+  )
+}
+
+export async function saveStaff(
+  careerId: string,
+  id: string | null,
+  input: StaffInput,
+): Promise<StaffRow> {
+  const query = id
+    ? supabase.from('staff').update(input).eq('id', id)
+    : supabase.from('staff').insert({ ...input, career_id: careerId })
+  return check(await query.select().single())
+}
+
+/** Deletes a staff member and removes them from the career's scouting network. */
+export async function deleteStaff(career: Career, id: string): Promise<void> {
+  const net = career.scouting ?? {}
+  const heads = Object.fromEntries(Object.entries(net.heads ?? {}).filter(([, s]) => s !== id))
+  const scouts = Object.fromEntries(Object.entries(net.scouts ?? {}).filter(([s]) => s !== id))
+  await saveScouting(career.id, { ...net, heads, scouts })
+  check(await supabase.from('staff').delete().eq('id', id))
+}
+
+export async function saveScouting(careerId: string, scouting: ScoutingNetwork): Promise<void> {
+  check(await supabase.from('careers').update({ scouting }).eq('id', careerId))
 }
