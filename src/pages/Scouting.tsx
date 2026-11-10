@@ -34,7 +34,15 @@ export function Scouting() {
 
   return (
     <>
-      <PageHeader title="Scouting network" subtitle={`Season ${season}`} />
+      <PageHeader
+        title="Scouting network"
+        subtitle={`Season ${season}`}
+        actions={
+          <Link to="/world" className="text-sm font-semibold text-accent">
+            World search
+          </Link>
+        }
+      />
 
       <Card className="mb-5">
         <div className="flex flex-wrap items-end gap-4">

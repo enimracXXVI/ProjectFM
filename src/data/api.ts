@@ -234,10 +234,11 @@ export async function setCareerImage(
 ): Promise<Career> {
   let url: string | null = null
   if (file) {
-    const { data: auth } = await supabase.auth.getUser()
-    if (!auth.user) throw new Error('Not signed in')
+    const { data: auth } = await supabase.auth.getSession()
+    const user = auth.session?.user
+    if (!user) throw new Error('Not signed in')
     const ext = file.type === 'image/svg+xml' ? 'svg' : file.type.split('/')[1] || 'png'
-    const path = `${auth.user.id}/${career.id}/${slot.replace('_url', '')}-${Date.now()}.${ext}`
+    const path = `${user.id}/${career.id}/${slot.replace('_url', '')}-${Date.now()}.${ext}`
     const { error } = await supabase.storage
       .from(BUCKET)
       .upload(path, file, { contentType: file.type, cacheControl: '31536000' })

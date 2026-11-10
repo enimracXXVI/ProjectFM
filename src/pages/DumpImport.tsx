@@ -4,13 +4,23 @@ import { useState } from 'react'
 import { Button, ErrorText } from '../components/form'
 import { Card } from '../components/ui'
 import { importDump, type DumpImportResult } from '../data/api'
+import { uploadWorld } from '../world/storage'
 import type { DumpSummary } from '../import/dump'
 import { useCurrentCareer } from '../lib/career'
 
-export function DumpImport({ summary, onDone }: { summary: DumpSummary; onDone: () => void }) {
+export function DumpImport({
+  summary,
+  world,
+  onDone,
+}: {
+  summary: DumpSummary
+  world: Blob
+  onDone: () => void
+}) {
   const career = useCurrentCareer()
   const qc = useQueryClient()
   const [includeOther, setIncludeOther] = useState(false)
+  const [saveWorld, setSaveWorld] = useState(true)
   const [season, setSeason] = useState(career.current_season ?? '')
   const [result, setResult] = useState<DumpImportResult | null>(null)
 
@@ -22,11 +32,19 @@ export function DumpImport({ summary, onDone }: { summary: DumpSummary; onDone: 
     !career.club.toLowerCase().includes(summary.meta.myClub.toLowerCase())
 
   const mutation = useMutation({
-    mutationFn: () =>
-      importDump({ career, summary, includeOtherTeams: includeOther, season: season || null }),
+    mutationFn: async () => {
+      const r = await importDump({
+        career,
+        summary,
+        includeOtherTeams: includeOther,
+        season: season || null,
+      })
+      if (saveWorld) await uploadWorld(career.id, world)
+      return r
+    },
     onSuccess: (r) => {
       setResult(r)
-      for (const key of ['players', 'imports', 'player', 'snapshots', 'staff'])
+      for (const key of ['players', 'imports', 'player', 'snapshots', 'staff', 'world'])
         qc.invalidateQueries({ queryKey: [key] })
     },
   })
@@ -42,12 +60,21 @@ export function DumpImport({ summary, onDone }: { summary: DumpSummary; onDone: 
         <p className="text-sm">
           Scouts: {result.scoutsAdded} added · {result.scoutsUpdated} updated
         </p>
+        {saveWorld && (
+          <p className="text-sm">
+            World database saved: {summary.totalPlayers.toLocaleString()} players, available on all
+            your devices.
+          </p>
+        )}
         <div className="mt-2 flex gap-4 text-sm font-semibold text-accent">
           <Link to="/squad" className="underline">
             Squad
           </Link>
           <Link to="/staff" className="underline">
             Staff
+          </Link>
+          <Link to="/world" className="underline">
+            World
           </Link>
           <button type="button" className="underline" onClick={onDone}>
             Close
@@ -105,6 +132,15 @@ export function DumpImport({ summary, onDone }: { summary: DumpSummary; onDone: 
             onChange={(e) => setSeason(e.target.value)}
             className="min-h-11 rounded-lg border border-border bg-surface-2 px-3 text-base md:text-sm"
           />
+        </label>
+        <label className="flex min-h-11 items-center gap-2 self-end text-sm">
+          <input
+            type="checkbox"
+            checked={saveWorld}
+            onChange={(e) => setSaveWorld(e.target.checked)}
+          />
+          Save world database ({summary.totalPlayers.toLocaleString()} players,{' '}
+          {(world.size / 1024 / 1024).toFixed(1)} MB)
         </label>
         {other > 0 && (
           <label className="flex min-h-11 items-center gap-2 self-end text-sm">

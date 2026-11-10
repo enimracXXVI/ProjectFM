@@ -7,9 +7,8 @@ import { Button, ErrorText, Field } from '../components/form'
 import { Card, PageHeader } from '../components/ui'
 import { importPlayers, type ImportSummary } from '../data/api'
 import { useImports, usePlayers } from '../data/hooks'
-import type { DumpSummary } from '../import/dump'
 import { parsePlayers, type ParseResult } from '../import/parse'
-import { readDump } from '../import/readDump'
+import { readDump, type ReadDumpResult } from '../import/readDump'
 import { DumpImport } from './DumpImport'
 import { useCurrentCareer } from '../lib/career'
 
@@ -23,7 +22,7 @@ export function Import() {
   const [fullSquad, setFullSquad] = useState(true)
   const [dragging, setDragging] = useState(false)
   const [summary, setSummary] = useState<ImportSummary | null>(null)
-  const [dump, setDump] = useState<DumpSummary | null>(null)
+  const [dump, setDump] = useState<ReadDumpResult | null>(null)
   const [reading, setReading] = useState(false)
   const { data: knownPlayers } = usePlayers(career.id)
 
@@ -124,7 +123,9 @@ export function Import() {
         )}
       </div>
 
-      {dump && <DumpImport summary={dump} onDone={() => setDump(null)} />}
+      {dump && (
+        <DumpImport summary={dump.summary} world={dump.world} onDone={() => setDump(null)} />
+      )}
 
       {summary && (
         <Card className="mt-4 border-accent/50">

@@ -34,7 +34,8 @@
 - [x] Development page: rank squad by attribute gains over the last N imports, trend per player.
 - [x] Role-fit score (0–100 per FM27 role) with editable roles, tiers and factors.
 - [x] Head-to-head comparison: up to 5 players, radar charts + attribute table.
-- [ ] Scouting by role: rank scouted players for a role, filters (age, value, personality, attribute minimums), strengths/weaknesses, impact on best XI.
+- [ ] Scouting by role, next steps: attribute minimum filters, strengths/weaknesses, shortlist, impact on best XI.
 - [x] FMSuperScout dump.json import: squad (attributes, positions, CA/PA + hidden values behind Settings switch), scouts and chief scout; players now at other clubs marked.
-- [ ] World database from dump.json (all players, stored compressed in Supabase Storage, cached on phone) + world search.
+- [x] World database from dump.json (all players, stored compressed in Supabase Storage, cached on each device) + world search with role ranking.
+- [ ] Run `supabase/migrations/0005_world_data.sql`.
 - [ ] ~~Load FM27 save file in the browser (all players in the save) via fmsave (MIT) in Pyodide. Hidden values: Settings switch (as in game vs everything). Needs: test save from user (63 MB, send split in 25 MB parts), storage plan for the world database.

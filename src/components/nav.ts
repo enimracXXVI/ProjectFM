@@ -1,5 +1,6 @@
 import {
   Binoculars,
+  Globe,
   Briefcase,
   LayoutDashboard,
   Scale,
@@ -27,6 +28,7 @@ export const navItems: NavItem[] = [
   { to: '/compare', label: 'Compare', icon: Scale, mobile: false },
   { to: '/staff', label: 'Staff', icon: UserCog, mobile: true },
   { to: '/scouting', label: 'Scouting', icon: Binoculars, mobile: true },
+  { to: '/world', label: 'World', icon: Globe, mobile: false },
   { to: '/achievements', label: 'Achievements', icon: Trophy, mobile: false },
   { to: '/careers', label: 'Careers', icon: Briefcase, mobile: true },
   { to: '/import', label: 'Import', icon: Upload, mobile: false },

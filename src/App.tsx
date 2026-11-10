@@ -27,6 +27,8 @@ import { StatusesSettings } from './pages/settings/Statuses'
 import { Achievements, NotFound } from './pages/Simple'
 import { Squad } from './pages/Squad'
 import { Staff } from './pages/Staff'
+import { World } from './pages/World'
+import { WorldPlayer } from './pages/WorldPlayer'
 
 export default function App() {
   const { session, loading } = useAuth()
@@ -55,6 +57,8 @@ function SignedIn() {
         <Route path="staff" element={<Staff />} />
         <Route path="development" element={<Development />} />
         <Route path="compare" element={<Compare />} />
+        <Route path="world" element={<World />} />
+        <Route path="world/:id" element={<WorldPlayer />} />
         <Route path="staff/:id" element={<StaffEdit />} />
         <Route path="scouting" element={<Scouting />} />
         <Route path="scouting/:regionId" element={<ScoutingRegion />} />
