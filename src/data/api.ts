@@ -7,6 +7,7 @@ import type { ImportedPlayer, ParseResult } from '../import/parse'
 import {
   SAVE_CONTRACT_KEYS,
   SAVE_STATS_KEYS,
+  isSaveDump,
   mergeKnowledge,
   saveScouts,
   saveUpdates,
@@ -350,16 +351,19 @@ export async function importDump(opts: {
       header: name,
       target: { kind: 'attribute' as const, name },
     })),
-    ...[...DUMP_PRESENT.extra].map((key) => ({
-      header: key,
-      target: { kind: 'extra' as const, key },
-    })),
+    // A save has no morale: keep what the Reader last wrote
+    ...[...DUMP_PRESENT.extra]
+      .filter((key) => !(isSaveDump(summary.meta) && key === 'Morale'))
+      .map((key) => ({
+        header: key,
+        target: { kind: 'extra' as const, key },
+      })),
   ]
   const players = await importPlayers({
     careerId: career.id,
     season,
-    viewType: 'FMSuperScout',
-    fileName: 'dump.json',
+    viewType: isSaveDump(summary.meta) ? 'FM save' : 'FMSuperScout',
+    fileName: isSaveDump(summary.meta) ? 'FM save' : 'dump.json',
     players: chosen,
     columns,
     markMissingAsLeft: false,

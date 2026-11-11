@@ -1,5 +1,13 @@
 import { describe, expect, it } from 'vitest'
-import { fmNation, knowledgeWord, mergeKnowledge, saveScouts, type SaveData } from './save'
+import {
+  dumpFromSave,
+  fmNation,
+  isSaveDump,
+  knowledgeWord,
+  mergeKnowledge,
+  saveScouts,
+  type SaveData,
+} from './save'
 
 const data = {
   club: 'A.C.F. Fiorentina',
@@ -75,5 +83,20 @@ describe('save scouts', () => {
       { nation: 'Italy', level: 'Unknown (50)' },
       { nation: 'Germany', level: 'Complete (100)' },
     ])
+  })
+})
+
+describe('save as a dump', () => {
+  it('turns nation ids into names and leaves morale out of the save import', () => {
+    const dump = dumpFromSave({
+      ...data,
+      dump: {
+        meta: { myClub: 'A.C.F. Fiorentina', source: 'FM save' },
+        players: [{ id: 2000183231, name: 'Franco Mastantuono', natDb: [1649, 776] }],
+        staff: [],
+      },
+    })
+    expect(dump.players[0].nat).toEqual(['Argentina', 'Italy'])
+    expect(isSaveDump(dump.meta)).toBe(true)
   })
 })

@@ -3,7 +3,8 @@ import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { Button, ErrorText } from '../components/form'
 import { Card } from '../components/ui'
-import { importSave } from '../data/api'
+import { importDump, importSave } from '../data/api'
+import type { DumpSummary } from '../import/dump'
 import {
   fmNation,
   isUnconfirmedKnowledge,
@@ -12,6 +13,7 @@ import {
   type StatsKind,
 } from '../import/save'
 import { useCurrentCareer } from '../lib/career'
+import { uploadWorld } from '../world/storage'
 
 const KINDS: [StatsKind, string][] = [
   ['overall', 'All competitive matches'],
@@ -20,12 +22,19 @@ const KINDS: [StatsKind, string][] = [
   ['non_competitive', 'Friendlies'],
 ]
 
+const field = 'min-h-11 rounded-lg border border-border bg-surface-2 px-3 text-base md:text-sm'
+
+/** One import for everything in an FM save: squad, contracts, stats, scouts, world. */
 export function SaveImport({
   data,
+  summary,
+  world,
   fileName,
   onDone,
 }: {
   data: SaveData
+  summary: DumpSummary
+  world: Blob
   fileName: string
   onDone: () => void
 }) {
@@ -33,34 +42,57 @@ export function SaveImport({
   const qc = useQueryClient()
   const [kind, setKind] = useState<StatsKind>('overall')
   const [season, setSeason] = useState(career.current_season ?? '')
+  const [includeOther, setIncludeOther] = useState(false)
+  const [saveWorld, setSaveWorld] = useState(true)
 
   const mutation = useMutation({
-    mutationFn: () => importSave({ career, data, kind, season: season || null, fileName }),
+    mutationFn: async () => {
+      // Squad first, so contracts and stats reach players new to ProjectFM too
+      const squad = await importDump({
+        career,
+        summary,
+        includeOtherTeams: includeOther,
+        season: season || null,
+      })
+      const rest = await importSave({ career, data, kind, season: season || null, fileName })
+      if (saveWorld) await uploadWorld(career.id, world)
+      return { squad: squad.players, ...rest }
+    },
     onSuccess: () => {
-      for (const key of ['players', 'imports', 'player', 'snapshots', 'staff'])
+      for (const key of ['players', 'imports', 'player', 'snapshots', 'staff', 'world'])
         qc.invalidateQueries({ queryKey: [key] })
     },
   })
 
-  if (mutation.data)
+  const r = mutation.data
+  if (r)
     return (
       <Card className="mt-4 border-accent/50">
         <p className="font-semibold text-accent">Save import complete</p>
-        <p className="mt-1 text-sm">
-          {mutation.data.updated} squad players updated with contract details, season stats and feet
-          {mutation.data.notInSquad
-            ? ` · ${mutation.data.notInSquad} players in the save are not in your ProjectFM squad (import them with dump.json first)`
-            : ''}
-        </p>
-        {mutation.data.scoutsAdded + mutation.data.scoutsUpdated > 0 && (
-          <p className="mt-1 text-sm">
-            Scouts: {mutation.data.scoutsUpdated} updated, {mutation.data.scoutsAdded} added
-            (attributes with Authority, and scouting knowledge)
-          </p>
-        )}
-        <div className="mt-2 flex gap-4 text-sm font-semibold text-accent">
+        <ul className="mt-1 grid gap-0.5 text-sm">
+          <li>
+            Squad: {r.squad.added} added · {r.squad.updated} updated
+            {r.squad.left ? ` · ${r.squad.left} no longer at the club` : ''}
+          </li>
+          <li>Contracts, season stats and feet: {r.updated} players</li>
+          <li>
+            Scouts: {r.scoutsUpdated} updated · {r.scoutsAdded} added
+          </li>
+          {saveWorld && (
+            <li>
+              World database: {summary.totalPlayers.toLocaleString()} players, on all your devices
+            </li>
+          )}
+        </ul>
+        <div className="mt-2 flex flex-wrap gap-4 text-sm font-semibold text-accent">
           <Link to="/squad" className="underline">
             Squad
+          </Link>
+          <Link to="/staff" className="underline">
+            Staff
+          </Link>
+          <Link to="/world" className="underline">
+            World
           </Link>
           <button type="button" className="underline" onClick={onDone}>
             Close
@@ -69,22 +101,40 @@ export function SaveImport({
       </Card>
     )
 
+  const first = summary.players.filter((p) => p.level === 'first').length
+  const other = summary.players.length - first
   const scouts = data.scouts ?? []
   const unconfirmed = scouts.flatMap((s) =>
     s.knowledge
       .filter((k) => isUnconfirmedKnowledge(knowledgeWord(k.value)))
-      .map((k) => `${s.name} – ${fmNation(k.nation)} (${k.value}/100)`),
+      .map((k) => `${s.name} – ${fmNation(k.nation)} (${k.value})`),
   )
   const withStats = new Set(data.stats.filter((s) => s.kind === kind).map((s) => s.uniqueId)).size
+  const wrongClub =
+    !data.club.toLowerCase().includes(career.club.toLowerCase()) &&
+    !career.club.toLowerCase().includes(data.club.toLowerCase())
 
   return (
     <Card className="mt-4">
       <h2 className="font-semibold">FM save</h2>
       <p className="mt-1 text-sm text-muted">
-        {data.club} · in-game {data.gameDate ?? '?'} · {data.players.length} players,{' '}
-        {data.contracts.length} contracts
+        {data.club} · in-game {data.gameDate ?? '?'} · {summary.totalPlayers.toLocaleString()}{' '}
+        players in the world
       </p>
+      {wrongClub && (
+        <p className="mt-2 text-sm text-amber-400">
+          This save is for {data.club}, but the current career is {career.club}. Check you picked
+          the right career before importing.
+        </p>
+      )}
       <ul className="mt-3 grid gap-1 text-sm">
+        <li>
+          <strong>Squad ({first} first-team players):</strong> attributes, positions, age,
+          nationality, height, feet, condition{' '}
+          <span className="text-muted">
+            (plus CA/PA, hidden and personality values, shown only if allowed in Settings)
+          </span>
+        </li>
         <li>
           <strong>Contracts:</strong> playing time, contract type, wage, expiry, release clause,
           club extension option
@@ -93,22 +143,25 @@ export function SaveImport({
           <strong>Season stats</strong> for {withStats} players: apps, minutes, rating, goals,
           assists, xG, xA, per-90 figures and more
         </li>
-        <li>
-          <strong>Feet</strong> (left and right)
-        </li>
         {scouts.length > 0 && (
           <li>
             <strong>{scouts.length} scouts:</strong> attributes including Authority, and scouting
             knowledge per nation
           </li>
         )}
-        <li className="text-muted">Only players already in your ProjectFM squad are updated.</li>
+        <li>
+          <strong>World database:</strong> every player, searchable on all your devices
+        </li>
+        <li className="text-muted">
+          Not in the save: squad numbers and morale. They come from the ProjectFM Reader and are
+          kept as they are.
+        </li>
       </ul>
       {unconfirmed.length > 0 && (
         <details className="mt-3 text-sm">
           <summary className="cursor-pointer text-muted">
-            {unconfirmed.length} knowledge values not matched to an FM word yet (kept as shown, or
-            your own level where you set one)
+            {unconfirmed.length} knowledge values not matched to an FM word yet (saved as “Unknown
+            (value)”, or your own word where you set one)
           </summary>
           <ul className="mt-1 list-disc pl-5 text-muted">
             {unconfirmed.map((u) => (
@@ -123,7 +176,7 @@ export function SaveImport({
           <select
             value={kind}
             onChange={(e) => setKind(e.target.value as StatsKind)}
-            className="min-h-11 rounded-lg border border-border bg-surface-2 px-3 text-base md:text-sm"
+            className={field}
           >
             {KINDS.map(([k, label]) => (
               <option key={k} value={k}>
@@ -134,11 +187,27 @@ export function SaveImport({
         </label>
         <label className="grid gap-1 text-sm">
           <span className="text-muted">Season</span>
+          <input value={season} onChange={(e) => setSeason(e.target.value)} className={field} />
+        </label>
+        {other > 0 && (
+          <label className="flex min-h-11 items-center gap-2 text-sm">
+            <input
+              type="checkbox"
+              checked={includeOther}
+              onChange={(e) => setIncludeOther(e.target.checked)}
+              className="size-5"
+            />
+            Also add the {other} players in your other teams (reserves, youth)
+          </label>
+        )}
+        <label className="flex min-h-11 items-center gap-2 text-sm">
           <input
-            value={season}
-            onChange={(e) => setSeason(e.target.value)}
-            className="min-h-11 rounded-lg border border-border bg-surface-2 px-3 text-base md:text-sm"
+            type="checkbox"
+            checked={saveWorld}
+            onChange={(e) => setSaveWorld(e.target.checked)}
+            className="size-5"
           />
+          Save the world database
         </label>
       </div>
       <div className="mt-4 flex flex-wrap items-center gap-3">

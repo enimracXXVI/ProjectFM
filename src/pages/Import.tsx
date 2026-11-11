@@ -11,8 +11,7 @@ import { parsePlayers, type ParseResult } from '../import/parse'
 import { readDump, type ReadDumpResult } from '../import/readDump'
 import { DumpImport } from './DumpImport'
 import { SaveImport } from './SaveImport'
-import { readSave } from '../import/readSave'
-import type { SaveData } from '../import/save'
+import { readSave, type ReadSaveResult } from '../import/readSave'
 import { useCurrentCareer } from '../lib/career'
 
 export function Import() {
@@ -27,7 +26,7 @@ export function Import() {
   const [summary, setSummary] = useState<ImportSummary | null>(null)
   const [dump, setDump] = useState<ReadDumpResult | null>(null)
   const [reading, setReading] = useState<string | null>(null)
-  const [save, setSave] = useState<{ name: string; data: SaveData } | null>(null)
+  const [save, setSave] = useState<({ name: string } & ReadSaveResult) | null>(null)
   const { data: knownPlayers } = usePlayers(career.id)
 
   const load = async (f: File | undefined) => {
@@ -40,14 +39,15 @@ export function Import() {
       setFile(null)
       setReading('Loading Python for the save reader (about 13 MB the first time)…')
       try {
-        const data = await readSave(f, (stage) =>
+        const uids = (knownPlayers ?? []).map((p) => p.fm_uid).filter((u): u is number => u != null)
+        const result = await readSave(f, uids, (stage) =>
           setReading(
             stage === 'reading'
-              ? 'Reading the save… this can take up to a minute.'
+              ? 'Reading the save… this can take a minute or two.'
               : 'Loading Python for the save reader (about 13 MB the first time)…',
           ),
         )
-        setSave({ name: f.name, data })
+        setSave({ name: f.name, ...result })
       } catch (err) {
         setParseError(err)
       } finally {
@@ -147,7 +147,15 @@ export function Import() {
         )}
       </div>
 
-      {save && <SaveImport data={save.data} fileName={save.name} onDone={() => setSave(null)} />}
+      {save && (
+        <SaveImport
+          data={save.data}
+          summary={save.summary}
+          world={save.world}
+          fileName={save.name}
+          onDone={() => setSave(null)}
+        />
+      )}
 
       {dump && (
         <DumpImport summary={dump.summary} world={dump.world} onDone={() => setDump(null)} />

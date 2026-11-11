@@ -2,6 +2,9 @@
 // Reads an FM save in this worker with Pyodide (Python in the browser) and fmsave (MIT).
 // The file is mounted read-only with WORKERFS: its bytes are read as needed and never
 // leave the computer. Pyodide and fmsave are served by ProjectFM itself.
+import { buildWorld } from '../world/world'
+import { summarizeDump } from './dump'
+import { dumpFromSave, type SaveData } from './save'
 
 interface PyodideLike {
   FS: {
@@ -48,7 +51,7 @@ async function boot(base: string): Promise<PyodideLike> {
   return py
 }
 
-self.onmessage = async (e: MessageEvent<{ file: File; base: string }>) => {
+self.onmessage = async (e: MessageEvent<{ file: File; base: string; knownUids: number[] }>) => {
   try {
     ready ??= boot(e.data.base)
     const py = await ready
@@ -60,8 +63,18 @@ self.onmessage = async (e: MessageEvent<{ file: File; base: string }>) => {
     }
     py.FS.mkdirTree('/save')
     py.FS.mount(py.FS.filesystems.WORKERFS, { files: [e.data.file] }, '/save')
-    const json = py.pyimport('extract').extract('/save/' + e.data.file.name)
-    self.postMessage({ ok: true, data: JSON.parse(json) })
+    const data = JSON.parse(
+      py.pyimport('extract').extract('/save/' + e.data.file.name) as string,
+    ) as SaveData
+    // Every player, in the same shape as a Reader dump: squad import and world database
+    const dump = dumpFromSave(data)
+    delete data.dump
+    const summary = summarizeDump(dump, e.data.knownUids)
+    const json = new Blob([JSON.stringify(buildWorld(dump))])
+    const world = await new Response(
+      json.stream().pipeThrough(new CompressionStream('gzip')),
+    ).blob()
+    self.postMessage({ ok: true, data, summary, world })
   } catch (err) {
     self.postMessage({ ok: false, error: err instanceof Error ? err.message : String(err) })
   }

@@ -7,7 +7,7 @@ import fmNations from '../data/fmNations.json'
 import type { KnowledgeEntry } from '../data/db'
 import { EUR_PER_GBP } from '../lib/money'
 import { isUnknownWord, UNKNOWN_WORD, withValue, wordOf } from '../lib/valueWord'
-import { footWithValue, staffWord } from './dump'
+import { footWithValue, staffWord, type Dump, type DumpMeta, type DumpPerson } from './dump'
 
 export type StatsKind = 'overall' | 'league' | 'cup' | 'non_competitive'
 
@@ -31,6 +31,8 @@ export interface SaveData {
     clauses: { kind: string; value: number | null }[]
   }[]
   stats: (Record<string, number | string | null> & { uniqueId: number; kind: string })[]
+  /** Every player in Reader dump shape, nations as FM database ids (removed once read). */
+  dump?: { meta: DumpMeta; players: (DumpPerson & { natDb?: number[] })[]; staff: [] }
   /** The club's scouts (absent in saves read before scouts were added). */
   scouts?: {
     uniqueId: number
@@ -256,3 +258,16 @@ export function mergeKnowledge(fromSave: KnowledgeEntry[], current: KnowledgeEnt
     return { nation: k.nation, level: `${wordOf(mine.level)} (${value})` }
   })
 }
+
+/** The save's players as a Reader dump (nation ids turned into names). */
+export function dumpFromSave(data: SaveData): Dump {
+  if (!data.dump) throw new Error('This save was read without its player list.')
+  const players = data.dump.players.map(({ natDb, ...p }) => ({
+    ...p,
+    nat: (natDb ?? []).map(fmNation),
+  }))
+  return { meta: data.dump.meta, players, staff: [] }
+}
+
+/** True for a dump made from an FM save (no morale or squad numbers in it). */
+export const isSaveDump = (meta: DumpMeta) => meta.source === 'FM save'

@@ -74,6 +74,78 @@ def _scouts(save, club_uid):
     return out
 
 
+def _camel(name):
+    return {"free_kick_taking": "FreeKicks"}.get(name) or "".join(w.title() for w in name.split("_"))
+
+
+_POSITION = {"STC": "ST"}
+_PERSONALITY = (
+    "ambition", "loyalty", "professionalism", "adaptability",
+    "pressure", "sportsmanship", "temperament", "controversy",
+)
+
+
+def _dump(save, club_uid, club_name):
+    """Every player in the same shape as a ProjectFM Reader dump.json (players only).
+
+    Nations are FM database ids (`natDb`); the app turns them into names.
+    """
+    nation_db_ids = {n.nation_id: n.database_id for n in save.nations()}
+    contracts = {}
+    for c in save.contracts():
+        contracts.setdefault(c.player_uid, c)
+    players = []
+    for p in save.players():
+        if not p.name or p.unique_id is None:
+            continue
+        rep = p.reputation.world if p.reputation else None
+        if p.club_uid is None and (rep is None or rep == 0xFFFF):
+            continue
+        c = contracts.get(p.uid)
+        a = p.attributes
+        attrs = {_camel(k): v for k, v in (asdict(a).items() if is_dataclass(a) else ())}
+        pos = p.positions
+        nats = [p.nation_id, *p.second_nation_ids]
+        row = {
+            "id": p.unique_id,
+            "name": p.name,
+            "age": p.age,
+            "natDb": [nation_db_ids.get(n) for n in nats if n is not None],
+            "club": p.club_name,
+            "ca": p.ability.current if p.ability else None,
+            "pa": p.ability.potential if p.ability else None,
+            "height": p.height_cm or None,
+            "posArr": [_POSITION.get(x, x) for x in (*p.natural_positions, *p.accomplished_positions)],
+            "teamType": p.team_slot or 0,
+            "footLeft": p.left_foot,
+            "footRight": p.right_foot,
+            "condition": p.raw_condition,
+            "posRatings": {_POSITION.get(k.upper(), k.upper()): v for k, v in asdict(pos).items()}
+            if is_dataclass(pos) else None,
+            "attrs": attrs,
+            "value": p.transfer_value,
+            "wage": c.wage if c else None,
+            "expires": c.end.isoformat() if c and c.end else None,
+            "worldRep": rep,
+        }
+        if p.personality is not None:
+            for k in _PERSONALITY:
+                row[k] = getattr(p.personality, k, None)
+        players.append(row)
+    return {
+        "meta": {
+            "game": "FM27",
+            "gameDate": save.info.game_date,
+            "myClub": club_name,
+            "currency": "GBP",
+            "source": "FM save",
+            "projectfm": 1,
+        },
+        "players": players,
+        "staff": [],
+    }
+
+
 def extract(path):
     with fmsave.open(path) as save:
         clubs = save.managed_clubs()
@@ -122,6 +194,7 @@ def extract(path):
             row = asdict(st)
             row["uniqueId"] = uid
             out["stats"].append(row)
+        out["dump"] = _dump(save, club_uid, clubs[0].club_name)
         try:
             out["scouts"] = _scouts(save, club_uid)
         except Exception as e:  # scouts are a bonus: never lose the squad import over them
