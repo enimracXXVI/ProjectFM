@@ -196,6 +196,9 @@ function StaffForm({ existing }: { existing: StaffRow | null }) {
                       )}
                     >
                       <option value="">–</option>
+                      {form.attributes[a] && !config.staffScale.includes(form.attributes[a]) && (
+                        <option value={form.attributes[a]}>{form.attributes[a]}</option>
+                      )}
                       {config.staffScale.map((w) => (
                         <option key={w} value={w}>
                           {STAFF_SCALE_RANGES[w] ? `${w} (${STAFF_SCALE_RANGES[w]})` : w}

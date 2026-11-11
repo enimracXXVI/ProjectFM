@@ -28,26 +28,26 @@ describe('save scouts', () => {
   it('maps knowledge to FM27 words, matching the staff screen for Peter Braund', () => {
     const [s] = saveScouts(data)
     expect(s.knowledge).toEqual([
-      { nation: 'Denmark', level: 'Extensive' },
-      { nation: 'England', level: 'Complete' },
-      { nation: 'Germany', level: 'Complete' },
+      { nation: 'Denmark', level: 'Extensive (48)' },
+      { nation: 'England', level: 'Complete (100)' },
+      { nation: 'Germany', level: 'Complete (100)' },
     ])
     expect(s.attributes).toEqual({
-      Authority: 'Competent',
-      Adaptability: 'Outstanding',
-      'Judging Player Ability': 'Good',
-      Motivating: 'Unsuited',
+      Authority: 'Competent (8)',
+      Adaptability: 'Outstanding (18)',
+      'Judging Player Ability': 'Good (14)',
+      Motivating: 'Unsuited (1)',
     })
   })
 
   it('knows the nations and levels checked so far', () => {
     expect([30, 36, 48, 100].map(knowledgeWord)).toEqual([
-      'Very Good',
-      'Very Good',
-      'Extensive',
-      'Complete',
+      'Very Good (30)',
+      'Very Good (36)',
+      'Extensive (48)',
+      'Complete (100)',
     ])
-    expect(knowledgeWord(60)).toBe('60/100')
+    expect(knowledgeWord(60)).toBe('Unknown (60)')
     expect([379, 390, 796, 1649, 1651, 1657].map(fmNation)).toEqual([
       'Mexico',
       'United States',
@@ -58,12 +58,12 @@ describe('save scouts', () => {
     ])
   })
 
-  it('keeps the user level where the save value is not confirmed yet', () => {
+  it('keeps the user word next to the save value where the word is not confirmed yet', () => {
     const merged = mergeKnowledge(
       [
-        { nation: 'France', level: '75/100' },
-        { nation: 'Italy', level: '50/100' },
-        { nation: 'Germany', level: 'Complete' },
+        { nation: 'France', level: 'Unknown (75)' },
+        { nation: 'Italy', level: 'Unknown (50)' },
+        { nation: 'Germany', level: 'Complete (100)' },
       ],
       [
         { nation: 'France', level: 'Exceptional' },
@@ -71,9 +71,9 @@ describe('save scouts', () => {
       ],
     )
     expect(merged).toEqual([
-      { nation: 'France', level: 'Exceptional' },
-      { nation: 'Italy', level: '50/100' },
-      { nation: 'Germany', level: 'Complete' },
+      { nation: 'France', level: 'Exceptional (75)' },
+      { nation: 'Italy', level: 'Unknown (50)' },
+      { nation: 'Germany', level: 'Complete (100)' },
     ])
   })
 })

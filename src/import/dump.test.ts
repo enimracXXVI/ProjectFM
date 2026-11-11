@@ -57,11 +57,12 @@ describe('ProjectFM Reader fields', () => {
   it('maps feet, condition and morale from a reader dump', () => {
     const base = dump.players.find((p) => p.name === 'Franco Mastantuono')!
     const p = playerFromDump({ ...base, footLeft: 20, footRight: 9, condition: 9600, morale: 17 })
-    expect(p.left_foot).toBe('Very Strong')
-    expect(p.right_foot).toBe('Reasonable')
+    expect(p.left_foot).toBe('Very Strong (20)')
+    expect(p.right_foot).toBe('Reasonable (9)')
     expect(readerSquadNumber({ ...base, squadNo: 30 })).toBe(30)
     expect(readerSquadNumber({ ...base, squadNo: 255 })).toBeNull()
-    expect(p.extra).toMatchObject({ Condition: '96%', Morale: 'Excellent' })
+    expect(p.extra).toMatchObject({ Condition: '96%', Morale: 'Excellent (17)' })
+    expect(playerFromDump({ ...base, morale: 12 }).extra.Morale).toBe('Unknown (12)')
   })
 })
 
@@ -85,18 +86,18 @@ describe('dump import', () => {
   it('maps scouts to FM27 words, matching FM for Victor de los Santos', () => {
     const s = summarizeDump(dump, [])
     const victor = s.scouts.find((x) => x.name === 'Victor de los Santos')!
-    // Values as shown in FM27 (screenshot), except Authority which the dump does not hold
+    // Words as shown in FM27 (screenshot), with the dump's value; Authority is not in the dump
     expect(victor.attributes).toEqual({
-      'Analysing Data': 'Competent',
-      Adaptability: 'Outstanding',
-      Determination: 'Average',
-      Motivating: 'Unsuited',
-      'People Management': 'Reasonable',
-      'Judging Player Ability': 'Very Good',
-      'Judging Player Potential': 'Very Good',
-      'Judging Staff Ability': 'Average',
-      Negotiating: 'Competent',
-      'Tactical Knowledge': 'Average',
+      'Analysing Data': 'Competent (7)',
+      Adaptability: 'Outstanding (18)',
+      Determination: 'Average (10)',
+      Motivating: 'Unsuited (1)',
+      'People Management': 'Reasonable (4)',
+      'Judging Player Ability': 'Very Good (17)',
+      'Judging Player Potential': 'Very Good (17)',
+      'Judging Staff Ability': 'Average (10)',
+      Negotiating: 'Competent (8)',
+      'Tactical Knowledge': 'Average (11)',
     })
     expect(s.scouts.find((x) => x.name === 'Maurizio Niccolini')!.role).toBe('Chief Scout')
     expect(s.scouts.some((x) => x.name === 'Pepe')).toBe(false)

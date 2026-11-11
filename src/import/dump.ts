@@ -3,6 +3,7 @@
  * Format reference: FMSuperScout core/Dumper.cs (MIT). Staff attribute keys in the dump are
  * Dutch; the mapping below was checked value by value against FM27's staff screen for 10 scouts.
  */
+import { UNKNOWN_WORD, withValue } from '../lib/valueWord'
 import type { ImportedPlayer } from './parse'
 
 export interface DumpMeta {
@@ -147,9 +148,12 @@ export function footWord(n: number): string {
   return 'Very Strong'
 }
 
+/** Foot word with the value, as stored: "Very Strong (20)". */
+export const footWithValue = (n: number) => withValue(footWord(n), n)
+
 /**
  * FM27 morale words for the reader's 1–20 value, as confirmed by the user for 10 players.
- * Values not seen yet show as "n/20".
+ * Stored with the value, "Excellent (17)"; values not seen yet show as "Unknown (n)".
  */
 const MORALE_WORDS: Record<number, string> = {
   9: 'Fairly Okay',
@@ -159,7 +163,7 @@ const MORALE_WORDS: Record<number, string> = {
   17: 'Excellent',
   20: 'Perfect',
 }
-export const moraleWord = (n: number) => MORALE_WORDS[n] ?? `${n}/20`
+export const moraleWord = (n: number) => withValue(MORALE_WORDS[n] ?? UNKNOWN_WORD, n)
 
 /** The reader's squad number when it found one (255 = not found). */
 export const readerSquadNumber = (p: DumpPerson): number | null =>
@@ -234,8 +238,8 @@ export function playerFromDump(p: DumpPerson): ImportedPlayer {
     nation: p.nat?.[0] ?? null,
     second_nation: p.nat?.[1] ?? null,
     height_cm: p.height ?? null,
-    left_foot: p.footLeft ? footWord(p.footLeft) : null,
-    right_foot: p.footRight ? footWord(p.footRight) : null,
+    left_foot: p.footLeft ? footWithValue(p.footLeft) : null,
+    right_foot: p.footRight ? footWithValue(p.footRight) : null,
     personality: null,
     attributes,
     extra,
@@ -265,7 +269,7 @@ export function staffFromDump(s: DumpPerson): DumpStaff {
   const attributes: Record<string, string> = {}
   for (const [k, label] of Object.entries(STAFF_ATTR)) {
     const v = s.staffAttrs?.[k]
-    if (typeof v === 'number') attributes[label] = staffWord(v)
+    if (typeof v === 'number') attributes[label] = withValue(staffWord(v), v)
   }
   return {
     fm_uid: s.id,

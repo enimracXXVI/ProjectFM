@@ -39,7 +39,7 @@ describe('save import mapping', () => {
       'Conv %': '33%',
       'Hdr %': '71%',
     })
-    expect(overall.leftFoot).toBe('Very Strong')
+    expect(overall.leftFoot).toBe('Very Strong (20)')
     const league = saveUpdates(data, 'league').find((u) => u.uniqueId === id)!
     expect(league.stats!.Minutes).toBe('64')
   })

@@ -3,6 +3,7 @@
  * FM27 shows staff ratings as words; the scale and knowledge levels are editable
  * in the app (Settings → Staff ratings).
  */
+import { wordOf } from '../lib/valueWord'
 
 export interface StaffSection {
   label: string
@@ -76,7 +77,7 @@ export const STAFF_ROLES = ['Scout', 'Chief Scout'] as const
 
 /** Colour for a rating word by its position on the scale (red → amber → white → green). */
 export function ratingColor(word: string | undefined, scale: string[]): string {
-  const i = word ? scale.indexOf(word) : -1
+  const i = word ? scale.indexOf(wordOf(word)) : -1
   if (i < 0) return 'text-muted'
   const t = scale.length > 1 ? i / (scale.length - 1) : 1
   if (t >= 0.85) return 'text-emerald-400'

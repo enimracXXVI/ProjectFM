@@ -6,7 +6,8 @@
 import fmNations from '../data/fmNations.json'
 import type { KnowledgeEntry } from '../data/db'
 import { EUR_PER_GBP } from '../lib/money'
-import { footWord, staffWord } from './dump'
+import { isUnknownWord, UNKNOWN_WORD, withValue, wordOf } from '../lib/valueWord'
+import { footWithValue, staffWord } from './dump'
 
 export type StatsKind = 'overall' | 'league' | 'cup' | 'non_competitive'
 
@@ -162,8 +163,8 @@ export function saveUpdates(data: SaveData, kind: StatsKind): SavePlayerUpdate[]
     const stats = data.stats.find((s) => s.uniqueId === p.uniqueId && s.kind === kind)
     return {
       uniqueId: p.uniqueId,
-      leftFoot: p.leftFoot ? footWord(p.leftFoot) : null,
-      rightFoot: p.rightFoot ? footWord(p.rightFoot) : null,
+      leftFoot: p.leftFoot ? footWithValue(p.leftFoot) : null,
+      rightFoot: p.rightFoot ? footWithValue(p.rightFoot) : null,
       contract: contract ? contractFields(contract) : null,
       stats: stats ? statsFields(stats) : null,
     }
@@ -173,7 +174,7 @@ export function saveUpdates(data: SaveData, kind: StatsKind): SavePlayerUpdate[]
 /**
  * FM27 knowledge words for the save's 0–100 value, as checked against the staff screen
  * (Vázquez 30 and Victor 36 = Very Good, Braund 48 = Extensive, 100 = Complete).
- * Values not confirmed yet are written as "n/100".
+ * Stored with the value, "Very Good (36)"; values not confirmed yet are "Unknown (n)".
  */
 const KNOWLEDGE_WORDS: Record<number, string> = {
   30: 'Very Good',
@@ -181,8 +182,8 @@ const KNOWLEDGE_WORDS: Record<number, string> = {
   48: 'Extensive',
   100: 'Complete',
 }
-export const knowledgeWord = (n: number) => KNOWLEDGE_WORDS[n] ?? `${n}/100`
-export const isUnconfirmedKnowledge = (level: string) => /^\d+\/100$/.test(level)
+export const knowledgeWord = (n: number) => withValue(KNOWLEDGE_WORDS[n] ?? UNKNOWN_WORD, n)
+export const isUnconfirmedKnowledge = isUnknownWord
 
 const NATIONS = fmNations as Record<string, string>
 /** Nation name for an FM database id (names taken from the user's own dump). */
@@ -222,7 +223,10 @@ export function saveScouts(data: SaveData): SaveScout[] {
     const attributes: Record<string, string> = {}
     for (const [key, label, scale] of SCOUT_ATTR) {
       const v = s.attributes?.[key]
-      if (typeof v === 'number' && v > 0) attributes[label] = staffWord(Math.floor(v / scale))
+      if (typeof v === 'number' && v > 0) {
+        const n = Math.floor(v / scale)
+        attributes[label] = withValue(staffWord(n), n)
+      }
     }
     return {
       fm_uid: s.uniqueId,
@@ -239,13 +243,16 @@ export function saveScouts(data: SaveData): SaveScout[] {
 }
 
 /**
- * New knowledge list for a scout: the save's nations, but where the save's value is not
- * confirmed yet and the user already set a level for that nation, theirs is kept.
+ * New knowledge list for a scout: the save's nations and values, but where the save's
+ * value has no confirmed word yet and the user already set one for that nation, the
+ * user's word is kept next to the save's value: "Exceptional (75)".
  */
 export function mergeKnowledge(fromSave: KnowledgeEntry[], current: KnowledgeEntry[]) {
   return fromSave.map((k) => {
     if (!isUnconfirmedKnowledge(k.level)) return k
     const mine = current.find((c) => c.nation === k.nation)
-    return mine && !isUnconfirmedKnowledge(mine.level) ? mine : k
+    if (!mine || isUnconfirmedKnowledge(mine.level)) return k
+    const value = k.level.match(/\d+/)![0]
+    return { nation: k.nation, level: `${wordOf(mine.level)} (${value})` }
   })
 }
