@@ -3,6 +3,7 @@ import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import { BrowserRouter } from 'react-router-dom'
 import App from './App.tsx'
+import { ConfirmProvider } from './components/ConfirmDialog.tsx'
 import { AuthProvider } from './lib/auth.tsx'
 import { CareerProvider } from './lib/career.tsx'
 import { ConfigProvider } from './lib/config.tsx'
@@ -17,7 +18,9 @@ createRoot(document.getElementById('root')!).render(
         <AuthProvider>
           <ConfigProvider>
             <CareerProvider>
-              <App />
+              <ConfirmProvider>
+                <App />
+              </ConfirmProvider>
             </CareerProvider>
           </ConfigProvider>
         </AuthProvider>

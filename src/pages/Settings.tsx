@@ -31,7 +31,8 @@ export function SettingsPage() {
   return (
     <>
       <PageHeader title="Settings" />
-      <div className="grid max-w-md gap-4">
+      {/* Cards flow into columns side by side on wide screens, in reading order */}
+      <div className="gap-4 lg:columns-2 2xl:columns-3 [&>*]:mb-4 [&>*]:break-inside-avoid">
         <HiddenValuesCard />
 
         <Card>
@@ -159,8 +160,8 @@ function HiddenValuesCard() {
         <span>
           <span className="block font-semibold">Show hidden values</span>
           <span className="block text-sm text-muted">
-            CA/PA, hidden attributes (consistency, injury proneness…) and personality values from
-            FMSuperScout imports. FM normally hides these; leave off to see only what the game
+            CA/PA, hidden attributes (consistency, injury proneness…) and the personality values
+            behind each personality. FM keeps these hidden; leave off to see only what the game
             shows.
           </span>
         </span>

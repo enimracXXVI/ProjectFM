@@ -1,6 +1,7 @@
 import { clsx } from 'clsx'
 import { Plus, Trash2 } from 'lucide-react'
 import { useMemo, useState } from 'react'
+import { useConfirm } from '../../components/confirm'
 import { SettingsShell } from '../../components/SettingsShell'
 import { attributeLabel } from '../../data/config'
 import type { RoleDef, RolePhase } from '../../data/roles'
@@ -32,6 +33,7 @@ type Mark = 'key' | 'preferred' | null
 
 export function RolesSettings() {
   const config = useConfig()
+  const confirm = useConfirm()
   const { save, reset } = useSaveConfig('roles')
   const [roles, setRoles] = useState(config.roles)
   const [prev, setPrev] = useState(config.roles)
@@ -180,9 +182,16 @@ export function RolesSettings() {
                     <button
                       type="button"
                       aria-label={`Delete ${r.name}`}
-                      onClick={() => {
-                        if (window.confirm(`Delete the role ${r.name}?`))
-                          setRoles(roles.filter((x) => x.id !== r.id))
+                      onClick={async () => {
+                        if (
+                          await confirm({
+                            title: `Delete ${r.name}?`,
+                            message: 'The role is removed when you save changes.',
+                            confirmLabel: 'Delete',
+                            danger: true,
+                          })
+                        )
+                          setRoles((all) => all.filter((x) => x.id !== r.id))
                       }}
                       className="grid size-11 place-items-center rounded-lg text-muted hover:bg-surface-2 hover:text-red-400"
                     >

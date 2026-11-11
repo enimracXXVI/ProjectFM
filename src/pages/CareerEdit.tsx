@@ -1,5 +1,6 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { useState, type FormEvent } from 'react'
+import { useConfirm } from '../components/confirm'
 import { Button, ErrorText, Field } from '../components/form'
 import { ImageSlot } from '../components/ImageSlot'
 import { deleteCareer, startFresh, updateCareer, type NewCareer } from '../data/api'
@@ -8,6 +9,7 @@ import type { Career } from '../data/db'
 
 export function CareerEdit({ career, onDone }: { career: Career; onDone: () => void }) {
   const qc = useQueryClient()
+  const confirm = useConfirm()
   const [form, setForm] = useState<NewCareer>({
     name: career.name,
     club: career.club,
@@ -33,11 +35,22 @@ export function CareerEdit({ career, onDone }: { career: Career; onDone: () => v
     },
     onSuccess: () => qc.invalidateQueries(),
   })
-  const confirmFresh = () => {
-    const typed = window.prompt(
-      `This permanently clears the chosen data of "${career.name}". The career, crest, kits and Settings stay.\n\nType the career name to confirm:`,
+  const confirmFresh = async () => {
+    const parts = [
+      fresh.squad && 'squad, player history and import log',
+      fresh.staff && 'staff and scouting network',
+      fresh.world && 'world database',
+    ].filter(Boolean)
+    if (
+      await confirm({
+        title: 'Start fresh?',
+        message: `This permanently clears the ${parts.length > 1 ? `${parts.slice(0, -1).join(', ')} and ${parts.at(-1)}` : parts[0]} of “${career.name}”. The career, crest, kits and Settings stay.`,
+        confirmLabel: 'Clear',
+        danger: true,
+        typeToConfirm: career.name,
+      })
     )
-    if (typed === career.name) reset.mutate()
+      reset.mutate()
   }
 
   const set = (key: keyof NewCareer) => (e: React.ChangeEvent<HTMLInputElement>) =>
@@ -48,11 +61,17 @@ export function CareerEdit({ career, onDone }: { career: Career; onDone: () => v
     save.mutate()
   }
 
-  const confirmDelete = () => {
-    const typed = window.prompt(
-      `This permanently deletes "${career.name}" with all its players, imports and history.\n\nType the career name to confirm:`,
+  const confirmDelete = async () => {
+    if (
+      await confirm({
+        title: 'Delete career?',
+        message: `This permanently deletes “${career.name}” with all its players, staff, imports and history.`,
+        confirmLabel: 'Delete career',
+        danger: true,
+        typeToConfirm: career.name,
+      })
     )
-    if (typed === career.name) remove.mutate()
+      remove.mutate()
   }
 
   return (

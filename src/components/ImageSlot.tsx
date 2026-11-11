@@ -24,7 +24,7 @@ export function ImageSlot({
   const url = career[slot]
 
   return (
-    <div className="grid gap-1">
+    <div className="grid content-start gap-1">
       <span className="text-xs text-muted">{label}</span>
       <label className="relative grid aspect-square cursor-pointer place-items-center overflow-hidden rounded-xl border border-dashed border-border bg-surface-2 hover:border-muted">
         {url ? (

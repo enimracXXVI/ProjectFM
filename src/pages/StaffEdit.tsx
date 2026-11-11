@@ -3,6 +3,7 @@ import { clsx } from 'clsx'
 import { ArrowLeft, Plus, Trash2 } from 'lucide-react'
 import { useMemo, useState, type FormEvent } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
+import { useConfirm } from '../components/confirm'
 import { Button, ErrorText, Field } from '../components/form'
 import { PageHeader, Placeholder } from '../components/ui'
 import { deleteStaff, saveStaff, type StaffInput } from '../data/api'
@@ -45,6 +46,7 @@ export function StaffEdit() {
 }
 
 function StaffForm({ existing }: { existing: StaffRow | null }) {
+  const confirm = useConfirm()
   const career = useCurrentCareer()
   const config = useConfig()
   const navigate = useNavigate()
@@ -289,11 +291,14 @@ function StaffForm({ existing }: { existing: StaffRow | null }) {
             variant="danger"
             className="ml-auto"
             disabled={remove.isPending}
-            onClick={() => {
+            onClick={async () => {
               if (
-                window.confirm(
-                  `Delete ${existing.name}? They are also removed from the scouting network.`,
-                )
+                await confirm({
+                  title: `Delete ${existing.name}?`,
+                  message: 'They are also removed from the scouting network.',
+                  confirmLabel: 'Delete',
+                  danger: true,
+                })
               )
                 remove.mutate()
             }}

@@ -2,6 +2,7 @@ import { clsx } from 'clsx'
 import { ArrowLeft } from 'lucide-react'
 import type { ReactNode } from 'react'
 import { Link } from 'react-router-dom'
+import { useConfirm } from './confirm'
 import { Button, ErrorText } from './form'
 import { PageHeader } from './ui'
 
@@ -27,6 +28,7 @@ export function SettingsShell({
   onReset: () => void
   children: ReactNode
 }) {
+  const confirm = useConfirm()
   return (
     <>
       <Link
@@ -49,8 +51,16 @@ export function SettingsShell({
         </Button>
         <Button
           variant="ghost"
-          onClick={() => {
-            if (window.confirm(`Reset ${title.toLowerCase()} to the FM defaults?`)) onReset()
+          onClick={async () => {
+            if (
+              await confirm({
+                title: `Reset ${title.toLowerCase()}?`,
+                message: 'Your changes on this page are replaced by the defaults.',
+                confirmLabel: 'Reset',
+                danger: true,
+              })
+            )
+              onReset()
           }}
         >
           Reset to defaults
