@@ -5,6 +5,7 @@ import { Button, ErrorText, Field } from '../components/form'
 import { ImageSlot } from '../components/ImageSlot'
 import { deleteCareer, startFresh, updateCareer, type NewCareer } from '../data/api'
 import { deleteWorld } from '../world/storage'
+import { deleteCompetitions } from '../competitions/storage'
 import type { Career } from '../data/db'
 
 export function CareerEdit({ career, onDone }: { career: Career; onDone: () => void }) {
@@ -31,7 +32,10 @@ export function CareerEdit({ career, onDone }: { career: Career; onDone: () => v
   const reset = useMutation({
     mutationFn: async () => {
       await startFresh(career, fresh)
-      if (fresh.world) await deleteWorld(career.id)
+      if (fresh.world) {
+        await deleteWorld(career.id)
+        await deleteCompetitions(career.id)
+      }
     },
     onSuccess: () => qc.invalidateQueries(),
   })
@@ -39,7 +43,7 @@ export function CareerEdit({ career, onDone }: { career: Career; onDone: () => v
     const parts = [
       fresh.squad && 'squad, player history and import log',
       fresh.staff && 'staff and scouting network',
-      fresh.world && 'world database',
+      fresh.world && 'world database and competitions',
     ].filter(Boolean)
     if (
       await confirm({
@@ -137,7 +141,7 @@ export function CareerEdit({ career, onDone }: { career: Career; onDone: () => v
             [
               ['squad', 'Squad, player history and import log'],
               ['staff', 'Staff and scouting network'],
-              ['world', 'World database'],
+              ['world', 'World database and competitions'],
             ] as const
           ).map(([key, label]) => (
             <label key={key} className="flex min-h-11 items-center gap-2">

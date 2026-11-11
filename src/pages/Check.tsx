@@ -9,7 +9,9 @@ import type { PlayerRow } from '../data/db'
 import { MORALE_WORDS } from '../import/dump'
 import { useCurrentCareer } from '../lib/career'
 import { useConfig } from '../lib/config'
-import type { UnknownValue } from '../lib/checks'
+import type { UnknownCompetition, UnknownRound, UnknownValue } from '../lib/checks'
+import type { CompetitionKind } from '../competitions/types'
+import { useSaveConfig } from '../lib/useSaveConfig'
 import type { LearnedKind } from '../lib/learned'
 import { PERSONALITY_NAMES } from '../lib/personality'
 import { useChecks } from '../lib/useChecks'
@@ -66,6 +68,28 @@ export function Check() {
         >
           {checks.personality.map((p) => (
             <PersonalityRow key={p.id} player={p} />
+          ))}
+        </Section>
+      )}
+
+      {checks.competitions.length > 0 && (
+        <Section
+          title="Competitions"
+          hint="The save only has an ID. Name the competition and say what it is."
+        >
+          {checks.competitions.map((c) => (
+            <CompetitionRow key={c.databaseId} item={c} />
+          ))}
+        </Section>
+      )}
+
+      {checks.rounds.length > 0 && (
+        <Section
+          title="Cup rounds"
+          hint="Name each round as FM shows it (for example First Round, Round of 16, Final)."
+        >
+          {checks.rounds.map((r) => (
+            <RoundRow key={r.code} item={r} />
           ))}
         </Section>
       )}
@@ -191,6 +215,91 @@ function PersonalityRow({ player }: { player: PlayerRow }) {
         Save
       </Button>
       <ErrorText error={save.error} />
+    </li>
+  )
+}
+
+function CompetitionRow({ item }: { item: UnknownCompetition }) {
+  const config = useConfig()
+  const { save } = useSaveConfig('competitions')
+  const [name, setName] = useState('')
+  const [kind, setKind] = useState<CompetitionKind>('league')
+  return (
+    <li className="rounded-lg border border-amber-400/40 bg-surface p-3">
+      <div className="flex flex-wrap items-center gap-3">
+        <span className="rounded bg-amber-400/15 px-2 py-1 text-sm font-semibold text-amber-300 tabular-nums">
+          ID {item.databaseId}
+        </span>
+        <span className="min-w-0 flex-1 text-sm">{item.examples.join(' · ')}</span>
+      </div>
+      <div className="mt-2 flex flex-wrap items-center gap-2">
+        <input
+          aria-label={`Name of competition ${item.databaseId}`}
+          value={name}
+          onChange={(e) => setName(e.target.value)}
+          placeholder="Name in FM"
+          className={field}
+        />
+        <select
+          aria-label="Type"
+          value={kind}
+          onChange={(e) => setKind(e.target.value as CompetitionKind)}
+          className={field}
+        >
+          <option value="league">League</option>
+          <option value="cup">Cup</option>
+          <option value="friendlies">Friendlies</option>
+        </select>
+        <Button
+          onClick={() =>
+            save.mutate({
+              ...config.competitions,
+              [String(item.databaseId)]: { name: name.trim(), kind },
+            })
+          }
+          disabled={!name.trim() || save.isPending}
+        >
+          Save
+        </Button>
+        <ErrorText error={save.error} />
+      </div>
+    </li>
+  )
+}
+
+function RoundRow({ item }: { item: UnknownRound }) {
+  const config = useConfig()
+  const { save } = useSaveConfig('learned')
+  const [name, setName] = useState('')
+  return (
+    <li className="rounded-lg border border-amber-400/40 bg-surface p-3">
+      <div className="flex flex-wrap items-center gap-3">
+        <span className="rounded bg-amber-400/15 px-2 py-1 text-sm font-semibold text-amber-300">
+          {item.competition} · {item.date}
+        </span>
+        <span className="min-w-0 flex-1 text-sm">{item.examples.join(' · ')}</span>
+      </div>
+      <div className="mt-2 flex flex-wrap items-center gap-2">
+        <input
+          aria-label="Round name"
+          value={name}
+          onChange={(e) => setName(e.target.value)}
+          placeholder="Round name in FM"
+          className={field}
+        />
+        <Button
+          onClick={() =>
+            save.mutate({
+              ...config.learned,
+              rounds: { ...config.learned.rounds, [String(item.code)]: name.trim() },
+            })
+          }
+          disabled={!name.trim() || save.isPending}
+        >
+          Save
+        </Button>
+        <ErrorText error={save.error} />
+      </div>
     </li>
   )
 }

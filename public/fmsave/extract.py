@@ -193,6 +193,107 @@ def _dump(save, club_uid, club_name, extras):
     }
 
 
+def _raw(v):
+    """A CodedValue's raw number (FM's own code), or None."""
+    return getattr(v, "raw", None) if v is not None else None
+
+
+# Competitions with more fixtures than this (world friendlies) keep only the club's games
+_MAX_ALL_FIXTURES = 1500
+
+
+def _competitions(save, club_uid, club_name):
+    """Every competition the first team plays in this season: its fixtures and results,
+    stages (cup rounds, groups) and per-player match stats."""
+    fixtures = list(save.fixtures())
+    mine = [
+        f for f in fixtures
+        if (f.home_club_uid == club_uid and (f.home_team_slot or 0) == 0)
+        or (f.away_club_uid == club_uid and (f.away_team_slot or 0) == 0)
+    ]
+    comp_ids = {f.competition_id for f in mine if f.competition_id is not None}
+    comps = {c.id: c for c in save.competitions() if c.id in comp_ids}
+    stages = [s for s in save.stages() if s.competition_id in comp_ids]
+    by_comp = {}
+    for f in fixtures:
+        if f.competition_id in comp_ids:
+            by_comp.setdefault(f.competition_id, []).append(f)
+
+    def fixture_row(f):
+        return {
+            "stage": f.stage_id,
+            "round": _raw(f.round),
+            "roundIndex": f.round_index,
+            "date": f.date.isoformat() if f.date else None,
+            "time": f.kick_off_time.strftime("%H:%M") if f.kick_off_time else None,
+            "season": f.season_start_year,
+            "home": f.home_club_uid,
+            "homeName": f.home_club_name,
+            "homeShort": f.home_club_short_name,
+            "homeSlot": f.home_team_slot,
+            "away": f.away_club_uid,
+            "awayName": f.away_club_name,
+            "awayShort": f.away_club_short_name,
+            "awaySlot": f.away_team_slot,
+            "hg": f.home_goals,
+            "ag": f.away_goals,
+            "played": f.played,
+            "neutral": f.is_neutral_venue,
+            "stadium": f.stadium_name,
+            "leg": f.unknown.get("leg") if f.unknown else None,
+        }
+
+    out = []
+    for cid, comp in comps.items():
+        fx = by_comp.get(cid, [])
+        only_mine = len(fx) > _MAX_ALL_FIXTURES
+        if only_mine:
+            fx = [f for f in fx if f in mine]
+        out.append({
+            "id": cid,
+            "databaseId": comp.database_id,
+            "onlyMine": only_mine,
+            "stages": [
+                {"id": s.id, "round": _raw(s.round), "group": s.group_id, "previous": s.previous_stage_id}
+                for s in stages if s.competition_id == cid
+            ],
+            "fixtures": [fixture_row(f) for f in sorted(fx, key=lambda f: (f.date or 0, f.kick_off_time or 0))],
+        })
+
+    # Per-player match stats in these competitions (FM keeps them for the teams it follows)
+    players = {p.uid: p for p in save.players()}
+    stats = []
+    for m in save.player_match_stats():
+        if m.competition_id not in comp_ids:
+            continue
+        p = players.get(m.player_uid)
+        stats.append({
+            "comp": m.competition_id,
+            "date": m.date.isoformat(),
+            "uniqueId": p.unique_id if p else None,
+            "name": m.player_name,
+            "club": p.club_uid if p else None,
+            "clubName": p.club_short_name if p else None,
+            "opponent": m.opponent_club_uid,
+            "minutes": m.minutes,
+            "leftAt": m.left_at_minute,
+            "goals": m.goals,
+            "assists": m.assists,
+            "rating": m.rating,
+            "position": _raw(m.position),
+            "passes": m.passes_attempted,
+            "passesDone": m.passes_completed,
+        })
+    seasons = [f.season_start_year for f in mine if f.season_start_year]
+    return {
+        "club": club_uid,
+        "clubName": club_name,
+        "season": max(set(seasons), key=seasons.count) if seasons else None,
+        "competitions": out,
+        "playerMatches": stats,
+    }
+
+
 def extract(path):
     with fmsave.open(path) as save:
         # First, so the contract records are noted the one time fmsave reads them
@@ -247,6 +348,11 @@ def extract(path):
             row["uniqueId"] = uid
             out["stats"].append(row)
         out["dump"] = _dump(save, club_uid, clubs[0].club_name, extras)
+        try:
+            out["competitions"] = _competitions(save, club_uid, clubs[0].club_name)
+        except Exception as e:  # never lose the rest of the import over it
+            out["competitions"] = None
+            out["competitionsError"] = str(e)
         try:
             out["scouts"] = _scouts(save, club_uid)
         except Exception as e:  # scouts are a bonus: never lose the squad import over them

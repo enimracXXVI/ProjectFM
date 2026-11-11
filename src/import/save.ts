@@ -3,6 +3,7 @@
  * ProjectFM fields: the Contract and Stats columns (same keys as the FM HTML exports),
  * feet, and personality values.
  */
+import type { CompetitionsFile } from '../competitions/types'
 import fmNations from '../data/fmNations.json'
 import { personalityName } from '../lib/personality'
 import type { KnowledgeEntry } from '../data/db'
@@ -32,6 +33,8 @@ export interface SaveData {
     clauses: { kind: string; value: number | null }[]
   }[]
   stats: (Record<string, number | string | null> & { uniqueId: number; kind: string })[]
+  /** This season's competitions (uploaded separately, removed once read). */
+  competitions?: Omit<CompetitionsFile, 'version'> | null
   /** Every player in Reader dump shape, nations as FM database ids (removed once read). */
   dump?: { meta: DumpMeta; players: (DumpPerson & { natDb?: number[] })[]; staff: [] }
   /** The club's scouts (absent in saves read before scouts were added). */

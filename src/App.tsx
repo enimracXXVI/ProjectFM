@@ -26,6 +26,9 @@ import { LayoutSettings } from './pages/settings/Layout'
 import { StatusesSettings } from './pages/settings/Statuses'
 import { Achievements, NotFound } from './pages/Simple'
 import { Check } from './pages/Check'
+import { Competition } from './pages/Competition'
+import { Competitions } from './pages/Competitions'
+import { Match } from './pages/Match'
 import { Explain } from './pages/Explain'
 import { Squad } from './pages/Squad'
 import { Staff } from './pages/Staff'
@@ -68,6 +71,9 @@ function SignedIn() {
         <Route path="careers" element={<Careers />} />
         <Route path="import" element={<Import />} />
         <Route path="check" element={<Check />} />
+        <Route path="competitions" element={<Competitions />} />
+        <Route path="competitions/:dbId" element={<Competition />} />
+        <Route path="competitions/:dbId/match/:key" element={<Match />} />
         <Route path="explain" element={<Explain />} />
         <Route path="settings" element={<SettingsPage />} />
         <Route path="settings/statuses" element={<StatusesSettings />} />

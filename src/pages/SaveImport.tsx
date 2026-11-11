@@ -14,6 +14,7 @@ import {
 } from '../import/save'
 import { useCurrentCareer } from '../lib/career'
 import { uploadWorld } from '../world/storage'
+import { uploadCompetitions } from '../competitions/storage'
 
 const KINDS: [StatsKind, string][] = [
   ['overall', 'All competitive matches'],
@@ -56,10 +57,21 @@ export function SaveImport({
       })
       const rest = await importSave({ career, data, kind, season: season || null, fileName })
       if (saveWorld) await uploadWorld(career.id, world)
+      if (data.competitions) {
+        await uploadCompetitions(career.id, { version: 1, ...data.competitions })
+      }
       return { squad: squad.players, ...rest }
     },
     onSuccess: () => {
-      for (const key of ['players', 'imports', 'player', 'snapshots', 'staff', 'world'])
+      for (const key of [
+        'players',
+        'imports',
+        'player',
+        'snapshots',
+        'staff',
+        'world',
+        'competitions',
+      ])
         qc.invalidateQueries({ queryKey: [key] })
     },
   })
@@ -147,6 +159,12 @@ export function SaveImport({
           <li>
             <strong>{scouts.length} scouts:</strong> attributes including Authority, and scouting
             knowledge per nation
+          </li>
+        )}
+        {data.competitions && (
+          <li>
+            <strong>Competitions:</strong> {data.competitions.competitions.length} this season, with
+            every fixture, result and per-player match stats
           </li>
         )}
         <li>

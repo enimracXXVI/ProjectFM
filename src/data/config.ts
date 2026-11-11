@@ -6,6 +6,7 @@ import {
   type AttributeSection,
   type Role,
 } from './attributeInfo'
+import type { CompetitionInfo } from '../competitions/types'
 import { DEFAULT_VIEWS, type ExtraView, type ExtraViewKey } from './columns'
 import { DEFAULT_ROLE_WEIGHTS, type RoleWeights } from '../lib/roleFit'
 import { DEFAULT_REGIONS, type Region } from './regions'
@@ -32,11 +33,15 @@ export interface AppConfig {
   showHidden: boolean
   /** FM words the user taught for values the app could not name (value → word). */
   learned: Learned
+  /** Competitions by FM database id: name and type. */
+  competitions: Record<string, CompetitionInfo>
 }
 
 export interface Learned {
   morale: Record<string, string>
   knowledge: Record<string, string>
+  /** Cup round names by FM round code. */
+  rounds?: Record<string, string>
 }
 
 export type ConfigKey = keyof AppConfig
@@ -52,7 +57,13 @@ export const DEFAULT_CONFIG: AppConfig = {
   roles: DEFAULT_ROLES,
   roleWeights: DEFAULT_ROLE_WEIGHTS,
   showHidden: false,
-  learned: { morale: {}, knowledge: {} },
+  learned: { morale: {}, knowledge: {}, rounds: {} },
+  // Confirmed by the user from FM
+  competitions: {
+    '32': { name: 'Serie A', kind: 'league' },
+    '1301412': { name: 'Coppa Italia', kind: 'cup' },
+    '104551': { name: 'Friendlies', kind: 'friendlies' },
+  },
 }
 
 type Stored = Partial<{ [K in ConfigKey]: AppConfig[K] }>
@@ -82,6 +93,7 @@ export function mergeConfig(stored: Stored): AppConfig {
     roleWeights: { ...DEFAULT_CONFIG.roleWeights, ...stored.roleWeights },
     showHidden: stored.showHidden ?? DEFAULT_CONFIG.showHidden,
     learned: { ...DEFAULT_CONFIG.learned, ...stored.learned },
+    competitions: { ...DEFAULT_CONFIG.competitions, ...stored.competitions },
   }
 }
 
