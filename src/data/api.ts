@@ -1,7 +1,7 @@
 import type { DevSnapshot } from '../lib/development'
 import type { Team } from './teams'
 import { supabase } from '../lib/supabase'
-import { DUMP_PRESENT, type DumpSummary } from '../import/dump'
+import { DUMP_PRESENT, isReaderDump, type DumpSummary } from '../import/dump'
 import type { CoreField } from '../import/fields'
 import type { ImportedPlayer, ParseResult } from '../import/parse'
 import type { Career, ImportRow, PlayerRow, ScoutingNetwork, SnapshotRow, StaffRow } from './db'
@@ -329,7 +329,11 @@ export async function importDump(opts: {
 
   const attributeNames = new Set(chosen.flatMap((p) => Object.keys(p.attributes)))
   const columns: ParseResult['columns'] = [
-    ...[...DUMP_PRESENT.core].map((field) => ({
+    // Feet only come from the ProjectFM Reader; older FMSuperScout dumps leave them alone
+    ...[
+      ...DUMP_PRESENT.core,
+      ...(isReaderDump(summary.meta) ? ['left_foot', 'right_foot'] : []),
+    ].map((field) => ({
       header: field,
       target: { kind: 'core' as const, field: field as CoreField },
     })),

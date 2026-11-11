@@ -1,7 +1,14 @@
 import { describe, expect, it } from 'vitest'
 import { ATTRIBUTE_INFO } from '../data/attributeInfo'
 import sample from './fixtures/dump-sample.json'
-import { formatPositions, playerFromDump, staffWord, summarizeDump, type Dump } from './dump'
+import {
+  footWord,
+  formatPositions,
+  playerFromDump,
+  staffWord,
+  summarizeDump,
+  type Dump,
+} from './dump'
 
 const dump = sample as unknown as Dump
 
@@ -27,6 +34,31 @@ describe('staffWord', () => {
       'Outstanding',
       'Elite',
     ])
+  })
+})
+
+describe('ProjectFM Reader fields', () => {
+  it('turns foot values into FM words, matching the squad export', () => {
+    // (value, FM word) pairs seen for the user's squad
+    const seen: [number, string][] = [
+      [5, 'Weak'],
+      [8, 'Weak'],
+      [9, 'Reasonable'],
+      [11, 'Reasonable'],
+      [12, 'Fairly Strong'],
+      [13, 'Fairly Strong'],
+      [16, 'Strong'],
+      [20, 'Very Strong'],
+    ]
+    for (const [n, word] of seen) expect(footWord(n), String(n)).toBe(word)
+  })
+
+  it('maps feet, condition and morale from a reader dump', () => {
+    const base = dump.players.find((p) => p.name === 'Franco Mastantuono')!
+    const p = playerFromDump({ ...base, footLeft: 20, footRight: 9, condition: 9600, morale: 17 })
+    expect(p.left_foot).toBe('Very Strong')
+    expect(p.right_foot).toBe('Reasonable')
+    expect(p.extra).toMatchObject({ Condition: '96%', 'Morale (1-20)': '17' })
   })
 })
 

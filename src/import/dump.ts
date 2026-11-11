@@ -104,8 +104,8 @@ export const PERSONALITY_KEYS = [
 /** Values that FM keeps hidden; stored in `extra` and shown only when the user allows it. */
 /** Raw values from the ProjectFM Reader, not shown until mapped to FM's display. */
 export const READER_EXTRA_KEYS = [
-  'Reader left foot',
-  'Reader right foot',
+  'Condition',
+  'Morale (1-20)',
   'Reader squad no',
   'Reader positions',
 ]
@@ -137,6 +137,20 @@ const STAFF_ATTR: Record<string, string> = {
 /** FM job ids for scouting staff. */
 export const JOB_SCOUT = 14
 export const JOB_CHIEF_SCOUT = 44
+
+/**
+ * FM27 foot strength word for a 1–20 value. Checked against the user's squad export
+ * (Weak 5–8, Reasonable 9–11, Fairly Strong 12–13, Strong 16, Very Strong 20); the gaps in
+ * between follow the same three-point steps.
+ */
+export function footWord(n: number): string {
+  if (n <= 4) return 'Very Weak'
+  if (n <= 8) return 'Weak'
+  if (n <= 11) return 'Reasonable'
+  if (n <= 14) return 'Fairly Strong'
+  if (n <= 17) return 'Strong'
+  return 'Very Strong'
+}
 
 /** FM27 staff rating word for a 1–20 value. */
 export function staffWord(n: number): string {
@@ -183,9 +197,11 @@ export function playerFromDump(p: DumpPerson): ImportedPlayer {
     if (HIDDEN_KEY[k]) extra[HIDDEN_KEY[k]] = String(v)
     else attributes[PLAYER_ATTR[k] ?? k] = v
   }
-  // Raw ProjectFM Reader values, kept until their FM meaning is confirmed against exports
-  if (p.footLeft) extra['Reader left foot'] = String(p.footLeft)
-  if (p.footRight) extra['Reader right foot'] = String(p.footRight)
+  // ProjectFM Reader values. Condition is stored ×100 (10000 = 100%).
+  if (typeof p.condition === 'number' && p.condition >= 0)
+    extra.Condition = `${Math.round(p.condition / 100)}%`
+  if (typeof p.morale === 'number' && p.morale > 0) extra['Morale (1-20)'] = String(p.morale)
+  // Squad number from the reader did not match FM for 11 of 25 players: kept raw only
   if (p.squadNo != null) extra['Reader squad no'] = String(p.squadNo)
   if (p.posRatings) {
     extra['Reader positions'] = Object.entries(p.posRatings)
@@ -207,13 +223,16 @@ export function playerFromDump(p: DumpPerson): ImportedPlayer {
     nation: p.nat?.[0] ?? null,
     second_nation: p.nat?.[1] ?? null,
     height_cm: p.height ?? null,
-    left_foot: null,
-    right_foot: null,
+    left_foot: p.footLeft ? footWord(p.footLeft) : null,
+    right_foot: p.footRight ? footWord(p.footRight) : null,
     personality: null,
     attributes,
     extra,
   }
 }
+
+/** True for dumps written by the ProjectFM Reader (feet, condition, morale, positions). */
+export const isReaderDump = (meta: DumpMeta) => (meta as { projectfm?: number }).projectfm === 1
 
 /** Fields a dump import provides; everything else on a player is left as it was. */
 export const DUMP_PRESENT = {

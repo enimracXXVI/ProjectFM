@@ -94,6 +94,10 @@ export function PlayerDetail() {
         {p.extra.selection && <Info label="Selection" value={p.extra.selection} />}
         {p.extra.Ability && <Info label="Ability" value={`${p.extra.Ability} ★`} />}
         {p.extra.Potential && <Info label="Potential" value={`${p.extra.Potential} ★`} />}
+        {p.extra.Condition && <Info label="Condition" value={p.extra.Condition} />}
+        {p.extra['Morale (1-20)'] && (
+          <Info label="Morale" value={`${p.extra['Morale (1-20)']} / 20`} />
+        )}
         {config.showHidden && p.extra.CA && <Info label="CA" value={p.extra.CA} />}
         {config.showHidden && p.extra.PA && <Info label="PA" value={p.extra.PA} />}
       </dl>
