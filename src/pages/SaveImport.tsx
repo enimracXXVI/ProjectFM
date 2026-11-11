@@ -4,7 +4,13 @@ import { Link } from 'react-router-dom'
 import { Button, ErrorText } from '../components/form'
 import { Card } from '../components/ui'
 import { importSave } from '../data/api'
-import type { SaveData, StatsKind } from '../import/save'
+import {
+  fmNation,
+  isUnconfirmedKnowledge,
+  knowledgeWord,
+  type SaveData,
+  type StatsKind,
+} from '../import/save'
 import { useCurrentCareer } from '../lib/career'
 
 const KINDS: [StatsKind, string][] = [
@@ -31,7 +37,7 @@ export function SaveImport({
   const mutation = useMutation({
     mutationFn: () => importSave({ career, data, kind, season: season || null, fileName }),
     onSuccess: () => {
-      for (const key of ['players', 'imports', 'player', 'snapshots'])
+      for (const key of ['players', 'imports', 'player', 'snapshots', 'staff'])
         qc.invalidateQueries({ queryKey: [key] })
     },
   })
@@ -46,6 +52,12 @@ export function SaveImport({
             ? ` · ${mutation.data.notInSquad} players in the save are not in your ProjectFM squad (import them with dump.json first)`
             : ''}
         </p>
+        {mutation.data.scoutsAdded + mutation.data.scoutsUpdated > 0 && (
+          <p className="mt-1 text-sm">
+            Scouts: {mutation.data.scoutsUpdated} updated, {mutation.data.scoutsAdded} added
+            (attributes with Authority, and scouting knowledge)
+          </p>
+        )}
         <div className="mt-2 flex gap-4 text-sm font-semibold text-accent">
           <Link to="/squad" className="underline">
             Squad
@@ -57,6 +69,12 @@ export function SaveImport({
       </Card>
     )
 
+  const scouts = data.scouts ?? []
+  const unconfirmed = scouts.flatMap((s) =>
+    s.knowledge
+      .filter((k) => isUnconfirmedKnowledge(knowledgeWord(k.value)))
+      .map((k) => `${s.name} – ${fmNation(k.nation)} (${k.value}/100)`),
+  )
   const withStats = new Set(data.stats.filter((s) => s.kind === kind).map((s) => s.uniqueId)).size
 
   return (
@@ -78,8 +96,27 @@ export function SaveImport({
         <li>
           <strong>Feet</strong> (left and right)
         </li>
+        {scouts.length > 0 && (
+          <li>
+            <strong>{scouts.length} scouts:</strong> attributes including Authority, and scouting
+            knowledge per nation
+          </li>
+        )}
         <li className="text-muted">Only players already in your ProjectFM squad are updated.</li>
       </ul>
+      {unconfirmed.length > 0 && (
+        <details className="mt-3 text-sm">
+          <summary className="cursor-pointer text-muted">
+            {unconfirmed.length} knowledge values not matched to an FM word yet (kept as shown, or
+            your own level where you set one)
+          </summary>
+          <ul className="mt-1 list-disc pl-5 text-muted">
+            {unconfirmed.map((u) => (
+              <li key={u}>{u}</li>
+            ))}
+          </ul>
+        </details>
+      )}
       <div className="mt-4 grid gap-3 sm:grid-cols-2">
         <label className="grid gap-1 text-sm">
           <span className="text-muted">Stats from</span>

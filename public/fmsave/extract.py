@@ -1,9 +1,11 @@
 """ProjectFM: reads the managed club's squad from an FM save with fmsave (MIT).
 
 Returns JSON with, per player (by FM Unique ID): feet, personality values, contract terms
-and clauses, and this season's stats per competition kind.
+and clauses, and this season's stats per competition kind. Also the club's scouts: their
+attributes (Authority included) and scouting knowledge per nation.
 """
 import json
+import struct
 from dataclasses import asdict, is_dataclass
 from datetime import date, datetime
 
@@ -19,6 +21,57 @@ def _plain(v):
     if hasattr(v, "name") and hasattr(v, "value"):  # plain enum
         return v.name.lower()
     return str(v)
+
+
+JOB_SCOUT, JOB_CHIEF_SCOUT = 14, 44
+_FF8 = b"\xff" * 8
+
+
+def _knowledge(game_db, uid, nation_db_ids):
+    """A staff member's scouting knowledge: [(nation database id, value 0-100)].
+
+    Not read by fmsave. Found by ProjectFM in FM27 saves: after the person's header
+    (uid twice) comes `01 01 <count>` and then `count` 39-byte entries:
+    [?][04][nation u16][6 x 00][two 8-byte ids][value][date: day u16, year u16][8 x ff].
+    Checked against FM27's staff screen for 5 scouts (100 = Complete).
+    """
+    head = game_db.find(struct.pack("<II", uid, uid))
+    if head < 0:
+        return []
+    for p in range(head + 8, min(head + 600, len(game_db))):
+        n = game_db[p]
+        if not 1 <= n <= 100 or game_db[p - 2:p] != b"\x01\x01":
+            continue
+        out = []
+        for k in range(n):
+            e = p + 1 + 39 * k
+            if game_db[e + 1] != 4 or game_db[e + 31:e + 39] != _FF8:
+                break
+            nation = struct.unpack_from("<H", game_db, e + 2)[0]
+            out.append({"nation": nation_db_ids.get(nation), "value": game_db[e + 26]})
+        if len(out) == n:
+            return out
+    return []
+
+
+def _scouts(save, club_uid):
+    nation_db_ids = {n.nation_id: n.database_id for n in save.nations()}
+    staff = [
+        s for s in save.staff()
+        if s.club_uid == club_uid and getattr(s.job, "raw", None) in (JOB_SCOUT, JOB_CHIEF_SCOUT)
+    ]
+    out = []
+    with save._context.section("game_db") as game_db:
+        for s in staff:
+            out.append({
+                "uniqueId": s.unique_id,
+                "name": s.name,
+                "age": s.age,
+                "chief": s.job.raw == JOB_CHIEF_SCOUT,
+                "attributes": asdict(s.attributes) if is_dataclass(s.attributes) else None,
+                "knowledge": _knowledge(game_db, s.uid, nation_db_ids),
+            })
+    return out
 
 
 def extract(path):
@@ -69,6 +122,11 @@ def extract(path):
             row = asdict(st)
             row["uniqueId"] = uid
             out["stats"].append(row)
+        try:
+            out["scouts"] = _scouts(save, club_uid)
+        except Exception as e:  # scouts are a bonus: never lose the squad import over them
+            out["scouts"] = []
+            out["scoutsError"] = str(e)
         return json.dumps(out, default=_plain)
 
 

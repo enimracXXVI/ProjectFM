@@ -7,6 +7,8 @@ import type { ImportedPlayer, ParseResult } from '../import/parse'
 import {
   SAVE_CONTRACT_KEYS,
   SAVE_STATS_KEYS,
+  mergeKnowledge,
+  saveScouts,
   saveUpdates,
   type SaveData,
   type StatsKind,
@@ -451,7 +453,12 @@ export async function importSave(opts: {
   kind: StatsKind
   season: string | null
   fileName: string
-}): Promise<{ updated: number; notInSquad: number }> {
+}): Promise<{
+  updated: number
+  notInSquad: number
+  scoutsAdded: number
+  scoutsUpdated: number
+}> {
   const { career, data, kind, season, fileName } = opts
   const existing = (await listPlayers(career.id)).filter((p) => p.fm_uid != null)
   const byUid = new Map(existing.map((p) => [p.fm_uid!, p]))
@@ -508,5 +515,43 @@ export async function importSave(opts: {
     updated++
   }
   if (snapshots.length) check(await supabase.from('player_snapshots').insert(snapshots))
-  return { updated, notInSquad: updates.length - updated }
+
+  // Scouts: attributes (Authority included) and scouting knowledge
+  const staff = await listStaff(career.id)
+  let scoutsAdded = 0
+  let scoutsUpdated = 0
+  for (const s of saveScouts(data)) {
+    const match =
+      staff.find((x) => x.fm_uid === s.fm_uid) ??
+      staff.find((x) => x.name.toLowerCase() === s.name.toLowerCase())
+    if (match) {
+      check(
+        await supabase
+          .from('staff')
+          .update({
+            fm_uid: s.fm_uid,
+            role: s.role,
+            age: s.age ?? match.age,
+            attributes: { ...match.attributes, ...s.attributes },
+            knowledge: mergeKnowledge(s.knowledge, match.knowledge),
+          })
+          .eq('id', match.id),
+      )
+      scoutsUpdated++
+    } else {
+      check(
+        await supabase.from('staff').insert({
+          career_id: career.id,
+          fm_uid: s.fm_uid,
+          name: s.name,
+          role: s.role,
+          age: s.age,
+          attributes: s.attributes,
+          knowledge: s.knowledge,
+        }),
+      )
+      scoutsAdded++
+    }
+  }
+  return { updated, notInSquad: updates.length - updated, scoutsAdded, scoutsUpdated }
 }

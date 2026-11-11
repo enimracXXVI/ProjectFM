@@ -3,8 +3,10 @@
  * ProjectFM fields: the Contract and Stats columns (same keys as the FM HTML exports),
  * feet, and personality values.
  */
+import fmNations from '../data/fmNations.json'
+import type { KnowledgeEntry } from '../data/db'
 import { EUR_PER_GBP } from '../lib/money'
-import { footWord } from './dump'
+import { footWord, staffWord } from './dump'
 
 export type StatsKind = 'overall' | 'league' | 'cup' | 'non_competitive'
 
@@ -28,6 +30,16 @@ export interface SaveData {
     clauses: { kind: string; value: number | null }[]
   }[]
   stats: (Record<string, number | string | null> & { uniqueId: number; kind: string })[]
+  /** The club's scouts (absent in saves read before scouts were added). */
+  scouts?: {
+    uniqueId: number
+    name: string
+    age: number | null
+    chief: boolean
+    attributes: Record<string, number> | null
+    /** Nation is the FM database id; value 0–100. */
+    knowledge: { nation: number | null; value: number }[]
+  }[]
 }
 
 /** Money as FM writes it: €2.84M, €13.25K, €950. */
@@ -155,5 +167,85 @@ export function saveUpdates(data: SaveData, kind: StatsKind): SavePlayerUpdate[]
       contract: contract ? contractFields(contract) : null,
       stats: stats ? statsFields(stats) : null,
     }
+  })
+}
+
+/**
+ * FM27 knowledge words for the save's 0–100 value, as checked against the staff screen
+ * (Vázquez 30 and Victor 36 = Very Good, Braund 48 = Extensive, 100 = Complete).
+ * Values not confirmed yet are written as "n/100".
+ */
+const KNOWLEDGE_WORDS: Record<number, string> = {
+  30: 'Very Good',
+  36: 'Very Good',
+  48: 'Extensive',
+  100: 'Complete',
+}
+export const knowledgeWord = (n: number) => KNOWLEDGE_WORDS[n] ?? `${n}/100`
+export const isUnconfirmedKnowledge = (level: string) => /^\d+\/100$/.test(level)
+
+const NATIONS = fmNations as Record<string, string>
+/** Nation name for an FM database id (names taken from the user's own dump). */
+export const fmNation = (id: number | null) =>
+  id == null ? 'Unknown nation' : (NATIONS[String(id)] ?? `Nation #${id}`)
+
+/**
+ * Save staff attribute → FM27 label. The save holds most of them ×5 (17 shows as 85);
+ * Adaptability and Authority are stored 1–20 as shown.
+ */
+const SCOUT_ATTR: [string, string, number][] = [
+  ['analysing_data', 'Analysing Data', 5],
+  ['adaptability', 'Adaptability', 1],
+  ['determination', 'Determination', 5],
+  ['motivating', 'Motivating', 5],
+  ['people_management', 'People Management', 5],
+  ['authority', 'Authority', 1],
+  ['judging_player_ability', 'Judging Player Ability', 5],
+  ['judging_player_potential', 'Judging Player Potential', 5],
+  ['judging_staff_ability', 'Judging Staff Ability', 5],
+  ['negotiating', 'Negotiating', 5],
+  ['tactical_knowledge', 'Tactical Knowledge', 5],
+]
+
+export interface SaveScout {
+  fm_uid: number
+  name: string
+  age: number | null
+  role: 'Scout' | 'Chief Scout'
+  attributes: Record<string, string>
+  knowledge: KnowledgeEntry[]
+}
+
+/** The save's scouts as ProjectFM staff: rating words and knowledge per nation. */
+export function saveScouts(data: SaveData): SaveScout[] {
+  return (data.scouts ?? []).map((s) => {
+    const attributes: Record<string, string> = {}
+    for (const [key, label, scale] of SCOUT_ATTR) {
+      const v = s.attributes?.[key]
+      if (typeof v === 'number' && v > 0) attributes[label] = staffWord(Math.floor(v / scale))
+    }
+    return {
+      fm_uid: s.uniqueId,
+      name: s.name,
+      age: s.age,
+      role: s.chief ? 'Chief Scout' : 'Scout',
+      attributes,
+      knowledge: s.knowledge.map((k) => ({
+        nation: fmNation(k.nation),
+        level: knowledgeWord(k.value),
+      })),
+    }
+  })
+}
+
+/**
+ * New knowledge list for a scout: the save's nations, but where the save's value is not
+ * confirmed yet and the user already set a level for that nation, theirs is kept.
+ */
+export function mergeKnowledge(fromSave: KnowledgeEntry[], current: KnowledgeEntry[]) {
+  return fromSave.map((k) => {
+    if (!isUnconfirmedKnowledge(k.level)) return k
+    const mine = current.find((c) => c.nation === k.nation)
+    return mine && !isUnconfirmedKnowledge(mine.level) ? mine : k
   })
 }

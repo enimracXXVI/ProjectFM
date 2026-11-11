@@ -230,6 +230,7 @@ function StaffForm({ existing }: { existing: StaffRow | null }) {
                   onChange={(e) => setKnowledge(i, { level: e.target.value })}
                   className={`${input} w-36`}
                 >
+                  {!config.knowledgeLevels.includes(k.level) && <option>{k.level}</option>}
                   {config.knowledgeLevels.map((l) => (
                     <option key={l}>{l}</option>
                   ))}
