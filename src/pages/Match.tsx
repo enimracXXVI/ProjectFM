@@ -1,6 +1,7 @@
 import { clsx } from 'clsx'
 import { ArrowLeft } from 'lucide-react'
 import { Link, useParams, useSearchParams } from 'react-router-dom'
+import { MatchLogCard } from '../components/MatchLogCard'
 import { Card, Placeholder } from '../components/ui'
 import { useCompetitions } from '../competitions/hooks'
 import type { PlayerMatch } from '../competitions/types'
@@ -84,9 +85,9 @@ export function Match() {
           />
         )}
       </div>
-      <p className="mt-4 text-sm text-muted">
-        Your tactic, the opponent’s tactic and notes for each match come next.
-      </p>
+      <div className="mt-4">
+        <MatchLogCard matchKey={key} competitionDbId={comp.databaseId} season={data.season} />
+      </div>
     </>
   )
 }

@@ -29,6 +29,7 @@ import { Check } from './pages/Check'
 import { Competition } from './pages/Competition'
 import { Competitions } from './pages/Competitions'
 import { Match } from './pages/Match'
+import { Tactics } from './pages/Tactics'
 import { Explain } from './pages/Explain'
 import { Squad } from './pages/Squad'
 import { Staff } from './pages/Staff'
@@ -72,6 +73,7 @@ function SignedIn() {
         <Route path="import" element={<Import />} />
         <Route path="check" element={<Check />} />
         <Route path="competitions" element={<Competitions />} />
+        <Route path="tactics" element={<Tactics />} />
         <Route path="competitions/:dbId" element={<Competition />} />
         <Route path="competitions/:dbId/match/:key" element={<Match />} />
         <Route path="explain" element={<Explain />} />

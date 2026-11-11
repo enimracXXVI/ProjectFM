@@ -4,6 +4,7 @@
  * feet, and personality values.
  */
 import type { CompetitionsFile } from '../competitions/types'
+import type { SaveTactics } from '../tactics/types'
 import fmNations from '../data/fmNations.json'
 import { personalityName } from '../lib/personality'
 import type { KnowledgeEntry } from '../data/db'
@@ -14,7 +15,7 @@ import { footWithValue, staffWord, type Dump, type DumpMeta, type DumpPerson } f
 export type StatsKind = 'overall' | 'league' | 'cup' | 'non_competitive'
 
 /** Version of public/fmsave/extract.py this app expects. */
-export const READER_VERSION = 3
+export const READER_VERSION = 4
 
 export interface SaveData {
   /** Version of the save reader that produced this (absent before version 3). */
@@ -39,6 +40,9 @@ export interface SaveData {
     clauses: { kind: string; value: number | null }[]
   }[]
   stats: (Record<string, number | string | null> & { uniqueId: number; kind: string })[]
+  /** First-team tactics and current selection. */
+  tactics?: SaveTactics | null
+  tacticsError?: string
   /** This season's competitions (uploaded separately, removed once read). */
   competitions?: Omit<CompetitionsFile, 'version'> | null
   /** Every player in Reader dump shape, nations as FM database ids (removed once read). */

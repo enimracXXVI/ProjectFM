@@ -5,7 +5,9 @@ import {
   listImports,
   listPlayers,
   listSnapshots,
+  listMatchLog,
   listStaff,
+  listTactics,
 } from './api'
 
 export const usePlayers = (careerId: string) =>
@@ -27,4 +29,14 @@ export const useCareerSnapshots = (careerId: string) =>
   useQuery({
     queryKey: ['snapshots', 'career', careerId],
     queryFn: () => listCareerSnapshots(careerId),
+  })
+
+export const useTactics = (careerId: string) =>
+  useQuery({ queryKey: ['tactics', careerId], queryFn: () => listTactics(careerId), retry: false })
+
+export const useMatchLog = (careerId: string) =>
+  useQuery({
+    queryKey: ['matchlog', careerId],
+    queryFn: () => listMatchLog(careerId),
+    retry: false,
   })

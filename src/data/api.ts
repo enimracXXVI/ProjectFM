@@ -18,6 +18,7 @@ import {
   type StatsKind,
 } from '../import/save'
 import type { Career, ImportRow, PlayerRow, ScoutingNetwork, SnapshotRow, StaffRow } from './db'
+import type { MatchLogRow, SaveTactics, TacticRow, TacticSlot } from '../tactics/types'
 
 function check<T>(res: { data: T | null; error: { message: string } | null }): T {
   if (res.error) throw new Error(res.error.message)
@@ -642,4 +643,90 @@ export async function teachWord(
 /** Sets a player's personality by hand (kept by later imports that cannot work it out). */
 export async function setPlayerPersonality(id: string, personality: string): Promise<void> {
   check(await supabase.from('players').update({ personality }).eq('id', id))
+}
+
+// --- Tactics and match log (migration 0006) ---
+
+/** True when the tactics / match log tables are not in Supabase yet. */
+export const isMissingTable = (e: unknown) =>
+  e instanceof Error && /(relation|table).*(does not exist|not find|schema cache)/i.test(e.message)
+
+export async function listTactics(careerId: string): Promise<TacticRow[]> {
+  return check(
+    await supabase.from('tactics').select('*').eq('career_id', careerId).order('created_at'),
+  )
+}
+
+export async function saveTactic(
+  careerId: string,
+  id: string | null,
+  input: Partial<Omit<TacticRow, 'id' | 'career_id' | 'created_at' | 'updated_at'>>,
+): Promise<TacticRow> {
+  const q = id
+    ? supabase.from('tactics').update(input).eq('id', id)
+    : supabase.from('tactics').insert({ ...input, career_id: careerId })
+  return check(await q.select('*').single()) as TacticRow
+}
+
+export async function deleteTactic(id: string): Promise<void> {
+  check(await supabase.from('tactics').delete().eq('id', id))
+}
+
+/**
+ * Tactics from the save: new ones are added with the save's current XI as preferred XI;
+ * existing ones get name, style, mentality and positions, keeping roles and players.
+ */
+export async function importSaveTactics(careerId: string, data: SaveTactics): Promise<number> {
+  const existing = await listTactics(careerId)
+  const players = await listPlayers(careerId)
+  const byUid = new Map(players.map((p) => [p.fm_uid, p.id]))
+  const starters = data.selection.filter((s) => !s.substitute)
+  for (const t of data.tactics) {
+    const old = existing.find((x) => x.save_index === t.index)
+    const slots: TacticSlot[] = t.slots.map((s, i) => ({
+      position: s.position,
+      role: old?.slots[i]?.role ?? null,
+      player:
+        old?.slots[i]?.player ??
+        byUid.get(starters.find((x) => x.slot === s.number)?.uniqueId ?? -1) ??
+        null,
+    }))
+    await saveTactic(careerId, old?.id ?? null, {
+      name: t.name,
+      style: t.style,
+      // "balanced" → "Balanced", "very_attacking" → "Very Attacking"
+      mentality: t.mentality
+        ? t.mentality.replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase())
+        : null,
+      slots,
+      save_index: t.index,
+    })
+  }
+  return data.tactics.length
+}
+
+export async function getMatchLog(careerId: string, key: string): Promise<MatchLogRow | null> {
+  return check(
+    await supabase
+      .from('match_log')
+      .select('*')
+      .eq('career_id', careerId)
+      .eq('match_key', key)
+      .maybeSingle(),
+  ) as MatchLogRow | null
+}
+
+export async function listMatchLog(careerId: string): Promise<MatchLogRow[]> {
+  return check(await supabase.from('match_log').select('*').eq('career_id', careerId))
+}
+
+export async function saveMatchLog(
+  careerId: string,
+  input: Omit<MatchLogRow, 'id' | 'career_id'>,
+): Promise<void> {
+  check(
+    await supabase
+      .from('match_log')
+      .upsert({ ...input, career_id: careerId }, { onConflict: 'career_id,match_key' }),
+  )
 }

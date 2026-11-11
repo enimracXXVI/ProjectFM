@@ -45,7 +45,7 @@ def _plain(v):
 
 
 # Raised whenever extract() returns new data, so the app can spot an outdated copy
-READER_VERSION = 3
+READER_VERSION = 4
 
 JOB_SCOUT, JOB_CHIEF_SCOUT = 14, 44
 _FF8 = b"\xff" * 8
@@ -297,6 +297,46 @@ def _competitions(save, club_uid, club_name):
     }
 
 
+# Tactic position bits (fmsave names 11 of them). Bit 10 carries no name in fmsave; in the
+# user's tactic it is the pair between DM and the AMs, flagged as left/right halves: M (C).
+_TACTIC_POSITION = {
+    0: "GK", 2: "DR", 3: "DL", 4: "DC", 7: "DM", 8: "MR", 9: "ML", 10: "MC",
+    11: "AMR", 12: "AML", 13: "AMC", 14: "ST",
+}
+
+
+def _tactics(save, club_uid):
+    """The first team's tactics (formation, style, mentality) and current selection."""
+    players = {p.uid: p.unique_id for p in save.players() if p.club_uid == club_uid}
+    out = []
+    for t in save.tactics():
+        if t.club_uid != club_uid or (t.team_slot or 0) != 0:
+            continue
+        slots = []
+        for s in t.slots:
+            raw = [_raw(x) for x in s.in_possession_positions]
+            raw_oop = [_raw(x) for x in s.out_of_possession_positions]
+            slots.append({
+                "number": s.number,
+                "position": _TACTIC_POSITION.get(raw[0]) if raw else None,
+                "positionOop": _TACTIC_POSITION.get(raw_oop[0]) if raw_oop else None,
+                "rawPosition": raw[0] if raw else None,
+            })
+        out.append({
+            "index": t.index,
+            "name": t.name,
+            "style": t.style_name,
+            "mentality": _plain(t.mentality),
+            "slots": slots,
+        })
+    selection = [
+        {"slot": s.slot, "substitute": s.substitute, "uniqueId": players.get(s.player_uid), "name": s.player_name}
+        for s in save.selections()
+        if s.club_uid == club_uid and (s.team_slot or 0) == 0
+    ]
+    return {"tactics": out, "selection": selection}
+
+
 def extract(path):
     with fmsave.open(path) as save:
         # First, so the contract records are noted the one time fmsave reads them
@@ -352,6 +392,11 @@ def extract(path):
             row["uniqueId"] = uid
             out["stats"].append(row)
         out["dump"] = _dump(save, club_uid, clubs[0].club_name, extras)
+        try:
+            out["tactics"] = _tactics(save, club_uid)
+        except Exception as e:
+            out["tactics"] = None
+            out["tacticsError"] = str(e)
         try:
             out["competitions"] = _competitions(save, club_uid, clubs[0].club_name)
         except Exception as e:  # never lose the rest of the import over it

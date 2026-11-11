@@ -3,7 +3,7 @@ import { useEffect, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { Button, ErrorText } from '../components/form'
 import { Card } from '../components/ui'
-import { importDump, importSave } from '../data/api'
+import { importDump, importSave, importSaveTactics, isMissingTable } from '../data/api'
 import type { DumpSummary } from '../import/dump'
 import {
   fmNation,
@@ -69,7 +69,20 @@ export function SaveImport({
         await uploadCompetitions(career.id, { version: 1, ...data.competitions })
         competitions = data.competitions.competitions.length
       }
-      return { squad: squad.players, ...rest, competitions }
+      // Tactics need the 0006 tables; the rest of the import never depends on them
+      let tactics: number | string = 0
+      if (data.tactics) {
+        try {
+          tactics = await importSaveTactics(career.id, data.tactics)
+        } catch (e) {
+          tactics = isMissingTable(e)
+            ? 'needs the one-time database update (see Tactics)'
+            : e instanceof Error
+              ? e.message
+              : String(e)
+        }
+      }
+      return { squad: squad.players, ...rest, competitions, tactics }
     },
     onSuccess: () => {
       for (const key of [
@@ -80,6 +93,7 @@ export function SaveImport({
         'staff',
         'world',
         'competitions',
+        'tactics',
       ])
         qc.invalidateQueries({ queryKey: [key] })
     },
@@ -168,6 +182,11 @@ export function SaveImport({
           <li>Contracts, season stats and feet: {r.updated} players</li>
           <li>
             Scouts: {r.scoutsUpdated} updated · {r.scoutsAdded} added
+          </li>
+          <li className={typeof r.tactics === 'number' ? '' : 'text-amber-300'}>
+            {typeof r.tactics === 'number'
+              ? `Tactics: ${r.tactics} with the current XI as preferred XI`
+              : `Tactics: not saved (${r.tactics})`}
           </li>
           <li className={r.competitions ? '' : 'text-amber-300'}>
             {r.competitions
