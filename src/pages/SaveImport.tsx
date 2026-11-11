@@ -8,6 +8,7 @@ import type { DumpSummary } from '../import/dump'
 import {
   fmNation,
   isUnconfirmedKnowledge,
+  READER_VERSION,
   knowledgeWord,
   type SaveData,
   type StatsKind,
@@ -57,10 +58,12 @@ export function SaveImport({
       })
       const rest = await importSave({ career, data, kind, season: season || null, fileName })
       if (saveWorld) await uploadWorld(career.id, world)
+      let competitions = 0
       if (data.competitions) {
         await uploadCompetitions(career.id, { version: 1, ...data.competitions })
+        competitions = data.competitions.competitions.length
       }
-      return { squad: squad.players, ...rest }
+      return { squad: squad.players, ...rest, competitions }
     },
     onSuccess: () => {
       for (const key of [
@@ -89,6 +92,11 @@ export function SaveImport({
           <li>Contracts, season stats and feet: {r.updated} players</li>
           <li>
             Scouts: {r.scoutsUpdated} updated · {r.scoutsAdded} added
+          </li>
+          <li className={r.competitions ? '' : 'text-amber-300'}>
+            {r.competitions
+              ? `Competitions: ${r.competitions} saved for this season`
+              : `Competitions: not read${data.competitionsError ? ` (${data.competitionsError})` : ''}`}
           </li>
           {saveWorld && (
             <li>
@@ -129,6 +137,12 @@ export function SaveImport({
   return (
     <Card className="mt-4">
       <h2 className="font-semibold">FM save</h2>
+      {(data.reader ?? 0) < READER_VERSION && (
+        <p className="mt-2 rounded-lg border border-amber-400/50 bg-amber-400/10 p-2 text-sm text-amber-200">
+          This save was read with an older copy of the save reader, so some data (competitions) is
+          missing. Close the app completely, open it again and import the save once more.
+        </p>
+      )}
       <p className="mt-1 text-sm text-muted">
         {data.club} · in-game {data.gameDate ?? '?'} · {summary.totalPlayers.toLocaleString()}{' '}
         players in the world

@@ -45,7 +45,8 @@ async function boot(base: string): Promise<PyodideLike> {
   py.unpackArchive(wheel, 'wheel')
   py.FS.writeFile(
     '/home/pyodide/extract.py',
-    await (await fetch(new URL('fmsave/extract.py', base))).text(),
+    // Never a cached copy: an old reader would silently miss newer data
+    await (await fetch(new URL('fmsave/extract.py', base), { cache: 'no-store' })).text(),
   )
   py.runPython('import sys; sys.path.insert(0, "/home/pyodide")')
   return py

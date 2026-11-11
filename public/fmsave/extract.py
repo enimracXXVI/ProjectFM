@@ -44,6 +44,9 @@ def _plain(v):
     return str(v)
 
 
+# Raised whenever extract() returns new data, so the app can spot an outdated copy
+READER_VERSION = 3
+
 JOB_SCOUT, JOB_CHIEF_SCOUT = 14, 44
 _FF8 = b"\xff" * 8
 
@@ -308,6 +311,7 @@ def extract(path):
         players = save.players().where(club_uid=club_uid)
         uid_to_unique = {p.uid: p.unique_id for p in players}
         out = {
+            "reader": READER_VERSION,
             "club": clubs[0].club_name,
             "gameDate": save.info.game_date,
             "players": [],
