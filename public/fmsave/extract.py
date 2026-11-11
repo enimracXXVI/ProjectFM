@@ -45,7 +45,7 @@ def _plain(v):
 
 
 # Raised whenever extract() returns new data, so the app can spot an outdated copy
-READER_VERSION = 5
+READER_VERSION = 6
 
 JOB_SCOUT, JOB_CHIEF_SCOUT = 14, 44
 _FF8 = b"\xff" * 8
@@ -308,7 +308,8 @@ def _competitions(save, club_uid, club_name):
 
 
 # Tactic position bits (fmsave names 11 of them). Bit 10 carries no name in fmsave; in the
-# user's tactic it is the pair between DM and the AMs, flagged as left/right halves: M (C).
+# user's tactic it is the pair between DM and the AMs, flagged as left/right halves: M (C)
+# (confirmed by the user on FM's tactic screen: CM and WCM).
 _TACTIC_POSITION = {
     0: "GK", 2: "DR", 3: "DL", 4: "DC", 7: "DM", 8: "MR", 9: "ML", 10: "MC",
     11: "AMR", 12: "AML", 13: "AMC", 14: "ST",
@@ -347,6 +348,34 @@ def _tactics(save, club_uid):
     return {"tactics": out, "selection": selection}
 
 
+def _team_block(report, team_id):
+    """A team's statistics block in an FM27 match report (found by ProjectFM).
+
+    Layout: 02, team id (u32), 4 + 8 bytes, 00 00, xG (f32), a variable list, then 24 u32
+    counts, 36 byte counts, and u16 counts starting with passes attempted / completed.
+    Returned raw so the app decides which number is which (checked against FM's match
+    stats screen for Fiorentina 4-1 Venezia, and passes against the players' own totals).
+    """
+    pat = b"\x02" + struct.pack("<I", team_id)
+    i = report.find(pat)
+    while i != -1:
+        q = i + 5
+        if report[q + 13:q + 15] == b"\x00\x00" and 0 <= struct.unpack_from("<f", report, q + 15)[0] < 10:
+            for c in range(q + 20, min(q + 400, len(report) - 240)):
+                vals = struct.unpack_from("<24I", report, c)
+                pa, pc = struct.unpack_from("<HH", report, c + 132)
+                if max(vals) < 2000 and 100 < pa < 2000 and pc <= pa and vals[15] <= 40:
+                    return {
+                        "xg": round(struct.unpack_from("<f", report, q + 15)[0], 3),
+                        "u": list(vals),
+                        "b": list(report[c + 96:c + 132]),
+                        "h": list(struct.unpack_from("<8H", report, c + 132)),
+                        "h104": struct.unpack_from("<10H", report, c + 132 + 96),
+                    }
+        i = report.find(pat, i + 1)
+    return None
+
+
 def _matchday_squads(save, club_uid, fixtures):
     """Who was in each of the club's matchday squads (Unique IDs), from FM's match reports.
 
@@ -379,12 +408,19 @@ def _matchday_squads(save, club_uid, fixtures):
             squads = {}
             for side, uid in (("home", f.home_club_uid), ("away", f.away_club_uid)):
                 squads[side] = [u for u in clubs.get(uid, []) if struct.pack("<I", u) in report]
+            def block(team_id):
+                try:
+                    return _team_block(report, team_id)
+                except Exception:
+                    return None
             out.append({
                 "date": f.date.isoformat(),
                 "home": f.home_club_uid,
                 "away": f.away_club_uid,
                 "homeSquad": squads["home"],
                 "awaySquad": squads["away"],
+                "homeStats": block(head.home_team_id),
+                "awayStats": block(head.away_team_id),
             })
     return out
 

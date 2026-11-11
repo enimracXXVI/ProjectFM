@@ -9,7 +9,15 @@ export interface CompetitionsFile {
   competitions: SaveCompetition[]
   playerMatches: PlayerMatch[]
   /** Matchday squads (Unique IDs) of the club's played games, from FM's match reports. */
-  squads?: { date: string; home: number; away: number; homeSquad: number[]; awaySquad: number[] }[]
+  squads?: {
+    date: string
+    home: number
+    away: number
+    homeSquad: number[]
+    awaySquad: number[]
+    homeStats?: RawTeamStats | null
+    awayStats?: RawTeamStats | null
+  }[]
   /** Injuries recorded for the club's players (no duration in the save). */
   injuries?: {
     uniqueId: number
@@ -80,4 +88,17 @@ export type CompetitionKind = 'league' | 'cup' | 'friendlies'
 export interface CompetitionInfo {
   name: string
   kind: CompetitionKind
+}
+
+/** A team's statistics block from FM's match report, as stored (decoded in matchStats.ts). */
+export interface RawTeamStats {
+  xg: number
+  /** 24 four-byte counts. */
+  u: number[]
+  /** 36 one-byte counts. */
+  b: number[]
+  /** 8 two-byte counts, starting with passes attempted and completed. */
+  h: number[]
+  /** 10 two-byte counts, 96 bytes after h. */
+  h104: number[]
 }

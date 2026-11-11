@@ -3,6 +3,7 @@ import { ArrowLeft } from 'lucide-react'
 import { Link, useParams, useSearchParams } from 'react-router-dom'
 import { HeadToHead } from '../components/HeadToHead'
 import { MatchLogCard } from '../components/MatchLogCard'
+import { MatchStatsCard } from '../components/MatchStatsCard'
 import { Card, Placeholder } from '../components/ui'
 import { useCompetitions } from '../competitions/hooks'
 import type { PlayerMatch } from '../competitions/types'
@@ -102,6 +103,17 @@ export function Match() {
           <ResultBadge r={resultFor(f, data.club)} />
         </div>
       </Card>
+
+      {squadUids?.homeStats && squadUids.awayStats && (
+        <div className="mb-4">
+          <MatchStatsCard
+            home={squadUids.homeStats}
+            away={squadUids.awayStats}
+            homeName={f.homeShort ?? f.homeName ?? ''}
+            awayName={f.awayShort ?? f.awayName ?? ''}
+          />
+        </div>
+      )}
 
       <div className="grid gap-4 lg:grid-cols-2">
         <Lineup title={data.clubName} lines={mine} squadId={squadId} />

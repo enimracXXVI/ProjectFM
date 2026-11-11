@@ -18,7 +18,11 @@ const file: CompetitionsFile = {
 describe('records', () => {
   it('shows the league position while the season is in progress', () => {
     expect(achievements([file], DEFAULT_CONFIG)).toEqual([
-      expect.objectContaining({ competition: 'Serie A', result: '1st (in progress)', trophy: false }),
+      expect.objectContaining({
+        competition: 'Serie A',
+        result: '1st (in progress)',
+        trophy: false,
+      }),
     ])
   })
 
