@@ -1,5 +1,5 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query'
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { Button, ErrorText } from '../components/form'
 import { Card } from '../components/ui'
@@ -42,10 +42,16 @@ export function SaveImport({
 }) {
   const career = useCurrentCareer()
   const qc = useQueryClient()
-  const [kind, setKind] = useState<StatsKind>('overall')
+  const [saved] = useState(readOptions)
+  const [kind, setKindState] = useState<StatsKind>(saved.kind)
   const [season, setSeason] = useState(career.current_season ?? '')
-  const [includeOther, setIncludeOther] = useState(false)
-  const [saveWorld, setSaveWorld] = useState(true)
+  const [includeOther, setIncludeOtherState] = useState(saved.includeOther)
+  const [saveWorld, setSaveWorldState] = useState(saved.saveWorld)
+  const remember = (patch: Partial<ImportOptions>) =>
+    writeOptions({ kind, includeOther, saveWorld, ...patch })
+  const setKind = (v: StatsKind) => (setKindState(v), remember({ kind: v }))
+  const setIncludeOther = (v: boolean) => (setIncludeOtherState(v), remember({ includeOther: v }))
+  const setSaveWorld = (v: boolean) => (setSaveWorldState(v), remember({ saveWorld: v }))
 
   const mutation = useMutation({
     mutationFn: async () => {
@@ -79,6 +85,76 @@ export function SaveImport({
     },
   })
 
+  const wrongClub =
+    !data.club.toLowerCase().includes(career.club.toLowerCase()) &&
+    !career.club.toLowerCase().includes(data.club.toLowerCase())
+
+  // One step: import straight away with the choices used last time, unless something
+  // needs a look first (another club's save, or an outdated save reader)
+  const outdated = (data.reader ?? 0) < READER_VERSION
+  const started = useRef(false)
+  useEffect(() => {
+    if (started.current || wrongClub || outdated) return
+    started.current = true
+    mutation.mutate()
+  }, [wrongClub, outdated, mutation])
+
+  if (mutation.isPending)
+    return (
+      <Card className="mt-4">
+        <p className="font-semibold">Importing your save…</p>
+        <p className="mt-1 text-sm text-muted">
+          Squad, contracts, stats, scouts, competitions and the world database. This takes a few
+          seconds.
+        </p>
+      </Card>
+    )
+
+  const first = summary.players.filter((p) => p.level === 'first').length
+  const other = summary.players.length - first
+  const options = (
+    <div className="mt-4 grid gap-3 sm:grid-cols-2">
+      <label className="grid gap-1 text-sm">
+        <span className="text-muted">Stats from</span>
+        <select
+          value={kind}
+          onChange={(e) => setKind(e.target.value as StatsKind)}
+          className={field}
+        >
+          {KINDS.map(([k, label]) => (
+            <option key={k} value={k}>
+              {label}
+            </option>
+          ))}
+        </select>
+      </label>
+      <label className="grid gap-1 text-sm">
+        <span className="text-muted">Season</span>
+        <input value={season} onChange={(e) => setSeason(e.target.value)} className={field} />
+      </label>
+      {other > 0 && (
+        <label className="flex min-h-11 items-center gap-2 text-sm">
+          <input
+            type="checkbox"
+            checked={includeOther}
+            onChange={(e) => setIncludeOther(e.target.checked)}
+            className="size-5"
+          />
+          Also add the {other} players in your other teams (reserves, youth)
+        </label>
+      )}
+      <label className="flex min-h-11 items-center gap-2 text-sm">
+        <input
+          type="checkbox"
+          checked={saveWorld}
+          onChange={(e) => setSaveWorld(e.target.checked)}
+          className="size-5"
+        />
+        Save the world database
+      </label>
+    </div>
+  )
+
   const r = mutation.data
   if (r)
     return (
@@ -104,6 +180,10 @@ export function SaveImport({
             </li>
           )}
         </ul>
+        <details className="mt-3 text-sm">
+          <summary className="cursor-pointer text-muted">Options for the next import</summary>
+          {options}
+        </details>
         <div className="mt-2 flex flex-wrap gap-4 text-sm font-semibold text-accent">
           <Link to="/squad" className="underline">
             Squad
@@ -121,8 +201,6 @@ export function SaveImport({
       </Card>
     )
 
-  const first = summary.players.filter((p) => p.level === 'first').length
-  const other = summary.players.length - first
   const scouts = data.scouts ?? []
   const unconfirmed = scouts.flatMap((s) =>
     s.knowledge
@@ -130,9 +208,6 @@ export function SaveImport({
       .map((k) => `${s.name} – ${fmNation(k.nation)} (${k.value})`),
   )
   const withStats = new Set(data.stats.filter((s) => s.kind === kind).map((s) => s.uniqueId)).size
-  const wrongClub =
-    !data.club.toLowerCase().includes(career.club.toLowerCase()) &&
-    !career.club.toLowerCase().includes(data.club.toLowerCase())
 
   return (
     <Card className="mt-4">
@@ -198,46 +273,7 @@ export function SaveImport({
           </ul>
         </details>
       )}
-      <div className="mt-4 grid gap-3 sm:grid-cols-2">
-        <label className="grid gap-1 text-sm">
-          <span className="text-muted">Stats from</span>
-          <select
-            value={kind}
-            onChange={(e) => setKind(e.target.value as StatsKind)}
-            className={field}
-          >
-            {KINDS.map(([k, label]) => (
-              <option key={k} value={k}>
-                {label}
-              </option>
-            ))}
-          </select>
-        </label>
-        <label className="grid gap-1 text-sm">
-          <span className="text-muted">Season</span>
-          <input value={season} onChange={(e) => setSeason(e.target.value)} className={field} />
-        </label>
-        {other > 0 && (
-          <label className="flex min-h-11 items-center gap-2 text-sm">
-            <input
-              type="checkbox"
-              checked={includeOther}
-              onChange={(e) => setIncludeOther(e.target.checked)}
-              className="size-5"
-            />
-            Also add the {other} players in your other teams (reserves, youth)
-          </label>
-        )}
-        <label className="flex min-h-11 items-center gap-2 text-sm">
-          <input
-            type="checkbox"
-            checked={saveWorld}
-            onChange={(e) => setSaveWorld(e.target.checked)}
-            className="size-5"
-          />
-          Save the world database
-        </label>
-      </div>
+      {options}
       <div className="mt-4 flex flex-wrap items-center gap-3">
         <Button onClick={() => mutation.mutate()} disabled={mutation.isPending}>
           {mutation.isPending ? 'Importing…' : 'Import'}
@@ -249,4 +285,29 @@ export function SaveImport({
       </div>
     </Card>
   )
+}
+
+interface ImportOptions {
+  kind: StatsKind
+  includeOther: boolean
+  saveWorld: boolean
+}
+
+const OPTIONS_KEY = 'projectfm.saveImportOptions'
+
+function readOptions(): ImportOptions {
+  const fallback: ImportOptions = { kind: 'overall', includeOther: false, saveWorld: true }
+  try {
+    return { ...fallback, ...JSON.parse(localStorage.getItem(OPTIONS_KEY) ?? '{}') }
+  } catch {
+    return fallback
+  }
+}
+
+function writeOptions(o: ImportOptions) {
+  try {
+    localStorage.setItem(OPTIONS_KEY, JSON.stringify(o))
+  } catch {
+    // remembered only on this device, when allowed
+  }
 }
