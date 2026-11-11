@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom'
 import { Crest } from '../components/Crest'
+import { SectionLinks } from '../components/SectionLinks'
 import { Placeholder, Stat } from '../components/ui'
 import { usePlayers } from '../data/hooks'
 import { useCurrentCareer } from '../lib/career'
@@ -45,6 +46,7 @@ export function Dashboard() {
           </div>
         )}
       </div>
+      <SectionLinks />
       {checks.total > 0 && (
         <Link
           to="/check"
