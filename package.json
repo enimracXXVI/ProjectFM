@@ -13,7 +13,9 @@
     "test:watch": "vitest",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
-    "check": "npm run lint && npm run format:check && npm run typecheck && npm test"
+    "check": "npm run lint && npm run format:check && npm run typecheck && npm test",
+    "predev": "node scripts/copy-pyodide.mjs",
+    "prebuild": "node scripts/copy-pyodide.mjs"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.119.0",
@@ -39,6 +41,7 @@
     "oxlint": "^1.90.0",
     "prettier": "^3.9.10",
     "prettier-plugin-tailwindcss": "^0.8.1",
+    "pyodide": "^314.0.7",
     "tailwindcss": "^4.3.5",
     "typescript": "~7.0.2",
     "vite": "^8.3.6",

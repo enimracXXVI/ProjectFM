@@ -10,6 +10,9 @@ import { useImports, usePlayers } from '../data/hooks'
 import { parsePlayers, type ParseResult } from '../import/parse'
 import { readDump, type ReadDumpResult } from '../import/readDump'
 import { DumpImport } from './DumpImport'
+import { SaveImport } from './SaveImport'
+import { readSave } from '../import/readSave'
+import type { SaveData } from '../import/save'
 import { useCurrentCareer } from '../lib/career'
 
 export function Import() {
@@ -23,7 +26,8 @@ export function Import() {
   const [dragging, setDragging] = useState(false)
   const [summary, setSummary] = useState<ImportSummary | null>(null)
   const [dump, setDump] = useState<ReadDumpResult | null>(null)
-  const [reading, setReading] = useState(false)
+  const [reading, setReading] = useState<string | null>(null)
+  const [save, setSave] = useState<{ name: string; data: SaveData } | null>(null)
   const { data: knownPlayers } = usePlayers(career.id)
 
   const load = async (f: File | undefined) => {
@@ -31,17 +35,37 @@ export function Import() {
     setSummary(null)
     setParseError(null)
     setDump(null)
+    setSave(null)
+    if (/\.fm$/i.test(f.name)) {
+      setFile(null)
+      setReading('Loading Python for the save reader (about 13 MB the first time)…')
+      try {
+        const data = await readSave(f, (stage) =>
+          setReading(
+            stage === 'reading'
+              ? 'Reading the save… this can take up to a minute.'
+              : 'Loading Python for the save reader (about 13 MB the first time)…',
+          ),
+        )
+        setSave({ name: f.name, data })
+      } catch (err) {
+        setParseError(err)
+      } finally {
+        setReading(null)
+      }
+      return
+    }
     if (/\.json$/i.test(f.name)) {
       // FMSuperScout dump.json
       setFile(null)
-      setReading(true)
+      setReading('Reading dump.json… this can take a few seconds for a large database.')
       try {
         const uids = (knownPlayers ?? []).map((p) => p.fm_uid).filter((u): u is number => u != null)
         setDump(await readDump(f, uids))
       } catch (err) {
         setParseError(err)
       } finally {
-        setReading(false)
+        setReading(null)
       }
       return
     }
@@ -105,11 +129,11 @@ export function Import() {
         <span className="font-semibold">Choose an FM export</span>
         <span className="text-sm text-muted">
           <span className="hidden md:inline">or drop it here · </span>.html web page export of a
-          squad view, or dump.json from the ProjectFM Reader
+          squad view, dump.json from the ProjectFM Reader, or your FM save (.fm)
         </span>
         <input
           type="file"
-          accept=".html,.htm,text/html,.json,application/json"
+          accept=".html,.htm,text/html,.json,application/json,.fm"
           className="sr-only"
           onChange={(e) => (load(e.target.files?.[0]), (e.target.value = ''))}
         />
@@ -118,10 +142,12 @@ export function Import() {
         <ErrorText error={parseError} />
         {reading && (
           <p className="text-sm text-muted" role="status">
-            Reading dump.json… this can take a few seconds for a large database.
+            {reading}
           </p>
         )}
       </div>
+
+      {save && <SaveImport data={save.data} fileName={save.name} onDone={() => setSave(null)} />}
 
       {dump && (
         <DumpImport summary={dump.summary} world={dump.world} onDone={() => setDump(null)} />

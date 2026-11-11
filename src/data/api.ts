@@ -4,6 +4,13 @@ import { supabase } from '../lib/supabase'
 import { DUMP_PRESENT, isReaderDump, type DumpSummary } from '../import/dump'
 import type { CoreField } from '../import/fields'
 import type { ImportedPlayer, ParseResult } from '../import/parse'
+import {
+  SAVE_CONTRACT_KEYS,
+  SAVE_STATS_KEYS,
+  saveUpdates,
+  type SaveData,
+  type StatsKind,
+} from '../import/save'
 import type { Career, ImportRow, PlayerRow, ScoutingNetwork, SnapshotRow, StaffRow } from './db'
 
 function check<T>(res: { data: T | null; error: { message: string } | null }): T {
@@ -433,4 +440,73 @@ export async function setPlayerTeam(player: PlayerRow, team: Team): Promise<void
   if (team === 'first') delete extra.team
   else extra.team = team
   check(await supabase.from('players').update({ extra }).eq('id', player.id))
+}
+
+// --- FM save import (fmsave) ---
+
+/** Writes contract and season stats from a save into the squad (players already in ProjectFM). */
+export async function importSave(opts: {
+  career: Career
+  data: SaveData
+  kind: StatsKind
+  season: string | null
+  fileName: string
+}): Promise<{ updated: number; notInSquad: number }> {
+  const { career, data, kind, season, fileName } = opts
+  const existing = (await listPlayers(career.id)).filter((p) => p.fm_uid != null)
+  const byUid = new Map(existing.map((p) => [p.fm_uid!, p]))
+  const updates = saveUpdates(data, kind)
+
+  const importRow = check(
+    await supabase
+      .from('imports')
+      .insert({
+        career_id: career.id,
+        view_type: 'FM save',
+        file_name: fileName,
+        season,
+        row_count: updates.length,
+      })
+      .select('id')
+      .single(),
+  ) as { id: string }
+
+  let updated = 0
+  const snapshots: Record<string, unknown>[] = []
+  for (const u of updates) {
+    const p = byUid.get(u.uniqueId)
+    if (!p) continue
+    const extra = { ...p.extra }
+    // Each group replaces what an earlier import wrote, so nothing goes stale
+    if (u.contract) {
+      for (const k of SAVE_CONTRACT_KEYS) delete extra[k]
+      Object.assign(extra, u.contract)
+    }
+    if (u.stats) {
+      for (const k of SAVE_STATS_KEYS) delete extra[k]
+      Object.assign(extra, u.stats)
+      snapshots.push({
+        player_id: p.id,
+        career_id: career.id,
+        import_id: importRow.id,
+        season,
+        age: p.age,
+        attributes: {},
+        extra: u.stats,
+      })
+    }
+    check(
+      await supabase
+        .from('players')
+        .update({
+          extra,
+          left_foot: u.leftFoot ?? p.left_foot,
+          right_foot: u.rightFoot ?? p.right_foot,
+        })
+        .eq('id', p.id),
+    )
+    updated++
+  }
+  if (snapshots.length) check(await supabase.from('player_snapshots').insert(snapshots))
+  return { updated, notInSquad: updates.length - updated }
 }

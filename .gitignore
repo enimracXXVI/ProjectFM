@@ -27,3 +27,4 @@ dist-ssr
 reader/scanner/bin/
 reader/scanner/obj/
 reader/scanner/dist/
+public/pyodide/

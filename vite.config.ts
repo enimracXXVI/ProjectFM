@@ -41,6 +41,8 @@ export default defineConfig({
       },
       workbox: {
         globPatterns: ['**/*.{js,css,html,svg,png,woff2}'],
+        // Python runtime for the save import: downloaded only when a save is imported
+        globIgnores: ['pyodide/**', 'fmsave/**'],
         navigateFallback: `${base}index.html`,
       },
     }),
