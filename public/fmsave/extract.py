@@ -69,6 +69,7 @@ def _scouts(save, club_uid):
                 "age": s.age,
                 "chief": s.job.raw == JOB_CHIEF_SCOUT,
                 "attributes": asdict(s.attributes) if is_dataclass(s.attributes) else None,
+                "personality": asdict(s.personality) if is_dataclass(s.personality) else None,
                 "knowledge": _knowledge(game_db, s.uid, nation_db_ids),
             })
     return out

@@ -536,6 +536,7 @@ export async function importSave(opts: {
             fm_uid: s.fm_uid,
             role: s.role,
             age: s.age ?? match.age,
+            personality: s.personality ?? match.personality,
             attributes: { ...match.attributes, ...s.attributes },
             knowledge: mergeKnowledge(s.knowledge, match.knowledge),
           })
@@ -550,6 +551,7 @@ export async function importSave(opts: {
           name: s.name,
           role: s.role,
           age: s.age,
+          personality: s.personality,
           attributes: s.attributes,
           knowledge: s.knowledge,
         }),

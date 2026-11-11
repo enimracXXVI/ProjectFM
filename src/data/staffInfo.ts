@@ -70,6 +70,7 @@ export const DEFAULT_KNOWLEDGE_LEVELS = [
   'Very Good',
   'Extensive',
   'Exceptional',
+  'Outstanding',
   'Complete',
 ]
 

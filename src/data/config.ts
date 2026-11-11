@@ -69,7 +69,7 @@ export function mergeConfig(stored: Stored): AppConfig {
     views: { ...DEFAULT_CONFIG.views, ...stored.views },
     regions: stored.regions ?? DEFAULT_CONFIG.regions,
     staffScale: stored.staffScale ?? DEFAULT_CONFIG.staffScale,
-    knowledgeLevels: stored.knowledgeLevels ?? DEFAULT_CONFIG.knowledgeLevels,
+    knowledgeLevels: withOutstanding(stored.knowledgeLevels) ?? DEFAULT_CONFIG.knowledgeLevels,
     roles: stored.roles ?? DEFAULT_CONFIG.roles,
     roleWeights: { ...DEFAULT_CONFIG.roleWeights, ...stored.roleWeights },
     showHidden: stored.showHidden ?? DEFAULT_CONFIG.showHidden,
@@ -101,4 +101,11 @@ export function tableSections(layout: Layout, role: Role): AttributeSection[] {
 
 export function attributeLabel(config: AppConfig, name: string): string {
   return config.attributes[name]?.label || name
+}
+
+/** FM27 has "Outstanding" between Exceptional and Complete (seen on Tomás Amaral's screen). */
+function withOutstanding(levels: string[] | undefined) {
+  if (!levels || levels.includes('Outstanding')) return levels
+  const i = levels.indexOf('Complete')
+  return i < 0 ? levels : [...levels.slice(0, i), 'Outstanding', ...levels.slice(i)]
 }

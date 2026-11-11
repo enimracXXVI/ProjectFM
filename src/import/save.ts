@@ -4,6 +4,7 @@
  * feet, and personality values.
  */
 import fmNations from '../data/fmNations.json'
+import { personalityName } from '../lib/personality'
 import type { KnowledgeEntry } from '../data/db'
 import { EUR_PER_GBP } from '../lib/money'
 import { isUnknownWord, UNKNOWN_WORD, withValue, wordOf } from '../lib/valueWord'
@@ -40,6 +41,7 @@ export interface SaveData {
     age: number | null
     chief: boolean
     attributes: Record<string, number> | null
+    personality?: Record<string, number> | null
     /** Nation is the FM database id; value 0–100. */
     knowledge: { nation: number | null; value: number }[]
   }[]
@@ -174,14 +176,18 @@ export function saveUpdates(data: SaveData, kind: StatsKind): SavePlayerUpdate[]
 }
 
 /**
- * FM27 knowledge words for the save's 0–100 value, as checked against the staff screen
- * (Vázquez 30 and Victor 36 = Very Good, Braund 48 = Extensive, 100 = Complete).
+ * FM27 knowledge words for the save's 0–100 value, as checked against the staff screen of
+ * seven scouts (Victor, Braund, Giani, Vázquez, Doné, Amaral, Arenz).
  * Stored with the value, "Very Good (36)"; values not confirmed yet are "Unknown (n)".
  */
 const KNOWLEDGE_WORDS: Record<number, string> = {
   30: 'Very Good',
   36: 'Very Good',
   48: 'Extensive',
+  50: 'Extensive',
+  60: 'Exceptional',
+  75: 'Exceptional',
+  90: 'Outstanding',
   100: 'Complete',
 }
 export const knowledgeWord = (n: number) => withValue(KNOWLEDGE_WORDS[n] ?? UNKNOWN_WORD, n)
@@ -215,6 +221,7 @@ export interface SaveScout {
   name: string
   age: number | null
   role: 'Scout' | 'Chief Scout'
+  personality: string | null
   attributes: Record<string, string>
   knowledge: KnowledgeEntry[]
 }
@@ -235,6 +242,16 @@ export function saveScouts(data: SaveData): SaveScout[] {
       name: s.name,
       age: s.age,
       role: s.chief ? 'Chief Scout' : 'Scout',
+      // Staff determination is stored ×5, like the other staff attributes
+      personality: s.personality
+        ? personalityName({
+            ...s.personality,
+            determination:
+              typeof s.attributes?.determination === 'number'
+                ? Math.floor(s.attributes.determination / 5)
+                : undefined,
+          })
+        : null,
       attributes,
       knowledge: s.knowledge.map((k) => ({
         nation: fmNation(k.nation),

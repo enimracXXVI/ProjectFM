@@ -22,7 +22,21 @@ const data = {
       age: 60,
       chief: false,
       // As read from the user's save
-      attributes: { authority: 8, adaptability: 18, judging_player_ability: 71, motivating: 5 },
+      attributes: {
+        authority: 8,
+        adaptability: 18,
+        judging_player_ability: 71,
+        motivating: 5,
+        determination: 75,
+      },
+      personality: {
+        professionalism: 13,
+        pressure: 12,
+        ambition: 14,
+        loyalty: 16,
+        sportsmanship: 10,
+        temperament: 13,
+      },
       knowledge: [
         { nation: 764, value: 48 },
         { nation: 765, value: 100 },
@@ -45,7 +59,9 @@ describe('save scouts', () => {
       Adaptability: 'Outstanding (18)',
       'Judging Player Ability': 'Good (14)',
       Motivating: 'Unsuited (1)',
+      Determination: 'Very Good (15)',
     })
+    expect(s.personality).toBe('Fairly Determined')
   })
 
   it('knows the nations and levels checked so far', () => {
@@ -55,7 +71,14 @@ describe('save scouts', () => {
       'Extensive (48)',
       'Complete (100)',
     ])
-    expect(knowledgeWord(60)).toBe('Unknown (60)')
+    // Amaral and Arenz
+    expect([50, 60, 75, 90].map(knowledgeWord)).toEqual([
+      'Extensive (50)',
+      'Exceptional (60)',
+      'Exceptional (75)',
+      'Outstanding (90)',
+    ])
+    expect(knowledgeWord(42)).toBe('Unknown (42)')
     expect([379, 390, 796, 1649, 1651, 1657].map(fmNation)).toEqual([
       'Mexico',
       'United States',

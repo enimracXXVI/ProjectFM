@@ -1,0 +1,352 @@
+[
+  {
+    "name": "Mateo Pellegrino",
+    "expected": "Fairly Ambitious",
+    "values": {
+      "professionalism": 14,
+      "pressure": 9,
+      "ambition": 15,
+      "temperament": 12,
+      "loyalty": 14,
+      "sportsmanship": 12,
+      "determination": 14,
+      "leadership": 8
+    }
+  },
+  {
+    "name": "Dodo",
+    "expected": "Fairly Ambitious",
+    "values": {
+      "professionalism": 13,
+      "pressure": 12,
+      "ambition": 15,
+      "temperament": 14,
+      "loyalty": 11,
+      "sportsmanship": 7,
+      "determination": 13,
+      "leadership": 8
+    }
+  },
+  {
+    "name": "Oliver Christensen",
+    "expected": "Perfectionist",
+    "values": {
+      "professionalism": 15,
+      "pressure": 10,
+      "ambition": 16,
+      "temperament": 8,
+      "loyalty": 10,
+      "sportsmanship": 12,
+      "determination": 16,
+      "leadership": 12
+    }
+  },
+  {
+    "name": "Pote",
+    "expected": "Spirited",
+    "values": {
+      "professionalism": 15,
+      "pressure": 16,
+      "ambition": 12,
+      "temperament": 13,
+      "loyalty": 13,
+      "sportsmanship": 10,
+      "determination": 14,
+      "leadership": 13
+    }
+  },
+  {
+    "name": "Luca Lezzerini",
+    "expected": "Fairly Professional",
+    "values": {
+      "professionalism": 15,
+      "pressure": 12,
+      "ambition": 14,
+      "temperament": 12,
+      "loyalty": 13,
+      "sportsmanship": 13,
+      "determination": 14,
+      "leadership": 10
+    }
+  },
+  {
+    "name": "Luca Ranieri",
+    "expected": "Fairly Professional",
+    "values": {
+      "professionalism": 16,
+      "pressure": 12,
+      "ambition": 13,
+      "temperament": 9,
+      "loyalty": 13,
+      "sportsmanship": 9,
+      "determination": 14,
+      "leadership": 15
+    }
+  },
+  {
+    "name": "Riccardo Sottil",
+    "expected": "Balanced",
+    "values": {
+      "professionalism": 14,
+      "pressure": 12,
+      "ambition": 13,
+      "temperament": 12,
+      "loyalty": 14,
+      "sportsmanship": 9,
+      "determination": 13,
+      "leadership": 10
+    }
+  },
+  {
+    "name": "Marco Brescianini",
+    "expected": "Resolute",
+    "values": {
+      "professionalism": 15,
+      "pressure": 12,
+      "ambition": 14,
+      "temperament": 14,
+      "loyalty": 16,
+      "sportsmanship": 14,
+      "determination": 15,
+      "leadership": 12
+    }
+  },
+  {
+    "name": "Nicolò Fagioli",
+    "expected": "Fairly Ambitious",
+    "values": {
+      "professionalism": 8,
+      "pressure": 12,
+      "ambition": 18,
+      "temperament": 13,
+      "loyalty": 11,
+      "sportsmanship": 10,
+      "determination": 13,
+      "leadership": 7
+    }
+  },
+  {
+    "name": "Fabiano Parisi",
+    "expected": "Fairly Professional",
+    "values": {
+      "professionalism": 16,
+      "pressure": 11,
+      "ambition": 13,
+      "temperament": 13,
+      "loyalty": 12,
+      "sportsmanship": 13,
+      "determination": 13,
+      "leadership": 8
+    }
+  },
+  {
+    "name": "Wilfried Gnonto",
+    "expected": "Fairly Determined",
+    "values": {
+      "professionalism": 6,
+      "pressure": 9,
+      "ambition": 15,
+      "temperament": 9,
+      "loyalty": 8,
+      "sportsmanship": 6,
+      "determination": 15,
+      "leadership": 5
+    }
+  },
+  {
+    "name": "Radu Drăguşin",
+    "expected": "Balanced",
+    "values": {
+      "professionalism": 14,
+      "pressure": 13,
+      "ambition": 14,
+      "temperament": 12,
+      "loyalty": 12,
+      "sportsmanship": 13,
+      "determination": 14,
+      "leadership": 11
+    }
+  },
+  {
+    "name": "David De Gea",
+    "expected": "Resolute",
+    "values": {
+      "professionalism": 17,
+      "pressure": 13,
+      "ambition": 18,
+      "temperament": 19,
+      "loyalty": 14,
+      "sportsmanship": 18,
+      "determination": 16,
+      "leadership": 15
+    }
+  },
+  {
+    "name": "João Mário",
+    "expected": "Fairly Loyal",
+    "values": {
+      "professionalism": 14,
+      "pressure": 12,
+      "ambition": 13,
+      "temperament": 15,
+      "loyalty": 15,
+      "sportsmanship": 8,
+      "determination": 11,
+      "leadership": 7
+    }
+  },
+  {
+    "name": "Beto",
+    "expected": "Fairly Determined",
+    "values": {
+      "professionalism": 13,
+      "pressure": 13,
+      "ambition": 15,
+      "temperament": 10,
+      "loyalty": 5,
+      "sportsmanship": 17,
+      "determination": 16,
+      "leadership": 8
+    }
+  },
+  {
+    "name": "Marin Pongračić",
+    "expected": "Balanced",
+    "values": {
+      "professionalism": 10,
+      "pressure": 10,
+      "ambition": 13,
+      "temperament": 5,
+      "loyalty": 5,
+      "sportsmanship": 5,
+      "determination": 14,
+      "leadership": 7
+    }
+  },
+  {
+    "name": "Cher Ndour",
+    "expected": "Balanced",
+    "values": {
+      "professionalism": 13,
+      "pressure": 13,
+      "ambition": 14,
+      "temperament": 10,
+      "loyalty": 7,
+      "sportsmanship": 12,
+      "determination": 12,
+      "leadership": 9
+    }
+  },
+  {
+    "name": "Arthur Atta",
+    "expected": "Resolute",
+    "values": {
+      "professionalism": 15,
+      "pressure": 13,
+      "ambition": 16,
+      "temperament": 13,
+      "loyalty": 12,
+      "sportsmanship": 12,
+      "determination": 15,
+      "leadership": 9
+    }
+  },
+  {
+    "name": "Alieu Njie",
+    "expected": "Balanced",
+    "values": {
+      "professionalism": 10,
+      "pressure": 14,
+      "ambition": 11,
+      "temperament": 17,
+      "loyalty": 12,
+      "sportsmanship": 13,
+      "determination": 14,
+      "leadership": 7
+    }
+  },
+  {
+    "name": "Franco Mastantuono",
+    "expected": "Balanced",
+    "values": {
+      "professionalism": 14,
+      "pressure": 12,
+      "ambition": 13,
+      "temperament": 12,
+      "loyalty": 9,
+      "sportsmanship": 13,
+      "determination": 14,
+      "leadership": 8
+    }
+  },
+  {
+    "name": "Álex Jiménez",
+    "expected": "Fairly Determined",
+    "values": {
+      "professionalism": 13,
+      "pressure": 13,
+      "ambition": 14,
+      "temperament": 7,
+      "loyalty": 14,
+      "sportsmanship": 9,
+      "determination": 15,
+      "leadership": 10
+    }
+  },
+  {
+    "name": "Viery",
+    "expected": "Balanced",
+    "values": {
+      "professionalism": 11,
+      "pressure": 13,
+      "ambition": 11,
+      "temperament": 20,
+      "loyalty": 12,
+      "sportsmanship": 11,
+      "determination": 13,
+      "leadership": 10
+    }
+  },
+  {
+    "name": "Víctor Valdepeñas",
+    "expected": "Fairly Professional",
+    "values": {
+      "professionalism": 15,
+      "pressure": 10,
+      "ambition": 11,
+      "temperament": 13,
+      "loyalty": 13,
+      "sportsmanship": 12,
+      "determination": 14,
+      "leadership": 9
+    }
+  },
+  {
+    "name": "Christ Inao Oulaï",
+    "expected": "Fairly Professional",
+    "values": {
+      "professionalism": 15,
+      "pressure": 12,
+      "ambition": 13,
+      "temperament": 18,
+      "loyalty": 9,
+      "sportsmanship": 9,
+      "determination": 14,
+      "leadership": 7
+    }
+  },
+  {
+    "name": "Federico Matarán",
+    "expected": "Balanced",
+    "values": {
+      "professionalism": 13,
+      "pressure": 11,
+      "ambition": 13,
+      "temperament": 12,
+      "loyalty": 11,
+      "sportsmanship": 11,
+      "determination": 12,
+      "leadership": 11
+    }
+  }
+]

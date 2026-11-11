@@ -4,6 +4,7 @@
  * Dutch; the mapping below was checked value by value against FM27's staff screen for 10 scouts.
  */
 import { UNKNOWN_WORD, withValue } from '../lib/valueWord'
+import { personalityName } from '../lib/personality'
 import type { ImportedPlayer } from './parse'
 
 export interface DumpMeta {
@@ -240,7 +241,16 @@ export function playerFromDump(p: DumpPerson): ImportedPlayer {
     height_cm: p.height ?? null,
     left_foot: p.footLeft ? footWithValue(p.footLeft) : null,
     right_foot: p.footRight ? footWithValue(p.footRight) : null,
-    personality: null,
+    personality: personalityName({
+      professionalism: p.professionalism,
+      pressure: p.pressure,
+      ambition: p.ambition,
+      temperament: p.temperament,
+      loyalty: p.loyalty,
+      sportsmanship: p.sportsmanship,
+      determination: p.attrs?.Determination,
+      leadership: p.attrs?.Leadership,
+    }),
     attributes,
     extra,
   }
@@ -251,7 +261,16 @@ export const isReaderDump = (meta: DumpMeta) => (meta as { projectfm?: number })
 
 /** Fields a dump import provides; everything else on a player is left as it was. */
 export const DUMP_PRESENT = {
-  core: new Set(['fm_uid', 'name', 'positions', 'age', 'nation', 'second_nation', 'height_cm']),
+  core: new Set([
+    'fm_uid',
+    'name',
+    'positions',
+    'age',
+    'nation',
+    'second_nation',
+    'height_cm',
+    'personality',
+  ]),
   attributes: null as Set<string> | null, // all attributes in the dump
   extra: new Set([...HIDDEN_EXTRA_KEYS, ...READER_EXTRA_KEYS]),
 }

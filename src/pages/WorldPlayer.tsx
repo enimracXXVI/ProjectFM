@@ -44,6 +44,7 @@ export function WorldPlayer() {
   const info: [string, string | null][] = [
     ['Club', p.club ?? 'Free agent'],
     ['Division', p.division],
+    ['Personality', p.personality],
     ['Height', p.height ? `${p.height} cm` : null],
     ['Value', eur(p.value)],
     ['Wage', eurWagePerYear(p.wage)],
