@@ -1,0 +1,33 @@
+name: ProjectFM Reader
+
+# Builds ProjectFM.Reader.exe (Windows) whenever the reader changes.
+# Download it from the run's "Artifacts" section on GitHub.
+on:
+  push:
+    branches: [main]
+    paths: ['reader/**', '.github/workflows/reader.yml']
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+      - name: Build single-file exe
+        env:
+          DOTNET_CLI_TELEMETRY_OPTOUT: '1'
+        run: dotnet publish reader/scanner/ProjectFM.Reader.csproj -c Release
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ProjectFM-Reader
+          path: |
+            reader/scanner/dist/ProjectFM.Reader.exe
+            reader/README.md
+            reader/LICENSE-FMSuperScout
+          retention-days: 90

@@ -28,6 +28,13 @@ export interface DumpPerson {
   posArr?: string[]
   teamType?: number
   attrs?: Record<string, number>
+  // ProjectFM Reader additions (absent in FMSuperScout dumps)
+  footLeft?: number
+  footRight?: number
+  squadNo?: number
+  condition?: number
+  morale?: number
+  posRatings?: Record<string, number>
   job?: string
   jobId?: number
   adaptability?: number
@@ -95,6 +102,14 @@ export const PERSONALITY_KEYS = [
 ] as const
 
 /** Values that FM keeps hidden; stored in `extra` and shown only when the user allows it. */
+/** Raw values from the ProjectFM Reader, not shown until mapped to FM's display. */
+export const READER_EXTRA_KEYS = [
+  'Reader left foot',
+  'Reader right foot',
+  'Reader squad no',
+  'Reader positions',
+]
+
 export const HIDDEN_EXTRA_KEYS = new Set([
   'CA',
   'PA',
@@ -168,6 +183,15 @@ export function playerFromDump(p: DumpPerson): ImportedPlayer {
     if (HIDDEN_KEY[k]) extra[HIDDEN_KEY[k]] = String(v)
     else attributes[PLAYER_ATTR[k] ?? k] = v
   }
+  // Raw ProjectFM Reader values, kept until their FM meaning is confirmed against exports
+  if (p.footLeft) extra['Reader left foot'] = String(p.footLeft)
+  if (p.footRight) extra['Reader right foot'] = String(p.footRight)
+  if (p.squadNo != null) extra['Reader squad no'] = String(p.squadNo)
+  if (p.posRatings) {
+    extra['Reader positions'] = Object.entries(p.posRatings)
+      .map(([k, v]) => `${k}:${v}`)
+      .join(' ')
+  }
   if (p.ca) extra.CA = String(p.ca)
   if (p.pa) extra.PA = String(p.pa)
   for (const [key, label] of PERSONALITY_KEYS) {
@@ -195,7 +219,7 @@ export function playerFromDump(p: DumpPerson): ImportedPlayer {
 export const DUMP_PRESENT = {
   core: new Set(['fm_uid', 'name', 'positions', 'age', 'nation', 'second_nation', 'height_cm']),
   attributes: null as Set<string> | null, // all attributes in the dump
-  extra: HIDDEN_EXTRA_KEYS,
+  extra: new Set([...HIDDEN_EXTRA_KEYS, ...READER_EXTRA_KEYS]),
 }
 
 export interface DumpStaff {

@@ -105,7 +105,7 @@ export function Import() {
         <span className="font-semibold">Choose an FM export</span>
         <span className="text-sm text-muted">
           <span className="hidden md:inline">or drop it here · </span>.html web page export of a
-          squad view, or FMSuperScout's dump.json
+          squad view, or dump.json from the ProjectFM Reader
         </span>
         <input
           type="file"

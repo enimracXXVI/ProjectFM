@@ -10,7 +10,8 @@ import { attrColor, formatAttr } from '../lib/attributes'
 import { useCurrentCareer } from '../lib/career'
 import { useConfig } from '../lib/config'
 import { rowToPlayer } from '../world/world'
-import { gbp, useWorld } from '../world/hooks'
+import { useWorld } from '../world/hooks'
+import { eur, eurWagePerYear } from '../lib/money'
 
 export function WorldPlayer() {
   const { id = '' } = useParams()
@@ -44,8 +45,8 @@ export function WorldPlayer() {
     ['Club', p.club ?? 'Free agent'],
     ['Division', p.division],
     ['Height', p.height ? `${p.height} cm` : null],
-    ['Value', gbp(p.value)],
-    ['Wage', p.wage != null ? `${gbp(p.wage)} p/w` : null],
+    ['Value', eur(p.value)],
+    ['Wage', eurWagePerYear(p.wage)],
     ['Contract until', p.expires],
     ['Transfer listed', p.listed ? 'Yes' : 'No'],
   ]

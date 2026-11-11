@@ -1,4 +1,4 @@
-import { HIDDEN_EXTRA_KEYS } from '../import/dump'
+import { HIDDEN_EXTRA_KEYS, READER_EXTRA_KEYS } from '../import/dump'
 
 /**
  * Default columns for the Contract and Stats tabs. Keys are the FM View Exporter
@@ -114,6 +114,7 @@ export const RESERVED_EXTRA_KEYS = new Set([
   'Nation code',
   'team',
   ...HIDDEN_EXTRA_KEYS,
+  ...READER_EXTRA_KEYS,
 ])
 
 /** Coach star ratings shown with the profile. */

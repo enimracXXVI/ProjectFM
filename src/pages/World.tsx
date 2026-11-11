@@ -6,7 +6,8 @@ import { Card, PageHeader, Placeholder } from '../components/ui'
 import { useCurrentCareer } from '../lib/career'
 import { useConfig } from '../lib/config'
 import { parsePositions, roleScore, scoreColor } from '../lib/roleFit'
-import { gbp, useWorld } from '../world/hooks'
+import { useWorld } from '../world/hooks'
+import { eur } from '../lib/money'
 import { regionLookup, rowToPlayer, searchKey, type WorldRow } from '../world/world'
 
 const POSITIONS = [
@@ -330,7 +331,8 @@ export function World() {
         )}
         <p className="mt-2 text-xs text-muted">
           {results.length.toLocaleString()} players match. Attributes are FM's exact values, also
-          for players your scouts have not watched. Money is in £, as stored by FM.
+          for players your scouts have not watched. Money in € at FM's rate; loanees show their full
+          wage.
         </p>
       </Card>
 
@@ -424,7 +426,7 @@ export function World() {
                 </td>
                 {config.showHidden && <td className="px-3 py-2">{row[9] ?? '–'}</td>}
                 {config.showHidden && <td className="px-3 py-2">{row[10] ?? '–'}</td>}
-                <td className="px-3 py-2 whitespace-nowrap">{gbp(row[11])}</td>
+                <td className="px-3 py-2 whitespace-nowrap">{eur(row[11])}</td>
               </tr>
             ))}
           </tbody>

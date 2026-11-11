@@ -22,3 +22,8 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# ProjectFM Reader build output
+reader/scanner/bin/
+reader/scanner/obj/
+reader/scanner/dist/
