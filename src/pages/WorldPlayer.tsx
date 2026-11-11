@@ -6,7 +6,7 @@ import { Placeholder } from '../components/ui'
 import { isGoalkeeper } from '../data/attributeInfo'
 import { attributeLabel } from '../data/config'
 import { usePlayers } from '../data/hooks'
-import { attrColor, formatAttr } from '../lib/attributes'
+import { attrColor, formatAttr, valueColor } from '../lib/attributes'
 import { useCurrentCareer } from '../lib/career'
 import { useConfig } from '../lib/config'
 import { rowToPlayer } from '../world/world'
@@ -133,7 +133,7 @@ export function WorldPlayer() {
             {Object.entries(p.hidden).map(([k, v]) => (
               <div key={k} className="rounded-lg border border-border bg-surface px-3 py-2">
                 <dt className="text-xs text-muted">{k}</dt>
-                <dd className="font-medium">{v}</dd>
+                <dd className={`font-medium ${valueColor(k, v)}`}>{v}</dd>
               </div>
             ))}
           </dl>

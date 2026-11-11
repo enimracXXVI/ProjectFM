@@ -5,6 +5,7 @@ import { Link } from 'react-router-dom'
 import { Card, PageHeader, Placeholder } from '../components/ui'
 import { useCurrentCareer } from '../lib/career'
 import { useConfig } from '../lib/config'
+import { scoreTextColor } from '../lib/attributes'
 import { parsePositions, roleScore, scoreColor } from '../lib/roleFit'
 import { useWorld } from '../world/hooks'
 import { eur } from '../lib/money'
@@ -413,7 +414,9 @@ export function World() {
                             style={{ width: `${score}%` }}
                           />
                         </span>
-                        <span className="font-semibold">{score}</span>
+                        <span className={clsx('font-semibold', scoreTextColor(score))}>
+                          {score}
+                        </span>
                       </span>
                     )}
                   </td>

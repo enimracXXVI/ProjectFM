@@ -5,10 +5,20 @@ import { Link, useSearchParams } from 'react-router-dom'
 import { Radar } from '../components/Radar'
 import { PageHeader, Placeholder } from '../components/ui'
 import { isGoalkeeper } from '../data/attributeInfo'
-import { attributeLabel, tableSections } from '../data/config'
+import { attributeLabel, tableSections, type AppConfig } from '../data/config'
+import type { RoleDef } from '../data/roles'
+import { HIDDEN_PLAYER_ATTRS, PERSONALITY_KEYS } from '../import/dump'
 import type { PlayerRow } from '../data/db'
 import { usePlayers } from '../data/hooks'
-import { attrColor, attrNumber, formatAttr } from '../lib/attributes'
+import {
+  HIGH_IS_BAD,
+  attrColor,
+  attrNumber,
+  formatAttr,
+  parsePositionRatings,
+  scoreTextColor,
+  valueColor,
+} from '../lib/attributes'
 import { useCurrentCareer } from '../lib/career'
 import { saveCompareIds } from '../lib/compare'
 import { useConfig } from '../lib/config'
@@ -66,6 +76,8 @@ export function Compare() {
   const available = (data ?? [])
     .filter((p) => p.in_squad && !ids.includes(p.id))
     .sort((a, b) => a.name.localeCompare(b.name))
+
+  const rows = buildRows(players, sections, role, config)
 
   return (
     <>
@@ -160,128 +172,29 @@ export function Compare() {
             </div>
           </div>
 
-          <div className="overflow-x-auto rounded-xl border border-border">
-            <table className="w-full text-sm">
-              <thead className="bg-surface-2 text-left text-xs text-muted">
-                <tr>
-                  <th className="sticky left-0 z-[1] bg-surface-2 px-4 py-3 shadow-[inset_-1px_0_0_var(--color-border)]" />
-                  {series.map((s) => (
-                    <th key={s.player.id} className="min-w-32 px-3 py-3 font-semibold text-text">
-                      <span className="inline-flex items-center gap-2">
-                        <span
-                          className="size-2.5 shrink-0 rounded-full"
-                          style={{ backgroundColor: s.color }}
-                        />
-                        {s.name}
-                      </span>
-                    </th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody className="bg-surface tabular-nums">
-                <Group label="Profile" span={series.length} />
-                <TextRow label="Position" values={players.map((p) => p.positions)} />
-                <NumRow label="Age" values={players.map((p) => p.age)} best="none" />
-                <TextRow label="Nation" values={players.map((p) => p.nation)} />
-                <NumRow label="Height (cm)" values={players.map((p) => p.height_cm)} best="none" />
-                <TextRow label="Left foot" values={players.map((p) => p.left_foot)} />
-                <TextRow label="Right foot" values={players.map((p) => p.right_foot)} />
-                <TextRow label="Personality" values={players.map((p) => p.personality)} />
-                <TextRow label="Ability" values={players.map((p) => p.extra.Ability ?? null)} />
-                <TextRow label="Potential" values={players.map((p) => p.extra.Potential ?? null)} />
-                <TextRow label="Wage" values={players.map((p) => p.extra.Wage ?? null)} />
-                <TextRow
-                  label="Transfer value"
-                  values={players.map((p) => p.extra['Transfer Value'] ?? null)}
-                />
-                <TextRow
-                  label="Contract expires"
-                  values={players.map((p) => p.extra.Expires ?? null)}
-                />
-
-                <Group label="Roles" span={series.length} />
-                {role && (
-                  <NumRow
-                    label={role.name}
-                    values={players.map((p) => roleScore(p.attributes, role, config.roleWeights))}
-                  />
-                )}
-                {(['ip', 'oop'] as const).map((phase) => (
-                  <TextRow
-                    key={phase}
-                    label={
-                      phase === 'ip' ? 'Best role in possession' : 'Best role out of possession'
-                    }
-                    values={players.map((p) => {
-                      const f = allRoleFits(
-                        p.attributes,
-                        p.positions,
-                        config.roles,
-                        config.roleWeights,
-                      ).find((x) => x.natural && x.role.phase === phase)
-                      return f ? `${f.role.name} (${f.score})` : null
-                    })}
-                  />
-                ))}
-
-                {sections.map((sec) => (
-                  <SectionRows
-                    key={sec.label}
-                    label={sec.label}
-                    attributes={sec.attributes}
-                    players={players}
-                  />
-                ))}
-              </tbody>
-            </table>
-          </div>
+          <CompareRows rows={rows} series={series} />
         </>
       )}
     </>
   )
 }
 
-function Group({ label, span }: { label: string; span: number }) {
-  return (
-    <tr className="border-t border-border bg-surface-2/50">
-      <th
-        colSpan={span + 1}
-        className="sticky left-0 px-4 py-2 text-left text-xs font-semibold tracking-wide text-muted uppercase"
-      >
-        {label}
-      </th>
-    </tr>
-  )
-}
+type Cell = { text: string; className?: string; best?: boolean }
+type Row = { type: 'group'; label: string } | { type: 'row'; label: string; cells: Cell[] }
 
-const labelCell =
-  'sticky left-0 z-[1] bg-surface px-4 py-2 whitespace-nowrap text-muted shadow-[inset_-1px_0_0_var(--color-border)]'
+const textCells = (values: (string | null | undefined)[]): Cell[] =>
+  values.map((v) => ({ text: v ?? '–' }))
 
-function TextRow({ label, values }: { label: string; values: (string | null)[] }) {
-  return (
-    <tr className="border-t border-border">
-      <th scope="row" className={clsx(labelCell, 'text-left font-normal')}>
-        {label}
-      </th>
-      {values.map((v, i) => (
-        <td key={i} className="px-3 py-2 whitespace-nowrap">
-          {v ?? '–'}
-        </td>
-      ))}
-    </tr>
-  )
-}
-
-/** Numeric row: the best value is bold and marked. */
-function NumRow({
-  label,
-  values,
-  best = 'high',
-}: {
-  label: string
-  values: (number | null)[]
-  best?: 'high' | 'low' | 'none'
-}) {
+/** Number cells; the best value is marked. `color` colours each value. */
+function numCells(
+  values: (number | null)[],
+  opts: {
+    best?: 'high' | 'low' | 'none'
+    color?: (v: number) => string
+    format?: (v: number) => string
+  } = {},
+): Cell[] {
+  const best = opts.best ?? 'high'
   const known = values.filter((v): v is number => v !== null)
   const top =
     known.length > 1 && best !== 'none'
@@ -289,61 +202,261 @@ function NumRow({
         ? Math.max(...known)
         : Math.min(...known)
       : null
-  return (
-    <tr className="border-t border-border">
-      <th scope="row" className={clsx(labelCell, 'text-left font-normal')}>
-        {label}
-      </th>
-      {values.map((v, i) => (
-        <td key={i} className={clsx('px-3 py-2', v !== null && v === top && 'font-semibold')}>
-          {v ?? '–'}
-          {v !== null && v === top && <span className="ml-1 text-xs text-muted">▲</span>}
-        </td>
-      ))}
-    </tr>
+  return values.map((v) =>
+    v === null
+      ? { text: '–', className: 'text-muted' }
+      : {
+          text: opts.format ? opts.format(v) : String(v),
+          className: opts.color?.(v),
+          best: v === top,
+        },
   )
 }
 
-function SectionRows({
-  label,
-  attributes,
-  players,
-}: {
-  label: string
-  attributes: string[]
-  players: PlayerRow[]
-}) {
-  const config = useConfig()
+function buildRows(
+  players: PlayerRow[],
+  sections: { label: string; attributes: string[] }[],
+  role: RoleDef | undefined,
+  config: AppConfig,
+): Row[] {
+  const rows: Row[] = []
+  const group = (label: string) => rows.push({ type: 'group', label })
+  const row = (label: string, cells: Cell[]) => rows.push({ type: 'row', label, cells })
+
+  group('Profile')
+  row('Position', textCells(players.map((p) => p.positions)))
+  row(
+    'Age',
+    numCells(
+      players.map((p) => p.age),
+      { best: 'none' },
+    ),
+  )
+  row('Nation', textCells(players.map((p) => p.nation)))
+  row(
+    'Height (cm)',
+    numCells(
+      players.map((p) => p.height_cm),
+      { best: 'none' },
+    ),
+  )
+  row('Left foot', textCells(players.map((p) => p.left_foot)))
+  row('Right foot', textCells(players.map((p) => p.right_foot)))
+  row('Personality', textCells(players.map((p) => p.personality)))
+  for (const [label, key] of [
+    ['Ability', 'Ability'],
+    ['Potential', 'Potential'],
+    ['Wage', 'Wage'],
+    ['Transfer value', 'Transfer Value'],
+    ['Contract expires', 'Expires'],
+  ])
+    if (players.some((p) => p.extra[key])) row(label, textCells(players.map((p) => p.extra[key])))
+
+  group('Roles')
+  if (role)
+    row(
+      role.name,
+      numCells(
+        players.map((p) => roleScore(p.attributes, role, config.roleWeights)),
+        { color: scoreTextColor },
+      ),
+    )
+  for (const phase of ['ip', 'oop'] as const) {
+    const fits = players.map(
+      (p) =>
+        allRoleFits(p.attributes, p.positions, config.roles, config.roleWeights).find(
+          (x) => x.natural && x.role.phase === phase,
+        ) ?? null,
+    )
+    row(
+      phase === 'ip' ? 'Best role in possession' : 'Best role out of possession',
+      fits.map((f) =>
+        f
+          ? { text: `${f.role.name} (${f.score})`, className: scoreTextColor(f.score) }
+          : { text: '–' },
+      ),
+    )
+  }
+
+  for (const sec of sections) {
+    group(sec.label)
+    for (const a of sec.attributes)
+      row(
+        attributeLabel(config, a),
+        numCells(
+          players.map((p) => attrNumber(p.attributes[a])),
+          { color: (v) => attrColor(v), format: (v) => String(v) },
+        ).map((c, i) => ({ ...c, text: formatAttr(players[i].attributes[a]) })),
+      )
+  }
+
+  const ratings = players.map((p) => parsePositionRatings(p.extra['Reader positions']))
+  const positions = POSITION_ORDER.filter((pos) => ratings.some((r) => (r[pos] ?? 0) >= 10))
+  if (positions.length) {
+    group('Position ratings')
+    for (const pos of positions)
+      row(
+        pos,
+        numCells(
+          ratings.map((r) => r[pos] ?? null),
+          { color: (v) => attrColor(v) },
+        ),
+      )
+  }
+
+  if (config.showHidden) {
+    const hidden = ['CA', 'PA', ...HIDDEN_PLAYER_ATTRS, ...PERSONALITY_KEYS.map(([, l]) => l)]
+    const shown = hidden.filter((k) => players.some((p) => p.extra[k]))
+    if (shown.length) {
+      group('Hidden values')
+      for (const k of shown) {
+        const nums = players.map((p) => (p.extra[k] ? Number(p.extra[k]) : null))
+        const scale20 = k !== 'CA' && k !== 'PA'
+        row(
+          k,
+          numCells(nums, {
+            best: HIGH_IS_BAD.has(k) ? 'low' : 'high',
+            color: scale20 ? (v) => valueColor(k, v) : (v) => attrColor(v / 10),
+          }),
+        )
+      }
+    }
+  }
+  return rows
+}
+
+const POSITION_ORDER = [
+  'GK',
+  'SW',
+  'DL',
+  'DC',
+  'DR',
+  'WBL',
+  'DM',
+  'WBR',
+  'ML',
+  'MC',
+  'MR',
+  'AML',
+  'AMC',
+  'AMR',
+  'ST',
+]
+
+type Series = { name: string; color: string; player: PlayerRow }
+
+const Best = () => (
+  <span className="ml-1 text-xs text-muted" aria-label="best">
+    ▲
+  </span>
+)
+
+/** Phones: names stay on top, every row shows all players side by side. Wider: a table. */
+function CompareRows({ rows, series }: { rows: Row[]; series: Series[] }) {
+  const cols = { gridTemplateColumns: `repeat(${series.length}, minmax(0, 1fr))` }
   return (
     <>
-      <Group label={label} span={players.length} />
-      {attributes.map((a) => {
-        const nums = players.map((p) => attrNumber(p.attributes[a]))
-        const known = nums.filter((v): v is number => v !== null)
-        const top = known.length > 1 ? Math.max(...known) : null
-        return (
-          <tr key={a} className="border-t border-border">
-            <th scope="row" className={clsx(labelCell, 'text-left font-normal')}>
-              {attributeLabel(config, a)}
-            </th>
-            {players.map((p, i) => (
-              <td
-                key={p.id}
-                className={clsx(
-                  'px-3 py-2',
-                  attrColor(p.attributes[a]),
-                  nums[i] !== null && nums[i] === top && 'font-semibold',
-                )}
-              >
-                {formatAttr(p.attributes[a])}
-                {nums[i] !== null && nums[i] === top && (
-                  <span className="ml-1 text-xs text-muted">▲</span>
-                )}
-              </td>
-            ))}
-          </tr>
-        )
-      })}
+      {/* Phone */}
+      <div className="md:hidden">
+        <div
+          className="sticky -top-4 z-10 -mx-4 grid gap-1 border-b border-border bg-bg px-4 pt-3 pb-2"
+          style={cols}
+        >
+          {series.map((s) => (
+            <span
+              key={s.player.id}
+              className="flex min-w-0 items-center justify-center gap-1.5 text-xs font-semibold"
+            >
+              <span
+                className="size-2.5 shrink-0 rounded-full"
+                style={{ backgroundColor: s.color }}
+              />
+              <span className="truncate">{s.player.name.split(' ').at(-1)}</span>
+            </span>
+          ))}
+        </div>
+        {rows.map((r, i) =>
+          r.type === 'group' ? (
+            <h3
+              key={i}
+              className="mt-4 mb-1 text-xs font-semibold tracking-wide text-muted uppercase"
+            >
+              {r.label}
+            </h3>
+          ) : (
+            <div key={i} className="border-b border-border/60 py-1.5">
+              <div className="text-xs text-muted">{r.label}</div>
+              <div className="grid gap-1 text-center text-sm tabular-nums" style={cols}>
+                {r.cells.map((c, j) => (
+                  <span key={j} className={clsx('truncate', c.className, c.best && 'font-bold')}>
+                    {c.text}
+                    {c.best && <Best />}
+                  </span>
+                ))}
+              </div>
+            </div>
+          ),
+        )}
+      </div>
+
+      {/* Tablet and desktop */}
+      <div className="hidden overflow-x-auto rounded-xl border border-border md:block">
+        <table className="w-full text-sm">
+          <thead className="bg-surface-2 text-left text-xs text-muted">
+            <tr>
+              <th className="sticky left-0 z-[1] bg-surface-2 px-4 py-3 shadow-[inset_-1px_0_0_var(--color-border)]" />
+              {series.map((s) => (
+                <th key={s.player.id} className="min-w-32 px-3 py-3 font-semibold text-text">
+                  <span className="inline-flex items-center gap-2">
+                    <span
+                      className="size-2.5 shrink-0 rounded-full"
+                      style={{ backgroundColor: s.color }}
+                    />
+                    {s.name}
+                  </span>
+                </th>
+              ))}
+            </tr>
+          </thead>
+          <tbody className="bg-surface tabular-nums">
+            {rows.map((r, i) =>
+              r.type === 'group' ? (
+                <tr key={i} className="border-t border-border bg-surface-2/50">
+                  <th
+                    colSpan={series.length + 1}
+                    className="px-4 py-2 text-left text-xs font-semibold tracking-wide text-muted uppercase"
+                  >
+                    {/* Only the text sticks, so the heading stays put when scrolling sideways */}
+                    <span className="sticky left-4">{r.label}</span>
+                  </th>
+                </tr>
+              ) : (
+                <tr key={i} className="border-t border-border">
+                  <th
+                    scope="row"
+                    className="sticky left-0 z-[1] bg-surface px-4 py-2 text-left font-normal whitespace-nowrap text-muted shadow-[inset_-1px_0_0_var(--color-border)]"
+                  >
+                    {r.label}
+                  </th>
+                  {r.cells.map((c, j) => (
+                    <td
+                      key={j}
+                      className={clsx(
+                        'px-3 py-2 whitespace-nowrap',
+                        c.className,
+                        c.best && 'font-semibold',
+                      )}
+                    >
+                      {c.text}
+                      {c.best && <Best />}
+                    </td>
+                  ))}
+                </tr>
+              ),
+            )}
+          </tbody>
+        </table>
+      </div>
     </>
   )
 }

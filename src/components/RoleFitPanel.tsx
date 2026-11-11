@@ -3,6 +3,7 @@ import { useMemo, useState } from 'react'
 import type { RolePhase } from '../data/roles'
 import type { AttributeValue } from '../import/parse'
 import { useConfig } from '../lib/config'
+import { scoreTextColor } from '../lib/attributes'
 import { allRoleFits, scoreColor } from '../lib/roleFit'
 import { Tooltip } from './Tooltip'
 
@@ -75,7 +76,14 @@ export function RoleFitPanel({
                   style={{ width: `${f.score}%` }}
                 />
               </span>
-              <span className="w-8 text-right font-semibold tabular-nums">{f.score}</span>
+              <span
+                className={clsx(
+                  'w-8 text-right font-semibold tabular-nums',
+                  scoreTextColor(f.score),
+                )}
+              >
+                {f.score}
+              </span>
             </li>
           ))}
         </ul>

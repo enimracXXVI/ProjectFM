@@ -1,5 +1,7 @@
+import { clsx } from 'clsx'
 import { ArrowLeft, Scale } from 'lucide-react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
+import { PositionRatings } from '../components/PositionRatings'
 import { RoleFitPanel } from '../components/RoleFitPanel'
 import { StatusChip } from '../components/StatusChip'
 import { TeamSelect } from '../components/TeamSelect'
@@ -11,7 +13,13 @@ import { HIDDEN_PLAYER_ATTRS, PERSONALITY_KEYS } from '../import/dump'
 import { attributeLabel } from '../data/config'
 import { compareUrlWith } from '../lib/compare'
 import { useConfig } from '../lib/config'
-import { attrColor, attrNumber, formatAttr } from '../lib/attributes'
+import {
+  attrColor,
+  attrNumber,
+  formatAttr,
+  parsePositionRatings,
+  valueColor,
+} from '../lib/attributes'
 
 const HIDDEN_LIST = [...HIDDEN_PLAYER_ATTRS, ...PERSONALITY_KEYS.map(([, label]) => label)]
 
@@ -107,11 +115,18 @@ export function PlayerDetail() {
           </h2>
           <dl className="grid grid-cols-2 gap-2 text-sm sm:grid-cols-4 lg:grid-cols-7">
             {HIDDEN_LIST.filter((k) => p.extra[k]).map((k) => (
-              <Info key={k} label={k} value={p.extra[k]} />
+              <Info
+                key={k}
+                label={k}
+                value={p.extra[k]}
+                valueClass={valueColor(k, Number(p.extra[k]))}
+              />
             ))}
           </dl>
         </section>
       )}
+
+      <PositionRatings ratings={parsePositionRatings(p.extra['Reader positions'])} />
 
       <RoleFitPanel attributes={p.attributes} positions={p.positions} />
 
@@ -206,10 +221,12 @@ function Info({
   label,
   value,
   description,
+  valueClass,
 }: {
   label: string
   value: string | null
   description?: string
+  valueClass?: string
 }) {
   return (
     <div className="rounded-lg border border-border bg-surface px-3 py-2">
@@ -224,7 +241,7 @@ function Info({
           label
         )}
       </dt>
-      <dd className="font-medium">{value ?? '–'}</dd>
+      <dd className={clsx('font-medium', valueClass)}>{value ?? '–'}</dd>
     </div>
   )
 }

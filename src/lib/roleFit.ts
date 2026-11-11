@@ -1,7 +1,7 @@
 import { ATTRIBUTE_GROUPS } from '../import/fields'
 import type { AttributeValue } from '../import/parse'
 import type { RoleDef } from '../data/roles'
-import { attrNumber } from './attributes'
+import { attrNumber, scoreBarColor } from './attributes'
 
 /**
  * Role fit: how well a player suits a role, 0–100.
@@ -188,10 +188,5 @@ export function allRoleFits(
     .sort((a, b) => b.score - a.score)
 }
 
-/** Colour for a 0–100 role score. */
-export function scoreColor(score: number): string {
-  if (score >= 75) return 'bg-emerald-400'
-  if (score >= 65) return 'bg-lime-300'
-  if (score >= 55) return 'bg-amber-300'
-  return 'bg-red-400'
-}
+/** Colour for a 0–100 role score: same colours as attributes (score 0–100 = 1–20). */
+export const scoreColor = scoreBarColor

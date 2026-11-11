@@ -11,7 +11,7 @@ import { attributeLabel, tableSections } from '../data/config'
 import type { PlayerRow } from '../data/db'
 import { TEAMS, teamOf, type Team } from '../data/teams'
 import { usePlayers } from '../data/hooks'
-import { attrColor, attrNumber, formatAttr } from '../lib/attributes'
+import { attrColor, attrNumber, formatAttr, scoreTextColor } from '../lib/attributes'
 import { useCurrentCareer } from '../lib/career'
 import { useConfig } from '../lib/config'
 import { allRoleFits, roleScore, scoreColor, type RoleFit } from '../lib/roleFit'
@@ -486,7 +486,7 @@ function ScoreCell({ score, label }: { score: number | null; label?: string }) {
           style={{ width: `${score}%` }}
         />
       </span>
-      <span className="w-7 font-semibold tabular-nums">{score}</span>
+      <span className={clsx('w-7 font-semibold tabular-nums', scoreTextColor(score))}>{score}</span>
       {label && <span className="text-muted">{label}</span>}
     </span>
   )
