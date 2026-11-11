@@ -35,6 +35,29 @@ export function SettingsPage() {
         <HiddenValuesCard />
 
         <Card>
+          <h2 className="mb-2 font-semibold">Help</h2>
+          <ul className="grid">
+            {[
+              ['/explain', 'How it works', 'How each calculated value is worked out'],
+              ['/check', 'Check in game', 'What the app could not work out, for you to look up'],
+            ].map(([to, label, hint]) => (
+              <li key={to}>
+                <Link
+                  to={to}
+                  className="-mx-2 flex min-h-12 items-center gap-3 rounded-lg px-2 hover:bg-surface-2"
+                >
+                  <span className="flex-1">
+                    <span className="block text-sm font-medium">{label}</span>
+                    <span className="block text-xs text-muted">{hint}</span>
+                  </span>
+                  <ChevronRight className="size-4 text-muted" aria-hidden />
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </Card>
+
+        <Card>
           <h2 className="mb-2 font-semibold">Customise</h2>
           <ul className="grid">
             {[

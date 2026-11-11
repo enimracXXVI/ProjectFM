@@ -10,6 +10,27 @@ from dataclasses import asdict, is_dataclass
 from datetime import date, datetime
 
 import fmsave
+from fmsave.readers import contracts as _contracts
+
+# Squad numbers sit on contract records, which fmsave decodes but does not expose: note
+# where each one is (by player pindex) while fmsave reads them. Found by ProjectFM in FM27
+# saves: the byte 12 before a contract record's tag (255 = no number). A loaned or newly
+# bought player has two records; the number is on the one at the club he plays for.
+_CHAIN_RECORDS = []
+_decode_chain_record = _contracts.ContractDecoder.decode_chain_record
+
+
+def _note_chain_record(self, game_db, offset):
+    selector = struct.unpack_from("<I", game_db, offset + self.selector_offset)[0]
+    _CHAIN_RECORDS.append((selector - 1, game_db[offset - 12]))
+    return _decode_chain_record(self, game_db, offset)
+
+
+_contracts.ContractDecoder.decode_chain_record = _note_chain_record
+
+# Morale (1-20, as the ProjectFM Reader reads it) is the byte 97 into a player's record:
+# matched all 46 players of the user's squad.
+_MORALE_OFFSET = 97
 
 
 def _plain(v):
@@ -86,7 +107,27 @@ _PERSONALITY = (
 )
 
 
-def _dump(save, club_uid, club_name):
+def _squad_numbers_and_morale(save):
+    """{player uid: (squad number or None, morale or None)}."""
+    _CHAIN_RECORDS.clear()
+    list(save.contracts())
+    if not _CHAIN_RECORDS:  # contracts were read earlier: read them again
+        save._context._cache.clear()
+        list(save.contracts())
+    number_by_pindex = {}
+    for pindex, number in _CHAIN_RECORDS:
+        if 0 < number < 100:
+            number_by_pindex[pindex] = number
+    records = save._context.player_records()
+    out = {}
+    with save._context.section("game_db") as game_db:
+        for k, uid in enumerate(records.uids):
+            morale = game_db[records.record_offsets[k] + _MORALE_OFFSET]
+            out[uid] = (number_by_pindex.get(records.pindexes[k]), morale if 1 <= morale <= 20 else None)
+    return out
+
+
+def _dump(save, club_uid, club_name, extras):
     """Every player in the same shape as a ProjectFM Reader dump.json (players only).
 
     Nations are FM database ids (`natDb`); the app turns them into names.
@@ -129,6 +170,11 @@ def _dump(save, club_uid, club_name):
             "expires": c.end.isoformat() if c and c.end else None,
             "worldRep": rep,
         }
+        number, morale = extras.get(p.uid, (None, None))
+        if number is not None:
+            row["squadNo"] = number
+        if morale is not None:
+            row["morale"] = morale
         if p.personality is not None:
             for k in _PERSONALITY:
                 row[k] = getattr(p.personality, k, None)
@@ -149,6 +195,11 @@ def _dump(save, club_uid, club_name):
 
 def extract(path):
     with fmsave.open(path) as save:
+        # First, so the contract records are noted the one time fmsave reads them
+        try:
+            extras = _squad_numbers_and_morale(save)
+        except Exception:  # a bonus: never lose the import over it
+            extras = {}
         clubs = save.managed_clubs()
         if not clubs:
             raise ValueError("No managed club found in this save.")
@@ -195,7 +246,7 @@ def extract(path):
             row = asdict(st)
             row["uniqueId"] = uid
             out["stats"].append(row)
-        out["dump"] = _dump(save, club_uid, clubs[0].club_name)
+        out["dump"] = _dump(save, club_uid, clubs[0].club_name, extras)
         try:
             out["scouts"] = _scouts(save, club_uid)
         except Exception as e:  # scouts are a bonus: never lose the squad import over them

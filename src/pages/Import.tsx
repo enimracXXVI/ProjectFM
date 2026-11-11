@@ -115,6 +115,13 @@ export function Import() {
   return (
     <>
       <PageHeader title="Import" subtitle={`Into ${career.name} · ${career.club}`} />
+      <p className="-mt-2 mb-4 text-sm text-muted">
+        Imports update what is already saved. For a clean slate, use{' '}
+        <Link to="/careers" className="text-accent underline">
+          Careers → Edit → Start fresh
+        </Link>{' '}
+        first.
+      </p>
 
       <label
         onDragOver={(e) => (e.preventDefault(), setDragging(true))}

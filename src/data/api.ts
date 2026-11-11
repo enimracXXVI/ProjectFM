@@ -1,6 +1,9 @@
 import type { DevSnapshot } from '../lib/development'
 import type { Team } from './teams'
 import { supabase } from '../lib/supabase'
+import { applyLearned, type LearnedKind } from '../lib/learned'
+import { UNKNOWN_WORD, withValue } from '../lib/valueWord'
+import { loadStoredConfig, mergeConfig, saveConfig } from './config'
 import { DUMP_PRESENT, isReaderDump, type DumpSummary } from '../import/dump'
 import type { CoreField } from '../import/fields'
 import type { ImportedPlayer, ParseResult } from '../import/parse'
@@ -42,6 +45,29 @@ export async function updateCareer(
 
 export async function deleteCareer(id: string): Promise<void> {
   check(await supabase.from('careers').delete().eq('id', id))
+}
+
+export interface FreshStart {
+  /** Squad players, their history and the import log. */
+  squad: boolean
+  /** Staff and the scouting network (scouts, heads of region, board limits). */
+  staff: boolean
+}
+
+/**
+ * Clears a career's data for a fresh start. The career itself, its crest and kits, and
+ * Settings stay. The world database is removed separately (deleteWorld).
+ */
+export async function startFresh(career: Career, what: FreshStart): Promise<void> {
+  if (what.squad) {
+    // Snapshots go with their players
+    check(await supabase.from('players').delete().eq('career_id', career.id))
+    check(await supabase.from('imports').delete().eq('career_id', career.id))
+  }
+  if (what.staff) {
+    check(await supabase.from('staff').delete().eq('career_id', career.id))
+    await saveScouting(career.id, {})
+  }
 }
 
 export async function listPlayers(careerId: string): Promise<PlayerRow[]> {
@@ -113,6 +139,8 @@ export function mergePlayer(
   for (const f of CORE_FIELDS) {
     if (!present.core.has(f)) merged[f] = existing[f]
   }
+  // A personality the app could not work out never wipes one already known (or set by hand)
+  if (merged.personality == null) merged.personality = existing.personality
   const attributes = { ...existing.attributes }
   for (const a of present.attributes) delete attributes[a]
   const extra = { ...existing.extra }
@@ -333,9 +361,15 @@ export async function importDump(opts: {
   season: string | null
 }): Promise<DumpImportResult> {
   const { career, summary, includeOtherTeams, season } = opts
+  const { learned } = mergeConfig(await loadStoredConfig())
   const chosen = summary.players
     .filter((p) => includeOtherTeams || p.level === 'first')
     .map((p) => p.player)
+    .map((p) =>
+      p.extra.Morale
+        ? { ...p, extra: { ...p.extra, Morale: applyLearned(p.extra.Morale, learned.morale) } }
+        : p,
+    )
 
   const attributeNames = new Set(chosen.flatMap((p) => Object.keys(p.attributes)))
   const columns: ParseResult['columns'] = [
@@ -351,13 +385,10 @@ export async function importDump(opts: {
       header: name,
       target: { kind: 'attribute' as const, name },
     })),
-    // A save has no morale: keep what the Reader last wrote
-    ...[...DUMP_PRESENT.extra]
-      .filter((key) => !(isSaveDump(summary.meta) && key === 'Morale'))
-      .map((key) => ({
-        header: key,
-        target: { kind: 'extra' as const, key },
-      })),
+    ...[...DUMP_PRESENT.extra].map((key) => ({
+      header: key,
+      target: { kind: 'extra' as const, key },
+    })),
   ]
   const players = await importPlayers({
     careerId: career.id,
@@ -522,9 +553,17 @@ export async function importSave(opts: {
 
   // Scouts: attributes (Authority included) and scouting knowledge
   const staff = await listStaff(career.id)
+  const { learned } = mergeConfig(await loadStoredConfig())
   let scoutsAdded = 0
   let scoutsUpdated = 0
-  for (const s of saveScouts(data)) {
+  for (const raw of saveScouts(data)) {
+    const s = {
+      ...raw,
+      knowledge: raw.knowledge.map((k) => ({
+        ...k,
+        level: applyLearned(k.level, learned.knowledge),
+      })),
+    }
     const match =
       staff.find((x) => x.fm_uid === s.fm_uid) ??
       staff.find((x) => x.name.toLowerCase() === s.name.toLowerCase())
@@ -560,4 +599,47 @@ export async function importSave(opts: {
     }
   }
   return { updated, notInSquad: updates.length - updated, scoutsAdded, scoutsUpdated }
+}
+
+// --- Things the app could not work out (Check in game) ---
+
+/**
+ * Teaches the FM word for a value: remembered for future imports, and written now on
+ * every squad player (morale) or scout (knowledge) of the career showing "Unknown (value)".
+ */
+export async function teachWord(
+  careerId: string,
+  kind: LearnedKind,
+  value: number,
+  word: string,
+): Promise<void> {
+  const config = mergeConfig(await loadStoredConfig())
+  await saveConfig('learned', {
+    ...config.learned,
+    [kind]: { ...config.learned[kind], [String(value)]: word },
+  })
+  const unknown = withValue(UNKNOWN_WORD, value)
+  const known = withValue(word, value)
+  if (kind === 'morale') {
+    for (const p of await listPlayers(careerId)) {
+      if (p.extra.Morale !== unknown) continue
+      check(
+        await supabase
+          .from('players')
+          .update({ extra: { ...p.extra, Morale: known } })
+          .eq('id', p.id),
+      )
+    }
+  } else {
+    for (const s of await listStaff(careerId)) {
+      if (!s.knowledge.some((k) => k.level === unknown)) continue
+      const knowledge = s.knowledge.map((k) => (k.level === unknown ? { ...k, level: known } : k))
+      check(await supabase.from('staff').update({ knowledge }).eq('id', s.id))
+    }
+  }
+}
+
+/** Sets a player's personality by hand (kept by later imports that cannot work it out). */
+export async function setPlayerPersonality(id: string, personality: string): Promise<void> {
+  check(await supabase.from('players').update({ personality }).eq('id', id))
 }

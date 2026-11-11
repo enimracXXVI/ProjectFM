@@ -42,3 +42,17 @@ export async function setCachedWorld(key: string, value: CachedWorld): Promise<v
     // ignore: caching is only a speed-up
   }
 }
+
+export async function deleteCachedWorld(key: string): Promise<void> {
+  try {
+    const db = await open()
+    await new Promise<void>((resolve) => {
+      const tx = db.transaction(STORE, 'readwrite')
+      tx.objectStore(STORE).delete(key)
+      tx.oncomplete = () => resolve()
+      tx.onerror = () => resolve()
+    })
+  } catch {
+    // nothing cached
+  }
+}

@@ -25,6 +25,8 @@ import { StaffRatingsSettings } from './pages/settings/StaffRatings'
 import { LayoutSettings } from './pages/settings/Layout'
 import { StatusesSettings } from './pages/settings/Statuses'
 import { Achievements, NotFound } from './pages/Simple'
+import { Check } from './pages/Check'
+import { Explain } from './pages/Explain'
 import { Squad } from './pages/Squad'
 import { Staff } from './pages/Staff'
 import { World } from './pages/World'
@@ -65,6 +67,8 @@ function SignedIn() {
         <Route path="achievements" element={<Achievements />} />
         <Route path="careers" element={<Careers />} />
         <Route path="import" element={<Import />} />
+        <Route path="check" element={<Check />} />
+        <Route path="explain" element={<Explain />} />
         <Route path="settings" element={<SettingsPage />} />
         <Route path="settings/statuses" element={<StatusesSettings />} />
         <Route path="settings/attributes" element={<AttributesSettings />} />

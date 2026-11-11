@@ -1,5 +1,5 @@
 import { supabase } from '../lib/supabase'
-import { getCachedWorld, setCachedWorld } from './cache'
+import { deleteCachedWorld, getCachedWorld, setCachedWorld } from './cache'
 import type { WorldFile } from './world'
 
 const BUCKET = 'world-data'
@@ -73,4 +73,12 @@ export async function loadWorld(careerId: string): Promise<LoadedWorld | null> {
   if (error || !blob) throw new Error(error?.message ?? 'Download failed')
   await setCachedWorld(careerId, { updatedAt: remoteUpdated, blob })
   return { file: await unpack(blob), updatedAt: remoteUpdated, fromCache: false }
+}
+
+/** Removes the career's world database from Supabase and from this device. */
+export async function deleteWorld(careerId: string): Promise<void> {
+  const path = `${await folder(careerId)}/${NAME}`
+  const { error } = await supabase.storage.from(BUCKET).remove([path])
+  if (error) throw new Error(error.message)
+  await deleteCachedWorld(careerId)
 }

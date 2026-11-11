@@ -3,11 +3,13 @@ import { Crest } from '../components/Crest'
 import { Placeholder, Stat } from '../components/ui'
 import { usePlayers } from '../data/hooks'
 import { useCurrentCareer } from '../lib/career'
+import { useChecks } from '../lib/useChecks'
 
 export function Dashboard() {
   const career = useCurrentCareer()
   const { data } = usePlayers(career.id)
   const squad = (data ?? []).filter((p) => p.in_squad)
+  const checks = useChecks()
   const ages = squad.map((p) => p.age).filter((a): a is number => a != null)
   const avgAge = ages.length ? (ages.reduce((s, a) => s + a, 0) / ages.length).toFixed(1) : '–'
   const injured = squad.filter((p) => p.extra.status === 'Inj').length
@@ -43,6 +45,18 @@ export function Dashboard() {
           </div>
         )}
       </div>
+      {checks.total > 0 && (
+        <Link
+          to="/check"
+          className="mb-4 flex min-h-11 items-center justify-between gap-3 rounded-xl border border-amber-400/50 bg-amber-400/10 px-4 py-3 text-sm"
+        >
+          <span>
+            <strong>{checks.total}</strong> {checks.total === 1 ? 'thing' : 'things'} the app could
+            not work out. Look them up in FM so it learns.
+          </span>
+          <span className="font-semibold text-amber-300">Check in game →</span>
+        </Link>
+      )}
       <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
         <Stat label="Squad size" value={squad.length} />
         <Stat label="Average age" value={avgAge} />

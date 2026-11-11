@@ -156,7 +156,7 @@ export const footWithValue = (n: number) => withValue(footWord(n), n)
  * FM27 morale words for the reader's 1–20 value, as confirmed by the user for 10 players.
  * Stored with the value, "Excellent (17)"; values not seen yet show as "Unknown (n)".
  */
-const MORALE_WORDS: Record<number, string> = {
+export const MORALE_WORDS: Record<number, string> = {
   9: 'Fairly Okay',
   13: 'Good',
   15: 'Very Good',

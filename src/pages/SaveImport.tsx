@@ -130,7 +130,7 @@ export function SaveImport({
       <ul className="mt-3 grid gap-1 text-sm">
         <li>
           <strong>Squad ({first} first-team players):</strong> attributes, positions, age,
-          nationality, height, feet, condition{' '}
+          nationality, height, feet, squad numbers, condition, morale, personality{' '}
           <span className="text-muted">
             (plus CA/PA, hidden and personality values, shown only if allowed in Settings)
           </span>
@@ -151,10 +151,6 @@ export function SaveImport({
         )}
         <li>
           <strong>World database:</strong> every player, searchable on all your devices
-        </li>
-        <li className="text-muted">
-          Not in the save: squad numbers and morale. They come from the ProjectFM Reader and are
-          kept as they are.
         </li>
       </ul>
       {unconfirmed.length > 0 && (

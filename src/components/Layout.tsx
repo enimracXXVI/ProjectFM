@@ -2,6 +2,7 @@ import { clsx } from 'clsx'
 import { PanelLeftClose, PanelLeftOpen } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { NavLink, Outlet } from 'react-router-dom'
+import { useChecks } from '../lib/useChecks'
 import { navItems } from './nav'
 import { TopBar } from './TopBar'
 
@@ -17,6 +18,7 @@ function readCollapsed(): boolean {
 
 export function Layout() {
   const [collapsed, setCollapsed] = useState(readCollapsed)
+  const checks = useChecks()
 
   const toggle = () =>
     setCollapsed((c) => {
@@ -81,8 +83,21 @@ export function Layout() {
                 )
               }
             >
-              <Icon className="size-5 shrink-0" aria-hidden />
+              <span className="relative">
+                <Icon className="size-5 shrink-0" aria-hidden />
+                {to === '/check' && checks.total > 0 && collapsed && (
+                  <span className="absolute -top-1 -right-1 size-2.5 rounded-full bg-amber-400" />
+                )}
+              </span>
               {!collapsed && label}
+              {!collapsed && to === '/check' && checks.total > 0 && (
+                <span
+                  className="ml-auto rounded-full bg-amber-400 px-2 text-xs font-bold text-black"
+                  aria-label={`${checks.total} to check`}
+                >
+                  {checks.total}
+                </span>
+              )}
             </NavLink>
           ))}
         </nav>

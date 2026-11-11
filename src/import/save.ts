@@ -286,5 +286,5 @@ export function dumpFromSave(data: SaveData): Dump {
   return { meta: data.dump.meta, players, staff: [] }
 }
 
-/** True for a dump made from an FM save (no morale or squad numbers in it). */
+/** True for a dump made from an FM save. */
 export const isSaveDump = (meta: DumpMeta) => meta.source === 'FM save'

@@ -30,6 +30,13 @@ export interface AppConfig {
   roleWeights: RoleWeights
   /** Show values FM keeps hidden (CA/PA, hidden attributes, personality values). */
   showHidden: boolean
+  /** FM words the user taught for values the app could not name (value → word). */
+  learned: Learned
+}
+
+export interface Learned {
+  morale: Record<string, string>
+  knowledge: Record<string, string>
 }
 
 export type ConfigKey = keyof AppConfig
@@ -45,6 +52,7 @@ export const DEFAULT_CONFIG: AppConfig = {
   roles: DEFAULT_ROLES,
   roleWeights: DEFAULT_ROLE_WEIGHTS,
   showHidden: false,
+  learned: { morale: {}, knowledge: {} },
 }
 
 type Stored = Partial<{ [K in ConfigKey]: AppConfig[K] }>
@@ -73,6 +81,7 @@ export function mergeConfig(stored: Stored): AppConfig {
     roles: stored.roles ?? DEFAULT_CONFIG.roles,
     roleWeights: { ...DEFAULT_CONFIG.roleWeights, ...stored.roleWeights },
     showHidden: stored.showHidden ?? DEFAULT_CONFIG.showHidden,
+    learned: { ...DEFAULT_CONFIG.learned, ...stored.learned },
   }
 }
 

@@ -225,3 +225,13 @@ export function personalityName(v: PersonalityValues): string | null {
     matches.reduce((s, b) => s + (b !== a && beats(a, b) && !beats(b, a) ? 1 : 0), 0)
   return matches.reduce((best, m) => (score(m) > score(best) ? m : best))
 }
+
+/** Every personality name the table knows, plus Devoted. */
+export const PERSONALITY_NAMES = [...TABLE.map(([name]) => name), 'Devoted'].sort()
+
+/** The table row for a personality, as [value name, min, max] (for the explainer). */
+export function personalityRanges(name: string): [Key, number, number][] {
+  const row = TABLE.find(([n]) => n === name)
+  if (!row) return []
+  return row[1].flatMap((r, i) => (r ? [[COLS[i], r[0], r[1]] as [Key, number, number]] : []))
+}

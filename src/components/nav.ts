@@ -2,6 +2,8 @@ import {
   Binoculars,
   Globe,
   Briefcase,
+  ClipboardCheck,
+  Lightbulb,
   LayoutDashboard,
   Scale,
   Settings,
@@ -32,5 +34,7 @@ export const navItems: NavItem[] = [
   { to: '/achievements', label: 'Achievements', icon: Trophy, mobile: false },
   { to: '/careers', label: 'Careers', icon: Briefcase, mobile: true },
   { to: '/import', label: 'Import', icon: Upload, mobile: false },
+  { to: '/check', label: 'Check in game', icon: ClipboardCheck, mobile: false },
+  { to: '/explain', label: 'How it works', icon: Lightbulb, mobile: false },
   { to: '/settings', label: 'Settings', icon: Settings, mobile: false },
 ]

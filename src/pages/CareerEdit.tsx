@@ -2,7 +2,8 @@ import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { useState, type FormEvent } from 'react'
 import { Button, ErrorText, Field } from '../components/form'
 import { ImageSlot } from '../components/ImageSlot'
-import { deleteCareer, updateCareer, type NewCareer } from '../data/api'
+import { deleteCareer, startFresh, updateCareer, type NewCareer } from '../data/api'
+import { deleteWorld } from '../world/storage'
 import type { Career } from '../data/db'
 
 export function CareerEdit({ career, onDone }: { career: Career; onDone: () => void }) {
@@ -23,6 +24,21 @@ export function CareerEdit({ career, onDone }: { career: Career; onDone: () => v
     mutationFn: () => deleteCareer(career.id),
     onSuccess: refresh,
   })
+
+  const [fresh, setFresh] = useState({ squad: true, staff: true, world: true })
+  const reset = useMutation({
+    mutationFn: async () => {
+      await startFresh(career, fresh)
+      if (fresh.world) await deleteWorld(career.id)
+    },
+    onSuccess: () => qc.invalidateQueries(),
+  })
+  const confirmFresh = () => {
+    const typed = window.prompt(
+      `This permanently clears the chosen data of "${career.name}". The career, crest, kits and Settings stay.\n\nType the career name to confirm:`,
+    )
+    if (typed === career.name) reset.mutate()
+  }
 
   const set = (key: keyof NewCareer) => (e: React.ChangeEvent<HTMLInputElement>) =>
     setForm({ ...form, [key]: e.target.value })
@@ -90,6 +106,47 @@ export function CareerEdit({ career, onDone }: { career: Career; onDone: () => v
           <ErrorText error={save.error ?? remove.error} />
         </div>
       </form>
+
+      <section className="rounded-lg border border-red-500/40 p-4">
+        <h3 className="text-sm font-semibold">Start fresh</h3>
+        <p className="mt-1 text-sm text-muted">
+          Imports add to what is already saved. To start again from your next import, clear what you
+          want here. The career, crest, kits and Settings stay.
+        </p>
+        <div className="mt-3 grid gap-1 text-sm">
+          {(
+            [
+              ['squad', 'Squad, player history and import log'],
+              ['staff', 'Staff and scouting network'],
+              ['world', 'World database'],
+            ] as const
+          ).map(([key, label]) => (
+            <label key={key} className="flex min-h-11 items-center gap-2">
+              <input
+                type="checkbox"
+                checked={fresh[key]}
+                onChange={(e) => setFresh({ ...fresh, [key]: e.target.checked })}
+                className="size-5"
+              />
+              {label}
+            </label>
+          ))}
+        </div>
+        <div className="mt-3 flex flex-wrap items-center gap-3">
+          <Button
+            type="button"
+            variant="danger"
+            onClick={confirmFresh}
+            disabled={reset.isPending || !(fresh.squad || fresh.staff || fresh.world)}
+          >
+            {reset.isPending ? 'Clearing…' : 'Clear and start fresh'}
+          </Button>
+          {reset.isSuccess && (
+            <span className="text-sm text-accent">Cleared. Import your save.</span>
+          )}
+          <ErrorText error={reset.error} />
+        </div>
+      </section>
     </div>
   )
 }
