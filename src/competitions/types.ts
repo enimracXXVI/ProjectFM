@@ -8,6 +8,16 @@ export interface CompetitionsFile {
   season: number | null
   competitions: SaveCompetition[]
   playerMatches: PlayerMatch[]
+  /** Matchday squads (Unique IDs) of the club's played games, from FM's match reports. */
+  squads?: { date: string; home: number; away: number; homeSquad: number[]; awaySquad: number[] }[]
+  /** Injuries recorded for the club's players (no duration in the save). */
+  injuries?: {
+    uniqueId: number
+    date: string | null
+    cause: string | null
+    severity: string | null
+    type: string | null
+  }[]
 }
 
 export interface SaveCompetition {

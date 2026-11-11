@@ -45,7 +45,7 @@ def _plain(v):
 
 
 # Raised whenever extract() returns new data, so the app can spot an outdated copy
-READER_VERSION = 4
+READER_VERSION = 5
 
 JOB_SCOUT, JOB_CHIEF_SCOUT = 14, 44
 _FF8 = b"\xff" * 8
@@ -288,7 +288,17 @@ def _competitions(save, club_uid, club_name):
             "passesDone": m.passes_completed,
         })
     seasons = [f.season_start_year for f in mine if f.season_start_year]
+    try:
+        squads = _matchday_squads(save, club_uid, mine)
+    except Exception:
+        squads = []
+    try:
+        injuries = _injuries(save, club_uid)
+    except Exception:
+        injuries = []
     return {
+        "squads": squads,
+        "injuries": injuries,
         "club": club_uid,
         "clubName": club_name,
         "season": max(set(seasons), key=seasons.count) if seasons else None,
@@ -335,6 +345,65 @@ def _tactics(save, club_uid):
         if s.club_uid == club_uid and (s.team_slot or 0) == 0
     ]
     return {"tactics": out, "selection": selection}
+
+
+def _matchday_squads(save, club_uid, fixtures):
+    """Who was in each of the club's matchday squads (Unique IDs), from FM's match reports.
+
+    fmsave reads the report index and frames for FM27 but not the player records, so the
+    squad is taken as the players of the two clubs whose Unique ID appears in the report.
+    """
+    from fmsave.readers.team_match_stats import index_entries, _decompress, _header
+    from fmsave._layouts.fm26_26_3_2 import MATCH_REPORTS as layout
+
+    mine = {}
+    for f in fixtures:
+        if club_uid in (f.home_club_uid, f.away_club_uid) and f.played:
+            mine[(f.home_team_id, f.away_team_id, f.date)] = f
+    if not mine:
+        return []
+    clubs = {}
+    for p in save.players():
+        if p.unique_id is not None and p.club_uid is not None:
+            clubs.setdefault(p.club_uid, []).append(p.unique_id)
+    out = []
+    with save._context.section("match_stats_cfg") as section:
+        for start, size in index_entries(section, layout, "save"):
+            report = _decompress(memoryview(section)[start:start + size], layout)
+            head = _header(report, layout) if report else None
+            if head is None:
+                continue
+            f = mine.get((head.home_team_id, head.away_team_id, head.kick_off.date()))
+            if f is None:
+                continue
+            squads = {}
+            for side, uid in (("home", f.home_club_uid), ("away", f.away_club_uid)):
+                squads[side] = [u for u in clubs.get(uid, []) if struct.pack("<I", u) in report]
+            out.append({
+                "date": f.date.isoformat(),
+                "home": f.home_club_uid,
+                "away": f.away_club_uid,
+                "homeSquad": squads["home"],
+                "awaySquad": squads["away"],
+            })
+    return out
+
+
+def _injuries(save, club_uid):
+    """Injuries recorded for the club's players (date, cause, severity; no duration)."""
+    players = {p.uid: p.unique_id for p in save.players() if p.club_uid == club_uid}
+    out = []
+    for i in save.injuries():
+        if i.club_uid != club_uid or i.player_uid not in players:
+            continue
+        out.append({
+            "uniqueId": players[i.player_uid],
+            "date": i.date.isoformat() if i.date else None,
+            "cause": _plain(i.cause) if i.cause is not None else None,
+            "severity": _plain(i.severity) if i.severity is not None else None,
+            "type": i.type_name,
+        })
+    return out
 
 
 def extract(path):

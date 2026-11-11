@@ -1,5 +1,6 @@
 import { ChevronRight } from 'lucide-react'
 import { Link, useSearchParams } from 'react-router-dom'
+import { RecordsCard } from '../components/RecordsCard'
 import { Card, PageHeader, Placeholder } from '../components/ui'
 import { useCompetitions } from '../competitions/hooks'
 import { leagueTable } from '../competitions/league'
@@ -113,6 +114,7 @@ export function Competitions() {
             })}
         </div>
       )}
+      <RecordsCard />
     </>
   )
 }

@@ -1,6 +1,7 @@
 import { clsx } from 'clsx'
 import { ArrowLeft } from 'lucide-react'
 import { Link, useParams, useSearchParams } from 'react-router-dom'
+import { HeadToHead } from '../components/HeadToHead'
 import { MatchLogCard } from '../components/MatchLogCard'
 import { Card, Placeholder } from '../components/ui'
 import { useCompetitions } from '../competitions/hooks'
@@ -47,7 +48,33 @@ export function Match() {
   if (!data || !comp || !f) return <Placeholder>Match not found.</Placeholder>
 
   const lines = matchLines(data, comp.id, f)
-  const mine = lines.filter((m) => m.club === data.club)
+  const squadUids = data.squads?.find(
+    (s) => s.date === f.date && s.home === f.home && s.away === f.away,
+  )
+  const mySquad = squadUids
+    ? new Set(f.home === data.club ? squadUids.homeSquad : squadUids.awaySquad)
+    : null
+  // Lines without minutes are bench players only when the matchday squad confirms it
+  const mine = lines.filter(
+    (m) =>
+      m.club === data.club && (m.minutes !== null || !mySquad || mySquad.has(m.uniqueId ?? -1)),
+  )
+  const missing = mySquad
+    ? (squad ?? [])
+        .filter((p) => p.in_squad && !p.extra.team && p.fm_uid !== null && !mySquad.has(p.fm_uid))
+        .map((p) => {
+          const injury = (data.injuries ?? [])
+            .filter(
+              (i) =>
+                i.uniqueId === p.fm_uid &&
+                i.date &&
+                i.date <= (f.date ?? '') &&
+                daysBetween(i.date, f.date!) <= 120,
+            )
+            .sort((a, b) => (b.date ?? '').localeCompare(a.date ?? ''))[0]
+          return { p, injury }
+        })
+    : []
   const opponentId = f.home === data.club ? f.away : f.home
   const theirs = lines.filter((m) => m.club === opponentId)
   const squadId = new Map((squad ?? []).map((p) => [p.fm_uid, p.id]))
@@ -85,6 +112,39 @@ export function Match() {
           />
         )}
       </div>
+      {missing.length > 0 && (
+        <Card className="mt-4">
+          <h2 className="mb-2 font-semibold">Not in the matchday squad</h2>
+          <ul className="grid gap-0.5 text-sm">
+            {missing.map(({ p, injury }) => (
+              <li key={p.id} className="flex min-h-9 items-center gap-2">
+                <Link to={`/squad/${p.id}`} className="min-w-0 flex-1 truncate hover:text-accent">
+                  {p.name}
+                </Link>
+                <span className={injury ? 'text-red-400' : 'text-muted'}>
+                  {injury
+                    ? `Injured ${injury.date}${injury.severity ? ` (${injury.severity}${injury.cause ? `, ${injury.cause.replace(/_/g, ' ')}` : ''})` : ''}`
+                    : 'Not selected'}
+                </span>
+              </li>
+            ))}
+          </ul>
+          <p className="mt-2 text-xs text-muted">
+            The save records when an injury happened and how serious it was, not how long it lasts:
+            an injury within 120 days before the match is shown.
+          </p>
+        </Card>
+      )}
+
+      {opponentId !== null && (
+        <div className="mt-4">
+          <HeadToHead
+            opponent={opponentId}
+            name={(f.home === opponentId ? f.homeShort : f.awayShort) ?? 'them'}
+          />
+        </div>
+      )}
+
       <div className="mt-4">
         <MatchLogCard matchKey={key} competitionDbId={comp.databaseId} season={data.season} />
       </div>
@@ -179,3 +239,6 @@ function Lineup({
     </Card>
   )
 }
+
+const daysBetween = (a: string, b: string) =>
+  (new Date(b).getTime() - new Date(a).getTime()) / 86_400_000

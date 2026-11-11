@@ -1,14 +1,5 @@
 import { Link } from 'react-router-dom'
-import { PageHeader, Placeholder } from '../components/ui'
-
-export function Achievements() {
-  return (
-    <>
-      <PageHeader title="Achievements" subtitle="Trophies, records and milestones" />
-      <Placeholder>Achievements tracking — coming soon</Placeholder>
-    </>
-  )
-}
+import { PageHeader } from '../components/ui'
 
 export function NotFound() {
   return (
