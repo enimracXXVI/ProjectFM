@@ -103,12 +103,7 @@ export const PERSONALITY_KEYS = [
 
 /** Values that FM keeps hidden; stored in `extra` and shown only when the user allows it. */
 /** Raw values from the ProjectFM Reader, not shown until mapped to FM's display. */
-export const READER_EXTRA_KEYS = [
-  'Condition',
-  'Morale (1-20)',
-  'Reader squad no',
-  'Reader positions',
-]
+export const READER_EXTRA_KEYS = ['Condition', 'Morale', 'Reader positions']
 
 export const HIDDEN_EXTRA_KEYS = new Set([
   'CA',
@@ -151,6 +146,24 @@ export function footWord(n: number): string {
   if (n <= 17) return 'Strong'
   return 'Very Strong'
 }
+
+/**
+ * FM27 morale words for the reader's 1–20 value, as confirmed by the user for 10 players.
+ * Values not seen yet show as "n/20".
+ */
+const MORALE_WORDS: Record<number, string> = {
+  9: 'Fairly Okay',
+  13: 'Good',
+  15: 'Very Good',
+  16: 'Extremely Good',
+  17: 'Excellent',
+  20: 'Perfect',
+}
+export const moraleWord = (n: number) => MORALE_WORDS[n] ?? `${n}/20`
+
+/** The reader's squad number when it found one (255 = not found). */
+export const readerSquadNumber = (p: DumpPerson): number | null =>
+  p.squadNo != null && p.squadNo > 0 && p.squadNo < 100 ? p.squadNo : null
 
 /** FM27 staff rating word for a 1–20 value. */
 export function staffWord(n: number): string {
@@ -200,9 +213,7 @@ export function playerFromDump(p: DumpPerson): ImportedPlayer {
   // ProjectFM Reader values. Condition is stored ×100 (10000 = 100%).
   if (typeof p.condition === 'number' && p.condition >= 0)
     extra.Condition = `${Math.round(p.condition / 100)}%`
-  if (typeof p.morale === 'number' && p.morale > 0) extra['Morale (1-20)'] = String(p.morale)
-  // Squad number from the reader did not match FM for 11 of 25 players: kept raw only
-  if (p.squadNo != null) extra['Reader squad no'] = String(p.squadNo)
+  if (typeof p.morale === 'number' && p.morale > 0) extra.Morale = moraleWord(p.morale)
   if (p.posRatings) {
     extra['Reader positions'] = Object.entries(p.posRatings)
       .map(([k, v]) => `${k}:${v}`)
@@ -274,7 +285,7 @@ export interface DumpSummary {
   totalPlayers: number
   totalStaff: number
   /** My club's players, first team and other teams (reserves / youth). */
-  players: { player: ImportedPlayer; level: TeamLevel }[]
+  players: { player: ImportedPlayer; level: TeamLevel; squadNo: number | null }[]
   scouts: DumpStaff[]
   /** Current club of each requested Unique ID (to spot players who left). */
   clubOf: Record<number, string | null>
@@ -295,7 +306,11 @@ export function summarizeDump(dump: Dump, knownUids: number[]): DumpSummary {
     meta: dump.meta,
     totalPlayers: dump.players.length,
     totalStaff: dump.staff.length,
-    players: mine.map((p) => ({ player: playerFromDump(p), level: teamLevel(p) })),
+    players: mine.map((p) => ({
+      player: playerFromDump(p),
+      level: teamLevel(p),
+      squadNo: readerSquadNumber(p),
+    })),
     scouts: scouts.map(staffFromDump),
     clubOf,
   }

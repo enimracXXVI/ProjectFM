@@ -356,6 +356,18 @@ export async function importDump(opts: {
     markMissingAsLeft: false,
   })
 
+  // Squad numbers: only where the reader found one, so blanks never wipe a known number
+  for (const p of summary.players) {
+    if (p.squadNo === null || (!includeOtherTeams && p.level !== 'first')) continue
+    check(
+      await supabase
+        .from('players')
+        .update({ squad_number: p.squadNo })
+        .eq('career_id', career.id)
+        .eq('fm_uid', p.player.fm_uid!),
+    )
+  }
+
   // Players whose current club in FM is no longer yours (sold, released or loaned out)
   const myClub = summary.meta.myClub
   const gone = Object.entries(summary.clubOf)

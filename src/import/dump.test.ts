@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest'
 import { ATTRIBUTE_INFO } from '../data/attributeInfo'
 import sample from './fixtures/dump-sample.json'
 import {
+  readerSquadNumber,
   footWord,
   formatPositions,
   playerFromDump,
@@ -58,7 +59,9 @@ describe('ProjectFM Reader fields', () => {
     const p = playerFromDump({ ...base, footLeft: 20, footRight: 9, condition: 9600, morale: 17 })
     expect(p.left_foot).toBe('Very Strong')
     expect(p.right_foot).toBe('Reasonable')
-    expect(p.extra).toMatchObject({ Condition: '96%', 'Morale (1-20)': '17' })
+    expect(readerSquadNumber({ ...base, squadNo: 30 })).toBe(30)
+    expect(readerSquadNumber({ ...base, squadNo: 255 })).toBeNull()
+    expect(p.extra).toMatchObject({ Condition: '96%', Morale: 'Excellent' })
   })
 })
 
