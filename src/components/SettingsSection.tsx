@@ -85,14 +85,20 @@ export function SettingsSection({
         )}
       >
         <ChevronDown
-          className={clsx('size-4 shrink-0 text-muted transition-transform', !shown && '-rotate-90')}
+          className={clsx(
+            'size-4 shrink-0 text-muted transition-transform',
+            !shown && '-rotate-90',
+          )}
           aria-hidden
         />
         <h2 className="min-w-0 flex-1 font-semibold">{title}</h2>
         {aside && <span className="shrink-0 text-xs text-muted">{aside}</span>}
       </button>
       {shown && (
-        <div id={bodyId} className={clsx(variant === 'plain' ? 'pb-2' : 'px-3 pb-3', bodyClassName)}>
+        <div
+          id={bodyId}
+          className={clsx(variant === 'plain' ? 'pb-2' : 'px-3 pb-3', bodyClassName)}
+        >
           {hint && <div className="mb-2 text-xs text-muted">{hint}</div>}
           {children}
         </div>
