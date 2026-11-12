@@ -96,13 +96,23 @@ export function teamMatchStats(
     row('Possession', 'possession_percent', 'pct'),
     {
       label: 'Distance covered (km)',
-      home: Math.round(home.distance_km),
-      away: Math.round(away.distance_km),
+      // FM drops the decimals (123.9 km shows as 123)
+      home: Math.floor(home.distance_km),
+      away: Math.floor(away.distance_km),
     },
   ]
   const advanced: StatRow[] = [
-    ...(rating && rating[0] !== null && rating[1] !== null
-      ? [{ label: 'Average rating', home: rating[0], away: rating[1], format: 'dec' as const }]
+    ...(rating && (rating[0] !== null || rating[1] !== null)
+      ? [
+          {
+            label: 'Average rating',
+            // Even bars when one side has no average
+            home: rating[1] === null ? 0 : (rating[0] ?? 0),
+            away: rating[0] === null ? 0 : (rating[1] ?? 0),
+            homeText: rating[0]?.toFixed(2) ?? '–',
+            awayText: rating[1]?.toFixed(2) ?? '–',
+          },
+        ]
       : []),
     row('NpXG', 'non_penalty_expected_goals', 'dec'),
     row('Long shots', 'shots_outside_box'),

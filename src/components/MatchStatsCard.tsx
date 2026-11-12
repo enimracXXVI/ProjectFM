@@ -80,11 +80,11 @@ export function MatchStatsCard({
           )
         })}
       </ul>
-      <p className="mt-3 text-xs text-muted">
-        {named
-          ? 'Average rating is worked out from the players’ match ratings. OPPDA is not in the save.'
-          : 'Import your save again to see every stat of FM’s match stats screen.'}
-      </p>
+      {!named && (
+        <p className="mt-3 text-xs text-muted">
+          Import your save again to see every stat of FM’s match stats screen.
+        </p>
+      )}
     </Card>
   )
 }

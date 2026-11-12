@@ -28,7 +28,9 @@ export function myFixtures(file: CompetitionsFile, comp: SaveCompetition): Fixtu
 export const fixtureKey = (f: Fixture) => `${f.date}_${f.home}_${f.away}`
 
 export const scoreText = (f: Fixture) =>
-  f.played && f.hg !== null ? `${f.hg} – ${f.ag}${f.pens ? ' p' : ''}` : (f.time ?? 'v')
+  f.played && f.hg !== null
+    ? `${f.hg} – ${f.ag}${f.pens ? ` (${f.pens[0]}–${f.pens[1]} pens)` : ''}`
+    : (f.time ?? 'v')
 
 /** Goals by half-time (goals up to 45+ minutes), or null when the save has no goal times. */
 export function halfTime(f: Fixture): [number, number] | null {

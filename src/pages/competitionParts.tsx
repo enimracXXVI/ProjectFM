@@ -63,7 +63,16 @@ export function FixtureRow({
           f.played ? 'bg-surface-2 font-semibold' : 'text-muted',
         )}
       >
-        {scoreText(f)}
+        {f.pens ? (
+          <>
+            {f.hg} – {f.ag}
+            <span className="block text-[11px] leading-tight font-normal text-muted">
+              {f.pens[0]}–{f.pens[1]} pens
+            </span>
+          </>
+        ) : (
+          scoreText(f)
+        )}
       </span>
       <span className={clsx('min-w-0 flex-1 truncate', f.away === club && 'font-semibold')}>
         {f.awayShort ?? f.awayName}
