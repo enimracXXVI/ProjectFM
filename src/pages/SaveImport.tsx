@@ -183,7 +183,7 @@ export function SaveImport({
           <li className={r.staffNeedsUpdate ? 'text-amber-300' : ''}>
             {r.staffNeedsUpdate
               ? `Scouts only: ${r.scoutsUpdated} updated · ${r.scoutsAdded} added (all staff needs the one-time database update, see Staff)`
-              : `Staff: ${r.scoutsUpdated} updated · ${r.scoutsAdded} added`}
+              : `Staff: ${r.scoutsUpdated} updated · ${r.scoutsAdded} added · ${r.staffRemoved} no longer at the club, removed`}
           </li>
           <li className={typeof r.tactics === 'number' ? '' : 'text-amber-300'}>
             {typeof r.tactics === 'number'

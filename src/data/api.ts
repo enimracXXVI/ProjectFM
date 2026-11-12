@@ -507,6 +507,7 @@ export async function importSave(opts: {
   notInSquad: number
   scoutsAdded: number
   scoutsUpdated: number
+  staffRemoved: number
   staffNeedsUpdate: boolean
 }> {
   const { career, data, kind, season, fileName } = opts
@@ -567,7 +568,7 @@ export async function importSave(opts: {
   if (snapshots.length) check(await supabase.from('player_snapshots').insert(snapshots))
 
   // Staff: everyone on FM's staff screen (needs migration 0007), else the scouts only
-  let staffResult: { added: number; updated: number; needsUpdate: boolean }
+  let staffResult: { added: number; updated: number; removed?: number; needsUpdate: boolean }
   try {
     staffResult = { ...(await importAllStaff(career, data)), needsUpdate: false }
   } catch (e) {
@@ -579,6 +580,7 @@ export async function importSave(opts: {
     notInSquad: updates.length - updated,
     scoutsAdded: staffResult.added,
     scoutsUpdated: staffResult.updated,
+    staffRemoved: staffResult.removed ?? 0,
     staffNeedsUpdate: staffResult.needsUpdate,
   }
 }
@@ -646,6 +648,7 @@ async function importAllStaff(career: Career, data: SaveData) {
   const scouts = new Map(saveScouts(data, personalityRules).map((s) => [s.fm_uid, s]))
   let added = 0
   let updated = 0
+  const kept = new Set<string>()
   for (const raw of data.staff ?? []) {
     const title = jobTitle(raw.job, learned.jobs)
     const scout = scouts.get(raw.uniqueId)
@@ -704,13 +707,38 @@ async function importAllStaff(career: Career, data: SaveData) {
           })
           .eq('id', match.id),
       )
+      kept.add(match.id)
       updated++
     } else {
-      check(await supabase.from('staff').insert({ ...row, career_id: career.id, knowledge }))
+      const created = check(
+        await supabase
+          .from('staff')
+          .insert({ ...row, career_id: career.id, knowledge })
+          .select('id')
+          .single(),
+      ) as { id: string }
+      kept.add(created.id)
       added++
     }
   }
-  return { added, updated }
+  // The staff list is the save's: anyone no longer at the club (sacked, left, retired) goes,
+  // and leaves the scouting network with them
+  const removed = staff.filter((x) => !kept.has(x.id)).map((x) => x.id)
+  if (removed.length && (data.staff ?? []).length) {
+    const gone = new Set(removed)
+    // Read fresh: the network may have changed since the page loaded
+    const fresh = check(
+      await supabase.from('careers').select('scouting').eq('id', career.id).single(),
+    ) as { scouting: Career['scouting'] }
+    const net = fresh.scouting ?? {}
+    await saveScouting(career.id, {
+      ...net,
+      heads: Object.fromEntries(Object.entries(net.heads ?? {}).filter(([, id]) => !gone.has(id))),
+      scouts: Object.fromEntries(Object.entries(net.scouts ?? {}).filter(([id]) => !gone.has(id))),
+    })
+    check(await supabase.from('staff').delete().in('id', removed))
+  }
+  return { added, updated, removed: removed.length }
 }
 
 // --- Things the app could not work out (Check in game) ---
