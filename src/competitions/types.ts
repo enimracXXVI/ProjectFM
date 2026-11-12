@@ -17,6 +17,9 @@ export interface CompetitionsFile {
     awaySquad: number[]
     homeStats?: RawTeamStats | null
     awayStats?: RawTeamStats | null
+    /** Every stat of FM's match stats screen, named (reader 11 and later). */
+    homeTeam?: TeamStats | null
+    awayTeam?: TeamStats | null
     /** Starting XI and bench (Unique IDs) from the match report; names of both squads. */
     homeXI?: number[]
     homeBench?: number[]
@@ -68,6 +71,46 @@ export interface Fixture {
   neutral: boolean | null
   stadium: string | null
   leg: number | null
+  /** Shoot-out score (home, away) when the match went to penalties. */
+  pens?: [number, number]
+  /** Goals and shoot-out kicks in order (reader 11 and later). */
+  events?: MatchEvent[]
+}
+
+/** [side (0 home, 1 away), type, minute, added minutes, scorer, assister]. */
+export type MatchEvent = [number, number, number, number, string | null, string | null]
+
+/** Event types as the save stores them. */
+export const EVENT = { goal: 0, ownGoal: 1, penalty: 2, notGoal: 3, kickScored: 4, kickMissed: 5 }
+
+/** A team's match stats as FM's match stats screen shows them. */
+export interface TeamStats {
+  shots: number
+  shots_on_target: number
+  blocked_shots: number
+  shots_outside_box: number
+  clear_cut_chances: number
+  woodwork: number
+  fouls_made: number
+  offsides: number
+  yellow_cards: number
+  red_cards: number
+  crosses_attempted: number
+  crosses_completed: number
+  tackles_attempted: number
+  tackles_completed: number
+  aerial_challenges_attempted: number
+  headers_won: number
+  distance_km: number
+  expected_goals: number
+  non_penalty_expected_goals: number
+  corners: number
+  passes_attempted: number
+  passes_completed: number
+  final_third_passes: number
+  progressive_passes: number | null
+  possession_percent: number
+  ball_distribution_percent: number
 }
 
 export interface PlayerMatch {

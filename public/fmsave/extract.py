@@ -45,7 +45,7 @@ def _plain(v):
 
 
 # Raised whenever extract() returns new data, so the app can spot an outdated copy
-READER_VERSION = 10
+READER_VERSION = 11
 
 JOB_SCOUT, JOB_CHIEF_SCOUT = 14, 44
 _FF8 = b"\xff" * 8
@@ -240,6 +240,10 @@ def _competitions(save, club_uid, club_name):
     """Every competition the first team plays in this season: its fixtures and results,
     stages (cup rounds, groups) and per-player match stats."""
     fixtures = list(save.fixtures())
+    try:
+        events = _fixture_events(save)
+    except Exception:  # a bonus: the competitions still import without goal times
+        events = {}
     mine = [
         f for f in fixtures
         if (f.home_club_uid == club_uid and (f.home_team_slot or 0) == 0)
@@ -275,6 +279,7 @@ def _competitions(save, club_uid, club_name):
             "neutral": f.is_neutral_venue,
             "stadium": f.stadium_name,
             "leg": f.unknown.get("leg") if f.unknown else None,
+            **events.get((f.home_team_id, f.away_team_id, f.date), {}),
         }
 
     out = []
@@ -478,6 +483,10 @@ def _matchday_squads(save, club_uid, fixtures):
         if p.unique_id is not None and p.club_uid is not None:
             clubs.setdefault(p.club_uid, []).append(p.unique_id)
             names[p.unique_id] = p.name
+    try:
+        named = _named_team_stats(save)
+    except Exception:
+        named = {}
     out = []
     with save._context.section("match_stats_cfg") as section:
         for start, size in index_entries(section, layout, "save"):
@@ -498,20 +507,130 @@ def _matchday_squads(save, club_uid, fixtures):
                     return _team_block(report, team_id)
                 except Exception:
                     return None
+            raw = {"home": block(head.home_team_id), "away": block(head.away_team_id)}
+
+            def checked(is_home):
+                d = named.get((head.home_team_id, head.away_team_id, f.date, is_home))
+                r = raw["home" if is_home else "away"]
+                # Only when it agrees with ProjectFM's own reading of the same report
+                if d and (r is None or r["h"][0] == d.get("passes_attempted")):
+                    return d
+                return None
+
             out.append({
                 "date": f.date.isoformat(),
                 "home": f.home_club_uid,
+                "homeTeam": checked(True),
+                "awayTeam": checked(False),
                 "away": f.away_club_uid,
                 "homeSquad": squads["home"],
                 "awaySquad": squads["away"],
-                "homeStats": block(head.home_team_id),
-                "awayStats": block(head.away_team_id),
+                "homeStats": raw["home"],
+                "awayStats": raw["away"],
                 "homeXI": lineups["home"][0],
                 "homeBench": lineups["home"][1],
                 "awayXI": lineups["away"][0],
                 "awayBench": lineups["away"][1],
                 "names": {str(u): names.get(u) for u in squads["home"] + squads["away"]},
             })
+    return out
+
+
+# Goal and shoot-out events (found by ProjectFM in FM27 saves). Each played fixture has a
+# result packet stored just before the NEXT fixture record (fmsave reads its score). Packet:
+# 1f, ..., +5 home goals, +7 home shoot-out goals (ff = none), +9 away goals, +11 away
+# shoot-out goals, +25 event count (u32), then 16-byte events: scorer (u32), assister
+# (i32, -1 none) as player record index + 1, time (u32), side (0 home, 1 away), type, minute, added minutes.
+# Types: 0 goal, 1 own goal (counts for the side, scorer from the other team), 2 penalty,
+# 3 not a goal (likely a missed penalty), 4 / 5 shoot-out kick scored / missed. Checked
+# on 1,700 fixtures (goals add up to the score) and Cremonese 1-1 Sampdoria (6-5 pens).
+def _fixture_events(save):
+    import fmsave._save as S
+    from fmsave.readers import fm27_span as span_mod
+
+    if save.info.game != "FM27":
+        return {}
+    span = save.experimental_span()
+    limits = span_mod.Fm27SpanLimits()
+    frames = S.read_region_frames_bounded(
+        save._require_open(),
+        S.SPAN_REGION,
+        maximum_frames=limits.maximum_frames,
+        maximum_decompressed_bytes=limits.maximum_span_bytes,
+        maximum_frame_output_bytes=limits.maximum_frame_bytes,
+    )
+    data, _ = span_mod._buffer_frames(frames, limits)
+    owner = {}
+    for c in span.fixtures:
+        nxt = span_mod._next_core(data, c.offset, len(data), limits)
+        if nxt and nxt[1]:
+            owner[nxt[0]] = c.offset + 54
+    # Event person ids are the player's record index + 1
+    by_uid = {p.uid: p.name for p in save.players()}
+    records = save._context.player_records()
+    names = {records.pindexes[k] + 1: by_uid.get(uid) for k, uid in enumerate(records.uids)}
+    out = {}
+    for f in span.fixtures:
+        pk = owner.get(f.offset)
+        if pk is None or data[pk] != 31:
+            continue
+        hg, ag = data[pk + 5], data[pk + 9]
+        if max(hg, ag) > 40:
+            continue
+        n = struct.unpack_from("<I", data, pk + 25)[0]
+        evs = []
+        for k in range(min(n, 60)):
+            at = pk + 29 + 16 * k
+            scorer, assist = struct.unpack_from("<Ii", data, at)
+            evs.append([
+                data[at + 12], data[at + 13], data[at + 14], data[at + 15],
+                names.get(scorer), names.get(assist) if assist >= 0 else None,
+            ])
+        row = {}
+        if evs:
+            row["events"] = evs
+        hp, ap = data[pk + 7], data[pk + 11]
+        if hp != 255 and ap != 255:
+            row["pens"] = [hp, ap]
+        if row:
+            out[(f.home_team_id, f.away_team_id, f.date)] = row
+    return out
+
+
+# Team match stats with fmsave's own FM27 27.0.0 report layout. fmsave only enables it for
+# that exact build; ProjectFM checked it on the user's 27.0.1 saves (every number it reads
+# matched FM's match stats screens for Venezia and Ravenna), and each block is only used
+# when its passes agree with ProjectFM's own reading of the same report.
+_NAMED_STATS = (
+    "shots", "shots_on_target", "blocked_shots", "shots_outside_box", "clear_cut_chances",
+    "woodwork", "fouls_made", "offsides", "yellow_cards", "red_cards", "crosses_attempted",
+    "crosses_completed", "tackles_attempted", "tackles_completed",
+    "aerial_challenges_attempted", "headers_won", "distance_km", "expected_goals",
+    "non_penalty_expected_goals", "corners", "passes_attempted", "passes_completed",
+    "final_third_passes", "progressive_passes", "possession_percent",
+    "ball_distribution_percent",
+)
+
+
+def _named_team_stats(save):
+    import fmsave._save as S
+    from fmsave._layouts.fm27_27_0_0 import MATCH_REPORTS as fm27_reports
+
+    if save.info.game != "FM27":
+        return {}
+    find = S.find_match_report_layout
+    S.find_match_report_layout = lambda *a, **k: fm27_reports
+    try:
+        rows = list(save.team_match_stats())
+    finally:
+        S.find_match_report_layout = find
+    out = {}
+    for r in rows:
+        d = {}
+        for k in _NAMED_STATS:
+            v = getattr(r, k, None)
+            d[k] = round(v, 3) if isinstance(v, float) else v
+        out[(r.home_team_id, r.away_team_id, r.date, r.is_home)] = d
     return out
 
 

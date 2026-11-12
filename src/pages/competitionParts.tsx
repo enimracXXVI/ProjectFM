@@ -77,7 +77,7 @@ export function FixtureRow({
     'flex min-h-11 min-w-0 items-center gap-2 rounded-lg px-2 text-sm',
     mine && 'bg-accent/5',
   )
-  return mine && f.played ? (
+  return f.played && (mine || f.events?.length || f.pens) ? (
     <Link
       to={`/competitions/${compDbId}/match/${fixtureKey(f)}?season=${f.season ?? ''}`}
       className={clsx(cls, 'hover:bg-surface-2')}

@@ -6,6 +6,7 @@ import type {
   PlayerMatch,
   SaveCompetition,
 } from './types'
+import { EVENT } from './types'
 
 /** Name and type of a competition, or null when the user has not named it yet. */
 export function compInfo(config: AppConfig, comp: SaveCompetition): CompetitionInfo | null {
@@ -27,7 +28,19 @@ export function myFixtures(file: CompetitionsFile, comp: SaveCompetition): Fixtu
 export const fixtureKey = (f: Fixture) => `${f.date}_${f.home}_${f.away}`
 
 export const scoreText = (f: Fixture) =>
-  f.played && f.hg !== null ? `${f.hg} – ${f.ag}` : (f.time ?? 'v')
+  f.played && f.hg !== null ? `${f.hg} – ${f.ag}${f.pens ? ' p' : ''}` : (f.time ?? 'v')
+
+/** Goals by half-time (goals up to 45+ minutes), or null when the save has no goal times. */
+export function halfTime(f: Fixture): [number, number] | null {
+  const goals = (f.events ?? []).filter(([, t]) => t <= EVENT.penalty)
+  if (!f.played || f.hg === null || f.ag === null || goals.length !== f.hg + f.ag) return null
+  const first = goals.filter(([, , minute]) => minute <= 45)
+  return [first.filter(([s]) => s === 0).length, first.filter(([s]) => s === 1).length]
+}
+
+/** The club that won on penalties, if the match went to a shoot-out. */
+export const pensWinner = (f: Fixture) =>
+  f.pens ? (f.pens[0] > f.pens[1] ? f.home : f.away) : null
 
 /** Result for the club: W/D/L, or null when not played. */
 export function resultFor(f: Fixture, club: number): 'W' | 'D' | 'L' | null {
@@ -43,6 +56,8 @@ export interface Tie {
   legs: Fixture[]
   /** Aggregate goals for a and b over the played legs. */
   agg: [number, number] | null
+  /** Club that won the tie on penalties. */
+  pensWinner?: number | null
 }
 
 export interface CupRound {
@@ -83,6 +98,8 @@ export function cupRounds(comp: SaveCompetition, roundNames: Record<string, stri
         ([a, b], l) => (l.home === tie.a.club ? [a + l.hg!, b + l.ag!] : [a + l.ag!, b + l.hg!]),
         [0, 0],
       )
+      const shootout = played.find((l) => l.pens)
+      if (shootout) tie.pensWinner = pensWinner(shootout)
     }
     return {
       stage,

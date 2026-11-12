@@ -6,8 +6,9 @@ import { MatchLogCard } from '../components/MatchLogCard'
 import { MatchStatsCard } from '../components/MatchStatsCard'
 import { Card, Placeholder } from '../components/ui'
 import { useCompetitions } from '../competitions/hooks'
-import type { PlayerMatch } from '../competitions/types'
-import { compLabel, fixtureKey, matchLines, resultFor } from '../competitions/view'
+import { EVENT, type Fixture, type PlayerMatch } from '../competitions/types'
+import { averageRating } from '../competitions/matchStats'
+import { compLabel, fixtureKey, halfTime, matchLines, resultFor } from '../competitions/view'
 import { usePlayers } from '../data/hooks'
 import { useCurrentCareer } from '../lib/career'
 import { useConfig } from '../lib/config'
@@ -49,6 +50,7 @@ export function Match() {
   if (!data || !comp || !f) return <Placeholder>Match not found.</Placeholder>
 
   const lines = matchLines(data, comp.id, f)
+  const ht = halfTime(f)
   const squadUids = data.squads?.find(
     (s) => s.date === f.date && s.home === f.home && s.away === f.away,
   )
@@ -104,16 +106,43 @@ export function Match() {
           </span>
           <span className="min-w-0 flex-1 truncate text-left">{f.awayShort ?? f.awayName}</span>
         </div>
+        {(ht || f.pens) && (
+          <p className="mt-1 text-sm text-muted tabular-nums">
+            {ht && `Half time ${ht[0]} – ${ht[1]}`}
+            {ht && f.pens && ' · '}
+            {f.pens &&
+              `Penalties ${f.pens[0]} – ${f.pens[1]} (${f.pens[0] > f.pens[1] ? (f.homeShort ?? f.homeName) : (f.awayShort ?? f.awayName)} win)`}
+          </p>
+        )}
         <div className="mt-2 flex justify-center">
-          <ResultBadge r={resultFor(f, data.club)} />
+          {(f.home === data.club || f.away === data.club) && (
+            <ResultBadge r={resultFor(f, data.club)} />
+          )}
         </div>
       </Card>
 
-      {squadUids?.homeStats && squadUids.awayStats && (
+      {(f.events?.length ?? 0) > 0 && (
+        <div className="mb-4">
+          <MatchEvents f={f} />
+        </div>
+      )}
+
+      {((squadUids?.homeStats && squadUids.awayStats) ||
+        (squadUids?.homeTeam && squadUids.awayTeam)) && (
         <div className="mb-4">
           <MatchStatsCard
             home={squadUids.homeStats}
             away={squadUids.awayStats}
+            homeTeam={squadUids.homeTeam}
+            awayTeam={squadUids.awayTeam}
+            rating={[
+              averageRating(
+                lines.filter((m) => m.club === f.home && m.minutes).map((m) => m.rating),
+              ),
+              averageRating(
+                lines.filter((m) => m.club === f.away && m.minutes).map((m) => m.rating),
+              ),
+            ]}
             homeName={f.homeShort ?? f.homeName ?? ''}
             awayName={f.awayShort ?? f.awayName ?? ''}
           />
@@ -328,3 +357,76 @@ function LineupGroups({
 
 const daysBetween = (a: string, b: string) =>
   (new Date(b).getTime() - new Date(a).getTime()) / 86_400_000
+
+const minuteText = (m: number, added: number) => (added ? `${m}+${added}′` : `${m}′`)
+
+/** Goals in order (home on the left, away on the right) and the shoot-out, as FM lists them. */
+function MatchEvents({ f }: { f: Fixture }) {
+  const events = f.events ?? []
+  const goals = events.filter(([, t]) => t <= EVENT.penalty)
+  const kicks = events.filter(([, t]) => t === EVENT.kickScored || t === EVENT.kickMissed)
+  const home = kicks.filter(([side]) => side === 0)
+  const away = kicks.filter(([side]) => side === 1)
+  const tag = (t: number) => (t === EVENT.penalty ? ' (pen)' : t === EVENT.ownGoal ? ' (og)' : '')
+  return (
+    <Card>
+      <h2 className="mb-2 font-semibold">Goals</h2>
+      {goals.length === 0 && <p className="text-sm text-muted">No goals.</p>}
+      <ul className="grid gap-1 text-sm">
+        {goals.map(([side, type, minute, added, scorer, assist], i) => (
+          <li
+            key={i}
+            className={clsx(
+              'flex min-h-8 items-baseline gap-2',
+              side === 1 && 'flex-row-reverse text-right',
+            )}
+          >
+            <span className="w-14 shrink-0 text-muted tabular-nums">
+              {minuteText(minute, added)}
+            </span>
+            <span className="min-w-0">
+              <span className="font-medium">
+                {scorer ?? 'Unknown'}
+                {tag(type)}
+              </span>
+              {assist && <span className="text-muted"> · {assist}</span>}
+            </span>
+          </li>
+        ))}
+      </ul>
+      {kicks.length > 0 && (
+        <>
+          <h3 className="mt-4 mb-2 text-sm font-semibold">
+            Penalty shoot-out{f.pens && ` ${f.pens[0]} – ${f.pens[1]}`}
+          </h3>
+          <div className="grid grid-cols-2 gap-x-4 gap-y-1 text-sm">
+            {Array.from({ length: Math.max(home.length, away.length) }, (_, i) =>
+              [home[i], away[i]].map((k, side) =>
+                k ? (
+                  <span
+                    key={`${i}-${side}`}
+                    className={clsx(
+                      'flex min-h-7 min-w-0 items-center gap-2',
+                      side === 1 && 'flex-row-reverse text-right',
+                    )}
+                  >
+                    <span
+                      className={clsx(
+                        'size-2.5 shrink-0 rounded-full',
+                        k[1] === EVENT.kickScored ? 'bg-emerald-400' : 'bg-red-400',
+                      )}
+                      aria-label={k[1] === EVENT.kickScored ? 'Scored' : 'Missed'}
+                    />
+                    <span className="min-w-0 truncate">{k[4] ?? 'Unknown'}</span>
+                  </span>
+                ) : (
+                  <span key={`${i}-${side}`} />
+                ),
+              ),
+            )}
+          </div>
+        </>
+      )}
+    </Card>
+  )
+}

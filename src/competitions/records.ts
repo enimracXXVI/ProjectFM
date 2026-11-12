@@ -125,7 +125,11 @@ export function achievements(files: CompetitionsFile[], config: AppConfig): Achi
         const done = tie.legs.every((l) => l.played)
         const mineIsA = tie.a.club === file.club
         const won =
-          tie.agg && tie.agg[0] !== tie.agg[1] ? tie.agg[0] > tie.agg[1] === mineIsA : null
+          tie.agg && tie.agg[0] !== tie.agg[1]
+            ? tie.agg[0] > tie.agg[1] === mineIsA
+            : tie.pensWinner != null
+              ? tie.pensWinner === file.club
+              : null
         if (isFinal && done && won !== null)
           out.push({ ...base, result: won ? 'Winners' : 'Runners-up', trophy: won, finished: true })
         else if (done && won === false)
