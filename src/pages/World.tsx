@@ -1,6 +1,7 @@
 import { clsx } from 'clsx'
 import { ChevronDown, ChevronUp, SlidersHorizontal } from 'lucide-react'
-import { useDeferredValue, useMemo, useState } from 'react'
+import { useDeferredValue, useMemo } from 'react'
+import { BOOL, NUM, TEXT, useUrlState } from '../lib/urlState'
 import { Link } from 'react-router-dom'
 import { Card, PageHeader, Placeholder } from '../components/ui'
 import { useCurrentCareer } from '../lib/career'
@@ -39,21 +40,21 @@ export function World() {
   const config = useConfig()
   const { data, isPending, error } = useWorld(career.id)
 
-  const [name, setName] = useState('')
-  const [positions, setPositions] = useState<string[]>([])
-  const [ageMin, setAgeMin] = useState('')
-  const [ageMax, setAgeMax] = useState('')
-  const [regionId, setRegionId] = useState('')
-  const [nation, setNation] = useState('')
-  const [club, setClub] = useState('')
-  const [roleId, setRoleId] = useState('')
-  const [caMin, setCaMin] = useState('')
-  const [paMin, setPaMin] = useState('')
-  const [hideMine, setHideMine] = useState(true)
-  const [listedOnly, setListedOnly] = useState(false)
-  const [showFilters, setShowFilters] = useState(false)
-  const [sort, setSort] = useState<{ col: SortCol; asc: boolean } | null>(null)
-  const [limit, setLimit] = useState(PAGE)
+  const [name, setName] = useUrlState('q', '', TEXT)
+  const [positions, setPositions] = useUrlState<string[]>('pos', [])
+  const [ageMin, setAgeMin] = useUrlState('ageMin', '', TEXT)
+  const [ageMax, setAgeMax] = useUrlState('ageMax', '', TEXT)
+  const [regionId, setRegionId] = useUrlState('region', '', TEXT)
+  const [nation, setNation] = useUrlState('nation', '', TEXT)
+  const [club, setClub] = useUrlState('club', '', TEXT)
+  const [roleId, setRoleId] = useUrlState('roleId', '', TEXT)
+  const [caMin, setCaMin] = useUrlState('caMin', '', TEXT)
+  const [paMin, setPaMin] = useUrlState('paMin', '', TEXT)
+  const [hideMine, setHideMine] = useUrlState('hideMine', true, BOOL)
+  const [listedOnly, setListedOnly] = useUrlState('listed', false, BOOL)
+  const [showFilters, setShowFilters] = useUrlState('filters', false, BOOL)
+  const [sort, setSort] = useUrlState<{ col: SortCol; asc: boolean } | null>('sort', null)
+  const [limit, setLimit] = useUrlState('shown', PAGE, NUM)
 
   const filters = useDeferredValue({
     name,

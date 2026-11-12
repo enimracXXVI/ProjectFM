@@ -1,5 +1,5 @@
 import { clsx } from 'clsx'
-import { useState } from 'react'
+import { TEXT, useUrlState } from '../lib/urlState'
 import { matchStats, teamMatchStats, type StatRow } from '../competitions/matchStats'
 import type { RawTeamStats, TeamStats } from '../competitions/types'
 import { Card } from './ui'
@@ -20,7 +20,7 @@ export function MatchStatsCard({
   homeName: string
   awayName: string
 }) {
-  const [tab, setTab] = useState<'key' | 'advanced'>('key')
+  const [tab, setTab] = useUrlState<'key' | 'advanced'>('stats', 'key', TEXT as never)
   const named = homeTeam && awayTeam ? teamMatchStats(homeTeam, awayTeam) : null
   const rows: StatRow[] = named ? named[tab] : home && away ? matchStats(home, away) : []
   if (!rows.length) return null

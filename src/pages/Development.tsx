@@ -1,5 +1,6 @@
 import { clsx } from 'clsx'
-import { useMemo, useState } from 'react'
+import { useMemo } from 'react'
+import { BOOL, useUrlState } from '../lib/urlState'
 import { Link } from 'react-router-dom'
 import { Sparkline } from '../components/Sparkline'
 import { Card, PageHeader, Placeholder, Stat } from '../components/ui'
@@ -23,8 +24,8 @@ export function Development() {
   const config = useConfig()
   const { data: snapshots, isPending, error } = useCareerSnapshots(career.id)
   const { data: players } = usePlayers(career.id)
-  const [window, setWindow] = useState<number | null>(5)
-  const [showLeft, setShowLeft] = useState(false)
+  const [window, setWindow] = useUrlState<number | null>('last', 5)
+  const [showLeft, setShowLeft] = useUrlState('former', false, BOOL)
 
   const byId = useMemo(() => new Map((players ?? []).map((p) => [p.id, p])), [players])
   const rows = useMemo(

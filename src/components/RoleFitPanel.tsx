@@ -1,5 +1,6 @@
 import { clsx } from 'clsx'
-import { useMemo, useState } from 'react'
+import { useMemo } from 'react'
+import { BOOL, TEXT, useUrlState } from '../lib/urlState'
 import type { RolePhase } from '../data/roles'
 import type { AttributeValue } from '../import/parse'
 import { useConfig } from '../lib/config'
@@ -16,8 +17,8 @@ export function RoleFitPanel({
   positions: string | null
 }) {
   const { roles, roleWeights } = useConfig()
-  const [phase, setPhase] = useState<RolePhase>('ip')
-  const [natural, setNatural] = useState(true)
+  const [phase, setPhase] = useUrlState<RolePhase>('rolePhase', 'ip', TEXT as never)
+  const [natural, setNatural] = useUrlState('natural', true, BOOL)
 
   const fits = useMemo(
     () => allRoleFits(attributes, positions, roles, roleWeights),

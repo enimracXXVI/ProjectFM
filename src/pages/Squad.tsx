@@ -1,6 +1,7 @@
 import { clsx } from 'clsx'
 import { ChevronDown, ChevronUp, Scale, TrendingUp } from 'lucide-react'
-import { useMemo, useState } from 'react'
+import { useMemo } from 'react'
+import { BOOL, SORT, TEXT, useUrlState } from '../lib/urlState'
 import { Link } from 'react-router-dom'
 import { StatusChip } from '../components/StatusChip'
 import { TeamBadge, TeamSelect } from '../components/TeamSelect'
@@ -51,17 +52,21 @@ export function Squad() {
   const career = useCurrentCareer()
   const config = useConfig()
   const { data, isPending, error } = usePlayers(career.id)
-  const [view, setView] = useState<View>('profile')
-  const [role, setRole] = useState<Role>('outfield')
-  const [filter, setFilter] = useState('')
-  const [showLeft, setShowLeft] = useState(false)
-  const [team, setTeam] = useState<'all' | Team>('all')
-  const [sort, setSort] = useState<SortKey>({ col: 'squad_number', asc: true })
+  const [view, setView] = useUrlState<View>('view', 'profile', TEXT as never)
+  const [role, setRole] = useUrlState<Role>('role', 'outfield', TEXT as never)
+  const [filter, setFilter] = useUrlState('q', '', TEXT)
+  const [showLeft, setShowLeft] = useUrlState('former', false, BOOL)
+  const [team, setTeam] = useUrlState<'all' | Team>('team', 'all', TEXT as never)
+  const [sort, setSort] = useUrlState<SortKey>(
+    'sort',
+    { col: 'squad_number', asc: true },
+    SORT as never,
+  )
   const profileCols = useMemo(
     () => (config.showHidden ? [...PROFILE_COLS, ...HIDDEN_COLS] : PROFILE_COLS),
     [config.showHidden],
   )
-  const [roleId, setRoleId] = useState(config.roles[0]?.id ?? '')
+  const [roleId, setRoleId] = useUrlState('roleId', config.roles[0]?.id ?? '', TEXT)
   const selectedRole = config.roles.find((r) => r.id === roleId) ?? config.roles[0]
 
   // Role fit per player: selected role, best natural role in and out of possession

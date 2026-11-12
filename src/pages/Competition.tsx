@@ -1,6 +1,6 @@
 import { clsx } from 'clsx'
 import { ArrowLeft } from 'lucide-react'
-import { useState } from 'react'
+import { NUM, TEXT, useUrlState } from '../lib/urlState'
 import { Link, useParams, useSearchParams } from 'react-router-dom'
 import { Card, Placeholder } from '../components/ui'
 import { useCompetitions } from '../competitions/hooks'
@@ -62,7 +62,7 @@ export function Competition() {
 type LeagueTab = 'table' | 'matchdays' | 'positions' | 'fixtures' | 'players'
 
 function League({ file, comp }: { file: CompetitionsFile; comp: SaveCompetition }) {
-  const [tab, setTab] = useState<LeagueTab>('table')
+  const [tab, setTab] = useUrlState<LeagueTab>('tab', 'table', TEXT as never)
   return (
     <>
       <Tabs
@@ -87,8 +87,8 @@ function League({ file, comp }: { file: CompetitionsFile; comp: SaveCompetition 
 
 function LeagueTable({ file, comp }: { file: CompetitionsFile; comp: SaveCompetition }) {
   const last = lastPlayedMatchday(comp.fixtures)
-  const [venue, setVenue] = useState<Venue>('all')
-  const [md, setMd] = useState<number>(last)
+  const [venue, setVenue] = useUrlState<Venue>('venue', 'all', TEXT as never)
+  const [md, setMd] = useUrlState<number>('table-md', last, NUM)
   const rows = leagueTable(comp.fixtures, { matchday: md || null, venue })
   return (
     <>
@@ -175,7 +175,7 @@ function LeagueTable({ file, comp }: { file: CompetitionsFile; comp: SaveCompeti
 
 function Matchdays({ file, comp }: { file: CompetitionsFile; comp: SaveCompetition }) {
   const total = matchdayCount(comp.fixtures)
-  const [md, setMd] = useState(Math.max(1, lastPlayedMatchday(comp.fixtures)))
+  const [md, setMd] = useUrlState('md', Math.max(1, lastPlayedMatchday(comp.fixtures)), NUM)
   const games = comp.fixtures.filter((f) => matchdayOf(f) === md)
   return (
     <>
@@ -221,7 +221,7 @@ function Matchdays({ file, comp }: { file: CompetitionsFile; comp: SaveCompetiti
 function PositionChart({ file, comp }: { file: CompetitionsFile; comp: SaveCompetition }) {
   const positions = positionsByMatchday(comp.fixtures)
   const clubs = clubsOf(comp.fixtures)
-  const [others, setOthers] = useState<number[]>([])
+  const [others, setOthers] = useUrlState<number[]>('compare', [])
   const teams = clubs.size
   const shown = [file.club, ...others].filter((c) => positions.has(c))
   const n = Math.max(...[...positions.values()].map((p) => p.length), 0)
@@ -361,7 +361,7 @@ function MyGames({ file, comp }: { file: CompetitionsFile; comp: SaveCompetition
 type LeaderSort = 'goals' | 'assists' | 'rating'
 
 function Players({ file, comp }: { file: CompetitionsFile; comp: SaveCompetition }) {
-  const [sort, setSort] = useState<LeaderSort>('goals')
+  const [sort, setSort] = useUrlState<LeaderSort>('sort', 'goals', TEXT as never)
   const all = leaders(file, comp.id)
   const rows = [...all]
     .filter((l) => (sort === 'rating' ? l.rating !== null : l[sort] > 0))
@@ -427,7 +427,11 @@ function Players({ file, comp }: { file: CompetitionsFile; comp: SaveCompetition
 
 function Cup({ file, comp }: { file: CompetitionsFile; comp: SaveCompetition }) {
   const config = useConfig()
-  const [tab, setTab] = useState<'rounds' | 'fixtures' | 'players'>('rounds')
+  const [tab, setTab] = useUrlState<'rounds' | 'fixtures' | 'players'>(
+    'tab',
+    'rounds',
+    TEXT as never,
+  )
   const rounds = cupRounds(comp, config.learned.rounds ?? {})
   return (
     <>

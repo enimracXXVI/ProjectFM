@@ -1,6 +1,7 @@
 import { clsx } from 'clsx'
 import { X } from 'lucide-react'
-import { useMemo, useState } from 'react'
+import { useMemo } from 'react'
+import { useUrlState } from '../lib/urlState'
 import { Link, useSearchParams } from 'react-router-dom'
 import { Radar } from '../components/Radar'
 import { PageHeader, Placeholder } from '../components/ui'
@@ -63,7 +64,7 @@ export function Compare() {
         config.roleWeights,
       ).find((f) => f.natural)?.role.id
     : undefined
-  const [roleChoice, setRoleChoice] = useState<string | null>(null)
+  const [roleChoice, setRoleChoice] = useUrlState<string | null>('roleId', null)
   const role = config.roles.find((r) => r.id === (roleChoice ?? firstBest)) ?? config.roles[0]
 
   const series = players.map((p, i) => ({ name: p.name, color: SERIES_COLORS[i], player: p }))

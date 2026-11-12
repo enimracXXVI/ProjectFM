@@ -2,6 +2,7 @@ import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { clsx } from 'clsx'
 import { Plus, Trash2 } from 'lucide-react'
 import { useState } from 'react'
+import { TEXT, useUrlState } from '../lib/urlState'
 import { useConfirm } from '../components/confirm'
 import { DbUpdateNotice } from '../components/DbUpdateNotice'
 import { Button, ErrorText } from '../components/form'
@@ -30,7 +31,7 @@ const field = 'min-h-11 rounded-lg border border-border bg-surface-2 px-3 text-b
 export function Tactics() {
   const career = useCurrentCareer()
   const { data: tactics, error, isPending } = useTactics(career.id)
-  const [selected, setSelected] = useState<string | null>(null)
+  const [selected, setSelected] = useUrlState<string | null>('tactic', null)
   const qc = useQueryClient()
   const create = useMutation({
     mutationFn: () =>
@@ -99,7 +100,7 @@ function TacticEditor({ tactic }: { tactic: TacticRow }) {
   const squad = (players ?? []).filter((p) => p.in_squad)
   const [form, setForm] = useState(tactic)
   const [active, setActive] = useState<number | null>(null)
-  const [phase, setPhase] = useState<Phase>('ip')
+  const [phase, setPhase] = useUrlState<Phase>('phase', 'ip', TEXT as never)
   const dirty = JSON.stringify(form) !== JSON.stringify(tactic)
   const done = () => qc.invalidateQueries({ queryKey: ['tactics'] })
   const instructions = (form.instructions ?? {}) as Instructions
