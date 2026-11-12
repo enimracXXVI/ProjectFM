@@ -35,6 +35,11 @@ export interface TacticCheck {
   instructionsChanged: boolean
 }
 
+export interface UnknownJob {
+  code: number
+  names: string[]
+}
+
 export interface Checks {
   morale: UnknownValue[]
   knowledge: UnknownValue[]
@@ -42,6 +47,7 @@ export interface Checks {
   competitions: UnknownCompetition[]
   rounds: UnknownRound[]
   tactics: TacticCheck[]
+  jobs: UnknownJob[]
   total: number
 }
 
@@ -111,7 +117,13 @@ export function findChecks(
       instructionsChanged: !!(t.instructions as { changed?: boolean }).changed,
     }))
     .filter((t) => t.missingRoles > 0 || t.instructionsChanged)
+  const jobMap = new Map<number, string[]>()
+  for (const s of staff)
+    if (s.job_code != null && s.role === `Job ${s.job_code}`)
+      jobMap.set(s.job_code, [...(jobMap.get(s.job_code) ?? []), s.name])
+  const jobs = [...jobMap.entries()].map(([code, names]) => ({ code, names }))
   return {
+    jobs,
     morale,
     knowledge,
     personality,
@@ -124,6 +136,7 @@ export function findChecks(
       personality.length +
       competitions.length +
       rounds.length +
-      tactics.length,
+      tactics.length +
+      jobs.length,
   }
 }

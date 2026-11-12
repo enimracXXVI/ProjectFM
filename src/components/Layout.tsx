@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react'
 import { NavLink, Outlet } from 'react-router-dom'
 import { useConfig } from '../lib/config'
 import { useChecks } from '../lib/useChecks'
-import { navItems } from './nav'
+import { navItems, sections } from './nav'
 import { TopBar } from './TopBar'
 
 const COLLAPSED_KEY = 'projectfm.sidebarCollapsed'
@@ -22,8 +22,8 @@ export function Layout() {
   const checks = useChecks()
   const { mobileBar } = useConfig()
   const barItems = mobileBar
-    .map((to) => navItems.find((n) => n.to === to))
-    .filter((n): n is (typeof navItems)[number] => !!n)
+    .map((to) => sections.find((n) => n.to === to))
+    .filter((n): n is (typeof sections)[number] => !!n)
 
   const toggle = () =>
     setCollapsed((c) => {
@@ -70,7 +70,10 @@ export function Layout() {
             </>
           )}
         </div>
-        <nav aria-label="Main" className="flex flex-1 flex-col gap-1 px-3 py-2">
+        <nav
+          aria-label="Main"
+          className="flex min-h-0 flex-1 flex-col gap-1 overflow-y-auto px-3 py-2"
+        >
           {navItems.map(({ to, label, icon: Icon }) => (
             <NavLink
               key={to}
@@ -90,12 +93,12 @@ export function Layout() {
             >
               <span className="relative">
                 <Icon className="size-5 shrink-0" aria-hidden />
-                {to === '/check' && checks.total > 0 && collapsed && (
+                {to === '/settings' && checks.total > 0 && collapsed && (
                   <span className="absolute -top-1 -right-1 size-2.5 rounded-full bg-amber-400" />
                 )}
               </span>
               {!collapsed && label}
-              {!collapsed && to === '/check' && checks.total > 0 && (
+              {!collapsed && to === '/settings' && checks.total > 0 && (
                 <span
                   className="ml-auto rounded-full bg-amber-400 px-2 text-xs font-bold text-black"
                   aria-label={`${checks.total} to check`}
@@ -113,7 +116,7 @@ export function Layout() {
           aria-expanded={!collapsed}
           title={`${collapsed ? 'Expand' : 'Collapse'} sidebar ( [ )`}
           className={clsx(
-            'm-3 flex min-h-11 items-center gap-3 rounded-lg px-3 text-sm text-muted hover:bg-surface-2 hover:text-text',
+            'm-3 flex min-h-11 shrink-0 items-center gap-3 rounded-lg px-3 text-sm text-muted hover:bg-surface-2 hover:text-text',
             collapsed && 'justify-center',
           )}
         >

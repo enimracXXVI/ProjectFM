@@ -15,7 +15,7 @@ import { footWithValue, staffWord, type Dump, type DumpMeta, type DumpPerson } f
 export type StatsKind = 'overall' | 'league' | 'cup' | 'non_competitive'
 
 /** Version of public/fmsave/extract.py this app expects. */
-export const READER_VERSION = 9
+export const READER_VERSION = 10
 
 export interface SaveData {
   /** Version of the save reader that produced this (absent before version 3). */
@@ -40,6 +40,21 @@ export interface SaveData {
     clauses: { kind: string; value: number | null }[]
   }[]
   stats: (Record<string, number | string | null> & { uniqueId: number; kind: string })[]
+  /** Every member of the club's staff (all teams). */
+  staff?: {
+    uniqueId: number
+    name: string
+    lastName: string | null
+    commonName: string | null
+    age: number | null
+    nation: number | null
+    job: number
+    team: number
+    attributes: Record<string, number> | null
+    personality: Record<string, number> | null
+    contractEnd: string | null
+    wage: number | null
+  }[]
   /** First-team tactics and current selection. */
   tactics?: SaveTactics | null
   tacticsError?: string

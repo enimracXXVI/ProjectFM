@@ -45,7 +45,7 @@ def _plain(v):
 
 
 # Raised whenever extract() returns new data, so the app can spot an outdated copy
-READER_VERSION = 9
+READER_VERSION = 10
 
 JOB_SCOUT, JOB_CHIEF_SCOUT = 14, 44
 _FF8 = b"\xff" * 8
@@ -76,6 +76,35 @@ def _knowledge(game_db, uid, nation_db_ids):
         if len(out) == n:
             return out
     return []
+
+
+# Board members are not staff on FM's staff screen
+_BOARD_JOBS = {4, 6, 8}
+
+
+def _all_staff(save, club_uid):
+    """Every member of the club's staff, all teams (FM's Coaching / Recruitment / Medical)."""
+    nation_db_ids = {n.nation_id: n.database_id for n in save.nations()}
+    out = []
+    for s in save.staff():
+        job = getattr(s.job, "raw", None)
+        if s.club_uid != club_uid or job is None or job in _BOARD_JOBS:
+            continue
+        out.append({
+            "uniqueId": s.unique_id,
+            "name": s.name,
+            "lastName": getattr(s, "last_name", None),
+            "commonName": getattr(s, "common_name", None),
+            "age": s.age,
+            "nation": nation_db_ids.get(s.nation_id) if s.nation_id is not None else None,
+            "job": job,
+            "team": s.team_slot or 0,
+            "attributes": asdict(s.attributes) if is_dataclass(s.attributes) else None,
+            "personality": asdict(s.personality) if is_dataclass(s.personality) else None,
+            "contractEnd": s.contract_end.isoformat() if getattr(s, "contract_end", None) else None,
+            "wage": getattr(s, "wage", None),
+        })
+    return out
 
 
 def _scouts(save, club_uid):
@@ -568,6 +597,11 @@ def extract(path):
         except Exception as e:  # never lose the rest of the import over it
             out["competitions"] = None
             out["competitionsError"] = str(e)
+        try:
+            out["staff"] = _all_staff(save, club_uid)
+        except Exception as e:
+            out["staff"] = []
+            out["staffError"] = str(e)
         try:
             out["scouts"] = _scouts(save, club_uid)
         except Exception as e:  # scouts are a bonus: never lose the squad import over them

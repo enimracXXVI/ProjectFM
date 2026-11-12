@@ -20,7 +20,7 @@ export function SectionLinks() {
             >
               <Icon className="size-5 text-accent" aria-hidden />
               {label}
-              {to === '/check' && checks.total > 0 && (
+              {to === '/settings' && checks.total > 0 && (
                 <span className="absolute top-1.5 right-1.5 rounded-full bg-amber-400 px-1.5 text-[11px] font-bold text-black">
                   {checks.total}
                 </span>

@@ -1,5 +1,5 @@
 import { clsx } from 'clsx'
-import { ChevronDown, ChevronUp } from 'lucide-react'
+import { ChevronDown, ChevronUp, Scale, TrendingUp } from 'lucide-react'
 import { useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { StatusChip } from '../components/StatusChip'
@@ -152,16 +152,22 @@ export function Squad() {
         title="Squad"
         subtitle={`${total} players · ${career.current_season ?? ''}`}
         actions={
-          <div className="flex gap-4">
-            <Link to="/development" className="text-sm font-semibold text-accent">
-              Development
-            </Link>
-            <Link to="/compare" className="text-sm font-semibold text-accent">
-              Compare
-            </Link>
-            <Link to="/import" className="text-sm font-semibold text-accent">
-              Import squad
-            </Link>
+          <div className="flex flex-wrap gap-2">
+            {(
+              [
+                ['/development', 'Development', TrendingUp],
+                ['/compare', 'Compare', Scale],
+              ] as const
+            ).map(([to, label, Icon]) => (
+              <Link
+                key={to}
+                to={to}
+                className="inline-flex min-h-11 items-center gap-2 rounded-lg border border-border px-4 text-sm font-semibold hover:bg-surface-2"
+              >
+                <Icon className="size-4 text-accent" aria-hidden />
+                {label}
+              </Link>
+            ))}
           </div>
         }
       />

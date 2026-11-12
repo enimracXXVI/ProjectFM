@@ -4,7 +4,8 @@ import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { Button, ErrorText } from '../components/form'
 import { Card, PageHeader } from '../components/ui'
-import { setPlayerPersonality, teachWord } from '../data/api'
+import { setPlayerPersonality, teachJob, teachWord } from '../data/api'
+import { JOB_TITLES } from '../data/staffJobs'
 import type { PlayerRow } from '../data/db'
 import { MORALE_WORDS } from '../import/dump'
 import { useCurrentCareer } from '../lib/career'
@@ -90,6 +91,17 @@ export function Check() {
         >
           {checks.rounds.map((r) => (
             <RoundRow key={r.code} item={r} />
+          ))}
+        </Section>
+      )}
+
+      {checks.jobs.length > 0 && (
+        <Section
+          title="Staff jobs"
+          hint="The save only has a job code for these. Open one of them in FM and pick the job it shows."
+        >
+          {checks.jobs.map((j) => (
+            <JobRow key={j.code} code={j.code} names={j.names} />
           ))}
         </Section>
       )}
@@ -316,6 +328,38 @@ function RoundRow({ item }: { item: UnknownRound }) {
           }
           disabled={!name.trim() || save.isPending}
         >
+          Save
+        </Button>
+        <ErrorText error={save.error} />
+      </div>
+    </li>
+  )
+}
+
+function JobRow({ code, names }: { code: number; names: string[] }) {
+  const career = useCurrentCareer()
+  const qc = useQueryClient()
+  const [title, setTitle] = useState('')
+  const save = useMutation({
+    mutationFn: () => teachJob(career.id, code, title),
+    onSuccess: () => qc.invalidateQueries(),
+  })
+  return (
+    <li className="rounded-lg border border-amber-400/40 bg-surface p-3">
+      <p className="text-sm">{names.join(', ')}</p>
+      <div className="mt-2 flex flex-wrap items-center gap-2">
+        <select
+          aria-label={`Job of ${names.join(', ')}`}
+          value={title}
+          onChange={(e) => setTitle(e.target.value)}
+          className={field}
+        >
+          <option value="">Pick the job FM shows…</option>
+          {JOB_TITLES.map(([t]) => (
+            <option key={t}>{t}</option>
+          ))}
+        </select>
+        <Button onClick={() => save.mutate()} disabled={!title || save.isPending}>
           Save
         </Button>
         <ErrorText error={save.error} />

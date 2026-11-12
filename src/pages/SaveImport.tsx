@@ -180,8 +180,10 @@ export function SaveImport({
             {r.squad.left ? ` · ${r.squad.left} no longer at the club` : ''}
           </li>
           <li>Contracts, season stats and feet: {r.updated} players</li>
-          <li>
-            Scouts: {r.scoutsUpdated} updated · {r.scoutsAdded} added
+          <li className={r.staffNeedsUpdate ? 'text-amber-300' : ''}>
+            {r.staffNeedsUpdate
+              ? `Scouts only: ${r.scoutsUpdated} updated · ${r.scoutsAdded} added (all staff needs the one-time database update, see Staff)`
+              : `Staff: ${r.scoutsUpdated} updated · ${r.scoutsAdded} added`}
           </li>
           <li className={typeof r.tactics === 'number' ? '' : 'text-amber-300'}>
             {typeof r.tactics === 'number'

@@ -1,7 +1,7 @@
 import { clsx } from 'clsx'
 import { ChevronDown, ChevronUp } from 'lucide-react'
 import { useState } from 'react'
-import { navItems } from '../../components/nav'
+import { sections } from '../../components/nav'
 import { SettingsShell } from '../../components/SettingsShell'
 import { useConfig } from '../../lib/config'
 import { useSaveConfig } from '../../lib/useSaveConfig'
@@ -26,7 +26,7 @@ export function BottomBarSettings() {
     ;[next[i], next[i + d]] = [next[i + d], next[i]]
     setBar(next)
   }
-  const item = (to: string) => navItems.find((n) => n.to === to)!
+  const item = (to: string) => sections.find((n) => n.to === to)!
 
   return (
     <SettingsShell
@@ -99,7 +99,7 @@ export function BottomBarSettings() {
         <section>
           <h2 className="mb-2 text-sm font-semibold">All sections</h2>
           <ul className="grid gap-1">
-            {navItems.map(({ to, label, icon: Icon }) => {
+            {sections.map(({ to, label, icon: Icon }) => {
               const on = bar.includes(to)
               const full = !on && bar.length >= MAX
               return (

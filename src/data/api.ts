@@ -1,6 +1,9 @@
 import type { DevSnapshot } from '../lib/development'
 import type { Team } from './teams'
 import { supabase } from '../lib/supabase'
+import { jobTitle, STAFF_ATTRS } from './staffJobs'
+import { personalityName } from '../lib/personality'
+import { staffWord } from '../import/dump'
 import { byLastName } from '../lib/names'
 import { applyLearned, type LearnedKind } from '../lib/learned'
 import { UNKNOWN_WORD, withValue } from '../lib/valueWord'
@@ -11,6 +14,7 @@ import type { ImportedPlayer, ParseResult } from '../import/parse'
 import {
   SAVE_CONTRACT_KEYS,
   SAVE_STATS_KEYS,
+  fmNation,
   isSaveDump,
   mergeKnowledge,
   saveScouts,
@@ -303,12 +307,7 @@ export type StaffInput = Omit<StaffRow, 'id' | 'career_id' | 'created_at' | 'fm_
 
 export async function listStaff(careerId: string): Promise<StaffRow[]> {
   const rows = check(
-    await supabase
-      .from('staff')
-      .select(
-        'id, career_id, fm_uid, name, role, age, nation, personality, reputation, attributes, knowledge, notes, created_at',
-      )
-      .eq('career_id', careerId),
+    await supabase.from('staff').select('*').eq('career_id', careerId),
   ) as StaffRow[]
   return rows.sort(byLastName)
 }
@@ -506,6 +505,7 @@ export async function importSave(opts: {
   notInSquad: number
   scoutsAdded: number
   scoutsUpdated: number
+  staffNeedsUpdate: boolean
 }> {
   const { career, data, kind, season, fileName } = opts
   const existing = (await listPlayers(career.id)).filter((p) => p.fm_uid != null)
@@ -564,7 +564,28 @@ export async function importSave(opts: {
   }
   if (snapshots.length) check(await supabase.from('player_snapshots').insert(snapshots))
 
-  // Scouts: attributes (Authority included) and scouting knowledge
+  // Staff: everyone on FM's staff screen (needs migration 0007), else the scouts only
+  let staffResult: { added: number; updated: number; needsUpdate: boolean }
+  try {
+    staffResult = { ...(await importAllStaff(career, data)), needsUpdate: false }
+  } catch (e) {
+    if (!isMissingColumn(e)) throw e
+    staffResult = { ...(await importScoutsOnly(career, data)), needsUpdate: true }
+  }
+  return {
+    updated,
+    notInSquad: updates.length - updated,
+    scoutsAdded: staffResult.added,
+    scoutsUpdated: staffResult.updated,
+    staffNeedsUpdate: staffResult.needsUpdate,
+  }
+}
+
+/** True when the staff table has no team / job_code / extra columns yet (migration 0007). */
+export const isMissingColumn = (e: unknown) =>
+  e instanceof Error && /column|schema cache/i.test(e.message)
+
+async function importScoutsOnly(career: Career, data: SaveData) {
   const staff = await listStaff(career.id)
   const { learned } = mergeConfig(await loadStoredConfig())
   let scoutsAdded = 0
@@ -611,7 +632,78 @@ export async function importSave(opts: {
       scoutsAdded++
     }
   }
-  return { updated, notInSquad: updates.length - updated, scoutsAdded, scoutsUpdated }
+  return { added: scoutsAdded, updated: scoutsUpdated }
+}
+
+/** Every member of staff from the save: job, team, attributes, personality, names. */
+async function importAllStaff(career: Career, data: SaveData) {
+  const staff = await listStaff(career.id)
+  const { learned } = mergeConfig(await loadStoredConfig())
+  const scouts = new Map(saveScouts(data).map((s) => [s.fm_uid, s]))
+  let added = 0
+  let updated = 0
+  for (const raw of data.staff ?? []) {
+    const title = jobTitle(raw.job, learned.jobs)
+    const scout = scouts.get(raw.uniqueId)
+    const attributes: Record<string, string> = {}
+    for (const [key, label, scale] of STAFF_ATTRS) {
+      const v = raw.attributes?.[key]
+      if (typeof v === 'number' && v > 0) {
+        const n = Math.floor(v / scale)
+        attributes[label] = withValue(staffWord(n), n)
+      }
+    }
+    const knowledge = (scout?.knowledge ?? []).map((k) => ({
+      ...k,
+      level: applyLearned(k.level, learned.knowledge),
+    }))
+    const extra: Record<string, string> = {}
+    if (raw.lastName) extra['Last name'] = raw.lastName
+    if (raw.commonName) extra['Common name'] = raw.commonName
+    if (raw.contractEnd) extra['Contract expires'] = raw.contractEnd
+    const row = {
+      fm_uid: raw.uniqueId,
+      name: raw.name,
+      role: title ?? `Job ${raw.job}`,
+      job_code: raw.job,
+      team: (['first', 'u21', 'u18'] as const)[raw.team] ?? 'first',
+      age: raw.age,
+      nation: raw.nation != null ? fmNation(raw.nation) : null,
+      personality: raw.personality
+        ? personalityName({
+            ...raw.personality,
+            determination:
+              typeof raw.attributes?.determination === 'number'
+                ? Math.floor(raw.attributes.determination / 5)
+                : undefined,
+          })
+        : null,
+      attributes,
+      extra,
+    }
+    const match =
+      staff.find((x) => x.fm_uid === raw.uniqueId) ??
+      staff.find((x) => x.name.toLowerCase() === raw.name.toLowerCase())
+    if (match) {
+      check(
+        await supabase
+          .from('staff')
+          .update({
+            ...row,
+            personality: row.personality ?? match.personality,
+            attributes: { ...match.attributes, ...attributes },
+            extra: { ...match.extra, ...extra },
+            ...(scout ? { knowledge: mergeKnowledge(knowledge, match.knowledge) } : {}),
+          })
+          .eq('id', match.id),
+      )
+      updated++
+    } else {
+      check(await supabase.from('staff').insert({ ...row, career_id: career.id, knowledge }))
+      added++
+    }
+  }
+  return { added, updated }
 }
 
 // --- Things the app could not work out (Check in game) ---
@@ -773,4 +865,20 @@ export async function rememberTactic(slots: TacticSlot[], instructions: Instruct
   if (instructions?.codes && (instructions.ip?.length || instructions.oop?.length))
     learnedInstructions[instructions.codes] = { ip: instructions.ip, oop: instructions.oop }
   await saveConfig('learned', { ...config.learned, roles, instructions: learnedInstructions })
+}
+
+/** Names an FM job code (Check in game): remembered, and written on every staff with it. */
+export async function teachJob(careerId: string, code: number, title: string): Promise<void> {
+  const config = mergeConfig(await loadStoredConfig())
+  await saveConfig('learned', {
+    ...config.learned,
+    jobs: { ...config.learned.jobs, [String(code)]: title },
+  })
+  check(
+    await supabase
+      .from('staff')
+      .update({ role: title })
+      .eq('career_id', careerId)
+      .eq('job_code', code),
+  )
 }

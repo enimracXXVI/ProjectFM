@@ -1,0 +1,352 @@
+[
+  {
+    "name": "Roberto Goretti",
+    "job": 10,
+    "team": 0
+  },
+  {
+    "name": "Pepe",
+    "job": 2,
+    "team": 0
+  },
+  {
+    "name": "Roberto Marta",
+    "job": 14,
+    "team": 0
+  },
+  {
+    "name": "Raffaele Rubino",
+    "job": 86,
+    "team": 0
+  },
+  {
+    "name": "Fabio Paratici",
+    "job": 88,
+    "team": 0
+  },
+  {
+    "name": "Valentino Angeloni",
+    "job": 64,
+    "team": 0
+  },
+  {
+    "name": "Marco Capparella",
+    "job": 2,
+    "team": 1
+  },
+  {
+    "name": "Claudio Filippi",
+    "job": 34,
+    "team": 0
+  },
+  {
+    "name": "Marco Zuccher",
+    "job": 22,
+    "team": 0
+  },
+  {
+    "name": "Aurelio Andreazzoli",
+    "job": 16,
+    "team": 1
+  },
+  {
+    "name": "Alessio Aliboni",
+    "job": 20,
+    "team": 1
+  },
+  {
+    "name": "Michele Puglisi",
+    "job": 12,
+    "team": 1
+  },
+  {
+    "name": "Craig Fleming",
+    "job": 2,
+    "team": 0
+  },
+  {
+    "name": "Moreno Zebi",
+    "job": 14,
+    "team": 0
+  },
+  {
+    "name": "Paul Mitchell",
+    "job": 14,
+    "team": 0
+  },
+  {
+    "name": "Jim Fraser",
+    "job": 2,
+    "team": 0
+  },
+  {
+    "name": "Damià Abella",
+    "job": 2,
+    "team": 0
+  },
+  {
+    "name": "Stefano Dainelli",
+    "job": 50,
+    "team": 0
+  },
+  {
+    "name": "Victor de los Santos",
+    "job": 14,
+    "team": 0
+  },
+  {
+    "name": "Simon Wells",
+    "job": 14,
+    "team": 0
+  },
+  {
+    "name": "Julio De Marco",
+    "job": 20,
+    "team": 0
+  },
+  {
+    "name": "Patrick Montgomery",
+    "job": 58,
+    "team": 0
+  },
+  {
+    "name": "Peter Braund",
+    "job": 14,
+    "team": 0
+  },
+  {
+    "name": "Fabio Zaza",
+    "job": 2,
+    "team": 2
+  },
+  {
+    "name": "Luca Pengue",
+    "job": 38,
+    "team": 0
+  },
+  {
+    "name": "Marco Bruzzone",
+    "job": 46,
+    "team": 0
+  },
+  {
+    "name": "Matia Balestracci",
+    "job": 2,
+    "team": 2
+  },
+  {
+    "name": "Gianni Rovereti",
+    "job": 14,
+    "team": 0
+  },
+  {
+    "name": "Lorenzo Sandri",
+    "job": 60,
+    "team": 1
+  },
+  {
+    "name": "Maurizio Niccolini",
+    "job": 44,
+    "team": 0
+  },
+  {
+    "name": "Simone Michelassi",
+    "job": 12,
+    "team": 0
+  },
+  {
+    "name": "Giovanni Serni",
+    "job": 46,
+    "team": 0
+  },
+  {
+    "name": "Giuseppe Mazza",
+    "job": 26,
+    "team": 0
+  },
+  {
+    "name": "Filippo Nannelli",
+    "job": 12,
+    "team": 0
+  },
+  {
+    "name": "Simone Mazzei",
+    "job": 12,
+    "team": 0
+  },
+  {
+    "name": "Enrico Cristiani",
+    "job": 16,
+    "team": 2
+  },
+  {
+    "name": "Davide Doné",
+    "job": 14,
+    "team": 0
+  },
+  {
+    "name": "Daniele Bacci",
+    "job": 12,
+    "team": 1
+  },
+  {
+    "name": "Alessandro Viviani",
+    "job": 60,
+    "team": 1
+  },
+  {
+    "name": "Vincenzo Misuraca",
+    "job": 26,
+    "team": 2
+  },
+  {
+    "name": "Francesco Bordin",
+    "job": 2,
+    "team": 0
+  },
+  {
+    "name": "Alessandro Dall'Omo",
+    "job": 34,
+    "team": 1
+  },
+  {
+    "name": "Lorenzo Giani",
+    "job": 14,
+    "team": 0
+  },
+  {
+    "name": "Tommaso Tanini",
+    "job": 26,
+    "team": 1
+  },
+  {
+    "name": "Ramón Vázquez",
+    "job": 14,
+    "team": 0
+  },
+  {
+    "name": "Clément Hazard",
+    "job": 26,
+    "team": 0
+  },
+  {
+    "name": "Tomás Amaral",
+    "job": 14,
+    "team": 0
+  },
+  {
+    "name": "Sebastian Arenz",
+    "job": 14,
+    "team": 0
+  },
+  {
+    "name": "Matteo Testi",
+    "job": 34,
+    "team": 2
+  },
+  {
+    "name": "Stefano Ganugi",
+    "job": 34,
+    "team": 2
+  },
+  {
+    "name": "Simone Contran",
+    "job": 62,
+    "team": 0
+  },
+  {
+    "name": "Niccolò Gori",
+    "job": 46,
+    "team": 0
+  },
+  {
+    "name": "Francesco Mascaro",
+    "job": 60,
+    "team": 2
+  },
+  {
+    "name": "Abián Perdomo",
+    "job": 58,
+    "team": 0
+  },
+  {
+    "name": "Andrea Giusti",
+    "job": 12,
+    "team": 0
+  },
+  {
+    "name": "David Petrangeli",
+    "job": 12,
+    "team": 0
+  },
+  {
+    "name": "Antonio Pinazzi",
+    "job": 46,
+    "team": 1
+  },
+  {
+    "name": "Lorenzo Bogani",
+    "job": 46,
+    "team": 2
+  },
+  {
+    "name": "Federico Cerri",
+    "job": 12,
+    "team": 2
+  },
+  {
+    "name": "Alejandro López",
+    "job": 40,
+    "team": 0
+  },
+  {
+    "name": "Andrea Tordi",
+    "job": 60,
+    "team": 0
+  },
+  {
+    "name": "Vanni Di Febo",
+    "job": 60,
+    "team": 0
+  },
+  {
+    "name": "Giacomo Benocci",
+    "job": 20,
+    "team": 2
+  },
+  {
+    "name": "Simone Formica",
+    "job": 60,
+    "team": 0
+  },
+  {
+    "name": "Daniele Piras",
+    "job": 58,
+    "team": 0
+  },
+  {
+    "name": "Emiljano Leshi",
+    "job": 48,
+    "team": 0
+  },
+  {
+    "name": "Pasquale Ricci",
+    "job": 48,
+    "team": 1
+  },
+  {
+    "name": "Salvatore Tursi",
+    "job": 48,
+    "team": 2
+  },
+  {
+    "name": "Alessandro Ventura",
+    "job": 2,
+    "team": 0
+  },
+  {
+    "name": "Enimrac Illeracci",
+    "job": 16,
+    "team": 0
+  }
+]

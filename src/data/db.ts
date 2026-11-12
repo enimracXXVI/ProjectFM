@@ -47,6 +47,10 @@ export interface StaffRow {
   knowledge: KnowledgeEntry[]
   notes: string | null
   created_at: string
+  /** From the FM save (migration 0007): team, job code and extras such as last name. */
+  team?: string | null
+  job_code?: number | null
+  extra?: Record<string, string>
 }
 
 export interface PlayerRow {

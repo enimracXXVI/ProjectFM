@@ -99,37 +99,48 @@ export function Scouting() {
       )}
 
       <ul className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
-        {regions.map((r) => {
-          const head = byId.get(net.heads?.[r.id] ?? '')
-          const regionScouts = Object.entries(net.scouts ?? {}).filter(([, a]) => a.region === r.id)
-          const covered = new Set(regionScouts.flatMap(([, a]) => a.countries))
-          return (
-            <li key={r.id}>
-              <Link
-                to={`/scouting/${r.id}`}
-                className="flex h-full items-start gap-3 rounded-xl border border-border bg-surface p-4 hover:border-muted"
-              >
-                <div className="min-w-0 flex-1">
-                  <p className="font-semibold">{r.name}</p>
-                  <p
-                    className={clsx(
-                      'mt-1 flex items-center gap-1 text-sm',
-                      head ? 'text-text' : 'text-amber-400',
-                    )}
-                  >
-                    <Crown className="size-3.5 shrink-0" aria-hidden />
-                    {head ? head.name : 'No head of region'}
-                  </p>
-                  <p className="mt-1 text-xs text-muted">
-                    {regionScouts.length} scout{regionScouts.length === 1 ? '' : 's'} ·{' '}
-                    {covered.size} / {r.countries.length} countries covered
-                  </p>
-                </div>
-                <ChevronRight className="mt-1 size-4 text-muted" aria-hidden />
-              </Link>
-            </li>
-          )
-        })}
+        {/* Regions with a head or a scout first, then the rest, each in the usual order */}
+        {[...regions]
+          .map((r, i) => ({
+            r,
+            i,
+            staffed:
+              !!net.heads?.[r.id] || Object.values(net.scouts ?? {}).some((a) => a.region === r.id),
+          }))
+          .sort((a, b) => Number(b.staffed) - Number(a.staffed) || a.i - b.i)
+          .map(({ r }) => {
+            const head = byId.get(net.heads?.[r.id] ?? '')
+            const regionScouts = Object.entries(net.scouts ?? {}).filter(
+              ([, a]) => a.region === r.id,
+            )
+            const covered = new Set(regionScouts.flatMap(([, a]) => a.countries))
+            return (
+              <li key={r.id}>
+                <Link
+                  to={`/scouting/${r.id}`}
+                  className="flex h-full items-start gap-3 rounded-xl border border-border bg-surface p-4 hover:border-muted"
+                >
+                  <div className="min-w-0 flex-1">
+                    <p className="font-semibold">{r.name}</p>
+                    <p
+                      className={clsx(
+                        'mt-1 flex items-center gap-1 text-sm',
+                        head ? 'text-text' : 'text-amber-400',
+                      )}
+                    >
+                      <Crown className="size-3.5 shrink-0" aria-hidden />
+                      {head ? head.name : 'No head of region'}
+                    </p>
+                    <p className="mt-1 text-xs text-muted">
+                      {regionScouts.length} scout{regionScouts.length === 1 ? '' : 's'} ·{' '}
+                      {covered.size} / {r.countries.length} countries covered
+                    </p>
+                  </div>
+                  <ChevronRight className="mt-1 size-4 text-muted" aria-hidden />
+                </Link>
+              </li>
+            )
+          })}
       </ul>
     </>
   )

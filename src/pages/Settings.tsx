@@ -5,10 +5,12 @@ import { Button, ErrorText, Field } from '../components/form'
 import { Card, PageHeader } from '../components/ui'
 import { useAuth } from '../lib/auth'
 import { useConfig } from '../lib/config'
+import { useChecks } from '../lib/useChecks'
 import { useSaveConfig } from '../lib/useSaveConfig'
 import { setPassword, signOut } from '../lib/authActions'
 
 export function SettingsPage() {
+  const checks = useChecks()
   const { session } = useAuth()
   const [password, setValue] = useState('')
   const [confirm, setConfirm] = useState('')
@@ -36,11 +38,16 @@ export function SettingsPage() {
         <HiddenValuesCard />
 
         <Card>
-          <h2 className="mb-2 font-semibold">Help</h2>
+          <h2 className="mb-2 font-semibold">Import and help</h2>
           <ul className="grid">
             {[
+              ['/import', 'Import', 'Your FM save, dump.json or an HTML export'],
+              [
+                '/check',
+                checks.total ? `Check in game (${checks.total})` : 'Check in game',
+                'What the app could not work out, for you to look up',
+              ],
               ['/explain', 'How it works', 'How each calculated value is worked out'],
-              ['/check', 'Check in game', 'What the app could not work out, for you to look up'],
             ].map(([to, label, hint]) => (
               <li key={to}>
                 <Link
