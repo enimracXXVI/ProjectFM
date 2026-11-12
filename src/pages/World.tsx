@@ -10,7 +10,7 @@ import { parsePositions, roleScore, scoreColor } from '../lib/roleFit'
 import { useWorld } from '../world/hooks'
 import { eur } from '../lib/money'
 import { regionLookup, rowToPlayer, searchKey, type WorldRow } from '../world/world'
-import { byLastNameText } from '../lib/names'
+import { byLastNameParts, type NameParts } from '../lib/names'
 
 const POSITIONS = [
   'GK',
@@ -127,7 +127,9 @@ export function World() {
                 : o.row[11]
     return out.sort((a, b) => {
       if (col === 'name')
-        return asc ? byLastNameText(a.row[1], b.row[1]) : byLastNameText(b.row[1], a.row[1])
+        return asc
+          ? byLastNameParts(nameParts(a.row), nameParts(b.row))
+          : byLastNameParts(nameParts(b.row), nameParts(a.row))
       const [x, y] = [val(a), val(b)]
       if (x === y) return 0
       if (x === null) return 1
@@ -476,3 +478,5 @@ function SortTh({
     </th>
   )
 }
+
+const nameParts = (r: WorldRow): NameParts => ({ name: r[1], lastName: r[18], commonName: r[19] })

@@ -30,3 +30,19 @@ describe('names', () => {
     ])
   })
 })
+
+describe('world names', () => {
+  it('sorts world rows by the save’s last name or nickname', async () => {
+    const { byLastNameParts } = await import('./names')
+    const rows = [
+      { name: 'Pote', lastName: 'Gonçalves', commonName: 'Pote' },
+      { name: 'David De Gea', lastName: 'De Gea', commonName: null },
+      { name: 'Christ Inao Oulaï', lastName: 'Inao Oulaï', commonName: null },
+    ]
+    expect(rows.sort(byLastNameParts).map((r) => r.name)).toEqual([
+      'David De Gea',
+      'Christ Inao Oulaï',
+      'Pote',
+    ])
+  })
+})

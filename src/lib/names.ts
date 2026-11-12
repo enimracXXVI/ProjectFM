@@ -55,7 +55,12 @@ export function byLastName(a: Named, b: Named): number {
   return collator.compare(shortName(a), shortName(b)) || collator.compare(a.name, b.name)
 }
 
-/** Compare two plain names by guessed last name (world database rows). */
-export function byLastNameText(a: string, b: string): number {
-  return collator.compare(guessLastName(a), guessLastName(b)) || collator.compare(a, b)
+/** World database rows: name, last name and nickname as imported from the save. */
+export type NameParts = { name: string; lastName?: string | null; commonName?: string | null }
+
+const partsKey = (p: NameParts) => p.commonName || p.lastName || guessLastName(p.name)
+
+/** Compare world players by last name (or nickname), then full name. */
+export function byLastNameParts(a: NameParts, b: NameParts): number {
+  return collator.compare(partsKey(a), partsKey(b)) || collator.compare(a.name, b.name)
 }

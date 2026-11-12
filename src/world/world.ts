@@ -43,6 +43,9 @@ export type WorldRow = [
   hidden: number[],
   /** Personality name (absent in files saved before it was added). */
   personality?: string | null,
+  /** Last name and nickname from the FM save (absent in older files). */
+  lastName?: string | null,
+  commonName?: string | null,
 ]
 
 export interface WorldFile {
@@ -92,6 +95,8 @@ export function buildWorld(dump: Dump): WorldFile {
       WORLD_ATTRS.map((a) => num(ip.attributes[a])),
       WORLD_HIDDEN.map((h) => Number(ip.extra[h] ?? 0)),
       ip.personality,
+      ip.extra['Last name'] ?? null,
+      ip.extra['Common name'] ?? null,
     ]
   })
   return { version: WORLD_VERSION, meta: dump.meta, attrs: WORLD_ATTRS, hidden: WORLD_HIDDEN, rows }
@@ -116,6 +121,8 @@ export interface WorldPlayer {
   attributes: Record<string, AttributeValue>
   hidden: Record<string, number>
   personality: string | null
+  lastName: string | null
+  commonName: string | null
 }
 
 /** Expands a row into a player object (done on demand: the file holds tens of thousands). */
@@ -130,6 +137,8 @@ export function rowToPlayer(file: WorldFile, r: WorldRow): WorldPlayer {
   })
   return {
     personality: r[17] ?? null,
+    lastName: r[18] ?? null,
+    commonName: r[19] ?? null,
     id: r[0],
     name: r[1],
     age: r[2],
