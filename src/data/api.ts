@@ -20,6 +20,7 @@ import {
 } from '../import/save'
 import type { Career, ImportRow, PlayerRow, ScoutingNetwork, SnapshotRow, StaffRow } from './db'
 import type { MatchLogRow, SaveTactics, TacticRow, TacticSlot } from '../tactics/types'
+import { instructionsFor, roleFor, roleSignature, type Instructions } from '../tactics/saveRoles'
 
 function check<T>(res: { data: T | null; error: { message: string } | null }): T {
   if (res.error) throw new Error(res.error.message)
@@ -690,20 +691,28 @@ export async function deleteTactic(id: string): Promise<void> {
 export async function importSaveTactics(careerId: string, data: SaveTactics): Promise<number> {
   const existing = await listTactics(careerId)
   const players = await listPlayers(careerId)
+  const { learned } = mergeConfig(await loadStoredConfig())
   const byUid = new Map(players.map((p) => [p.fm_uid, p.id]))
   const starters = data.selection.filter((s) => !s.substitute)
   for (const t of data.tactics) {
     const old = existing.find((x) => x.save_index === t.index)
-    const slots: TacticSlot[] = t.slots.map((s, i) => ({
-      position: s.position,
-      positionOop: s.positionOop ?? s.position,
-      role: old?.slots[i]?.role ?? null,
-      roleOop: old?.slots[i]?.roleOop ?? null,
-      player:
-        old?.slots[i]?.player ??
-        byUid.get(starters.find((x) => x.slot === s.number)?.uniqueId ?? -1) ??
-        null,
-    }))
+    const slots: TacticSlot[] = t.slots.map((s, i) => {
+      const ipSig = s.ipRole ? roleSignature('ip', s.ipRole) : null
+      const oopSig = s.oopRole ? roleSignature('oop', s.oopRole) : null
+      return {
+        position: s.position,
+        positionOop: s.positionOop ?? s.position,
+        ipSig,
+        oopSig,
+        // A recognised role from the save wins; otherwise the user's earlier choice stays
+        role: (ipSig && roleFor(ipSig, learned.roles)) ?? old?.slots[i]?.role ?? null,
+        roleOop: (oopSig && roleFor(oopSig, learned.roles)) ?? old?.slots[i]?.roleOop ?? null,
+        player:
+          old?.slots[i]?.player ??
+          byUid.get(starters.find((x) => x.slot === s.number)?.uniqueId ?? -1) ??
+          null,
+      }
+    })
     await saveTactic(careerId, old?.id ?? null, {
       name: t.name,
       style: t.style,
@@ -712,6 +721,11 @@ export async function importSaveTactics(careerId: string, data: SaveTactics): Pr
         ? t.mentality.replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase())
         : null,
       slots,
+      instructions: instructionsFor(
+        t.instructionCodes,
+        old?.instructions as Instructions | undefined,
+        learned.instructions,
+      ) as unknown as Record<string, unknown>,
       save_index: t.index,
     })
   }
@@ -742,4 +756,21 @@ export async function saveMatchLog(
       .from('match_log')
       .upsert({ ...input, career_id: careerId }, { onConflict: 'career_id,match_key' }),
   )
+}
+
+/**
+ * Remembers what the user set on a save tactic: roles by the save's role signature and
+ * instruction words by the save's instruction codes, so later imports fill them in.
+ */
+export async function rememberTactic(slots: TacticSlot[], instructions: Instructions | undefined) {
+  const config = mergeConfig(await loadStoredConfig())
+  const roles = { ...config.learned.roles }
+  for (const s of slots) {
+    if (s.ipSig && s.role) roles[s.ipSig] = s.role
+    if (s.oopSig && s.roleOop) roles[s.oopSig] = s.roleOop
+  }
+  const learnedInstructions = { ...config.learned.instructions }
+  if (instructions?.codes && (instructions.ip?.length || instructions.oop?.length))
+    learnedInstructions[instructions.codes] = { ip: instructions.ip, oop: instructions.oop }
+  await saveConfig('learned', { ...config.learned, roles, instructions: learnedInstructions })
 }

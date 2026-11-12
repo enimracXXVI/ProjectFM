@@ -94,6 +94,26 @@ export function Check() {
         </Section>
       )}
 
+      {checks.tactics.length > 0 && (
+        <Section
+          title="Tactics"
+          hint="Roles or instructions read from the save that the app does not recognise yet. Set them once on the Tactics page (from your FM tactic screen) and they are remembered."
+        >
+          {checks.tactics.map((t) => (
+            <li
+              key={t.name}
+              className="rounded-lg border border-amber-400/40 bg-surface p-3 text-sm"
+            >
+              <Link to="/tactics" className="font-semibold underline">
+                {t.name}
+              </Link>
+              {t.missingRoles > 0 && <span> · {t.missingRoles} positions without a role</span>}
+              {t.instructionsChanged && <span> · instructions changed in FM</span>}
+            </li>
+          ))}
+        </Section>
+      )}
+
       <p className="mt-6 text-sm text-muted">
         How each value is worked out:{' '}
         <Link to="/explain" className="text-accent underline">

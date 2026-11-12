@@ -1,0 +1,256 @@
+{
+  "index": 0,
+  "name": "Counter-Attack High-Press",
+  "style": "Custom Gegenpress",
+  "mentality": "balanced",
+  "instructionCodes": [4, 1, 4, 7, 2, 3, 128, 0, 0, 0, 10, 64, 80, 34, 98, 144, 0, 0, 255],
+  "slots": [
+    {
+      "ipRole": {
+        "bits": 1,
+        "trail": 0,
+        "settings": [
+          [0, 0, 0, 4096, 0],
+          [0, 0, 0, 0, 2097152],
+          [0, 0, 0, 0, 4198400]
+        ]
+      },
+      "oopRole": {
+        "bits": 1,
+        "trail": 0,
+        "settings": [
+          [0, 0, 0, 2, 0],
+          [0, 0, 0, 0, 8388610]
+        ]
+      },
+      "number": 0,
+      "position": "GK",
+      "positionOop": "GK",
+      "rawPosition": 0
+    },
+    {
+      "ipRole": {
+        "bits": 4,
+        "trail": 0,
+        "settings": [
+          [0, 0, 0, 8, 0],
+          [0, 0, 0, 0, 64],
+          [0, 0, 0, 0, 4194312]
+        ]
+      },
+      "oopRole": {
+        "bits": 512,
+        "trail": 0,
+        "settings": [
+          [0, 0, 0, 1024, 0],
+          [0, 0, 0, 0, 4195328]
+        ]
+      },
+      "number": 1,
+      "position": "DR",
+      "positionOop": "DR",
+      "rawPosition": 2
+    },
+    {
+      "ipRole": {
+        "bits": 2,
+        "trail": 0,
+        "settings": [
+          [0, 0, 0, 16777216, 0],
+          [0, 0, 0, 0, 2097154]
+        ]
+      },
+      "oopRole": {
+        "bits": 8,
+        "trail": 0,
+        "settings": [
+          [0, 0, 0, 16, 0],
+          [0, 0, 0, 32, 0],
+          [0, 0, 0, 0, 2097160]
+        ]
+      },
+      "number": 2,
+      "position": "DC",
+      "positionOop": "DC",
+      "rawPosition": 4
+    },
+    {
+      "ipRole": {
+        "bits": 2,
+        "trail": 0,
+        "settings": [
+          [0, 0, 0, 16777216, 0],
+          [0, 0, 0, 0, 2097154]
+        ]
+      },
+      "oopRole": {
+        "bits": 8,
+        "trail": 0,
+        "settings": [[0, 0, 0, 0, 2097160]]
+      },
+      "number": 3,
+      "position": "DC",
+      "positionOop": "DC",
+      "rawPosition": 4
+    },
+    {
+      "ipRole": {
+        "bits": 4,
+        "trail": 0,
+        "settings": [
+          [0, 0, 0, 8, 0],
+          [0, 0, 0, 0, 64],
+          [0, 0, 0, 0, 4194312]
+        ]
+      },
+      "oopRole": {
+        "bits": 512,
+        "trail": 0,
+        "settings": [
+          [0, 0, 0, 1024, 0],
+          [0, 0, 0, 2048, 0],
+          [0, 0, 0, 0, 2097664]
+        ]
+      },
+      "number": 4,
+      "position": "DL",
+      "positionOop": "DL",
+      "rawPosition": 3
+    },
+    {
+      "ipRole": {
+        "bits": 16,
+        "trail": 0,
+        "settings": [
+          [0, 0, 0, 32768, 0],
+          [0, 0, 0, 0, 4227072]
+        ]
+      },
+      "oopRole": {
+        "bits": 32768,
+        "trail": 0,
+        "settings": [
+          [0, 0, 0, 262144, 0],
+          [0, 0, 0, 0, 2129920]
+        ]
+      },
+      "number": 5,
+      "position": "DM",
+      "positionOop": "DM",
+      "rawPosition": 7
+    },
+    {
+      "ipRole": {
+        "bits": 32,
+        "trail": 65536,
+        "settings": [
+          [0, 0, 0, 0, 32768],
+          [0, 0, 0, 0, 65536],
+          [0, 0, 0, 0, 4194304]
+        ]
+      },
+      "oopRole": {
+        "bits": 1048576,
+        "trail": 0,
+        "settings": [
+          [0, 0, 0, 536870912, 0],
+          [0, 0, 0, 0, 541065216]
+        ]
+      },
+      "number": 6,
+      "position": "MC",
+      "positionOop": "MC",
+      "rawPosition": 10
+    },
+    {
+      "ipRole": {
+        "bits": 32,
+        "trail": 0,
+        "settings": [
+          [0, 0, 0, 65536, 0],
+          [0, 0, 0, 0, 32768],
+          [0, 0, 0, 0, 16777216],
+          [0, 0, 0, 0, 4194336]
+        ]
+      },
+      "oopRole": {
+        "bits": 1048576,
+        "trail": 0,
+        "settings": [
+          [0, 0, 0, 134217728, 0],
+          [0, 0, 0, 0, 142606336]
+        ]
+      },
+      "number": 7,
+      "position": "MC",
+      "positionOop": "MC",
+      "rawPosition": 10
+    },
+    {
+      "ipRole": {
+        "bits": 128,
+        "trail": 2048,
+        "settings": [
+          [0, 0, 0, 134217728, 0],
+          [0, 0, 0, 0, 2048],
+          [0, 0, 0, 0, 4194304]
+        ]
+      },
+      "oopRole": {
+        "bits": 274877906944,
+        "trail": 256,
+        "settings": [
+          [0, 0, 0, 0, 256],
+          [0, 0, 0, 0, 8388608]
+        ]
+      },
+      "number": 8,
+      "position": "AMR",
+      "positionOop": "AMR",
+      "rawPosition": 11
+    },
+    {
+      "ipRole": {
+        "bits": 128,
+        "trail": 0,
+        "settings": [
+          [0, 0, 0, 134217728, 0],
+          [0, 0, 0, 0, 131072],
+          [0, 0, 0, 0, 142606336]
+        ]
+      },
+      "oopRole": {
+        "bits": 274877906944,
+        "trail": 64,
+        "settings": [[0, 0, 0, 0, 4194304]]
+      },
+      "number": 9,
+      "position": "AML",
+      "positionOop": "AML",
+      "rawPosition": 12
+    },
+    {
+      "ipRole": {
+        "bits": 2048,
+        "trail": 0,
+        "settings": [
+          [0, 0, 0, 524288, 0],
+          [0, 0, 0, 2147483648, 0],
+          [0, 0, 0, 0, 8912896]
+        ]
+      },
+      "oopRole": {
+        "bits": 4398046511104,
+        "trail": 1024,
+        "settings": [
+          [0, 0, 0, 0, 2048],
+          [0, 0, 0, 0, 4194304]
+        ]
+      },
+      "number": 10,
+      "position": "ST",
+      "positionOop": "ST",
+      "rawPosition": 14
+    }
+  ]
+}

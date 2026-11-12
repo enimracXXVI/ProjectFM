@@ -44,8 +44,8 @@ export function MatchStatsCard({
         })}
       </ul>
       <p className="mt-3 text-xs text-muted">
-        More stats (shots, corners, fouls, cards, crosses, distance) follow once they are matched to
-        FM’s screen.
+        Matched to FM’s match stats screen for two games. Shots on target, long shots, crosses,
+        progressive passes, ball share, distance, red cards and average rating are not read yet.
       </p>
     </Card>
   )

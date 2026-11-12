@@ -44,6 +44,10 @@ export interface Learned {
   knowledge: Record<string, string>
   /** Cup round names by FM round code. */
   rounds?: Record<string, string>
+  /** Tactic role ids by the save's role signature. */
+  roles?: Record<string, string>
+  /** Team instruction words by the save's instruction codes. */
+  instructions?: Record<string, { ip?: [string, string][]; oop?: [string, string][] }>
 }
 
 export type ConfigKey = keyof AppConfig

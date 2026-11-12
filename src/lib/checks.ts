@@ -6,6 +6,7 @@ import type { CompetitionsFile } from '../competitions/types'
 import { cupRounds } from '../competitions/view'
 import type { AppConfig } from '../data/config'
 import type { PlayerRow, StaffRow } from '../data/db'
+import type { TacticRow } from '../tactics/types'
 import { UNKNOWN_WORD, valueOf, wordOf } from './valueWord'
 
 export interface UnknownValue {
@@ -27,12 +28,20 @@ export interface UnknownRound {
   examples: string[]
 }
 
+export interface TacticCheck {
+  name: string
+  /** Positions whose role from the save is not recognised yet. */
+  missingRoles: number
+  instructionsChanged: boolean
+}
+
 export interface Checks {
   morale: UnknownValue[]
   knowledge: UnknownValue[]
   personality: PlayerRow[]
   competitions: UnknownCompetition[]
   rounds: UnknownRound[]
+  tactics: TacticCheck[]
   total: number
 }
 
@@ -52,6 +61,7 @@ export function findChecks(
   staff: StaffRow[],
   comps?: CompetitionsFile,
   config?: AppConfig,
+  tacticRows: TacticRow[] = [],
 ): Checks {
   const squad = players.filter((p) => p.in_squad)
   const morale = group(
@@ -93,13 +103,27 @@ export function findChecks(
       }
     }
   }
+  const tactics = tacticRows
+    .filter((t) => t.save_index !== null)
+    .map((t) => ({
+      name: t.name,
+      missingRoles: t.slots.filter((s) => (s.ipSig && !s.role) || (s.oopSig && !s.roleOop)).length,
+      instructionsChanged: !!(t.instructions as { changed?: boolean }).changed,
+    }))
+    .filter((t) => t.missingRoles > 0 || t.instructionsChanged)
   return {
     morale,
     knowledge,
     personality,
     competitions,
     rounds,
+    tactics,
     total:
-      morale.length + knowledge.length + personality.length + competitions.length + rounds.length,
+      morale.length +
+      knowledge.length +
+      personality.length +
+      competitions.length +
+      rounds.length +
+      tactics.length,
   }
 }

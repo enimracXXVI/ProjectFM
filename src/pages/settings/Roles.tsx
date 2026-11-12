@@ -4,7 +4,13 @@ import { useMemo, useState } from 'react'
 import { useConfirm } from '../../components/confirm'
 import { SettingsShell } from '../../components/SettingsShell'
 import { attributeLabel } from '../../data/config'
-import type { RoleDef, RolePhase } from '../../data/roles'
+import {
+  CONFIRMED_SHORT,
+  defaultShort,
+  roleShort,
+  type RoleDef,
+  type RolePhase,
+} from '../../data/roles'
 import { ATTRIBUTE_GROUPS } from '../../import/fields'
 import { useConfig } from '../../lib/config'
 import { useSaveConfig } from '../../lib/useSaveConfig'
@@ -152,7 +158,12 @@ export function RolesSettings() {
                 onClick={() => setOpenId(open ? null : r.id)}
                 className="flex min-h-12 w-full items-center justify-between gap-2 px-4 text-left"
               >
-                <span className="font-semibold">{r.name}</span>
+                <span className="font-semibold">
+                  <span className="mr-2 inline-block min-w-10 rounded bg-surface-2 px-1.5 py-0.5 text-center text-xs">
+                    {roleShort(r)}
+                  </span>
+                  {r.name}
+                </span>
                 <span className="text-xs text-muted">
                   {r.positions.join(', ') || 'No positions'}
                 </span>
@@ -167,6 +178,18 @@ export function RolesSettings() {
                         onChange={(e) => update(r.id, { name: e.target.value })}
                         className={input}
                       />
+                    </label>
+                    <label className="grid w-24 gap-1 text-xs text-muted">
+                      Short name
+                      <input
+                        value={r.short ?? ''}
+                        placeholder={defaultShort(r.id)}
+                        onChange={(e) => update(r.id, { short: e.target.value.toUpperCase() })}
+                        className={input}
+                      />
+                      {CONFIRMED_SHORT.has(r.id) && (
+                        <span className="text-[11px] text-accent">Checked in FM</span>
+                      )}
                     </label>
                     <label className="grid gap-1 text-xs text-muted">
                       Phase

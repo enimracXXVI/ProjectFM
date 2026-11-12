@@ -6,10 +6,11 @@ import { useConfirm } from '../components/confirm'
 import { DbUpdateNotice } from '../components/DbUpdateNotice'
 import { Button, ErrorText } from '../components/form'
 import { Card, PageHeader, Placeholder } from '../components/ui'
-import { deleteTactic, isMissingTable, saveTactic } from '../data/api'
+import { deleteTactic, isMissingTable, rememberTactic, saveTactic } from '../data/api'
+import type { Instructions } from '../tactics/saveRoles'
 import type { PlayerRow } from '../data/db'
 import { usePlayers, useTactics } from '../data/hooks'
-import type { RoleDef } from '../data/roles'
+import { roleShort, type RoleDef } from '../data/roles'
 import { scoreTextColor } from '../lib/attributes'
 import { useCurrentCareer } from '../lib/career'
 import { useConfig } from '../lib/config'
@@ -101,16 +102,29 @@ function TacticEditor({ tactic }: { tactic: TacticRow }) {
   const [phase, setPhase] = useState<Phase>('ip')
   const dirty = JSON.stringify(form) !== JSON.stringify(tactic)
   const done = () => qc.invalidateQueries({ queryKey: ['tactics'] })
+  const instructions = (form.instructions ?? {}) as Instructions
+  const setInstructions = (patch: Partial<Instructions>) =>
+    setForm({
+      ...form,
+      instructions: { ...instructions, ...patch, changed: false } as Record<string, unknown>,
+    })
   const save = useMutation({
-    mutationFn: () =>
-      saveTactic(career.id, tactic.id, {
+    mutationFn: async () => {
+      await saveTactic(career.id, tactic.id, {
         name: form.name,
         style: form.style,
         mentality: form.mentality,
         slots: form.slots,
+        instructions: form.instructions,
         notes: form.notes,
-      }),
-    onSuccess: done,
+      })
+      // Roles and instruction words set on a save tactic are learned for later imports
+      if (tactic.save_index !== null) await rememberTactic(form.slots, instructions)
+    },
+    onSuccess: () => {
+      done()
+      qc.invalidateQueries({ queryKey: ['settings'] })
+    },
   })
   const remove = useMutation({ mutationFn: () => deleteTactic(tactic.id), onSuccess: done })
 
@@ -187,7 +201,7 @@ function TacticEditor({ tactic }: { tactic: TacticRow }) {
                   {p ? shortName(p) : '–'}
                 </span>
                 <span className="block truncate text-[9px] text-muted">
-                  {role?.name ?? 'No role'}
+                  {role ? roleShort(role) : 'No role'}
                 </span>
               </button>
             )
@@ -266,6 +280,11 @@ function TacticEditor({ tactic }: { tactic: TacticRow }) {
               </select>
             </label>
           )}
+          <InstructionsEditor
+            phase={phase}
+            instructions={instructions}
+            onChange={setInstructions}
+          />
           <label className="grid gap-1 text-sm">
             <span className="text-muted">Notes</span>
             <textarea
@@ -440,3 +459,63 @@ const posOf = (s: TacticSlot, phase: Phase) =>
   phase === 'ip' ? s.position : (s.positionOop ?? s.position)
 
 const roleIdOf = (s: TacticSlot, phase: Phase) => (phase === 'ip' ? s.role : s.roleOop)
+
+/** Team instructions for one phase, as label → value rows (FM's own words). */
+function InstructionsEditor({
+  phase,
+  instructions,
+  onChange,
+}: {
+  phase: Phase
+  instructions: Instructions
+  onChange: (patch: Partial<Instructions>) => void
+}) {
+  const rows = (phase === 'ip' ? instructions.ip : instructions.oop) ?? []
+  const set = (next: [string, string][]) => onChange(phase === 'ip' ? { ip: next } : { oop: next })
+  return (
+    <section className="grid gap-2">
+      <h3 className="text-sm text-muted">
+        Instructions {phase === 'ip' ? 'in possession' : 'out of possession'}
+      </h3>
+      {instructions.changed && (
+        <p className="rounded-lg border border-amber-400/50 bg-amber-400/10 p-2 text-sm text-amber-200">
+          These instructions changed in FM since you last confirmed them. Check them against your
+          tactic screen and save.
+        </p>
+      )}
+      <ul className="grid gap-1">
+        {rows.map(([label, value], i) => (
+          <li key={i} className="grid grid-cols-[1fr_1fr_auto] items-center gap-2">
+            <input
+              aria-label="Instruction"
+              value={label}
+              onChange={(e) => set(rows.map((r, j) => (j === i ? [e.target.value, r[1]] : r)))}
+              className="min-h-10 rounded-lg border border-border bg-surface-2 px-2 text-sm"
+            />
+            <input
+              aria-label={`${label} setting`}
+              value={value}
+              onChange={(e) => set(rows.map((r, j) => (j === i ? [r[0], e.target.value] : r)))}
+              className="min-h-10 rounded-lg border border-border bg-surface-2 px-2 text-sm font-semibold"
+            />
+            <button
+              type="button"
+              aria-label={`Remove ${label}`}
+              onClick={() => set(rows.filter((_, j) => j !== i))}
+              className="grid size-10 place-items-center rounded-lg text-muted hover:bg-surface-2 hover:text-red-400"
+            >
+              <Trash2 className="size-4" aria-hidden />
+            </button>
+          </li>
+        ))}
+      </ul>
+      <button
+        type="button"
+        onClick={() => set([...rows, ['', '']])}
+        className="justify-self-start text-sm text-accent"
+      >
+        + Add instruction
+      </button>
+    </section>
+  )
+}

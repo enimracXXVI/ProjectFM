@@ -1,3 +1,5 @@
+import type { SaveRole } from './saveRoles'
+
 /** FM position codes used for tactic slots. */
 export type PositionCode =
   | 'GK'
@@ -24,6 +26,9 @@ export interface TacticSlot {
   role?: string | null
   /** Out-of-possession role id. */
   roleOop?: string | null
+  /** Role signatures from the save (to remember roles the user sets). */
+  ipSig?: string | null
+  oopSig?: string | null
   /** Preferred player (ProjectFM player id). */
   player?: string | null
 }
@@ -62,11 +67,14 @@ export interface SaveTactics {
     name: string
     style: string | null
     mentality: string | null
+    instructionCodes?: number[]
     slots: {
       number: number
       position: PositionCode | null
       positionOop: PositionCode | null
       rawPosition: number | null
+      ipRole?: SaveRole
+      oopRole?: SaveRole
     }[]
   }[]
   selection: { slot: number; substitute: boolean; uniqueId: number | null; name: string | null }[]

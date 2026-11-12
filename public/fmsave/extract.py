@@ -45,7 +45,7 @@ def _plain(v):
 
 
 # Raised whenever extract() returns new data, so the app can spot an outdated copy
-READER_VERSION = 8
+READER_VERSION = 9
 
 JOB_SCOUT, JOB_CHIEF_SCOUT = 14, 44
 _FF8 = b"\xff" * 8
@@ -329,7 +329,23 @@ def _tactics(save, club_uid):
         for s in t.slots:
             raw = [_raw(x) for x in s.in_possession_positions]
             raw_oop = [_raw(x) for x in s.out_of_possession_positions]
+            u = s.unknown or {}
+
+            def role(prefix, settings):
+                # Role code plus its settings: one tactic is not enough to decode FM27's roles,
+                # so the app matches this signature against roles the user confirmed
+                return {
+                    "bits": u.get(prefix + "_role_bits"),
+                    "trail": u.get(prefix + "_trail_bits"),
+                    "settings": [
+                        [x.head_byte, x.first_bits, x.second_bits_low, x.second_bits_middle, x.second_bits_high]
+                        for x in settings
+                    ],
+                }
+
             slots.append({
+                "ipRole": role("in_possession", s.in_possession_settings),
+                "oopRole": role("out_of_possession", s.out_of_possession_settings),
                 "number": s.number,
                 "position": _TACTIC_POSITION.get(raw[0]) if raw else None,
                 "positionOop": _TACTIC_POSITION.get(raw_oop[0]) if raw_oop else None,
@@ -340,6 +356,7 @@ def _tactics(save, club_uid):
             "name": t.name,
             "style": t.style_name,
             "mentality": _plain(t.mentality),
+            "instructionCodes": [v for k, v in sorted((t.unknown or {}).items()) if k.startswith("team_instruction_")],
             "slots": slots,
         })
     selection = [

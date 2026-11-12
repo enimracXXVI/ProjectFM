@@ -13,6 +13,8 @@ export type RolePhase = 'ip' | 'oop'
 export interface RoleDef {
   id: string
   name: string
+  /** FM's short name, as shown on the tactics pitch (BGK, WB, DLP…). */
+  short?: string
   phase: RolePhase
   group: string
   /** FM positions that can play the role, e.g. "D (C)", "AM (L)". */
@@ -1546,3 +1548,35 @@ export const DEFAULT_ROLES: RoleDef[] = [
     preferred: ['Marking', 'Off The Ball', 'Positioning'],
   },
 ]
+
+/** Short names confirmed on the user's FM27 tactic screen. */
+export const CONFIRMED_SHORT = new Set([
+  'bgk',
+  'sk',
+  'wb-ip',
+  'pfb',
+  'cb-ip',
+  'cb-oop',
+  'fb-oop',
+  'dlp',
+  'dm-oop',
+  'wcm-ip',
+  'wcm-oop',
+  'cm-ip',
+  'pcm',
+  'pw',
+  'iow',
+  'if',
+  'w-oop',
+  'p',
+  'cfd-oop',
+])
+
+/**
+ * Default short name of a role: its id in capitals, without the phase ("cfd-oop" → CFD).
+ * The ids come from the same role data as the names; 19 were checked on the user's screen.
+ */
+export const defaultShort = (id: string) => id.replace(/-(ip|oop)$/, '').toUpperCase()
+
+/** A role's short name: the user's own, else the default. */
+export const roleShort = (r: RoleDef) => r.short || defaultShort(r.id)
