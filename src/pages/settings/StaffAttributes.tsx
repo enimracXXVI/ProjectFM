@@ -24,7 +24,13 @@ export function StaffAttributesSettings() {
   const tabs = useSaveConfig('staffTabs')
   const keys = useSaveConfig('staffKeyAttrs')
   const groups = useSaveConfig('staffGroups')
-  const stored = { tabs: config.staffTabs, keys: config.staffKeyAttrs, groups: config.staffGroups }
+  const shorts = useSaveConfig('staffShort')
+  const stored = {
+    tabs: config.staffTabs,
+    keys: config.staffKeyAttrs,
+    groups: config.staffGroups,
+    short: config.staffShort,
+  }
   const [form, setForm] = useState(stored)
   const [prev, setPrev] = useState(JSON.stringify(stored))
   if (prev !== JSON.stringify(stored)) {
@@ -45,8 +51,8 @@ export function StaffAttributesSettings() {
       title="Staff attributes"
       subtitle="Staff categories, how FM's staff profile groups attributes on each tab, and the Key Attributes FM highlights for each job."
       dirty={JSON.stringify(form) !== prev}
-      saving={[tabs, keys, groups].some((m) => m.save.isPending || m.reset.isPending)}
-      saved={[tabs, keys, groups].some((m) => m.save.isSuccess)}
+      saving={[tabs, keys, groups, shorts].some((m) => m.save.isPending || m.reset.isPending)}
+      saved={[tabs, keys, groups, shorts].some((m) => m.save.isSuccess)}
       error={
         tabs.save.error ??
         keys.save.error ??
@@ -58,13 +64,46 @@ export function StaffAttributesSettings() {
         tabs.save.mutate(form.tabs)
         keys.save.mutate(form.keys)
         groups.save.mutate(form.groups)
+        shorts.save.mutate(form.short)
       }}
       onReset={() => {
         tabs.reset.mutate()
         keys.reset.mutate()
         groups.reset.mutate()
+        shorts.reset.mutate()
       }}
     >
+      <SettingsSection
+        id="staff-attributes/column-headers"
+        title="Column headers"
+        hint="The short header each attribute gets on the Staff page (full name on hover)."
+        className="mb-6"
+      >
+        {ATTRIBUTE_GROUPS.map((g) => (
+          <div key={g.label} className="mb-3">
+            <h3 className="mb-1 text-xs font-semibold text-muted uppercase">{g.label}</h3>
+            <ul className="grid gap-x-6 gap-y-1 sm:grid-cols-2 xl:grid-cols-3">
+              {g.attributes.map((a) => (
+                <li key={a} className="flex items-center gap-2">
+                  <span className="min-w-0 flex-1 truncate text-sm">{a}</span>
+                  <input
+                    aria-label={`Header for ${a}`}
+                    value={form.short[a] ?? ''}
+                    maxLength={4}
+                    onChange={(e) =>
+                      setForm({
+                        ...form,
+                        short: { ...form.short, [a]: e.target.value.toUpperCase() },
+                      })
+                    }
+                    className={`${field} w-20 shrink-0 text-center font-semibold`}
+                  />
+                </li>
+              ))}
+            </ul>
+          </div>
+        ))}
+      </SettingsSection>
       <SettingsSection
         id="staff-attributes/staff-categories"
         title="Staff categories"

@@ -107,34 +107,28 @@ export const STAFF_ATTRS: [key: string, label: string, scale: number][] = [
   ['people_management', 'People Management', 5],
 ]
 
-/** Columns shown for each group on the Staff page. */
-export const GROUP_COLUMNS: Record<StaffGroup, string[]> = {
-  coaching: [
-    'Attacking',
-    'Defending',
-    'Fitness',
-    'Goalkeeping',
-    'Possession',
-    'Tactical',
-    'Technical',
-    'Set Pieces',
-    'Working With Youngsters',
-    'Motivating',
-  ],
-  scouting: [
-    'Judging Player Ability',
-    'Judging Player Potential',
-    'Analysing Data',
-    'Judging Staff Ability',
-    'Negotiating',
-    'Adaptability',
-    'Authority',
-  ],
-  medical: ['Physiotherapy', 'Sports Science', 'Motivating', 'People Management', 'Determination'],
-  other: [
-    'Analysing Data',
-    'Tactical Knowledge',
-    'Judging Player Ability',
-    'Judging Player Potential',
-  ],
+/** Three-letter column headers for staff attributes (editable in Settings). */
+export const DEFAULT_STAFF_SHORT: Record<string, string> = {
+  Attacking: 'ATT',
+  Defending: 'DEF',
+  Fitness: 'FIT',
+  Goalkeeping: 'GKP',
+  Possession: 'POS',
+  'Set Pieces': 'SET',
+  Tactical: 'TAC',
+  Technical: 'TEC',
+  'Working With Youngsters': 'YTH',
+  'Analysing Data': 'DAT',
+  Physiotherapy: 'PHY',
+  'Sports Science': 'SPS',
+  Adaptability: 'ADA',
+  Authority: 'AUT',
+  Determination: 'DET',
+  Motivating: 'MOT',
+  'People Management': 'PPM',
+  'Judging Player Ability': 'JPA',
+  'Judging Player Potential': 'JPP',
+  'Judging Staff Ability': 'JSA',
+  Negotiating: 'NEG',
+  'Tactical Knowledge': 'TKN',
 }

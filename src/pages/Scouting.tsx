@@ -1,5 +1,5 @@
 import { clsx } from 'clsx'
-import { ChevronRight, Crown } from 'lucide-react'
+import { ChevronRight, Crown, Globe } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import { ErrorText } from '../components/form'
 import { Card, PageHeader, Placeholder } from '../components/ui'
@@ -38,7 +38,11 @@ export function Scouting() {
         title="Scouting network"
         subtitle={`Season ${season}`}
         actions={
-          <Link to="/world" className="text-sm font-semibold text-accent">
+          <Link
+            to="/world"
+            className="inline-flex min-h-11 items-center gap-2 rounded-lg border border-border px-4 text-sm font-semibold hover:bg-surface-2"
+          >
+            <Globe className="size-4 text-accent" aria-hidden />
             World search
           </Link>
         }

@@ -1,13 +1,12 @@
 import { clsx } from 'clsx'
-import { Plus } from 'lucide-react'
-import { useState } from 'react'
-import { Link } from 'react-router-dom'
+import { ChevronDown, ChevronUp, Plus } from 'lucide-react'
+import { Link, useSearchParams } from 'react-router-dom'
 import { DbUpdateNotice } from '../components/DbUpdateNotice'
 import { PageHeader, Placeholder } from '../components/ui'
 import type { StaffRow } from '../data/db'
 import { useStaff } from '../data/hooks'
-import { GROUP_COLUMNS, STAFF_GROUPS, groupOf, jobOrder, type StaffGroup } from '../data/staffJobs'
-import { ratingColor } from '../data/staffInfo'
+import { STAFF_GROUPS, groupOf, jobOrder, type StaffGroup } from '../data/staffJobs'
+import { ATTRIBUTE_GROUPS, ratingColor } from '../data/staffInfo'
 import { TEAMS, type Team } from '../data/teams'
 import { useCurrentCareer } from '../lib/career'
 import { useConfig } from '../lib/config'
@@ -21,8 +20,25 @@ const teamOfStaff = (s: StaffRow): Team => (s.team === 'u21' || s.team === 'u18'
 export function Staff() {
   const career = useCurrentCareer()
   const { data, isPending, error } = useStaff(career.id)
-  const [team, setTeam] = useState<Team | 'all'>('all')
-  const [category, setCategory] = useState<StaffGroup | 'all'>('all')
+  // Filters and sort live in the URL, so going back to this page keeps them
+  const [params, setParams] = useSearchParams()
+  const team = (params.get('team') ?? 'all') as Team | 'all'
+  const category = (params.get('category') ?? 'all') as StaffGroup | 'all'
+  const sort: Sort = { col: params.get('sort') ?? '', asc: params.get('dir') !== 'desc' }
+  const setParam = (patch: Record<string, string | null>) => {
+    const next = new URLSearchParams(params)
+    for (const [k, v] of Object.entries(patch)) {
+      if (v === null) next.delete(k)
+      else next.set(k, v)
+    }
+    setParams(next, { replace: true })
+  }
+  const onSort = (col: string) => {
+    // Names and text sort A–Z first; numbers highest first
+    const firstAsc = col === 'name' || col === 'job' || col === 'personality' || col === 'team'
+    const asc = sort.col === col ? !sort.asc : firstAsc
+    setParam({ sort: col, dir: asc ? 'asc' : 'desc' })
+  }
   const all = data ?? []
   // Staff imported before migration 0007 have no team or job code
   const needsUpdate = all.length > 0 && all.every((s) => s.job_code === undefined)
@@ -66,7 +82,7 @@ export function Staff() {
       {all.length > 0 && (
         <Tabs
           value={team}
-          onChange={setTeam}
+          onChange={(v) => setParam({ team: v === 'all' ? null : v })}
           options={[
             ['all', `All (${all.length})`],
             ...TEAMS.map(
@@ -82,7 +98,7 @@ export function Staff() {
       {all.length > 0 && (
         <Tabs
           value={category}
-          onChange={setCategory}
+          onChange={(v) => setParam({ category: v === 'all' ? null : v })}
           options={[
             ['all', 'All jobs'],
             ...STAFF_GROUPS.map(
@@ -98,7 +114,14 @@ export function Staff() {
       <div className="grid gap-6">
         {groups.map(([g, label, rows]) =>
           rows.length ? (
-            <StaffTable key={g} group={g} label={label} rows={rows} showTeam={team === 'all'} />
+            <StaffTable
+              key={g}
+              label={label}
+              rows={rows}
+              showTeam={team === 'all'}
+              sort={sort}
+              onSort={onSort}
+            />
           ) : null,
         )}
       </div>
@@ -106,21 +129,83 @@ export function Staff() {
   )
 }
 
+interface Sort {
+  col: string
+  asc: boolean
+}
+
+/** Every staff attribute, in Settings' order (Coaching, Scouting, Medical, Mental, Knowledge). */
+const ALL_ATTRS = ATTRIBUTE_GROUPS.flatMap((g) => g.attributes)
+
+const teamOrder = (s: StaffRow) => TEAMS.findIndex(([t]) => t === teamOfStaff(s))
+
+function sortValue(s: StaffRow, col: string): number | string | null {
+  if (col === 'name') return null
+  if (col === 'job') return jobOrder(s.role)
+  if (col === 'team') return teamOrder(s)
+  if (col === 'age') return s.age
+  if (col === 'personality') return s.personality ?? null
+  const v = s.attributes[col]
+  return v ? valueOf(v) : null
+}
+
 function StaffTable({
-  group,
   label,
   rows,
   showTeam,
+  sort,
+  onSort,
 }: {
-  group: StaffGroup
   label: string
   rows: StaffRow[]
   showTeam: boolean
+  sort: Sort
+  onSort: (col: string) => void
 }) {
-  const { staffScale } = useConfig()
-  const columns = GROUP_COLUMNS[group]
-  const sorted = [...rows].sort((a, b) => jobOrder(a.role) - jobOrder(b.role) || byLastName(a, b))
+  const { staffScale, staffShort } = useConfig()
+  const sorted = [...rows].sort((a, b) => {
+    if (sort.col === 'name') return sort.asc ? byLastName(a, b) : byLastName(b, a)
+    if (sort.col) {
+      const x = sortValue(a, sort.col)
+      const y = sortValue(b, sort.col)
+      // Empty values always last
+      if (x === null && y !== null) return 1
+      if (y === null && x !== null) return -1
+      if (x !== null && y !== null && x !== y) {
+        const c =
+          typeof x === 'number' && typeof y === 'number'
+            ? x - y
+            : String(x).localeCompare(String(y))
+        if (c) return sort.asc ? c : -c
+      }
+    }
+    return jobOrder(a.role) - jobOrder(b.role) || byLastName(a, b)
+  })
   const teamLabel = (s: StaffRow) => TEAMS.find(([t]) => t === teamOfStaff(s))?.[1]
+  const head = (col: string, text: string, title: string, className?: string) => {
+    const active = sort.col === col
+    const Icon = sort.asc ? ChevronUp : ChevronDown
+    return (
+      <th
+        key={col}
+        className={clsx('px-2 py-1', className)}
+        aria-sort={active ? (sort.asc ? 'ascending' : 'descending') : 'none'}
+      >
+        <button
+          type="button"
+          title={title}
+          onClick={() => onSort(col)}
+          className={clsx(
+            'inline-flex min-h-9 items-center gap-0.5 whitespace-nowrap uppercase',
+            active && 'text-text',
+          )}
+        >
+          {text}
+          {active && <Icon className="size-3.5" aria-hidden />}
+        </button>
+      </th>
+    )
+  }
   return (
     <section>
       <h2 className="mb-2 font-semibold">
@@ -130,16 +215,12 @@ function StaffTable({
         <table className="w-full text-sm">
           <thead className="bg-surface-2 text-left text-xs text-muted">
             <tr>
-              <th className="sticky left-0 z-[1] bg-surface-2 px-3 py-2">Name</th>
-              <th className="px-3 py-2">Job</th>
-              {showTeam && <th className="px-3 py-2">Team</th>}
-              <th className="px-3 py-2 text-right">Age</th>
-              <th className="px-3 py-2">Personality</th>
-              {columns.map((c) => (
-                <th key={c} className="px-2 py-2 text-center" title={c}>
-                  {SHORT[c] ?? c}
-                </th>
-              ))}
+              {head('name', 'Name', 'Name', 'sticky left-0 z-[1] bg-surface-2 pl-3')}
+              {head('job', 'Job', 'Job')}
+              {showTeam && head('team', 'Team', 'Team')}
+              {head('age', 'Age', 'Age', 'text-right')}
+              {head('personality', 'Personality', 'Personality')}
+              {ALL_ATTRS.map((c) => head(c, staffShort[c] ?? c, c, 'text-center'))}
             </tr>
           </thead>
           <tbody className="bg-surface">
@@ -151,13 +232,13 @@ function StaffTable({
                   </Link>
                   <span className="ml-1 hidden text-xs text-muted sm:inline">{s.nation}</span>
                 </td>
-                <td className="px-3 py-2 whitespace-nowrap text-accent">{s.role ?? '–'}</td>
+                <td className="px-2 py-2 whitespace-nowrap text-accent">{s.role ?? '–'}</td>
                 {showTeam && (
-                  <td className="px-3 py-2 whitespace-nowrap text-muted">{teamLabel(s)}</td>
+                  <td className="px-2 py-2 whitespace-nowrap text-muted">{teamLabel(s)}</td>
                 )}
-                <td className="px-3 py-2 text-right tabular-nums">{s.age ?? '–'}</td>
-                <td className="px-3 py-2 whitespace-nowrap text-muted">{s.personality ?? '–'}</td>
-                {columns.map((c) => {
+                <td className="px-2 py-2 text-right tabular-nums">{s.age ?? '–'}</td>
+                <td className="px-2 py-2 whitespace-nowrap text-muted">{s.personality ?? '–'}</td>
+                {ALL_ATTRS.map((c) => {
                   const v = s.attributes[c]
                   return (
                     <td
@@ -179,29 +260,4 @@ function StaffTable({
       </div>
     </section>
   )
-}
-
-/** Column headers (full name on hover). */
-const SHORT: Record<string, string> = {
-  Attacking: 'ATT',
-  Defending: 'DEF',
-  Fitness: 'FIT',
-  Goalkeeping: 'GK',
-  Possession: 'POS',
-  Tactical: 'TAC',
-  Technical: 'TEC',
-  'Set Pieces': 'SP',
-  'Working With Youngsters': 'YTH',
-  Motivating: 'MOT',
-  'Judging Player Ability': 'JPA',
-  'Judging Player Potential': 'JPP',
-  'Analysing Data': 'DATA',
-  'Judging Staff Ability': 'JSA',
-  Negotiating: 'NEG',
-  Adaptability: 'ADA',
-  Authority: 'AUT',
-  Physiotherapy: 'PHY',
-  'Sports Science': 'SCI',
-  'People Management': 'MAN',
-  Determination: 'DET',
 }
