@@ -1,7 +1,9 @@
 import { ChevronDown, ChevronUp, Plus, Trash2 } from 'lucide-react'
 import { useState } from 'react'
 import { SettingsShell } from '../../components/SettingsShell'
-import { STAFF_SCALE_RANGES, ratingColor } from '../../data/staffInfo'
+import { saveConfig } from '../../data/config'
+import { ratingColor, scaleRanges } from '../../data/staffInfo'
+import { KNOWLEDGE_WORDS } from '../../import/save'
 import { useConfig } from '../../lib/config'
 import { useSaveConfig } from '../../lib/useSaveConfig'
 
@@ -10,137 +12,238 @@ const input =
 const iconBtn =
   'grid size-10 shrink-0 place-items-center rounded-lg text-muted hover:bg-surface-2 hover:text-text disabled:opacity-30'
 
+type Pair = [number, string]
+
+/** Staff rating words with their 1–20 values, and scouting knowledge levels with the save's values. */
 export function StaffRatingsSettings() {
   const config = useConfig()
   const scale = useSaveConfig('staffScale')
+  const mins = useSaveConfig('staffScaleMin')
   const levels = useSaveConfig('knowledgeLevels')
-  const [words, setWords] = useState(config.staffScale)
-  const [know, setKnow] = useState(config.knowledgeLevels)
-  const [prev, setPrev] = useState([config.staffScale, config.knowledgeLevels])
-  if (prev[0] !== config.staffScale || prev[1] !== config.knowledgeLevels) {
-    // Settings reloaded (after save/reset): show the stored version
-    setPrev([config.staffScale, config.knowledgeLevels])
-    setWords(config.staffScale)
-    setKnow(config.knowledgeLevels)
+  const learned = useSaveConfig('learned')
+  const storedValues: Pair[] = Object.entries({ ...KNOWLEDGE_WORDS, ...config.learned.knowledge })
+    .map(([v, w]) => [Number(v), w] as Pair)
+    .sort((a, b) => a[0] - b[0])
+  const stored = {
+    words: config.staffScale,
+    mins: config.staffScaleMin,
+    know: config.knowledgeLevels,
+    values: storedValues,
   }
+  const [form, setForm] = useState(stored)
+  const [prev, setPrev] = useState(JSON.stringify(stored))
+  if (prev !== JSON.stringify(stored)) {
+    setPrev(JSON.stringify(stored))
+    setForm(stored)
+  }
+  const dirty = JSON.stringify(form) !== prev
+  const pending = [scale, mins, levels, learned].some((m) => m.save.isPending || m.reset.isPending)
 
-  const clean = (list: string[]) => list.map((w) => w.trim()).filter(Boolean)
-  const dirty =
-    JSON.stringify(clean(words)) !== JSON.stringify(config.staffScale) ||
-    JSON.stringify(clean(know)) !== JSON.stringify(config.knowledgeLevels)
+  const rows = form.words.map((w, i) => ({ w, min: form.mins[i] ?? 0 }))
+  const setRows = (next: { w: string; min: number }[]) =>
+    setForm({ ...form, words: next.map((r) => r.w), mins: next.map((r) => r.min) })
+  const ranges = scaleRanges(form.mins)
 
   return (
     <SettingsShell
       title="Staff ratings"
-      subtitle="The words FM uses for staff attributes and scouting knowledge, worst to best."
+      subtitle="The words FM uses for staff attributes and scouting knowledge, with the numbers behind them."
       dirty={dirty}
-      saving={scale.save.isPending || levels.save.isPending}
-      saved={scale.save.isSuccess || levels.save.isSuccess}
-      error={scale.save.error ?? levels.save.error ?? scale.reset.error ?? levels.reset.error}
+      saving={pending}
+      saved={[scale, mins, levels, learned].some((m) => m.save.isSuccess)}
+      error={scale.save.error ?? mins.save.error ?? levels.save.error ?? learned.save.error}
       onSave={() => {
-        scale.save.mutate(clean(words))
-        levels.save.mutate(clean(know))
+        const clean = rows.filter((r) => r.w.trim())
+        scale.save.mutate(clean.map((r) => r.w.trim()))
+        mins.save.mutate(clean.map((r) => r.min))
+        levels.save.mutate(form.know.map((w) => w.trim()).filter(Boolean))
+        learned.save.mutate({
+          ...config.learned,
+          knowledge: Object.fromEntries(
+            form.values.filter(([, w]) => w).map(([v, w]) => [String(v), w]),
+          ),
+        })
       }}
-      onReset={() => {
+      onReset={async () => {
         scale.reset.mutate()
+        mins.reset.mutate()
         levels.reset.mutate()
+        await saveConfig('learned', { ...config.learned, knowledge: {} })
+        learned.save.reset()
       }}
     >
-      <div className="grid gap-6 md:grid-cols-2">
-        <WordList
-          title="Attribute ratings"
-          hint="Worst at the top, best at the bottom. Colours follow this order."
-          words={words}
-          onChange={setWords}
-          colorFor={(w) => ratingColor(w, clean(words))}
-          noteFor={(w) => STAFF_SCALE_RANGES[w]}
-        />
-        <WordList
-          title="Scouting knowledge levels"
-          hint="Lowest at the top, highest at the bottom."
-          words={know}
-          onChange={setKnow}
-        />
+      <div className="grid gap-6 lg:grid-cols-2">
+        <section className="rounded-xl border border-border bg-surface p-3">
+          <h2 className="font-semibold">Attribute ratings (1–20)</h2>
+          <p className="mb-2 text-xs text-muted">
+            Worst at the top. Each word starts at the value on its right; colours follow this order.
+          </p>
+          <ul className="grid gap-1">
+            {rows.map((r, i) => (
+              <li key={i} className="flex items-center gap-1">
+                <input
+                  aria-label={`Rating ${i + 1}`}
+                  value={r.w}
+                  onChange={(e) =>
+                    setRows(rows.map((x, j) => (j === i ? { ...x, w: e.target.value } : x)))
+                  }
+                  className={`${input} font-semibold ${ratingColor(r.w.trim(), form.words)}`}
+                />
+                <label className="flex shrink-0 items-center gap-1 text-xs text-muted">
+                  from
+                  <input
+                    aria-label={`${r.w} starts at`}
+                    inputMode="numeric"
+                    value={r.min}
+                    onChange={(e) =>
+                      setRows(
+                        rows.map((x, j) =>
+                          j === i ? { ...x, min: Number(e.target.value) || 0 } : x,
+                        ),
+                      )
+                    }
+                    className="min-h-11 w-14 rounded-lg border border-border bg-surface-2 px-2 text-center text-base tabular-nums md:text-sm"
+                  />
+                </label>
+                <span className="w-12 shrink-0 text-right text-xs text-muted tabular-nums">
+                  {ranges[i]}
+                </span>
+                <button
+                  type="button"
+                  className={iconBtn}
+                  aria-label={`Remove ${r.w}`}
+                  onClick={() => setRows(rows.filter((_, j) => j !== i))}
+                >
+                  <Trash2 className="size-4" aria-hidden />
+                </button>
+              </li>
+            ))}
+          </ul>
+          <button
+            type="button"
+            onClick={() => setRows([...rows, { w: '', min: 20 }])}
+            className="mt-2 inline-flex min-h-11 items-center gap-1 text-sm font-semibold text-accent"
+          >
+            <Plus className="size-4" aria-hidden /> Add
+          </button>
+        </section>
+
+        <section className="rounded-xl border border-border bg-surface p-3">
+          <h2 className="font-semibold">Scouting knowledge</h2>
+          <p className="mb-2 text-xs text-muted">Levels, lowest at the top.</p>
+          <ul className="grid gap-1">
+            {form.know.map((w, i) => (
+              <li key={i} className="flex items-center gap-1">
+                <input
+                  aria-label={`Level ${i + 1}`}
+                  value={w}
+                  onChange={(e) =>
+                    setForm({
+                      ...form,
+                      know: form.know.map((x, j) => (j === i ? e.target.value : x)),
+                    })
+                  }
+                  className={`${input} font-semibold`}
+                />
+                {(['up', 'down'] as const).map((d) => (
+                  <button
+                    key={d}
+                    type="button"
+                    className={iconBtn}
+                    aria-label={`Move ${d}`}
+                    disabled={d === 'up' ? i === 0 : i === form.know.length - 1}
+                    onClick={() => {
+                      const n = [...form.know]
+                      const k = d === 'up' ? i - 1 : i + 1
+                      ;[n[i], n[k]] = [n[k], n[i]]
+                      setForm({ ...form, know: n })
+                    }}
+                  >
+                    {d === 'up' ? (
+                      <ChevronUp className="size-4" aria-hidden />
+                    ) : (
+                      <ChevronDown className="size-4" aria-hidden />
+                    )}
+                  </button>
+                ))}
+                <button
+                  type="button"
+                  className={iconBtn}
+                  aria-label={`Remove ${w}`}
+                  onClick={() => setForm({ ...form, know: form.know.filter((_, j) => j !== i) })}
+                >
+                  <Trash2 className="size-4" aria-hidden />
+                </button>
+              </li>
+            ))}
+          </ul>
+          <button
+            type="button"
+            onClick={() => setForm({ ...form, know: [...form.know, ''] })}
+            className="mt-2 inline-flex min-h-11 items-center gap-1 text-sm font-semibold text-accent"
+          >
+            <Plus className="size-4" aria-hidden /> Add level
+          </button>
+
+          <h3 className="mt-4 text-sm font-semibold">Values in the save (0–100)</h3>
+          <p className="mb-2 text-xs text-muted">
+            The save stores knowledge as a number; this is the level each number shows in FM.
+          </p>
+          <ul className="grid gap-1">
+            {form.values.map(([v, w], i) => (
+              <li key={i} className="flex items-center gap-2">
+                <input
+                  aria-label="Value"
+                  inputMode="numeric"
+                  value={v}
+                  onChange={(e) =>
+                    setForm({
+                      ...form,
+                      values: form.values.map((x, j) =>
+                        j === i ? [Number(e.target.value) || 0, x[1]] : x,
+                      ),
+                    })
+                  }
+                  className="min-h-11 w-20 rounded-lg border border-border bg-surface-2 px-2 text-center text-base tabular-nums md:text-sm"
+                />
+                <select
+                  aria-label={`Level for ${v}`}
+                  value={w}
+                  onChange={(e) =>
+                    setForm({
+                      ...form,
+                      values: form.values.map((x, j) => (j === i ? [x[0], e.target.value] : x)),
+                    })
+                  }
+                  className={input}
+                >
+                  {!form.know.includes(w) && <option value={w}>{w || '–'}</option>}
+                  {form.know.map((l) => (
+                    <option key={l}>{l}</option>
+                  ))}
+                </select>
+                <button
+                  type="button"
+                  className={iconBtn}
+                  aria-label={`Remove ${v}`}
+                  onClick={() =>
+                    setForm({ ...form, values: form.values.filter((_, j) => j !== i) })
+                  }
+                >
+                  <Trash2 className="size-4" aria-hidden />
+                </button>
+              </li>
+            ))}
+          </ul>
+          <button
+            type="button"
+            onClick={() => setForm({ ...form, values: [...form.values, [0, form.know[0] ?? '']] })}
+            className="mt-2 inline-flex min-h-11 items-center gap-1 text-sm font-semibold text-accent"
+          >
+            <Plus className="size-4" aria-hidden /> Add value
+          </button>
+        </section>
       </div>
     </SettingsShell>
-  )
-}
-
-function WordList({
-  title,
-  hint,
-  words,
-  onChange,
-  colorFor,
-  noteFor,
-}: {
-  title: string
-  hint: string
-  words: string[]
-  onChange: (w: string[]) => void
-  colorFor?: (w: string) => string
-  /** Small text after a word, e.g. its 1–20 range. */
-  noteFor?: (w: string) => string | undefined
-}) {
-  const move = (i: number, d: -1 | 1) => {
-    const n = [...words]
-    ;[n[i], n[i + d]] = [n[i + d], n[i]]
-    onChange(n)
-  }
-  return (
-    <section className="rounded-xl border border-border bg-surface p-3">
-      <h2 className="font-semibold">{title}</h2>
-      <p className="mb-2 text-xs text-muted">{hint}</p>
-      <ul className="grid gap-1">
-        {words.map((w, i) => (
-          <li key={i} className="flex items-center gap-1">
-            <input
-              aria-label={`${title} ${i + 1}`}
-              value={w}
-              onChange={(e) => onChange(words.map((x, j) => (j === i ? e.target.value : x)))}
-              className={`${input} font-semibold ${colorFor?.(w.trim()) ?? ''}`}
-            />
-            {noteFor && (
-              <span className="w-12 shrink-0 text-right text-xs text-muted tabular-nums">
-                {noteFor(w.trim()) ?? ''}
-              </span>
-            )}
-            <button
-              type="button"
-              className={iconBtn}
-              aria-label="Move up"
-              disabled={i === 0}
-              onClick={() => move(i, -1)}
-            >
-              <ChevronUp className="size-4" aria-hidden />
-            </button>
-            <button
-              type="button"
-              className={iconBtn}
-              aria-label="Move down"
-              disabled={i === words.length - 1}
-              onClick={() => move(i, 1)}
-            >
-              <ChevronDown className="size-4" aria-hidden />
-            </button>
-            <button
-              type="button"
-              className={iconBtn}
-              aria-label={`Remove ${w}`}
-              onClick={() => onChange(words.filter((_, j) => j !== i))}
-            >
-              <Trash2 className="size-4" aria-hidden />
-            </button>
-          </li>
-        ))}
-      </ul>
-      <button
-        type="button"
-        onClick={() => onChange([...words, ''])}
-        className="mt-2 inline-flex min-h-11 items-center gap-1 text-sm font-semibold text-accent"
-      >
-        <Plus className="size-4" aria-hidden /> Add
-      </button>
-    </section>
   )
 }

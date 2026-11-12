@@ -32,6 +32,8 @@ import { Competitions } from './pages/Competitions'
 import { Match } from './pages/Match'
 import { Tactics } from './pages/Tactics'
 import { BottomBarSettings } from './pages/settings/BottomBar'
+import { NamesSettings } from './pages/settings/Names'
+import { StaffAttributesSettings } from './pages/settings/StaffAttributes'
 import { Explain } from './pages/Explain'
 import { Squad } from './pages/Squad'
 import { Staff } from './pages/Staff'
@@ -89,6 +91,8 @@ function SignedIn() {
         <Route path="settings/role-weights" element={<RoleWeightsSettings />} />
         <Route path="settings/staff-ratings" element={<StaffRatingsSettings />} />
         <Route path="settings/bottom-bar" element={<BottomBarSettings />} />
+        <Route path="settings/staff-attributes" element={<StaffAttributesSettings />} />
+        <Route path="settings/names" element={<NamesSettings />} />
         <Route path="*" element={<NotFound />} />
       </Route>
     </Routes>

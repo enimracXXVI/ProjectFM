@@ -23,3 +23,33 @@ describe('staff rating scale', () => {
     expect(DEFAULT_KNOWLEDGE_LEVELS.at(-1)).toBe('Complete')
   })
 })
+
+describe('scale with values', async () => {
+  const { scaleWord, scaleRanges, DEFAULT_STAFF_SCALE_MIN } = await import('./staffInfo')
+  it('turns values into words and ranges', () => {
+    expect(
+      [1, 4, 9, 10, 14, 17, 19, 20].map((n) =>
+        scaleWord(n, DEFAULT_STAFF_SCALE, DEFAULT_STAFF_SCALE_MIN),
+      ),
+    ).toEqual([
+      'Unsuited',
+      'Reasonable',
+      'Competent',
+      'Average',
+      'Good',
+      'Very Good',
+      'Outstanding',
+      'Elite',
+    ])
+    expect(scaleRanges(DEFAULT_STAFF_SCALE_MIN)).toEqual([
+      '0–3',
+      '4–6',
+      '7–9',
+      '10–11',
+      '12–14',
+      '15–17',
+      '18–19',
+      '20',
+    ])
+  })
+})

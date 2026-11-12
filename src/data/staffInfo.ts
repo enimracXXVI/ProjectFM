@@ -128,6 +128,31 @@ export const DEFAULT_STAFF_SCALE = [
   'Elite',
 ]
 
+/** Lowest 1–20 value of each default rating word (Unsuited 0–3, Reasonable 4–6, …). */
+export const DEFAULT_STAFF_SCALE_MIN = [0, 4, 7, 10, 12, 15, 18, 20]
+
+/** Rating word for a 1–20 value with the given words and lowest values. */
+export function scaleWord(n: number, words: string[], mins: number[]): string {
+  let word = words[0] ?? String(n)
+  mins.forEach((m, i) => {
+    if (n >= m && words[i]) word = words[i]
+  })
+  return word
+}
+
+/** "4–6" ranges for display, from the lowest values. */
+export const scaleRanges = (mins: number[]) =>
+  mins.map((m, i) => {
+    const next = mins[i + 1]
+    return next === undefined
+      ? m === 20
+        ? '20'
+        : `${m}–20`
+      : next - 1 === m
+        ? String(m)
+        : `${m}–${next - 1}`
+  })
+
 /** The 1–20 values behind each default rating word. */
 export const STAFF_SCALE_RANGES: Record<string, string> = {
   Unsuited: '0–3',

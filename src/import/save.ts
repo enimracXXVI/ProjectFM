@@ -208,7 +208,7 @@ export function saveUpdates(data: SaveData, kind: StatsKind): SavePlayerUpdate[]
  * seven scouts (Victor, Braund, Giani, Vázquez, Doné, Amaral, Arenz).
  * Stored with the value, "Very Good (36)"; values not confirmed yet are "Unknown (n)".
  */
-const KNOWLEDGE_WORDS: Record<number, string> = {
+export const KNOWLEDGE_WORDS: Record<number, string> = {
   30: 'Very Good',
   36: 'Very Good',
   48: 'Extensive',

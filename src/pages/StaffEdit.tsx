@@ -12,11 +12,10 @@ import { useStaff } from '../data/hooks'
 import { JOB_TITLES, STAFF_GROUPS } from '../data/staffJobs'
 import {
   KNOWN_REPUTATIONS,
-  KEY_ATTRIBUTES_BY_JOB,
   STAFF_TABS,
   tabForJob,
   type StaffTab,
-  STAFF_SCALE_RANGES,
+  scaleRanges,
   ratingColor,
 } from '../data/staffInfo'
 import { useCurrentCareer } from '../lib/career'
@@ -69,8 +68,8 @@ function StaffForm({ existing }: { existing: StaffRow | null }) {
       : empty,
   )
   const [tab, setTab] = useState<StaffTab>(() => tabForJob(existing?.role ?? null))
-  const sections = STAFF_TABS.find(([t]) => t === tab)![2]
-  const keyAttrs = KEY_ATTRIBUTES_BY_JOB[form.role ?? ''] ?? []
+  const sections = config.staffTabs[tab] ?? []
+  const keyAttrs = config.staffKeyAttrs[form.role ?? ''] ?? []
   const countries = useMemo(
     () => [...new Set(config.regions.flatMap((r) => r.countries))].sort(),
     [config.regions],
@@ -235,9 +234,9 @@ function StaffForm({ existing }: { existing: StaffRow | null }) {
                       {form.attributes[a] && !config.staffScale.includes(form.attributes[a]) && (
                         <option value={form.attributes[a]}>{form.attributes[a]}</option>
                       )}
-                      {config.staffScale.map((w) => (
+                      {config.staffScale.map((w, i) => (
                         <option key={w} value={w}>
-                          {STAFF_SCALE_RANGES[w] ? `${w} (${STAFF_SCALE_RANGES[w]})` : w}
+                          {`${w} (${scaleRanges(config.staffScaleMin)[i] ?? ''})`}
                         </option>
                       ))}
                     </select>

@@ -11,7 +11,15 @@ import { DEFAULT_VIEWS, type ExtraView, type ExtraViewKey } from './columns'
 import { DEFAULT_ROLE_WEIGHTS, type RoleWeights } from '../lib/roleFit'
 import { DEFAULT_REGIONS, type Region } from './regions'
 import { DEFAULT_ROLES, type RoleDef } from './roles'
-import { DEFAULT_KNOWLEDGE_LEVELS, DEFAULT_STAFF_SCALE } from './staffInfo'
+import {
+  DEFAULT_KNOWLEDGE_LEVELS,
+  DEFAULT_STAFF_SCALE,
+  DEFAULT_STAFF_SCALE_MIN,
+  KEY_ATTRIBUTES_BY_JOB,
+  STAFF_TABS,
+  type StaffSection,
+  type StaffTab,
+} from './staffInfo'
 import { DEFAULT_STATUSES, normalizeStatus, type StatusInfo } from './statusInfo'
 
 export type Layout = Record<Role, AttributeSection[][]>
@@ -25,6 +33,12 @@ export interface AppConfig {
   regions: Region[]
   /** Staff rating words, worst to best. */
   staffScale: string[]
+  /** Lowest 1–20 value of each staff rating word (same order as staffScale). */
+  staffScaleMin: number[]
+  /** FM's staff profile tabs: the attribute sections of each tab. */
+  staffTabs: Record<StaffTab, StaffSection[]>
+  /** FM's Key Attributes for each staff job. */
+  staffKeyAttrs: Record<string, string[]>
   /** Scouting knowledge levels, lowest to highest. */
   knowledgeLevels: string[]
   roles: RoleDef[]
@@ -61,6 +75,12 @@ export const DEFAULT_CONFIG: AppConfig = {
   views: DEFAULT_VIEWS,
   regions: DEFAULT_REGIONS,
   staffScale: DEFAULT_STAFF_SCALE,
+  staffScaleMin: DEFAULT_STAFF_SCALE_MIN,
+  staffTabs: Object.fromEntries(STAFF_TABS.map(([t, , sections]) => [t, sections])) as Record<
+    StaffTab,
+    StaffSection[]
+  >,
+  staffKeyAttrs: KEY_ATTRIBUTES_BY_JOB,
   knowledgeLevels: DEFAULT_KNOWLEDGE_LEVELS,
   roles: DEFAULT_ROLES,
   roleWeights: DEFAULT_ROLE_WEIGHTS,
@@ -97,6 +117,9 @@ export function mergeConfig(stored: Stored): AppConfig {
     views: { ...DEFAULT_CONFIG.views, ...stored.views },
     regions: stored.regions ?? DEFAULT_CONFIG.regions,
     staffScale: stored.staffScale ?? DEFAULT_CONFIG.staffScale,
+    staffScaleMin: stored.staffScaleMin ?? DEFAULT_CONFIG.staffScaleMin,
+    staffTabs: { ...DEFAULT_CONFIG.staffTabs, ...stored.staffTabs },
+    staffKeyAttrs: stored.staffKeyAttrs ?? DEFAULT_CONFIG.staffKeyAttrs,
     knowledgeLevels: withOutstanding(stored.knowledgeLevels) ?? DEFAULT_CONFIG.knowledgeLevels,
     roles: stored.roles ?? DEFAULT_CONFIG.roles,
     roleWeights: { ...DEFAULT_CONFIG.roleWeights, ...stored.roleWeights },

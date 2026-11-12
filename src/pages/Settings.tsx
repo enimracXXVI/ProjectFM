@@ -87,7 +87,17 @@ export function SettingsPage() {
               [
                 '/settings/staff-ratings',
                 'Staff ratings',
-                'Rating words and scouting knowledge levels',
+                'Rating words and knowledge levels, with their numbers',
+              ],
+              [
+                '/settings/staff-attributes',
+                'Staff attributes',
+                'Staff profile tabs and Key Attributes for each job',
+              ],
+              [
+                '/settings/names',
+                'FM names and words',
+                'Morale words, competitions, cup rounds, staff job codes',
               ],
               [
                 '/settings/bottom-bar',

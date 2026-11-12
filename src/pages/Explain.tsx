@@ -3,7 +3,7 @@ import { useState, type ReactNode } from 'react'
 import { Link } from 'react-router-dom'
 import { Card, PageHeader } from '../components/ui'
 import { MORALE_WORDS } from '../import/dump'
-import { STAFF_SCALE_RANGES } from '../data/staffInfo'
+import { scaleRanges } from '../data/staffInfo'
 import { usePlayers } from '../data/hooks'
 import type { PlayerRow } from '../data/db'
 import { attrNumber } from '../lib/attributes'
@@ -23,6 +23,7 @@ import { useChecks } from '../lib/useChecks'
 /** Plain-language, visual explanations of every value ProjectFM works out by itself. */
 export function Explain() {
   const checks = useChecks()
+  const { staffScale, staffScaleMin } = useConfig()
   return (
     <>
       <PageHeader title="How it works" subtitle="Where each value comes from, in pictures." />
@@ -67,7 +68,10 @@ export function Explain() {
           The save stores numbers; FM shows words. ProjectFM keeps both, like{' '}
           <Chip>Very Good (17)</Chip>, so you can always compare with the game.
         </p>
-        <Scale title="Staff attributes (1–20)" items={Object.entries(STAFF_SCALE_RANGES)} />
+        <Scale
+          title="Staff attributes (1–20)"
+          items={staffScale.map((w, i) => [w, scaleRanges(staffScaleMin)[i] ?? ''])}
+        />
         <Scale
           title="Feet (1–20)"
           items={[

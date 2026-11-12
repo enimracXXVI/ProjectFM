@@ -3,9 +3,9 @@ import type { Team } from './teams'
 import { supabase } from '../lib/supabase'
 import { jobTitle, STAFF_ATTRS } from './staffJobs'
 import { personalityName } from '../lib/personality'
-import { staffWord } from '../import/dump'
+import { scaleWord } from './staffInfo'
 import { byLastName } from '../lib/names'
-import { applyLearned, type LearnedKind } from '../lib/learned'
+import { relabel, type LearnedKind } from '../lib/learned'
 import { UNKNOWN_WORD, withValue } from '../lib/valueWord'
 import { loadStoredConfig, mergeConfig, saveConfig } from './config'
 import { DUMP_PRESENT, isReaderDump, type DumpSummary } from '../import/dump'
@@ -379,7 +379,7 @@ export async function importDump(opts: {
     )
     .map((p) =>
       p.extra.Morale
-        ? { ...p, extra: { ...p.extra, Morale: applyLearned(p.extra.Morale, learned.morale) } }
+        ? { ...p, extra: { ...p.extra, Morale: relabel(p.extra.Morale, learned.morale) } }
         : p,
     )
 
@@ -595,7 +595,7 @@ async function importScoutsOnly(career: Career, data: SaveData) {
       ...raw,
       knowledge: raw.knowledge.map((k) => ({
         ...k,
-        level: applyLearned(k.level, learned.knowledge),
+        level: relabel(k.level, learned.knowledge),
       })),
     }
     const match =
@@ -638,7 +638,7 @@ async function importScoutsOnly(career: Career, data: SaveData) {
 /** Every member of staff from the save: job, team, attributes, personality, names. */
 async function importAllStaff(career: Career, data: SaveData) {
   const staff = await listStaff(career.id)
-  const { learned } = mergeConfig(await loadStoredConfig())
+  const { learned, staffScale, staffScaleMin } = mergeConfig(await loadStoredConfig())
   const scouts = new Map(saveScouts(data).map((s) => [s.fm_uid, s]))
   let added = 0
   let updated = 0
@@ -650,12 +650,12 @@ async function importAllStaff(career: Career, data: SaveData) {
       const v = raw.attributes?.[key]
       if (typeof v === 'number' && v > 0) {
         const n = Math.floor(v / scale)
-        attributes[label] = withValue(staffWord(n), n)
+        attributes[label] = withValue(scaleWord(n, staffScale, staffScaleMin), n)
       }
     }
     const knowledge = (scout?.knowledge ?? []).map((k) => ({
       ...k,
-      level: applyLearned(k.level, learned.knowledge),
+      level: relabel(k.level, learned.knowledge),
     }))
     const extra: Record<string, string> = {}
     if (raw.lastName) extra['Last name'] = raw.lastName

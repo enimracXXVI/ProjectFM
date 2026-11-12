@@ -10,3 +10,13 @@ export function applyLearned(text: string, words: Record<string, string>): strin
 }
 
 export type LearnedKind = keyof Learned
+
+/**
+ * Applies the user's value → word table to "Word (n)" or "Unknown (n)": a value the user
+ * named (or renamed in Settings) gets that word; anything else stays as it is.
+ */
+export function relabel(text: string, words: Record<string, string> | undefined): string {
+  const n = valueOf(text)
+  const word = n === null ? undefined : words?.[String(n)]
+  return word ? withValue(word, n!) : text
+}
