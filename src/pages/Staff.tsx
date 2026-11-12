@@ -11,7 +11,7 @@ import { ratingColor } from '../data/staffInfo'
 import { TEAMS, type Team } from '../data/teams'
 import { useCurrentCareer } from '../lib/career'
 import { useConfig } from '../lib/config'
-import { byLastName, shortName } from '../lib/names'
+import { byLastName } from '../lib/names'
 import { valueOf, wordOf } from '../lib/valueWord'
 import { Tabs } from './competitionParts'
 
@@ -22,12 +22,13 @@ export function Staff() {
   const career = useCurrentCareer()
   const { data, isPending, error } = useStaff(career.id)
   const [team, setTeam] = useState<Team | 'all'>('all')
+  const [category, setCategory] = useState<StaffGroup | 'all'>('all')
   const all = data ?? []
   // Staff imported before migration 0007 have no team or job code
   const needsUpdate = all.length > 0 && all.every((s) => s.job_code === undefined)
   const { staffGroups } = useConfig()
   const list = all.filter((s) => team === 'all' || teamOfStaff(s) === team)
-  const groups = STAFF_GROUPS.map(
+  const groups = STAFF_GROUPS.filter(([g]) => category === 'all' || g === category).map(
     ([g, label]) =>
       [g, label, list.filter((s) => groupOf(s.role, staffGroups) === g)] as [
         StaffGroup,
@@ -74,6 +75,22 @@ export function Staff() {
                   Team,
                   string,
                 ],
+            ),
+          ]}
+        />
+      )}
+      {all.length > 0 && (
+        <Tabs
+          value={category}
+          onChange={setCategory}
+          options={[
+            ['all', 'All jobs'],
+            ...STAFF_GROUPS.map(
+              ([g, label]) =>
+                [
+                  g,
+                  `${label.replace(/ Staff$/, '')} (${list.filter((s) => groupOf(s.role, staffGroups) === g).length})`,
+                ] as [StaffGroup, string],
             ),
           ]}
         />
@@ -130,7 +147,7 @@ function StaffTable({
               <tr key={s.id} className="border-t border-border">
                 <td className="sticky left-0 z-[1] bg-surface px-3 py-2 whitespace-nowrap">
                   <Link to={`/staff/${s.id}`} className="font-medium hover:text-accent">
-                    {shortName(s)}
+                    {s.name}
                   </Link>
                   <span className="ml-1 hidden text-xs text-muted sm:inline">{s.nation}</span>
                 </td>

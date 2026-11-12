@@ -79,6 +79,11 @@ export function SettingsPage() {
               ['/settings/columns', 'Contract & Stats', 'Columns, order, names and tooltips'],
               ['/settings/roles', 'Roles', 'FM27 roles, positions, key and preferred attributes'],
               [
+                '/settings/instructions',
+                'Team instructions',
+                'Every instruction and the options you can pick in FM',
+              ],
+              [
                 '/settings/role-weights',
                 'Role weights',
                 'Importance tiers and factors for role scores',

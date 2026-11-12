@@ -23,6 +23,7 @@ import {
 import { DEFAULT_PERSONALITY_RULES, type PersonalityRule } from '../lib/personality'
 import { DEFAULT_FOOT_MINS, DEFAULT_FOOT_WORDS } from '../import/dump'
 import { DEFAULT_JOB_GROUPS, type StaffGroup } from './staffJobs'
+import { DEFAULT_INSTRUCTIONS, type InstructionDef } from '../tactics/instructionList'
 import { DEFAULT_STATUSES, normalizeStatus, type StatusInfo } from './statusInfo'
 
 export type Layout = Record<Role, AttributeSection[][]>
@@ -62,6 +63,8 @@ export interface AppConfig {
   footWords: string[]
   /** Lowest 1–20 value of each foot word (same order as footWords). */
   footMins: number[]
+  /** FM's team instructions and their options, by phase. */
+  teamInstructions: InstructionDef[]
 }
 
 export interface Learned {
@@ -108,6 +111,7 @@ export const DEFAULT_CONFIG: AppConfig = {
   personalityRules: DEFAULT_PERSONALITY_RULES,
   footWords: DEFAULT_FOOT_WORDS,
   footMins: DEFAULT_FOOT_MINS,
+  teamInstructions: DEFAULT_INSTRUCTIONS,
 }
 
 type Stored = Partial<{ [K in ConfigKey]: AppConfig[K] }>
@@ -146,6 +150,7 @@ export function mergeConfig(stored: Stored): AppConfig {
     personalityRules: stored.personalityRules ?? DEFAULT_CONFIG.personalityRules,
     footWords: stored.footWords ?? DEFAULT_CONFIG.footWords,
     footMins: stored.footMins ?? DEFAULT_CONFIG.footMins,
+    teamInstructions: stored.teamInstructions ?? DEFAULT_CONFIG.teamInstructions,
   }
 }
 

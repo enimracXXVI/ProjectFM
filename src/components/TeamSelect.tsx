@@ -2,9 +2,9 @@ import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { clsx } from 'clsx'
 import { setPlayerTeam } from '../data/api'
 import type { PlayerRow } from '../data/db'
-import { TEAMS, teamOf, type Team } from '../data/teams'
+import { TEAMS, teamOf, type Team, teamLabel } from '../data/teams'
 
-/** Picker for First team / U21 / U18; saves straight away. */
+/** Picker for First team / U20 / U18; saves straight away. */
 export function TeamSelect({ player, className }: { player: PlayerRow; className?: string }) {
   const qc = useQueryClient()
   const mutation = useMutation({
@@ -35,13 +35,13 @@ export function TeamSelect({ player, className }: { player: PlayerRow; className
   )
 }
 
-/** Small badge for U21 / U18 players (nothing for the first team). */
+/** Small badge for U20 / U18 players (nothing for the first team). */
 export function TeamBadge({ player }: { player: Pick<PlayerRow, 'extra'> }) {
   const t = teamOf(player)
   if (t === 'first') return null
   return (
     <span className="rounded bg-sky-500/15 px-1.5 py-0.5 text-[11px] font-semibold text-sky-300">
-      {t.toUpperCase()}
+      {teamLabel(t)}
     </span>
   )
 }

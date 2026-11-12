@@ -62,7 +62,7 @@ export function Dashboard() {
       <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
         <Stat label="Squad size" value={squad.length} />
         <Stat label="Average age" value={avgAge} />
-        <Stat label="U21 players" value={u21} />
+        <Stat label="U20 players" value={u21} />
         <Stat label="Injured" value={injured} />
       </div>
       {squad.length === 0 && (

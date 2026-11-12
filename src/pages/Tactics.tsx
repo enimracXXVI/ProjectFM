@@ -471,6 +471,7 @@ function InstructionsEditor({
   onChange: (patch: Partial<Instructions>) => void
 }) {
   const rows = (phase === 'ip' ? instructions.ip : instructions.oop) ?? []
+  const defs = useConfig().teamInstructions.filter((d) => d.phase === phase)
   const set = (next: [string, string][]) => onChange(phase === 'ip' ? { ip: next } : { oop: next })
   return (
     <section className="grid gap-2">
@@ -484,30 +485,60 @@ function InstructionsEditor({
         </p>
       )}
       <ul className="grid gap-1">
-        {rows.map(([label, value], i) => (
-          <li key={i} className="grid grid-cols-[1fr_1fr_auto] items-center gap-2">
-            <input
-              aria-label="Instruction"
-              value={label}
-              onChange={(e) => set(rows.map((r, j) => (j === i ? [e.target.value, r[1]] : r)))}
-              className="min-h-10 rounded-lg border border-border bg-surface-2 px-2 text-sm"
-            />
-            <input
-              aria-label={`${label} setting`}
-              value={value}
-              onChange={(e) => set(rows.map((r, j) => (j === i ? [r[0], e.target.value] : r)))}
-              className="min-h-10 rounded-lg border border-border bg-surface-2 px-2 text-sm font-semibold"
-            />
-            <button
-              type="button"
-              aria-label={`Remove ${label}`}
-              onClick={() => set(rows.filter((_, j) => j !== i))}
-              className="grid size-10 place-items-center rounded-lg text-muted hover:bg-surface-2 hover:text-red-400"
-            >
-              <Trash2 className="size-4" aria-hidden />
-            </button>
-          </li>
-        ))}
+        {rows.map(([label, value], i) => {
+          const def = defs.find((d) => d.name === label)
+          const options = def?.options ?? []
+          // Names already used by other rows are not offered again
+          const free = defs.filter((d) => d.name === label || !rows.some(([l]) => l === d.name))
+          return (
+            <li key={i} className="grid grid-cols-[1fr_1fr_auto] items-center gap-2">
+              <select
+                aria-label="Instruction"
+                value={label}
+                onChange={(e) => {
+                  const next = defs.find((d) => d.name === e.target.value)
+                  set(
+                    rows.map((r, j) =>
+                      j === i ? [e.target.value, next?.options.includes(r[1]) ? r[1] : ''] : r,
+                    ),
+                  )
+                }}
+                className="min-h-10 min-w-0 rounded-lg border border-border bg-surface-2 px-2 text-sm"
+              >
+                <option value="">Pick an instruction…</option>
+                {label && !def && <option value={label}>{label}</option>}
+                {free.map((d) => (
+                  <option key={d.name} value={d.name}>
+                    {d.name}
+                  </option>
+                ))}
+              </select>
+              <select
+                aria-label={`${label} setting`}
+                value={value}
+                disabled={!label}
+                onChange={(e) => set(rows.map((r, j) => (j === i ? [r[0], e.target.value] : r)))}
+                className="min-h-10 min-w-0 rounded-lg border border-border bg-surface-2 px-2 text-sm font-semibold disabled:opacity-50"
+              >
+                <option value="">Pick an option…</option>
+                {value && !options.includes(value) && <option value={value}>{value}</option>}
+                {options.map((o) => (
+                  <option key={o} value={o}>
+                    {o}
+                  </option>
+                ))}
+              </select>
+              <button
+                type="button"
+                aria-label={`Remove ${label}`}
+                onClick={() => set(rows.filter((_, j) => j !== i))}
+                className="grid size-10 place-items-center rounded-lg text-muted hover:bg-surface-2 hover:text-red-400"
+              >
+                <Trash2 className="size-4" aria-hidden />
+              </button>
+            </li>
+          )
+        })}
       </ul>
       <button
         type="button"

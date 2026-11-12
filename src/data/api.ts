@@ -485,7 +485,7 @@ export async function importDump(opts: {
   return { players, scoutsAdded, scoutsUpdated }
 }
 
-/** Moves a player between first team, U21 and U18 (kept in extra, untouched by imports). */
+/** Moves a player between first team, U20 and U18 (kept in extra, untouched by imports). */
 export async function setPlayerTeam(player: PlayerRow, team: Team): Promise<void> {
   const extra = { ...player.extra }
   if (team === 'first') delete extra.team

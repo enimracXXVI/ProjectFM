@@ -35,8 +35,6 @@ const PROFILE_COLS: {
   { key: 'left_foot', label: 'Left', get: (p) => p.left_foot },
   { key: 'right_foot', label: 'Right', get: (p) => p.right_foot },
   { key: 'personality', label: 'Personality', get: (p) => p.personality },
-  { key: 'ability', label: 'Ability', get: (p) => sortValue(p.extra.Ability) },
-  { key: 'potential', label: 'Potential', get: (p) => sortValue(p.extra.Potential) },
 ]
 
 const HIDDEN_COLS: typeof PROFILE_COLS = [
@@ -45,7 +43,7 @@ const HIDDEN_COLS: typeof PROFILE_COLS = [
 ]
 
 // Shown as stored text, sorted highest first
-const STAR_KEYS = new Set(['ability', 'potential', 'ca', 'pa'])
+const STAR_KEYS = new Set(['ca', 'pa'])
 
 const PROFILE_KEYS = new Set([...PROFILE_COLS, ...HIDDEN_COLS].map((c) => c.key))
 

@@ -100,8 +100,6 @@ export function PlayerDetail() {
           <Info label="Status" value={config.statuses[p.extra.status]?.label || p.extra.status} />
         )}
         {p.extra.selection && <Info label="Selection" value={p.extra.selection} />}
-        {p.extra.Ability && <Info label="Ability" value={`${p.extra.Ability} ★`} />}
-        {p.extra.Potential && <Info label="Potential" value={`${p.extra.Potential} ★`} />}
         {p.extra.Condition && <Info label="Condition" value={p.extra.Condition} />}
         {p.extra.Morale && <Info label="Morale" value={p.extra.Morale} />}
         {config.showHidden && p.extra.CA && <Info label="CA" value={p.extra.CA} />}

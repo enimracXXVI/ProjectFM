@@ -243,8 +243,6 @@ function buildRows(
   row('Right foot', textCells(players.map((p) => p.right_foot)))
   row('Personality', textCells(players.map((p) => p.personality)))
   for (const [label, key] of [
-    ['Ability', 'Ability'],
-    ['Potential', 'Potential'],
     ['Wage', 'Wage'],
     ['Transfer value', 'Transfer Value'],
     ['Contract expires', 'Expires'],
