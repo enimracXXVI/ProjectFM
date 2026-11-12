@@ -10,33 +10,111 @@ export interface StaffSection {
   attributes: string[]
 }
 
-export const STAFF_SECTIONS: StaffSection[] = [
-  {
-    label: 'Scouting Attributes',
-    attributes: ['Analysing Data'],
-  },
-  {
-    label: 'Mental Attributes',
-    attributes: ['Adaptability', 'Authority', 'Determination', 'Motivating', 'People Management'],
-  },
-  {
-    label: 'Knowledge',
-    attributes: [
-      'Judging Player Ability',
-      'Judging Player Potential',
-      'Judging Staff Ability',
-      'Negotiating',
-      'Tactical Knowledge',
+const MENTAL: StaffSection = {
+  label: 'Mental Attributes',
+  attributes: ['Adaptability', 'Authority', 'Determination', 'Motivating', 'People Management'],
+}
+const KNOWLEDGE: StaffSection = {
+  label: 'Knowledge',
+  attributes: [
+    'Judging Player Ability',
+    'Judging Player Potential',
+    'Judging Staff Ability',
+    'Negotiating',
+    'Tactical Knowledge',
+  ],
+}
+const COACHING: StaffSection = {
+  label: 'Coaching Attributes',
+  attributes: [
+    'Attacking',
+    'Defending',
+    'Fitness',
+    'Goalkeeping',
+    'Possession',
+    'Set Pieces',
+    'Tactical',
+    'Technical',
+    'Working With Youngsters',
+  ],
+}
+
+export type StaffTab = 'managerial' | 'coaching' | 'scouting' | 'medical'
+
+/** FM27's four staff tabs: each has its own attributes, plus Mental and Knowledge. */
+export const STAFF_TABS: [StaffTab, string, StaffSection[]][] = [
+  ['managerial', 'Managerial', [COACHING, MENTAL, KNOWLEDGE]],
+  ['coaching', 'Coaching', [COACHING, MENTAL, KNOWLEDGE]],
+  [
+    'scouting',
+    'Scouting',
+    [{ label: 'Scouting Attributes', attributes: ['Analysing Data'] }, MENTAL, KNOWLEDGE],
+  ],
+  [
+    'medical',
+    'Medical',
+    [
+      { label: 'Medical Attributes', attributes: ['Physiotherapy', 'Sports Science'] },
+      MENTAL,
+      KNOWLEDGE,
     ],
-  },
+  ],
 ]
 
+/** The scouting tab's sections (used where only scouts are shown). */
+export const STAFF_SECTIONS: StaffSection[] = STAFF_TABS[2][2]
+
+/** FM's "Key Attributes" for a job, as highlighted on the user's FM staff screens. */
+export const KEY_ATTRIBUTES_BY_JOB: Record<string, string[]> = {
+  Manager: [
+    'Motivating',
+    'People Management',
+    'Judging Player Ability',
+    'Judging Player Potential',
+    'Tactical Knowledge',
+  ],
+  Coach: [
+    'Attacking',
+    'Defending',
+    'Fitness',
+    'Tactical',
+    'Technical',
+    'Authority',
+    'Determination',
+    'Motivating',
+  ],
+  'Director of Football': ['Judging Player Ability', 'Judging Player Potential', 'Negotiating'],
+  Scout: ['Adaptability', 'Judging Player Ability', 'Judging Player Potential'],
+  Physio: ['Physiotherapy'],
+}
+
 /** Highlighted as Key Attributes for a scout in FM. */
-export const SCOUT_KEY_ATTRIBUTES = [
-  'Adaptability',
-  'Judging Player Ability',
-  'Judging Player Potential',
-]
+export const SCOUT_KEY_ATTRIBUTES = KEY_ATTRIBUTES_BY_JOB.Scout
+
+/** The tab FM opens for a job. */
+export function tabForJob(job: string | null): StaffTab {
+  if (job === 'Manager' || job === 'Assistant Manager') return 'managerial'
+  const coaching = [
+    'Head of Youth Development',
+    'Coach',
+    'Goalkeeping Coach',
+    'Fitness Coach',
+    'Set Piece Coach',
+    'Head Performance Analyst',
+    'Performance Analyst',
+  ]
+  if (job && coaching.includes(job)) return 'coaching'
+  const medical = [
+    'Head Physio',
+    'Chief Doctor',
+    'Head of Sports Science',
+    'Physio',
+    'Doctor',
+    'Sports Scientist',
+  ]
+  if (job && medical.includes(job)) return 'medical'
+  return 'scouting'
+}
 
 /** Rating words, worst to best, as FM27 shows staff attributes. */
 export const DEFAULT_STAFF_SCALE = [

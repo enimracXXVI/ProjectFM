@@ -9,12 +9,14 @@ import { PageHeader, Placeholder } from '../components/ui'
 import { deleteStaff, saveStaff, type StaffInput } from '../data/api'
 import type { StaffRow } from '../data/db'
 import { useStaff } from '../data/hooks'
+import { JOB_TITLES, STAFF_GROUPS } from '../data/staffJobs'
 import {
   KNOWN_REPUTATIONS,
-  SCOUT_KEY_ATTRIBUTES,
-  STAFF_ROLES,
+  KEY_ATTRIBUTES_BY_JOB,
+  STAFF_TABS,
+  tabForJob,
+  type StaffTab,
   STAFF_SCALE_RANGES,
-  STAFF_SECTIONS,
   ratingColor,
 } from '../data/staffInfo'
 import { useCurrentCareer } from '../lib/career'
@@ -66,6 +68,9 @@ function StaffForm({ existing }: { existing: StaffRow | null }) {
         }
       : empty,
   )
+  const [tab, setTab] = useState<StaffTab>(() => tabForJob(existing?.role ?? null))
+  const sections = STAFF_TABS.find(([t]) => t === tab)![2]
+  const keyAttrs = KEY_ATTRIBUTES_BY_JOB[form.role ?? ''] ?? []
   const countries = useMemo(
     () => [...new Set(config.regions.flatMap((r) => r.countries))].sort(),
     [config.regions],
@@ -123,14 +128,24 @@ function StaffForm({ existing }: { existing: StaffRow | null }) {
           onChange={(e) => set('name', e.target.value)}
         />
         <label className="grid gap-1 text-sm">
-          <span className="text-muted">Role</span>
+          <span className="text-muted">Job</span>
           <select
             value={form.role ?? ''}
-            onChange={(e) => set('role', e.target.value || null)}
+            onChange={(e) => {
+              set('role', e.target.value || null)
+              setTab(tabForJob(e.target.value || null))
+            }}
             className={input}
           >
-            {STAFF_ROLES.map((r) => (
-              <option key={r}>{r}</option>
+            {form.role && !JOB_TITLES.some(([t]) => t === form.role) && (
+              <option>{form.role}</option>
+            )}
+            {STAFF_GROUPS.map(([g, label]) => (
+              <optgroup key={g} label={label}>
+                {JOB_TITLES.filter(([, jg]) => jg === g).map(([t]) => (
+                  <option key={t}>{t}</option>
+                ))}
+              </optgroup>
             ))}
           </select>
         </label>
@@ -170,15 +185,34 @@ function StaffForm({ existing }: { existing: StaffRow | null }) {
         ))}
       </datalist>
 
-      <div className="mt-6 grid gap-x-5 gap-y-4 md:grid-cols-2 xl:grid-cols-3">
-        {STAFF_SECTIONS.map((section) => (
+      <div className="mt-6 mb-3 flex flex-wrap gap-1" role="tablist">
+        {STAFF_TABS.map(([t, label]) => (
+          <button
+            key={t}
+            type="button"
+            role="tab"
+            aria-selected={tab === t}
+            onClick={() => setTab(t)}
+            className={clsx(
+              'min-h-10 rounded-lg border px-4 text-sm',
+              tab === t
+                ? 'border-accent bg-accent/15 font-semibold text-accent'
+                : 'border-border hover:bg-surface-2',
+            )}
+          >
+            {label}
+          </button>
+        ))}
+      </div>
+      <div className="grid gap-x-5 gap-y-4 md:grid-cols-2 xl:grid-cols-3">
+        {sections.map((section) => (
           <section key={section.label}>
             <h2 className="mb-1 border-b border-border pb-1 text-xs font-semibold text-muted">
               {section.label}
             </h2>
             <ul className="text-sm">
               {section.attributes.map((a) => {
-                const key = SCOUT_KEY_ATTRIBUTES.includes(a)
+                const key = keyAttrs.includes(a)
                 return (
                   <li
                     key={a}
@@ -193,7 +227,7 @@ function StaffForm({ existing }: { existing: StaffRow | null }) {
                       value={form.attributes[a] ?? ''}
                       onChange={(e) => setAttr(a, e.target.value)}
                       className={clsx(
-                        'min-h-9 w-36 rounded-lg border border-border bg-surface-2 px-2 text-right text-sm font-semibold',
+                        'min-h-9 w-44 shrink-0 rounded-lg border border-border bg-surface-2 px-2 text-right text-sm font-semibold',
                         ratingColor(form.attributes[a], config.staffScale),
                       )}
                     >
@@ -214,7 +248,8 @@ function StaffForm({ existing }: { existing: StaffRow | null }) {
           </section>
         ))}
 
-        <section>
+        {/* FM shows scouting knowledge on the Scouting tab */}
+        <section hidden={tab !== 'scouting' && form.knowledge.length === 0}>
           <h2 className="mb-1 border-b border-border pb-1 text-xs font-semibold text-muted">
             Scouting Knowledge
           </h2>
