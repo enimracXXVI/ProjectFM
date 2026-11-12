@@ -3,6 +3,7 @@ import { ChevronDown, ChevronUp } from 'lucide-react'
 import { useState } from 'react'
 import { sections } from '../../components/nav'
 import { SettingsShell } from '../../components/SettingsShell'
+import { SettingsSection } from '../../components/SettingsSection'
 import { useConfig } from '../../lib/config'
 import { useSaveConfig } from '../../lib/useSaveConfig'
 
@@ -59,10 +60,15 @@ export function BottomBarSettings() {
       </div>
 
       <div className="grid max-w-md gap-5">
-        <section>
-          <h2 className="mb-2 text-sm font-semibold">
-            In the bar ({bar.length}/{MAX}), left to right
-          </h2>
+        <SettingsSection
+          id="bottom-bar/in-the-bar-left-to-right"
+          title={
+            <>
+              In the bar ({bar.length}/{MAX}), left to right
+            </>
+          }
+          variant="plain"
+        >
           <ul className="grid gap-1">
             {bar.map((to, i) => {
               const { icon: Icon, label } = item(to)
@@ -95,9 +101,8 @@ export function BottomBarSettings() {
               )
             })}
           </ul>
-        </section>
-        <section>
-          <h2 className="mb-2 text-sm font-semibold">All sections</h2>
+        </SettingsSection>
+        <SettingsSection id="bottom-bar/all-sections" title="All sections" variant="plain">
           <ul className="grid gap-1">
             {sections.map(({ to, label, icon: Icon }) => {
               const on = bar.includes(to)
@@ -124,7 +129,7 @@ export function BottomBarSettings() {
               )
             })}
           </ul>
-        </section>
+        </SettingsSection>
       </div>
     </SettingsShell>
   )

@@ -1,5 +1,7 @@
 import { useMemo, useState } from 'react'
 import { SettingsShell } from '../../components/SettingsShell'
+import { SettingsSection } from '../../components/SettingsSection'
+import { ATTRIBUTE_GROUPS } from '../../import/fields'
 import type { AttributeInfo } from '../../data/attributeInfo'
 import { DEFAULT_CONFIG } from '../../data/config'
 import { useConfig } from '../../lib/config'
@@ -33,6 +35,16 @@ export function AttributesSettings() {
     })
   }, [filter, values])
 
+  // FM's profile groups; anything else (e.g. hidden attributes) under Other
+  const grouped = new Set(Object.values(ATTRIBUTE_GROUPS).flat() as string[])
+  const groups: [string, string[]][] = [
+    ...Object.entries(ATTRIBUTE_GROUPS).map(
+      ([g, list]) =>
+        [g, (list as readonly string[]).filter((n) => names.includes(n))] as [string, string[]],
+    ),
+    ['Other', names.filter((n) => !grouped.has(n))],
+  ]
+
   const dirty = JSON.stringify(values) !== JSON.stringify(attributes)
   const update = (name: string, patch: Partial<AttributeInfo>) =>
     setValues({ ...values, [name]: { ...values[name], ...patch } })
@@ -56,41 +68,56 @@ export function AttributesSettings() {
         onChange={(e) => setFilter(e.target.value)}
         className={`${input} mb-3 bg-surface md:max-w-xs`}
       />
-      <ul className="grid gap-2">
-        {names.map((n) => (
-          <li
-            key={n}
-            className="grid gap-2 rounded-xl border border-border bg-surface p-3 sm:grid-cols-[12rem_6rem_1fr]"
-          >
-            <label className="grid gap-1 text-xs text-muted">
-              Name
-              <input
-                value={values[n]?.label ?? ''}
-                placeholder={n}
-                onChange={(e) => update(n, { label: e.target.value })}
-                className={input}
-              />
-            </label>
-            <label className="grid gap-1 text-xs text-muted">
-              Short
-              <input
-                value={values[n]?.abbr ?? ''}
-                onChange={(e) => update(n, { abbr: e.target.value })}
-                className={input}
-              />
-            </label>
-            <label className="grid gap-1 text-xs text-muted">
-              Description
-              <textarea
-                rows={2}
-                value={values[n]?.description ?? ''}
-                onChange={(e) => update(n, { description: e.target.value })}
-                className={`${input} py-2`}
-              />
-            </label>
-          </li>
-        ))}
-      </ul>
+      <div className="grid gap-3">
+        {groups.map(([group, list]) =>
+          list.length ? (
+            <SettingsSection
+              key={group}
+              id={`attributes/${group}`}
+              title={group}
+              aside={list.length}
+              forceOpen={!!filter}
+              defaultOpen={false}
+            >
+              <ul className="grid gap-2">
+                {list.map((n) => (
+                  <li
+                    key={n}
+                    className="grid gap-2 rounded-xl border border-border bg-surface p-3 sm:grid-cols-[12rem_6rem_1fr]"
+                  >
+                    <label className="grid gap-1 text-xs text-muted">
+                      Name
+                      <input
+                        value={values[n]?.label ?? ''}
+                        placeholder={n}
+                        onChange={(e) => update(n, { label: e.target.value })}
+                        className={input}
+                      />
+                    </label>
+                    <label className="grid gap-1 text-xs text-muted">
+                      Short
+                      <input
+                        value={values[n]?.abbr ?? ''}
+                        onChange={(e) => update(n, { abbr: e.target.value })}
+                        className={input}
+                      />
+                    </label>
+                    <label className="grid gap-1 text-xs text-muted">
+                      Description
+                      <textarea
+                        rows={2}
+                        value={values[n]?.description ?? ''}
+                        onChange={(e) => update(n, { description: e.target.value })}
+                        className={`${input} py-2`}
+                      />
+                    </label>
+                  </li>
+                ))}
+              </ul>
+            </SettingsSection>
+          ) : null,
+        )}
+      </div>
     </SettingsShell>
   )
 }

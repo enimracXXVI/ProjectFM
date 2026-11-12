@@ -2,6 +2,7 @@ import { clsx } from 'clsx'
 import { ChevronDown, ChevronUp, EyeOff, Plus } from 'lucide-react'
 import { useMemo, useState } from 'react'
 import { SettingsShell } from '../../components/SettingsShell'
+import { SettingsSection } from '../../components/SettingsSection'
 import {
   DEFAULT_VIEWS,
   RESERVED_EXTRA_KEYS,
@@ -167,8 +168,12 @@ export function ColumnsSettings() {
         ))}
       </ul>
 
-      <section className="mt-6 rounded-xl border border-dashed border-border p-3">
-        <h2 className="mb-2 text-sm font-semibold">Not shown ({available.length})</h2>
+      <SettingsSection
+        id="columns/not-shown"
+        title={<>Not shown ({available.length})</>}
+        variant="dashed"
+        className="mt-6"
+      >
         {available.length > 0 ? (
           <div className="flex flex-wrap gap-2">
             {available.map((k) => (
@@ -209,7 +214,7 @@ export function ColumnsSettings() {
             Add
           </button>
         </form>
-      </section>
+      </SettingsSection>
     </SettingsShell>
   )
 }

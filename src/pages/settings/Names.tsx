@@ -2,6 +2,7 @@ import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { Plus, Trash2 } from 'lucide-react'
 import { useState, type ReactNode } from 'react'
 import { SettingsShell } from '../../components/SettingsShell'
+import { SettingsSection } from '../../components/SettingsSection'
 import type { CompetitionKind } from '../../competitions/types'
 import { teachJob } from '../../data/api'
 import { DEFAULT_CONFIG, saveConfig } from '../../data/config'
@@ -277,8 +278,7 @@ function Block({
   children: ReactNode
 }) {
   return (
-    <section className="rounded-xl border border-border bg-surface p-3">
-      <h2 className="mb-2 font-semibold">{title}</h2>
+    <SettingsSection id={`names/${title}`} title={title}>
       <ul className="grid gap-1">{children}</ul>
       <button
         type="button"
@@ -287,7 +287,7 @@ function Block({
       >
         <Plus className="size-4" aria-hidden /> Add
       </button>
-    </section>
+    </SettingsSection>
   )
 }
 

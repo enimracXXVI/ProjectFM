@@ -2,6 +2,7 @@ import { clsx } from 'clsx'
 import { ChevronDown, ChevronUp, Plus, Trash2, X } from 'lucide-react'
 import { useState } from 'react'
 import { SettingsShell } from '../../components/SettingsShell'
+import { SettingsSection } from '../../components/SettingsSection'
 import { JOB_TITLES, STAFF_GROUPS, groupOf, type StaffGroup } from '../../data/staffJobs'
 import {
   ATTRIBUTE_GROUPS,
@@ -64,8 +65,11 @@ export function StaffAttributesSettings() {
         groups.reset.mutate()
       }}
     >
-      <section className="mb-6 rounded-xl border border-border bg-surface p-3">
-        <h2 className="font-semibold">Staff categories</h2>
+      <SettingsSection
+        id="staff-attributes/staff-categories"
+        title="Staff categories"
+        className="mb-6"
+      >
         <p className="mb-2 text-xs text-muted">
           Where each job is listed on the Staff page and in job pickers.
         </p>
@@ -93,11 +97,10 @@ export function StaffAttributesSettings() {
             </li>
           ))}
         </ul>
-      </section>
+      </SettingsSection>
 
       <div className="grid gap-6 lg:grid-cols-2">
-        <section className="rounded-xl border border-border bg-surface p-3">
-          <h2 className="font-semibold">Tabs</h2>
+        <SettingsSection id="staff-attributes/tabs" title="Tabs">
           <div className="my-2 flex flex-wrap gap-1" role="tablist">
             {STAFF_TABS.map(([t, label]) => (
               <button
@@ -232,10 +235,9 @@ export function StaffAttributesSettings() {
           >
             <Plus className="size-4" aria-hidden /> Add section
           </button>
-        </section>
+        </SettingsSection>
 
-        <section className="rounded-xl border border-border bg-surface p-3">
-          <h2 className="font-semibold">Key Attributes by job</h2>
+        <SettingsSection id="staff-attributes/key-attributes-by-job" title="Key Attributes by job">
           <p className="mb-2 text-xs text-muted">
             Marked with a green bar on the staff profile, as FM does.
           </p>
@@ -292,7 +294,7 @@ export function StaffAttributesSettings() {
               </ul>
             </div>
           ))}
-        </section>
+        </SettingsSection>
       </div>
     </SettingsShell>
   )

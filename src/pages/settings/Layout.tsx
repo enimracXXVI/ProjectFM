@@ -11,6 +11,7 @@ import {
 } from 'lucide-react'
 import { useState } from 'react'
 import { SettingsShell } from '../../components/SettingsShell'
+import { SettingsSection } from '../../components/SettingsSection'
 import type { Role } from '../../data/attributeInfo'
 import { DEFAULT_CONFIG, attributeLabel, type Layout } from '../../data/config'
 import { useConfig } from '../../lib/config'
@@ -245,8 +246,12 @@ export function LayoutSettings() {
         ))}
       </div>
 
-      <section className="mt-6 rounded-xl border border-dashed border-border p-3">
-        <h2 className="mb-2 text-sm font-semibold">Hidden ({hidden.length})</h2>
+      <SettingsSection
+        id="layout/hidden"
+        title={<>Hidden ({hidden.length})</>}
+        variant="dashed"
+        className="mt-6"
+      >
         {hidden.length === 0 ? (
           <p className="text-xs text-muted">Every attribute is shown.</p>
         ) : (
@@ -271,7 +276,7 @@ export function LayoutSettings() {
             ))}
           </ul>
         )}
-      </section>
+      </SettingsSection>
     </SettingsShell>
   )
 }

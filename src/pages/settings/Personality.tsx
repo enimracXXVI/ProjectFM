@@ -1,6 +1,7 @@
-import { Plus, Trash2 } from 'lucide-react'
+import { ChevronDown, Plus, Trash2 } from 'lucide-react'
 import { useState } from 'react'
 import { SettingsShell } from '../../components/SettingsShell'
+import { SettingsSection } from '../../components/SettingsSection'
 import { scaleRanges } from '../../data/staffInfo'
 import { useConfig } from '../../lib/config'
 import { PERSONALITY_COLUMNS, type PersonalityRule } from '../../lib/personality'
@@ -22,6 +23,17 @@ const COLUMN_LABELS: Record<(typeof PERSONALITY_COLUMNS)[number], string> = {
   sportsmanship: 'Sportsmanship',
   determination: 'Determination',
   leadership: 'Leadership',
+}
+
+const SHORT: Record<(typeof PERSONALITY_COLUMNS)[number], string> = {
+  professionalism: 'Pro',
+  pressure: 'Pre',
+  ambition: 'Amb',
+  temperament: 'Tem',
+  loyalty: 'Loy',
+  sportsmanship: 'Spo',
+  determination: 'Det',
+  leadership: 'Ldr',
 }
 
 type Mode = 'allExcept' | 'only'
@@ -73,6 +85,7 @@ export function PersonalitySettings() {
     rules: config.personalityRules.map(toForm),
   }
   const [form, setForm] = useState(stored)
+  const [openRule, setOpenRule] = useState<number | null>(null)
   const [prev, setPrev] = useState(JSON.stringify(stored))
   if (prev !== JSON.stringify(stored)) {
     setPrev(JSON.stringify(stored))
@@ -99,8 +112,11 @@ export function PersonalitySettings() {
       }}
       onReset={() => all.forEach((m) => m.reset.mutate())}
     >
-      <section className="mb-6 rounded-xl border border-border bg-surface p-3">
-        <h2 className="font-semibold">Foot strength (1–20)</h2>
+      <SettingsSection
+        id="personality/foot-strength-1-20"
+        title="Foot strength (1–20)"
+        className="mb-6"
+      >
         <p className="mb-2 text-xs text-muted">
           Weakest at the top. Each word starts at the value on its right.
         </p>
@@ -156,10 +172,9 @@ export function PersonalitySettings() {
         >
           <Plus className="size-4" aria-hidden /> Add
         </button>
-      </section>
+      </SettingsSection>
 
-      <section className="rounded-xl border border-border bg-surface p-3">
-        <h2 className="font-semibold">Personalities</h2>
+      <SettingsSection id="personality/personalities" title="Personalities">
         <p className="mb-3 text-xs text-muted">
           The values (1–20) each personality needs: "15-20" for a range, one number for an exact
           value, blank for any. When a player fits more than one, the one that beats the most of the
@@ -168,67 +183,95 @@ export function PersonalitySettings() {
         </p>
         <ul className="grid gap-3">
           {form.rules.map((r, i) => (
-            <li key={i} className="rounded-lg border border-border p-2">
-              <div className="mb-2 flex items-center gap-1">
-                <input
-                  aria-label={`Personality ${i + 1}`}
-                  value={r.name}
-                  onChange={(e) => setRule(i, { name: e.target.value })}
-                  className={`${input} font-semibold`}
+            <li key={i} className="rounded-lg border border-border">
+              <button
+                type="button"
+                aria-expanded={openRule === i}
+                onClick={() => setOpenRule(openRule === i ? null : i)}
+                className="flex min-h-11 w-full items-center gap-2 px-2 text-left"
+              >
+                <ChevronDown
+                  className={`size-4 shrink-0 text-muted transition-transform ${openRule === i ? '' : '-rotate-90'}`}
+                  aria-hidden
                 />
-                <button
-                  type="button"
-                  className={iconBtn}
-                  aria-label={`Remove ${r.name}`}
-                  onClick={() => setForm({ ...form, rules: form.rules.filter((_, j) => j !== i) })}
-                >
-                  <Trash2 className="size-4" aria-hidden />
-                </button>
-              </div>
-              <div className="grid grid-cols-4 gap-1 lg:grid-cols-8">
-                {PERSONALITY_COLUMNS.map((c, k) => (
-                  <label key={c} className="grid gap-0.5 text-[11px] text-muted">
-                    <span className="truncate">{COLUMN_LABELS[c]}</span>
+                <span className="min-w-0 flex-1 truncate text-sm font-semibold">
+                  {r.name || 'New personality'}
+                </span>
+                <span className="hidden truncate text-xs text-muted sm:block">
+                  {PERSONALITY_COLUMNS.map((c, k) =>
+                    r.ranges[k] ? `${SHORT[c]} ${r.ranges[k]}` : '',
+                  )
+                    .filter(Boolean)
+                    .join(' · ')}
+                </span>
+              </button>
+              {openRule === i && (
+                <div className="border-t border-border p-2">
+                  <div className="mb-2 flex items-center gap-1">
                     <input
-                      aria-label={`${r.name} ${COLUMN_LABELS[c]}`}
-                      value={r.ranges[k] ?? ''}
-                      placeholder="any"
-                      onChange={(e) =>
-                        setRule(i, {
-                          ranges: PERSONALITY_COLUMNS.map((_, n) =>
-                            n === k ? e.target.value : (r.ranges[n] ?? ''),
-                          ),
-                        })
-                      }
-                      className={small}
+                      aria-label={`Personality ${i + 1}`}
+                      value={r.name}
+                      onChange={(e) => setRule(i, { name: e.target.value })}
+                      className={`${input} font-semibold`}
                     />
-                  </label>
-                ))}
-              </div>
-              <div className="mt-2 flex flex-wrap items-center gap-1 text-sm">
-                <select
-                  aria-label={`${r.name} overlap rule`}
-                  value={r.mode}
-                  onChange={(e) => setRule(i, { mode: e.target.value as Mode })}
-                  className={`${input} sm:w-56`}
-                >
-                  <option value="allExcept">Beats all except</option>
-                  <option value="only">Beats only</option>
-                </select>
-                <input
-                  aria-label={`${r.name} overlap names`}
-                  value={r.list}
-                  placeholder={r.mode === 'allExcept' ? 'none (beats every other)' : 'none'}
-                  onChange={(e) => setRule(i, { list: e.target.value })}
-                  className={`${input} min-w-0 flex-1`}
-                />
-              </div>
+                    <button
+                      type="button"
+                      className={iconBtn}
+                      aria-label={`Remove ${r.name}`}
+                      onClick={() =>
+                        setForm({ ...form, rules: form.rules.filter((_, j) => j !== i) })
+                      }
+                    >
+                      <Trash2 className="size-4" aria-hidden />
+                    </button>
+                  </div>
+                  <div className="grid grid-cols-4 gap-1 lg:grid-cols-8">
+                    {PERSONALITY_COLUMNS.map((c, k) => (
+                      <label key={c} className="grid gap-0.5 text-[11px] text-muted">
+                        <span className="truncate">{COLUMN_LABELS[c]}</span>
+                        <input
+                          aria-label={`${r.name} ${COLUMN_LABELS[c]}`}
+                          value={r.ranges[k] ?? ''}
+                          placeholder="any"
+                          onChange={(e) =>
+                            setRule(i, {
+                              ranges: PERSONALITY_COLUMNS.map((_, n) =>
+                                n === k ? e.target.value : (r.ranges[n] ?? ''),
+                              ),
+                            })
+                          }
+                          className={small}
+                        />
+                      </label>
+                    ))}
+                  </div>
+                  <div className="mt-2 flex flex-wrap items-center gap-1 text-sm">
+                    <select
+                      aria-label={`${r.name} overlap rule`}
+                      value={r.mode}
+                      onChange={(e) => setRule(i, { mode: e.target.value as Mode })}
+                      className={`${input} sm:w-56`}
+                    >
+                      <option value="allExcept">Beats all except</option>
+                      <option value="only">Beats only</option>
+                    </select>
+                    <input
+                      aria-label={`${r.name} overlap names`}
+                      value={r.list}
+                      placeholder={r.mode === 'allExcept' ? 'none (beats every other)' : 'none'}
+                      onChange={(e) => setRule(i, { list: e.target.value })}
+                      className={`${input} min-w-0 flex-1`}
+                    />
+                  </div>
+                </div>
+              )}
             </li>
           ))}
         </ul>
         <button
           type="button"
-          onClick={() =>
+          onClick={() => {
+            setOpenRule(form.rules.length)
             setForm({
               ...form,
               rules: [
@@ -236,12 +279,12 @@ export function PersonalitySettings() {
                 { name: '', ranges: PERSONALITY_COLUMNS.map(() => ''), mode: 'only', list: '' },
               ],
             })
-          }
+          }}
           className="mt-2 inline-flex min-h-11 items-center gap-1 text-sm font-semibold text-accent"
         >
           <Plus className="size-4" aria-hidden /> Add personality
         </button>
-      </section>
+      </SettingsSection>
     </SettingsShell>
   )
 }

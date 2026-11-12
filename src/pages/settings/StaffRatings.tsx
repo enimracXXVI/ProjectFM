@@ -1,6 +1,7 @@
 import { ChevronDown, ChevronUp, Plus, Trash2 } from 'lucide-react'
 import { useState } from 'react'
 import { SettingsShell } from '../../components/SettingsShell'
+import { SettingsSection } from '../../components/SettingsSection'
 import { saveConfig } from '../../data/config'
 import { ratingColor, scaleRanges } from '../../data/staffInfo'
 import { KNOWLEDGE_WORDS } from '../../import/save'
@@ -73,8 +74,7 @@ export function StaffRatingsSettings() {
       }}
     >
       <div className="grid gap-6 lg:grid-cols-2">
-        <section className="rounded-xl border border-border bg-surface p-3">
-          <h2 className="font-semibold">Attribute ratings (1–20)</h2>
+        <SettingsSection id="staff-ratings/attribute-ratings-1-20" title="Attribute ratings (1–20)">
           <p className="mb-2 text-xs text-muted">
             Worst at the top. Each word starts at the value on its right; colours follow this order.
           </p>
@@ -126,10 +126,9 @@ export function StaffRatingsSettings() {
           >
             <Plus className="size-4" aria-hidden /> Add
           </button>
-        </section>
+        </SettingsSection>
 
-        <section className="rounded-xl border border-border bg-surface p-3">
-          <h2 className="font-semibold">Scouting knowledge</h2>
+        <SettingsSection id="staff-ratings/scouting-knowledge" title="Scouting knowledge">
           <p className="mb-2 text-xs text-muted">Levels, lowest at the top.</p>
           <ul className="grid gap-1">
             {form.know.map((w, i) => (
@@ -242,7 +241,7 @@ export function StaffRatingsSettings() {
           >
             <Plus className="size-4" aria-hidden /> Add value
           </button>
-        </section>
+        </SettingsSection>
       </div>
     </SettingsShell>
   )

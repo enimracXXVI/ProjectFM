@@ -2,6 +2,7 @@ import { clsx } from 'clsx'
 import { Plus, Trash2 } from 'lucide-react'
 import { useState } from 'react'
 import { SettingsShell } from '../../components/SettingsShell'
+import { SettingsSection } from '../../components/SettingsSection'
 import { attributeLabel } from '../../data/config'
 import { ATTRIBUTE_GROUPS } from '../../import/fields'
 import { useConfig } from '../../lib/config'
@@ -69,8 +70,7 @@ export function RoleWeightsSettings() {
       onSave={() => save.mutate(w)}
       onReset={() => reset.mutate()}
     >
-      <section className="mb-6 rounded-xl border border-border bg-surface p-3">
-        <h2 className="font-semibold">Role factors</h2>
+      <SettingsSection id="role-weights/role-factors" title="Role factors" className="mb-6">
         <p className="mb-2 text-xs text-muted">
           Multiply an attribute's weight when it is key, preferred, or neither for the role.
         </p>
@@ -96,7 +96,7 @@ export function RoleWeightsSettings() {
             </label>
           ))}
         </div>
-      </section>
+      </SettingsSection>
 
       <div className="mb-3 flex w-fit rounded-lg border border-border p-0.5" role="group">
         {(
@@ -120,8 +120,7 @@ export function RoleWeightsSettings() {
         ))}
       </div>
 
-      <section className="mb-6 rounded-xl border border-border bg-surface p-3">
-        <h2 className="mb-2 font-semibold">Importance tiers</h2>
+      <SettingsSection id="role-weights/importance-tiers" title="Importance tiers" className="mb-6">
         <ul className="grid gap-2">
           {tiers.map((t, i) => (
             <li key={i} className="flex items-end gap-2">
@@ -168,10 +167,9 @@ export function RoleWeightsSettings() {
         >
           <Plus className="size-4" aria-hidden /> Add tier
         </button>
-      </section>
+      </SettingsSection>
 
-      <section>
-        <h2 className="mb-2 font-semibold">Attributes</h2>
+      <SettingsSection id="role-weights/attributes" title="Attributes" variant="plain">
         <ul className="grid gap-x-6 gap-y-1 sm:grid-cols-2 lg:grid-cols-3">
           {ATTRS[kind].map((a) => {
             const i = tierIndex(a)
@@ -195,7 +193,7 @@ export function RoleWeightsSettings() {
             )
           })}
         </ul>
-      </section>
+      </SettingsSection>
     </SettingsShell>
   )
 }
