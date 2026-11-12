@@ -2,12 +2,17 @@ import { clsx } from 'clsx'
 import { ChevronDown, ChevronUp, Plus, Trash2, X } from 'lucide-react'
 import { useState } from 'react'
 import { SettingsShell } from '../../components/SettingsShell'
-import { JOB_TITLES, STAFF_ATTRS, STAFF_GROUPS } from '../../data/staffJobs'
-import { STAFF_TABS, type StaffSection, type StaffTab } from '../../data/staffInfo'
+import { JOB_TITLES, STAFF_GROUPS, groupOf, type StaffGroup } from '../../data/staffJobs'
+import {
+  ATTRIBUTE_GROUPS,
+  STAFF_TABS,
+  type StaffSection,
+  type StaffTab,
+} from '../../data/staffInfo'
 import { useConfig } from '../../lib/config'
 import { useSaveConfig } from '../../lib/useSaveConfig'
 
-const ALL_ATTRS = STAFF_ATTRS.map(([, label]) => label)
+const ALL_ATTRS = ATTRIBUTE_GROUPS.flatMap((g) => g.attributes)
 const field = 'min-h-11 rounded-lg border border-border bg-surface-2 px-3 text-base md:text-sm'
 const iconBtn =
   'grid size-9 shrink-0 place-items-center rounded-lg text-muted hover:bg-surface-2 hover:text-text disabled:opacity-30'
@@ -17,7 +22,8 @@ export function StaffAttributesSettings() {
   const config = useConfig()
   const tabs = useSaveConfig('staffTabs')
   const keys = useSaveConfig('staffKeyAttrs')
-  const stored = { tabs: config.staffTabs, keys: config.staffKeyAttrs }
+  const groups = useSaveConfig('staffGroups')
+  const stored = { tabs: config.staffTabs, keys: config.staffKeyAttrs, groups: config.staffGroups }
   const [form, setForm] = useState(stored)
   const [prev, setPrev] = useState(JSON.stringify(stored))
   if (prev !== JSON.stringify(stored)) {
@@ -36,20 +42,59 @@ export function StaffAttributesSettings() {
   return (
     <SettingsShell
       title="Staff attributes"
-      subtitle="How FM's staff profile groups attributes on each tab, and the Key Attributes FM highlights for each job."
+      subtitle="Staff categories, how FM's staff profile groups attributes on each tab, and the Key Attributes FM highlights for each job."
       dirty={JSON.stringify(form) !== prev}
-      saving={tabs.save.isPending || keys.save.isPending}
-      saved={tabs.save.isSuccess || keys.save.isSuccess}
-      error={tabs.save.error ?? keys.save.error ?? tabs.reset.error ?? keys.reset.error}
+      saving={[tabs, keys, groups].some((m) => m.save.isPending || m.reset.isPending)}
+      saved={[tabs, keys, groups].some((m) => m.save.isSuccess)}
+      error={
+        tabs.save.error ??
+        keys.save.error ??
+        groups.save.error ??
+        tabs.reset.error ??
+        keys.reset.error
+      }
       onSave={() => {
         tabs.save.mutate(form.tabs)
         keys.save.mutate(form.keys)
+        groups.save.mutate(form.groups)
       }}
       onReset={() => {
         tabs.reset.mutate()
         keys.reset.mutate()
+        groups.reset.mutate()
       }}
     >
+      <section className="mb-6 rounded-xl border border-border bg-surface p-3">
+        <h2 className="font-semibold">Staff categories</h2>
+        <p className="mb-2 text-xs text-muted">
+          Where each job is listed on the Staff page and in job pickers.
+        </p>
+        <ul className="grid gap-x-6 gap-y-2 lg:grid-cols-2">
+          {JOB_TITLES.map(([t]) => (
+            <li key={t} className="grid gap-1 sm:flex sm:items-center sm:gap-2">
+              <span className="min-w-0 text-sm sm:flex-1 sm:truncate">{t}</span>
+              <select
+                aria-label={`Category of ${t}`}
+                value={groupOf(t, form.groups)}
+                onChange={(e) =>
+                  setForm({
+                    ...form,
+                    groups: { ...form.groups, [t]: e.target.value as StaffGroup },
+                  })
+                }
+                className={`${field} w-full sm:w-64 sm:shrink-0`}
+              >
+                {STAFF_GROUPS.map(([g, label]) => (
+                  <option key={g} value={g}>
+                    {label}
+                  </option>
+                ))}
+              </select>
+            </li>
+          ))}
+        </ul>
+      </section>
+
       <div className="grid gap-6 lg:grid-cols-2">
         <section className="rounded-xl border border-border bg-surface p-3">
           <h2 className="font-semibold">Tabs</h2>
@@ -202,7 +247,7 @@ export function StaffAttributesSettings() {
           >
             {STAFF_GROUPS.map(([g, label]) => (
               <optgroup key={g} label={label}>
-                {JOB_TITLES.filter(([, jg]) => jg === g).map(([t]) => (
+                {JOB_TITLES.filter(([t]) => groupOf(t, form.groups) === g).map(([t]) => (
                   <option key={t} value={t}>
                     {t}
                     {form.keys[t]?.length ? ` (${form.keys[t].length})` : ''}
@@ -211,37 +256,42 @@ export function StaffAttributesSettings() {
               </optgroup>
             ))}
           </select>
-          <ul className="mt-3 grid gap-1 sm:grid-cols-2">
-            {ALL_ATTRS.map((a) => {
-              const on = jobKeys.includes(a)
-              return (
-                <li key={a}>
-                  <label
-                    className={clsx(
-                      'flex min-h-10 items-center gap-2 rounded-lg px-2 text-sm',
-                      on ? 'border-l-2 border-accent bg-accent/10' : 'hover:bg-surface-2',
-                    )}
-                  >
-                    <input
-                      type="checkbox"
-                      checked={on}
-                      onChange={() =>
-                        setForm({
-                          ...form,
-                          keys: {
-                            ...form.keys,
-                            [job]: on ? jobKeys.filter((x) => x !== a) : [...jobKeys, a],
-                          },
-                        })
-                      }
-                      className="size-5"
-                    />
-                    {a}
-                  </label>
-                </li>
-              )
-            })}
-          </ul>
+          {ATTRIBUTE_GROUPS.map((group) => (
+            <div key={group.label} className="mt-3">
+              <h3 className="mb-1 text-xs font-semibold text-muted uppercase">{group.label}</h3>
+              <ul className="grid gap-1 sm:grid-cols-2">
+                {group.attributes.map((a) => {
+                  const on = jobKeys.includes(a)
+                  return (
+                    <li key={a}>
+                      <label
+                        className={clsx(
+                          'flex min-h-10 items-center gap-2 rounded-lg px-2 text-sm',
+                          on ? 'border-l-2 border-accent bg-accent/10' : 'hover:bg-surface-2',
+                        )}
+                      >
+                        <input
+                          type="checkbox"
+                          checked={on}
+                          onChange={() =>
+                            setForm({
+                              ...form,
+                              keys: {
+                                ...form.keys,
+                                [job]: on ? jobKeys.filter((x) => x !== a) : [...jobKeys, a],
+                              },
+                            })
+                          }
+                          className="size-5"
+                        />
+                        {a}
+                      </label>
+                    </li>
+                  )
+                })}
+              </ul>
+            </div>
+          ))}
         </section>
       </div>
     </SettingsShell>

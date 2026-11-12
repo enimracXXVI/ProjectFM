@@ -10,11 +10,11 @@ export interface StaffSection {
   attributes: string[]
 }
 
-const MENTAL: StaffSection = {
+export const MENTAL_SECTION: StaffSection = {
   label: 'Mental Attributes',
   attributes: ['Adaptability', 'Authority', 'Determination', 'Motivating', 'People Management'],
 }
-const KNOWLEDGE: StaffSection = {
+export const KNOWLEDGE_SECTION: StaffSection = {
   label: 'Knowledge',
   attributes: [
     'Judging Player Ability',
@@ -24,7 +24,7 @@ const KNOWLEDGE: StaffSection = {
     'Tactical Knowledge',
   ],
 }
-const COACHING: StaffSection = {
+export const COACHING_SECTION: StaffSection = {
   label: 'Coaching Attributes',
   attributes: [
     'Attacking',
@@ -39,26 +39,32 @@ const COACHING: StaffSection = {
   ],
 }
 
+export const SCOUTING_SECTION: StaffSection = {
+  label: 'Scouting Attributes',
+  attributes: ['Analysing Data'],
+}
+export const MEDICAL_SECTION: StaffSection = {
+  label: 'Medical Attributes',
+  attributes: ['Physiotherapy', 'Sports Science'],
+}
+
+/** Every staff attribute, grouped in the order Settings lists them. */
+export const ATTRIBUTE_GROUPS: StaffSection[] = [
+  COACHING_SECTION,
+  SCOUTING_SECTION,
+  MEDICAL_SECTION,
+  MENTAL_SECTION,
+  KNOWLEDGE_SECTION,
+]
+
 export type StaffTab = 'managerial' | 'coaching' | 'scouting' | 'medical'
 
 /** FM27's four staff tabs: each has its own attributes, plus Mental and Knowledge. */
 export const STAFF_TABS: [StaffTab, string, StaffSection[]][] = [
-  ['managerial', 'Managerial', [COACHING, MENTAL, KNOWLEDGE]],
-  ['coaching', 'Coaching', [COACHING, MENTAL, KNOWLEDGE]],
-  [
-    'scouting',
-    'Scouting',
-    [{ label: 'Scouting Attributes', attributes: ['Analysing Data'] }, MENTAL, KNOWLEDGE],
-  ],
-  [
-    'medical',
-    'Medical',
-    [
-      { label: 'Medical Attributes', attributes: ['Physiotherapy', 'Sports Science'] },
-      MENTAL,
-      KNOWLEDGE,
-    ],
-  ],
+  ['managerial', 'Managerial', [COACHING_SECTION, MENTAL_SECTION, KNOWLEDGE_SECTION]],
+  ['coaching', 'Coaching', [COACHING_SECTION, MENTAL_SECTION, KNOWLEDGE_SECTION]],
+  ['scouting', 'Scouting', [SCOUTING_SECTION, MENTAL_SECTION, KNOWLEDGE_SECTION]],
+  ['medical', 'Medical', [MEDICAL_SECTION, MENTAL_SECTION, KNOWLEDGE_SECTION]],
 ]
 
 /** The scouting tab's sections (used where only scouts are shown). */

@@ -9,7 +9,7 @@ import { PageHeader, Placeholder } from '../components/ui'
 import { deleteStaff, saveStaff, type StaffInput } from '../data/api'
 import type { StaffRow } from '../data/db'
 import { useStaff } from '../data/hooks'
-import { JOB_TITLES, STAFF_GROUPS } from '../data/staffJobs'
+import { JOB_TITLES, STAFF_GROUPS, groupOf } from '../data/staffJobs'
 import {
   KNOWN_REPUTATIONS,
   STAFF_TABS,
@@ -141,7 +141,7 @@ function StaffForm({ existing }: { existing: StaffRow | null }) {
             )}
             {STAFF_GROUPS.map(([g, label]) => (
               <optgroup key={g} label={label}>
-                {JOB_TITLES.filter(([, jg]) => jg === g).map(([t]) => (
+                {JOB_TITLES.filter(([t]) => groupOf(t, config.staffGroups) === g).map(([t]) => (
                   <option key={t}>{t}</option>
                 ))}
               </optgroup>

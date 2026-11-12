@@ -25,14 +25,16 @@ export function Staff() {
   const all = data ?? []
   // Staff imported before migration 0007 have no team or job code
   const needsUpdate = all.length > 0 && all.every((s) => s.job_code === undefined)
+  const { staffGroups } = useConfig()
   const list = all.filter((s) => team === 'all' || teamOfStaff(s) === team)
-  const groups: [StaffGroup | 'other', string, StaffRow[]][] = [
-    ...STAFF_GROUPS.map(
-      ([g, label]) =>
-        [g, label, list.filter((s) => groupOf(s.role) === g)] as [StaffGroup, string, StaffRow[]],
-    ),
-    ['other', 'Other staff', list.filter((s) => !groupOf(s.role))],
-  ]
+  const groups = STAFF_GROUPS.map(
+    ([g, label]) =>
+      [g, label, list.filter((s) => groupOf(s.role, staffGroups) === g)] as [
+        StaffGroup,
+        string,
+        StaffRow[],
+      ],
+  )
 
   return (
     <>
@@ -93,13 +95,13 @@ function StaffTable({
   rows,
   showTeam,
 }: {
-  group: StaffGroup | 'other'
+  group: StaffGroup
   label: string
   rows: StaffRow[]
   showTeam: boolean
 }) {
   const { staffScale } = useConfig()
-  const columns = group === 'other' ? [] : GROUP_COLUMNS[group]
+  const columns = GROUP_COLUMNS[group]
   const sorted = [...rows].sort((a, b) => jobOrder(a.role) - jobOrder(b.role) || byLastName(a, b))
   const teamLabel = (s: StaffRow) => TEAMS.find(([t]) => t === teamOfStaff(s))?.[1]
   return (

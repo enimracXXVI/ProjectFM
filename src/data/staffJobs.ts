@@ -1,16 +1,18 @@
 /**
- * FM27 staff jobs by the save's job code, grouped like FM's staff screen (Coaching,
- * Recruitment, Medical). Codes named by fmsave are used as they are; 26 (Fitness Coach),
+ * FM27 staff jobs by the save's job code, in the user's categories (Managerial & Coaching,
+ * Scouting, Medical, Other). Codes named by fmsave are used as they are; 26 (Fitness Coach),
  * 46 (Doctor) and 58 (Recruitment Analyst) were worked out from the user's FM staff screen,
  * where only that reading gives FM's numbers for every job. Other codes are named by the
  * user under Check in game.
  */
-export type StaffGroup = 'coaching' | 'recruitment' | 'medical'
+export type StaffGroup = 'coaching' | 'scouting' | 'medical' | 'other'
 
+/** The staff categories, as the user named them. Which job sits in which is editable. */
 export const STAFF_GROUPS: [StaffGroup, string][] = [
-  ['coaching', 'Coaching Staff'],
-  ['recruitment', 'Recruitment Staff'],
+  ['coaching', 'Managerial & Coaching Staff'],
+  ['scouting', 'Scouting Staff'],
   ['medical', 'Medical Staff'],
+  ['other', 'Other Staff'],
 ]
 
 /** Every FM27 job on the staff screen, in FM's order, with its group. */
@@ -22,14 +24,14 @@ export const JOB_TITLES: [string, StaffGroup][] = [
   ['Goalkeeping Coach', 'coaching'],
   ['Fitness Coach', 'coaching'],
   ['Set Piece Coach', 'coaching'],
-  ['Head Performance Analyst', 'coaching'],
-  ['Performance Analyst', 'coaching'],
-  ['Director of Football', 'recruitment'],
-  ['Chief Scout', 'recruitment'],
-  ['Technical Director', 'recruitment'],
-  ['Scout', 'recruitment'],
-  ['Recruitment Analyst', 'recruitment'],
-  ['Loan Manager', 'recruitment'],
+  ['Head Performance Analyst', 'other'],
+  ['Performance Analyst', 'other'],
+  ['Director of Football', 'scouting'],
+  ['Chief Scout', 'scouting'],
+  ['Technical Director', 'scouting'],
+  ['Scout', 'scouting'],
+  ['Recruitment Analyst', 'scouting'],
+  ['Loan Manager', 'scouting'],
   ['Head Physio', 'medical'],
   ['Chief Doctor', 'medical'],
   ['Head of Sports Science', 'medical'],
@@ -63,8 +65,12 @@ export const JOB_BY_CODE: Record<number, string> = {
 export const jobTitle = (code: number | null, learned?: Record<string, string>) =>
   code === null ? null : (learned?.[String(code)] ?? JOB_BY_CODE[code] ?? null)
 
-export const groupOf = (title: string | null): StaffGroup | null =>
-  JOB_TITLES.find(([t]) => t === title)?.[1] ?? null
+/** Default category of each job (Settings → Staff attributes can move any job). */
+export const DEFAULT_JOB_GROUPS: Record<string, StaffGroup> = Object.fromEntries(JOB_TITLES)
+
+/** Category of a job: the user's choice, else the default; unknown jobs go to Other. */
+export const groupOf = (title: string | null, groups?: Record<string, StaffGroup>): StaffGroup =>
+  (title && (groups?.[title] ?? DEFAULT_JOB_GROUPS[title])) || 'other'
 
 /** Order of jobs within a group (FM's order). */
 export const jobOrder = (title: string | null) => {
@@ -115,7 +121,7 @@ export const GROUP_COLUMNS: Record<StaffGroup, string[]> = {
     'Working With Youngsters',
     'Motivating',
   ],
-  recruitment: [
+  scouting: [
     'Judging Player Ability',
     'Judging Player Potential',
     'Analysing Data',
@@ -125,4 +131,10 @@ export const GROUP_COLUMNS: Record<StaffGroup, string[]> = {
     'Authority',
   ],
   medical: ['Physiotherapy', 'Sports Science', 'Motivating', 'People Management', 'Determination'],
+  other: [
+    'Analysing Data',
+    'Tactical Knowledge',
+    'Judging Player Ability',
+    'Judging Player Potential',
+  ],
 }

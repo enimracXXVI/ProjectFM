@@ -252,10 +252,7 @@ export function personalityName(
   if (matches.length <= 1) return matches[0] ?? null
   // Most head-to-head wins; ties keep the table's order
   const score = (a: string) =>
-    matches.reduce(
-      (s, b) => s + (b !== a && beats(rules, a, b) && !beats(rules, b, a) ? 1 : 0),
-      0,
-    )
+    matches.reduce((s, b) => s + (b !== a && beats(rules, a, b) && !beats(rules, b, a) ? 1 : 0), 0)
   return matches.reduce((best, m) => (score(m) > score(best) ? m : best))
 }
 

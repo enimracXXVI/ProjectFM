@@ -22,6 +22,7 @@ import {
 } from './staffInfo'
 import { DEFAULT_PERSONALITY_RULES, type PersonalityRule } from '../lib/personality'
 import { DEFAULT_FOOT_MINS, DEFAULT_FOOT_WORDS } from '../import/dump'
+import { DEFAULT_JOB_GROUPS, type StaffGroup } from './staffJobs'
 import { DEFAULT_STATUSES, normalizeStatus, type StatusInfo } from './statusInfo'
 
 export type Layout = Record<Role, AttributeSection[][]>
@@ -41,6 +42,8 @@ export interface AppConfig {
   staffTabs: Record<StaffTab, StaffSection[]>
   /** FM's Key Attributes for each staff job. */
   staffKeyAttrs: Record<string, string[]>
+  /** Staff category of each job title. */
+  staffGroups: Record<string, StaffGroup>
   /** Scouting knowledge levels, lowest to highest. */
   knowledgeLevels: string[]
   roles: RoleDef[]
@@ -89,6 +92,7 @@ export const DEFAULT_CONFIG: AppConfig = {
     StaffSection[]
   >,
   staffKeyAttrs: KEY_ATTRIBUTES_BY_JOB,
+  staffGroups: DEFAULT_JOB_GROUPS,
   knowledgeLevels: DEFAULT_KNOWLEDGE_LEVELS,
   roles: DEFAULT_ROLES,
   roleWeights: DEFAULT_ROLE_WEIGHTS,
@@ -131,6 +135,7 @@ export function mergeConfig(stored: Stored): AppConfig {
     staffScaleMin: stored.staffScaleMin ?? DEFAULT_CONFIG.staffScaleMin,
     staffTabs: { ...DEFAULT_CONFIG.staffTabs, ...stored.staffTabs },
     staffKeyAttrs: stored.staffKeyAttrs ?? DEFAULT_CONFIG.staffKeyAttrs,
+    staffGroups: { ...DEFAULT_CONFIG.staffGroups, ...stored.staffGroups },
     knowledgeLevels: withOutstanding(stored.knowledgeLevels) ?? DEFAULT_CONFIG.knowledgeLevels,
     roles: stored.roles ?? DEFAULT_CONFIG.roles,
     roleWeights: { ...DEFAULT_CONFIG.roleWeights, ...stored.roleWeights },
