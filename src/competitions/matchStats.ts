@@ -66,7 +66,6 @@ export function matchStats(home: RawTeamStats, away: RawTeamStats): StatRow[] {
 export function teamMatchStats(
   home: TeamStats,
   away: TeamStats,
-  rating?: [number | null, number | null],
 ): { key: StatRow[]; advanced: StatRow[] } {
   const ratio = (won: number, att: number) => `${pct(won, att)}% · ${won}/${att}`
   const row = (label: string, k: keyof TeamStats, format?: StatRow['format']): StatRow => ({
@@ -102,18 +101,6 @@ export function teamMatchStats(
     },
   ]
   const advanced: StatRow[] = [
-    ...(rating && (rating[0] !== null || rating[1] !== null)
-      ? [
-          {
-            label: 'Average rating',
-            // Even bars when one side has no average
-            home: rating[1] === null ? 0 : (rating[0] ?? 0),
-            away: rating[0] === null ? 0 : (rating[1] ?? 0),
-            homeText: rating[0]?.toFixed(2) ?? '–',
-            awayText: rating[1]?.toFixed(2) ?? '–',
-          },
-        ]
-      : []),
     row('NpXG', 'non_penalty_expected_goals', 'dec'),
     row('Long shots', 'shots_outside_box'),
     row('Woodwork', 'woodwork'),
@@ -128,11 +115,4 @@ export function teamMatchStats(
     row('Offsides', 'offsides'),
   ]
   return { key, advanced }
-}
-
-/** FM's average rating: the mean of the match ratings of everyone who played. */
-export function averageRating(ratings: (number | null)[]): number | null {
-  const r = ratings.filter((x): x is number => x !== null)
-  // FM keeps ratings only for some players: no average unless at least a full XI is rated
-  return r.length >= 11 ? Math.round((r.reduce((a, b) => a + b, 0) / r.length) * 100) / 100 : null
 }

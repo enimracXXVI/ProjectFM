@@ -45,7 +45,7 @@ def _plain(v):
 
 
 # Raised whenever extract() returns new data, so the app can spot an outdated copy
-READER_VERSION = 11
+READER_VERSION = 12
 
 JOB_SCOUT, JOB_CHIEF_SCOUT = 14, 44
 _FF8 = b"\xff" * 8
@@ -325,7 +325,7 @@ def _competitions(save, club_uid, club_name):
         })
     seasons = [f.season_start_year for f in mine if f.season_start_year]
     try:
-        squads = _matchday_squads(save, club_uid, mine)
+        squads = _matchday_squads(save, club_uid, [f for fx in by_comp.values() for f in fx])
     except Exception:
         squads = []
     try:
@@ -401,137 +401,104 @@ def _tactics(save, club_uid):
     return {"tactics": out, "selection": selection}
 
 
-def _team_block(report, team_id):
-    """A team's statistics block in an FM27 match report (found by ProjectFM).
-
-    Layout: 02, team id (u32), 4 + 8 bytes, 00 00, xG (f32), a variable list, then 24 u32
-    counts, 36 byte counts, and u16 counts starting with passes attempted / completed.
-    Returned raw so the app decides which number is which (checked against FM's match
-    stats screen for Fiorentina 4-1 Venezia, and passes against the players' own totals).
-    """
-    pat = b"\x02" + struct.pack("<I", team_id)
-    i = report.find(pat)
-    while i != -1:
-        q = i + 5
-        if report[q + 13:q + 15] == b"\x00\x00" and 0 <= struct.unpack_from("<f", report, q + 15)[0] < 10:
-            for c in range(q + 20, min(q + 400, len(report) - 240)):
-                vals = struct.unpack_from("<24I", report, c)
-                pa, pc = struct.unpack_from("<HH", report, c + 132)
-                if max(vals) < 2000 and 100 < pa < 2000 and pc <= pa and vals[15] <= 40:
-                    return {
-                        "xg": round(struct.unpack_from("<f", report, q + 15)[0], 3),
-                        "u": list(vals),
-                        "b": list(report[c + 96:c + 132]),
-                        "h": list(struct.unpack_from("<8H", report, c + 132)),
-                        "h104": struct.unpack_from("<10H", report, c + 132 + 96),
-                    }
-        i = report.find(pat, i + 1)
-    return None
-
-
-def _lineup(report, uids):
-    """(starting XI, bench) of one team in a match report, by Unique ID.
-
-    The report opens with each team's starting XI as Unique IDs 50 bytes apart; every
-    player of the matchday squad also has a record where his ID repeats 31 bytes later.
-    """
-    found = []
-    for u in uids:
-        pat = struct.pack("<I", u)
-        i = report.find(pat)
-        while i != -1:
-            found.append((i, u))
-            i = report.find(pat, i + 1)
-    found.sort()
-    at = {pos: u for pos, u in found}
-    xi = []
-    for pos, u in found:
-        run = [u]
-        nxt = pos + 50
-        while nxt in at and len(run) < 11:
-            run.append(at[nxt])
-            nxt += 50
-        if len(run) == 11:
-            xi = run
-            break
-    squad = []
-    for pos, u in found:
-        if report[pos + 31:pos + 35] == struct.pack("<I", u) and u not in squad:
-            squad.append(u)
-    bench = [u for u in squad if u not in xi]
-    return xi, bench
-
-
 def _matchday_squads(save, club_uid, fixtures):
-    """Who was in each of the club's matchday squads (Unique IDs), from FM's match reports.
+    """Both matchday squads of every match FM keeps a report for, with each player's stats.
 
-    fmsave reads the report index and frames for FM27 but not the player records, so the
-    squad is taken as the players of the two clubs whose Unique ID appears in the report.
+    Player records found by ProjectFM in FM27 reports (fmsave frames the records; offsets
+    from each record's anchor): player record index + 1 (u32) at -99, goals -80, xG (f32)
+    -75, shots -59, on target -58, yellow -37, red -36, assists -44, minute subbed off -33
+    (0 = played on), minute came on -29 (0 = started or unused), passes attempted -14 and
+    completed -13, tackles -8 / won -7, aerial challenges -5 / won -4, match rating (u16,
+    x100) +36. The first eleven records of a squad are the starting XI. Checked against
+    fmsave's own per-player match rows on 267 players (exact) and the subs on 771 team sheets.
     """
-    from fmsave.readers.team_match_stats import index_entries, _decompress, _header
-    from fmsave._layouts.fm26_26_3_2 import MATCH_REPORTS as layout
+    import re
+    from fmsave.readers import team_match_stats as T
+    from fmsave._layouts.fm27_27_0_0 import MATCH_REPORTS as layout
 
-    mine = {}
-    for f in fixtures:
-        if club_uid in (f.home_club_uid, f.away_club_uid) and f.played:
-            mine[(f.home_team_id, f.away_team_id, f.date)] = f
-    if not mine:
+    if save.info.game != "FM27":
         return []
-    clubs = {}
-    names = {}
-    for p in save.players():
-        if p.unique_id is not None and p.club_uid is not None:
-            clubs.setdefault(p.club_uid, []).append(p.unique_id)
-            names[p.unique_id] = p.name
+    by_key = {}
+    for f in fixtures:
+        if f.played:
+            by_key[(f.home_team_id, f.away_team_id, f.date)] = f
+    if not by_key:
+        return []
+    by_uid = {p.uid: p for p in save.players()}
+    records = save._context.player_records()
+    person = {}
+    for k, uid in enumerate(records.uids):
+        p = by_uid.get(uid)
+        person[records.pindexes[k] + 1] = (p.unique_id if p else None, p.name if p else None)
     try:
         named = _named_team_stats(save)
     except Exception:
         named = {}
+    seed = re.compile(b"(?=" + re.escape(layout.anchor_run) + b")")
     out = []
+
+    def player(report, a, starter):
+        def b(o):
+            return report[a + o]
+
+        uid, name = person.get(struct.unpack_from("<I", report, a - 99)[0], (None, None))
+        rating = struct.unpack_from("<H", report, a + 36)[0]
+        # Unused substitutes carry a default rating: they did not play
+        if not starter and not report[a - 29]:
+            rating = 0
+        return {
+            "id": uid,
+            "name": name,
+            "start": starter,
+            "rating": rating / 100 if 0 < rating <= 1000 else None,
+            "goals": b(-80),
+            "assists": b(-44),
+            "on": b(-29) or None,
+            "off": b(-33) or None,
+            "shots": b(-59),
+            "onTarget": b(-58),
+            "xg": round(struct.unpack_from("<f", report, a - 75)[0], 2),
+            "passes": b(-14),
+            "passesDone": b(-13),
+            "tackles": b(-8),
+            "tacklesWon": b(-7),
+            "aerials": b(-5),
+            "headersWon": b(-4),
+            "yellow": b(-37),
+            "red": b(-36),
+        }
+
     with save._context.section("match_stats_cfg") as section:
-        for start, size in index_entries(section, layout, "save"):
-            report = _decompress(memoryview(section)[start:start + size], layout)
-            head = _header(report, layout) if report else None
+        for start, size in T.index_entries(section, layout, "save"):
+            report = T._decompress(memoryview(section)[start:start + size], layout)
+            head = T._header(report, layout) if report else None
             if head is None:
                 continue
-            f = mine.get((head.home_team_id, head.away_team_id, head.kick_off.date()))
+            f = by_key.get((head.home_team_id, head.away_team_id, head.kick_off.date()))
             if f is None:
                 continue
-            squads = {}
-            lineups = {}
-            for side, uid in (("home", f.home_club_uid), ("away", f.away_club_uid)):
-                squads[side] = [u for u in clubs.get(uid, []) if struct.pack("<I", u) in report]
-                lineups[side] = _lineup(report, squads[side])
-            def block(team_id):
-                try:
-                    return _team_block(report, team_id)
-                except Exception:
-                    return None
-            raw = {"home": block(head.home_team_id), "away": block(head.away_team_id)}
-
-            def checked(is_home):
-                d = named.get((head.home_team_id, head.away_team_id, f.date, is_home))
-                r = raw["home" if is_home else "away"]
-                # Only when it agrees with ProjectFM's own reading of the same report
-                if d and (r is None or r["h"][0] == d.get("passes_attempted")):
-                    return d
-                return None
-
+            squads = T._squads(report, layout, seed)
+            if squads is None:
+                continue
+            sides = {}
+            for side, anchors in (("home", squads.home), ("away", squads.away)):
+                sides[side] = [player(report, a, i < 11) for i, a in enumerate(anchors)]
             out.append({
                 "date": f.date.isoformat(),
                 "home": f.home_club_uid,
-                "homeTeam": checked(True),
-                "awayTeam": checked(False),
                 "away": f.away_club_uid,
-                "homeSquad": squads["home"],
-                "awaySquad": squads["away"],
-                "homeStats": raw["home"],
-                "awayStats": raw["away"],
-                "homeXI": lineups["home"][0],
-                "homeBench": lineups["home"][1],
-                "awayXI": lineups["away"][0],
-                "awayBench": lineups["away"][1],
-                "names": {str(u): names.get(u) for u in squads["home"] + squads["away"]},
+                "homeTeam": named.get((head.home_team_id, head.away_team_id, f.date, True)),
+                "awayTeam": named.get((head.home_team_id, head.away_team_id, f.date, False)),
+                "homePlayers": sides["home"],
+                "awayPlayers": sides["away"],
+                # Older app versions read these
+                "homeSquad": [p["id"] for p in sides["home"] if p["id"]],
+                "awaySquad": [p["id"] for p in sides["away"] if p["id"]],
+                "homeXI": [p["id"] for p in sides["home"] if p["start"] and p["id"]],
+                "awayXI": [p["id"] for p in sides["away"] if p["start"] and p["id"]],
+                "homeBench": [p["id"] for p in sides["home"] if not p["start"] and p["id"]],
+                "awayBench": [p["id"] for p in sides["away"] if not p["start"] and p["id"]],
+                "names": {str(p["id"]): p["name"] for p in sides["home"] + sides["away"] if p["id"]},
             })
     return out
 

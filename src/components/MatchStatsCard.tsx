@@ -10,7 +10,6 @@ export function MatchStatsCard({
   away,
   homeTeam,
   awayTeam,
-  rating,
   homeName,
   awayName,
 }: {
@@ -18,13 +17,11 @@ export function MatchStatsCard({
   away?: RawTeamStats | null
   homeTeam?: TeamStats | null
   awayTeam?: TeamStats | null
-  /** Average match rating of each side, from the players' own ratings. */
-  rating?: [number | null, number | null]
   homeName: string
   awayName: string
 }) {
   const [tab, setTab] = useState<'key' | 'advanced'>('key')
-  const named = homeTeam && awayTeam ? teamMatchStats(homeTeam, awayTeam, rating) : null
+  const named = homeTeam && awayTeam ? teamMatchStats(homeTeam, awayTeam) : null
   const rows: StatRow[] = named ? named[tab] : home && away ? matchStats(home, away) : []
   if (!rows.length) return null
   const show = (v: number, f?: 'pct' | 'dec') =>

@@ -20,6 +20,9 @@ export interface CompetitionsFile {
     /** Every stat of FM's match stats screen, named (reader 11 and later). */
     homeTeam?: TeamStats | null
     awayTeam?: TeamStats | null
+    /** Both matchday squads with each player's stats, from FM's match report (reader 12). */
+    homePlayers?: ReportPlayer[]
+    awayPlayers?: ReportPlayer[]
     /** Starting XI and bench (Unique IDs) from the match report; names of both squads. */
     homeXI?: number[]
     homeBench?: number[]
@@ -82,6 +85,32 @@ export type MatchEvent = [number, number, number, number, string | null, string 
 
 /** Event types as the save stores them. */
 export const EVENT = { goal: 0, ownGoal: 1, penalty: 2, notGoal: 3, kickScored: 4, kickMissed: 5 }
+
+/** One player's line in FM's match report. */
+export interface ReportPlayer {
+  /** FM Unique ID, null when the save does not name the player. */
+  id: number | null
+  name: string | null
+  /** In the starting XI. */
+  start: boolean
+  rating: number | null
+  goals: number
+  assists: number
+  /** Minute he came on / went off, null when he did not. */
+  on: number | null
+  off: number | null
+  shots: number
+  onTarget: number
+  xg: number
+  passes: number
+  passesDone: number
+  tackles: number
+  tacklesWon: number
+  aerials: number
+  headersWon: number
+  yellow: number
+  red: number
+}
 
 /** A team's match stats as FM's match stats screen shows them. */
 export interface TeamStats {

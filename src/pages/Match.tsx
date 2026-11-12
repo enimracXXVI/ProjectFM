@@ -6,20 +6,12 @@ import { MatchLogCard } from '../components/MatchLogCard'
 import { MatchStatsCard } from '../components/MatchStatsCard'
 import { Card, Placeholder } from '../components/ui'
 import { useCompetitions } from '../competitions/hooks'
-import { EVENT, type Fixture, type PlayerMatch } from '../competitions/types'
-import { averageRating } from '../competitions/matchStats'
-import { compLabel, fixtureKey, halfTime, matchLines, resultFor } from '../competitions/view'
+import { EVENT, type Fixture, type ReportPlayer } from '../competitions/types'
+import { compLabel, fixtureKey, halfTime, resultFor } from '../competitions/view'
 import { usePlayers } from '../data/hooks'
 import { useCurrentCareer } from '../lib/career'
 import { useConfig } from '../lib/config'
 import { ResultBadge } from './competitionParts'
-
-/** Started, came on (minute), or unused, from FM's per-match minutes. */
-function role(m: PlayerMatch): 'start' | 'sub' | 'unused' {
-  if (m.minutes === null) return 'unused'
-  if (m.leftAt !== null || m.minutes >= 90) return 'start'
-  return 'sub'
-}
 
 const ratingColor = (r: number | null) =>
   r === null
@@ -49,43 +41,34 @@ export function Match() {
   if (error) return <Placeholder>{error.message}</Placeholder>
   if (!data || !comp || !f) return <Placeholder>Match not found.</Placeholder>
 
-  const lines = matchLines(data, comp.id, f)
   const ht = halfTime(f)
-  const squadUids = data.squads?.find(
+  const report = data.squads?.find(
     (s) => s.date === f.date && s.home === f.home && s.away === f.away,
   )
-  const myXI = f.home === data.club ? squadUids?.homeXI : squadUids?.awayXI
-  const myBench = f.home === data.club ? squadUids?.homeBench : squadUids?.awayBench
-  // The matchday squad: XI and bench from the report when read, else every ID in the report
-  const mySquad = myXI?.length
-    ? new Set([...myXI, ...(myBench ?? [])])
-    : squadUids
-      ? new Set(f.home === data.club ? squadUids.homeSquad : squadUids.awaySquad)
-      : null
-  // Lines without minutes are bench players only when the matchday squad confirms it
-  const mine = lines.filter(
-    (m) =>
-      m.club === data.club && (m.minutes !== null || !mySquad || mySquad.has(m.uniqueId ?? -1)),
-  )
-  const missing = mySquad
-    ? (squad ?? [])
-        .filter((p) => p.in_squad && !p.extra.team && p.fm_uid !== null && !mySquad.has(p.fm_uid))
-        .map((p) => {
-          const injury = (data.injuries ?? [])
-            .filter(
-              (i) =>
-                i.uniqueId === p.fm_uid &&
-                i.date &&
-                i.date <= (f.date ?? '') &&
-                daysBetween(i.date, f.date!) <= 120,
-            )
-            .sort((a, b) => (b.date ?? '').localeCompare(a.date ?? ''))[0]
-          return { p, injury }
-        })
-    : []
+  const isMine = f.home === data.club || f.away === data.club
+  const myPlayers = f.home === data.club ? report?.homePlayers : report?.awayPlayers
+  const mySquad = myPlayers ? new Set(myPlayers.map((p) => p.id)) : null
+  const missing =
+    isMine && mySquad
+      ? (squad ?? [])
+          .filter((p) => p.in_squad && !p.extra.team && p.fm_uid !== null && !mySquad.has(p.fm_uid))
+          .map((p) => {
+            const injury = (data.injuries ?? [])
+              .filter(
+                (i) =>
+                  i.uniqueId === p.fm_uid &&
+                  i.date &&
+                  i.date <= (f.date ?? '') &&
+                  daysBetween(i.date, f.date!) <= 120,
+              )
+              .sort((a, b) => (b.date ?? '').localeCompare(a.date ?? ''))[0]
+            return { p, injury }
+          })
+      : []
   const opponentId = f.home === data.club ? f.away : f.home
-  const theirs = lines.filter((m) => m.club === opponentId)
   const squadId = new Map((squad ?? []).map((p) => [p.fm_uid, p.id]))
+  const homeName = f.homeShort ?? f.homeName ?? ''
+  const awayName = f.awayShort ?? f.awayName ?? ''
 
   return (
     <>
@@ -100,25 +83,25 @@ export function Match() {
           {compLabel(config, comp)} · {f.date} {f.time} {f.stadium && `· ${f.stadium}`}
         </p>
         <div className="mt-2 flex items-center justify-center gap-3 text-lg font-semibold sm:text-2xl">
-          <span className="min-w-0 flex-1 truncate text-right">{f.homeShort ?? f.homeName}</span>
+          <span className="min-w-0 flex-1 truncate text-right">{homeName}</span>
           <span className="rounded-lg bg-surface-2 px-3 py-1 tabular-nums">
             {f.hg} – {f.ag}
           </span>
-          <span className="min-w-0 flex-1 truncate text-left">{f.awayShort ?? f.awayName}</span>
+          <span className="min-w-0 flex-1 truncate text-left">{awayName}</span>
         </div>
         {(ht || f.pens) && (
           <p className="mt-1 text-sm text-muted tabular-nums">
             {ht && `Half time ${ht[0]} – ${ht[1]}`}
             {ht && f.pens && ' · '}
             {f.pens &&
-              `Penalties ${f.pens[0]} – ${f.pens[1]} (${f.pens[0] > f.pens[1] ? (f.homeShort ?? f.homeName) : (f.awayShort ?? f.awayName)} win)`}
+              `Penalties ${f.pens[0]} – ${f.pens[1]} (${f.pens[0] > f.pens[1] ? homeName : awayName} win)`}
           </p>
         )}
-        <div className="mt-2 flex justify-center">
-          {(f.home === data.club || f.away === data.club) && (
+        {isMine && (
+          <div className="mt-2 flex justify-center">
             <ResultBadge r={resultFor(f, data.club)} />
-          )}
-        </div>
+          </div>
+        )}
       </Card>
 
       {(f.events?.length ?? 0) > 0 && (
@@ -127,47 +110,28 @@ export function Match() {
         </div>
       )}
 
-      {((squadUids?.homeStats && squadUids.awayStats) ||
-        (squadUids?.homeTeam && squadUids.awayTeam)) && (
+      {report?.homeTeam && report.awayTeam && (
         <div className="mb-4">
           <MatchStatsCard
-            home={squadUids.homeStats}
-            away={squadUids.awayStats}
-            homeTeam={squadUids.homeTeam}
-            awayTeam={squadUids.awayTeam}
-            rating={[
-              averageRating(
-                lines.filter((m) => m.club === f.home && m.minutes).map((m) => m.rating),
-              ),
-              averageRating(
-                lines.filter((m) => m.club === f.away && m.minutes).map((m) => m.rating),
-              ),
-            ]}
-            homeName={f.homeShort ?? f.homeName ?? ''}
-            awayName={f.awayShort ?? f.awayName ?? ''}
+            homeTeam={report.homeTeam}
+            awayTeam={report.awayTeam}
+            homeName={homeName}
+            awayName={awayName}
           />
         </div>
       )}
 
-      <div className="grid gap-4 lg:grid-cols-2">
-        <Lineup
-          title={data.clubName}
-          lines={mine}
-          squadId={squadId}
-          xi={f.home === data.club ? squadUids?.homeXI : squadUids?.awayXI}
-          bench={f.home === data.club ? squadUids?.homeBench : squadUids?.awayBench}
-          names={squadUids?.names}
-        />
-        {(theirs.length > 0 || squadUids?.homeXI?.length) && (
-          <Lineup
-            title={(f.home === opponentId ? f.homeShort : f.awayShort) ?? 'Opponent'}
-            lines={theirs}
-            xi={f.home === opponentId ? squadUids?.homeXI : squadUids?.awayXI}
-            bench={f.home === opponentId ? squadUids?.homeBench : squadUids?.awayBench}
-            names={squadUids?.names}
-          />
-        )}
-      </div>
+      {report?.homePlayers && report.awayPlayers ? (
+        <div className="grid gap-4 xl:grid-cols-2">
+          <Lineup title={homeName} players={report.homePlayers} squadId={squadId} />
+          <Lineup title={awayName} players={report.awayPlayers} squadId={squadId} />
+        </div>
+      ) : (
+        <Placeholder>
+          FM kept no match report for this game, so there are no line-ups or player stats.
+        </Placeholder>
+      )}
+
       {missing.length > 0 && (
         <Card className="mt-4">
           <h2 className="mb-2 font-semibold">Not in the matchday squad</h2>
@@ -192,7 +156,7 @@ export function Match() {
         </Card>
       )}
 
-      {opponentId !== null && (
+      {isMine && opponentId !== null && (
         <div className="mt-4">
           <HeadToHead
             opponent={opponentId}
@@ -201,162 +165,146 @@ export function Match() {
         </div>
       )}
 
-      <div className="mt-4">
-        <MatchLogCard matchKey={key} competitionDbId={comp.databaseId} season={data.season} />
-      </div>
+      {isMine && (
+        <div className="mt-4">
+          <MatchLogCard matchKey={key} competitionDbId={comp.databaseId} season={data.season} />
+        </div>
+      )}
     </>
   )
 }
 
+function daysBetween(a: string, b: string) {
+  return Math.round((Date.parse(b) - Date.parse(a)) / 86_400_000)
+}
+
+const COLUMNS: [string, string, (p: ReportPlayer) => string][] = [
+  ['G', 'Goals', (p) => (p.goals ? String(p.goals) : '')],
+  ['A', 'Assists', (p) => (p.assists ? String(p.assists) : '')],
+  ['Sh', 'Shots (on target)', (p) => (p.shots ? `${p.shots} (${p.onTarget})` : '')],
+  ['xG', 'Expected goals', (p) => (p.xg ? p.xg.toFixed(2) : '')],
+  ['Pas', 'Passes completed / attempted', (p) => (p.passes ? `${p.passesDone}/${p.passes}` : '')],
+  ['Tck', 'Tackles won / attempted', (p) => (p.tackles ? `${p.tacklesWon}/${p.tackles}` : '')],
+  [
+    'Hdr',
+    'Headers won / aerial challenges',
+    (p) => (p.aerials ? `${p.headersWon}/${p.aerials}` : ''),
+  ],
+]
+
+/** One side's matchday squad: starters, substitutes who came on, unused substitutes. */
 function Lineup({
   title,
-  lines,
+  players,
   squadId,
-  xi,
-  bench,
-  names,
 }: {
   title: string
-  lines: PlayerMatch[]
-  squadId?: Map<number | null, string>
-  /** Starting XI and bench from FM's match report (Unique IDs), when known. */
-  xi?: number[]
-  bench?: number[]
-  names?: Record<string, string | null>
+  players: ReportPlayer[]
+  squadId: Map<number | null, string>
 }) {
-  if (xi?.length) {
-    // FM keeps per-player stats only for some players: the rest show by name
-    const known = (u: number) => lines.find((m) => m.uniqueId === u)
-    const line = (u: number): PlayerMatch =>
-      known(u) ?? { ...EMPTY_LINE, uniqueId: u, name: names?.[String(u)] ?? '?' }
-    const benchLines = (bench ?? []).map(line)
-    const noStats = (bench ?? []).filter((u) => !known(u)).map(line)
-    return (
-      <LineupGroups
-        title={title}
-        squadId={squadId}
-        groups={[
-          ['Starting XI', xi.map(line)],
-          ['Substitutes used', benchLines.filter((m) => (m.minutes ?? 0) > 0)],
-          ['Unused substitutes', benchLines.filter((m) => !m.minutes && known(m.uniqueId ?? -1))],
-          // FM kept no stats for these, so whether they came on is not known
-          ['Substitutes', noStats],
-        ]}
-      />
-    )
-  }
-  const groups: [string, PlayerMatch[]][] = [
+  const groups: [string, ReportPlayer[]][] = [
+    ['Starting XI', players.filter((p) => p.start)],
     [
-      'Starting XI',
-      lines
-        .filter((m) => role(m) === 'start')
-        .sort((a, b) => (a.position ?? 0) - (b.position ?? 0)),
+      'Substitutes',
+      players.filter((p) => !p.start && p.on).sort((a, b) => (a.on ?? 0) - (b.on ?? 0)),
     ],
-    [
-      'Substitutes used',
-      lines.filter((m) => role(m) === 'sub').sort((a, b) => (b.minutes ?? 0) - (a.minutes ?? 0)),
-    ],
-    ['Unused substitutes', lines.filter((m) => role(m) === 'unused')],
+    ['Unused substitutes', players.filter((p) => !p.start && !p.on)],
   ]
-  return <LineupGroups title={title} squadId={squadId} groups={groups} />
-}
-
-const EMPTY_LINE: PlayerMatch = {
-  comp: 0,
-  date: '',
-  uniqueId: null,
-  name: null,
-  club: null,
-  clubName: null,
-  opponent: null,
-  minutes: null,
-  leftAt: null,
-  goals: null,
-  assists: null,
-  rating: null,
-  position: null,
-  passes: null,
-  passesDone: null,
-}
-
-function LineupGroups({
-  title,
-  squadId,
-  groups,
-}: {
-  title: string
-  squadId?: Map<number | null, string>
-  groups: [string, PlayerMatch[]][]
-}) {
-  const lines = groups.flatMap(([, ms]) => ms)
   return (
-    <Card>
+    <Card className="min-w-0">
       <h2 className="mb-2 font-semibold">{title}</h2>
-      {groups.map(([label, ms]) =>
-        ms.length ? (
-          <section key={label} className="mb-3">
-            <h3 className="mb-1 text-xs font-semibold tracking-wide text-muted uppercase">
-              {label}
-            </h3>
-            <ul className="grid gap-0.5">
-              {ms.map((m) => {
-                const id = squadId?.get(m.uniqueId)
-                const r = role(m)
-                return (
-                  <li
-                    key={`${m.uniqueId}-${m.name}`}
-                    className="flex min-h-9 items-center gap-2 text-sm"
+      <div className="overflow-x-auto">
+        <table className="w-full text-sm tabular-nums">
+          <thead className="text-xs text-muted">
+            <tr>
+              <th className="py-1 pr-2 text-left font-normal">Player</th>
+              {COLUMNS.map(([short, long]) => (
+                <th key={short} className="px-1.5 py-1 text-center font-normal" title={long}>
+                  {short}
+                </th>
+              ))}
+              <th className="py-1 pl-1.5 text-right font-normal" title="Match rating">
+                Rat
+              </th>
+            </tr>
+          </thead>
+          {groups.map(([label, list]) =>
+            list.length ? (
+              <tbody key={label}>
+                <tr>
+                  <td
+                    colSpan={COLUMNS.length + 2}
+                    className="pt-3 pb-1 text-xs font-semibold tracking-wide text-muted uppercase"
                   >
-                    {id ? (
-                      <Link
-                        to={`/squad/${id}`}
-                        className="min-w-0 flex-1 truncate hover:text-accent"
+                    {label}
+                  </td>
+                </tr>
+                {list.map((p, i) => {
+                  const id = squadId.get(p.id)
+                  return (
+                    <tr key={`${p.id}-${i}`} className="border-t border-border/50">
+                      <td className="py-1.5 pr-2">
+                        <span className="flex min-w-0 items-center gap-1.5">
+                          {id ? (
+                            <Link
+                              to={`/squad/${id}`}
+                              className="truncate whitespace-nowrap hover:text-accent"
+                            >
+                              {p.name ?? 'Unknown'}
+                            </Link>
+                          ) : (
+                            <span className="truncate whitespace-nowrap">
+                              {p.name ?? 'Unknown'}
+                            </span>
+                          )}
+                          {p.on && (
+                            <span className="shrink-0 text-xs text-emerald-400" title="Came on">
+                              ↑{p.on}′
+                            </span>
+                          )}
+                          {p.off && (
+                            <span className="shrink-0 text-xs text-red-400" title="Went off">
+                              ↓{p.off}′
+                            </span>
+                          )}
+                          {p.yellow > 0 && (
+                            <span
+                              className="h-3 w-2 shrink-0 rounded-[2px] bg-yellow-400"
+                              title={p.yellow > 1 ? 'Two yellow cards' : 'Yellow card'}
+                            />
+                          )}
+                          {p.red > 0 && (
+                            <span
+                              className="h-3 w-2 shrink-0 rounded-[2px] bg-red-500"
+                              title="Red card"
+                            />
+                          )}
+                        </span>
+                      </td>
+                      {COLUMNS.map(([short, , value]) => (
+                        <td key={short} className="px-1.5 py-1.5 text-center whitespace-nowrap">
+                          {value(p)}
+                        </td>
+                      ))}
+                      <td
+                        className={clsx(
+                          'py-1.5 pl-1.5 text-right font-semibold',
+                          ratingColor(p.rating),
+                        )}
                       >
-                        {m.name}
-                      </Link>
-                    ) : (
-                      <span className="min-w-0 flex-1 truncate">{m.name}</span>
-                    )}
-                    {r === 'start' && m.leftAt !== null && (
-                      <span className="text-xs text-red-400" title="Substituted">
-                        ↓ {m.leftAt}′
-                      </span>
-                    )}
-                    {r === 'sub' && (
-                      <span className="text-xs text-emerald-400" title="Came on">
-                        ↑ {90 - (m.minutes ?? 0)}′
-                      </span>
-                    )}
-                    {!!m.goals && <span title="Goals">⚽{m.goals > 1 ? `×${m.goals}` : ''}</span>}
-                    {!!m.assists && (
-                      <span className="text-xs text-muted" title="Assists">
-                        A{m.assists > 1 ? `×${m.assists}` : ''}
-                      </span>
-                    )}
-                    <span
-                      className={clsx(
-                        'w-9 text-right font-semibold tabular-nums',
-                        ratingColor(m.rating),
-                      )}
-                    >
-                      {m.rating?.toFixed(1) ?? ''}
-                    </span>
-                  </li>
-                )
-              })}
-            </ul>
-          </section>
-        ) : null,
-      )}
-      {lines.length === 0 && (
-        <p className="text-sm text-muted">FM kept no player stats for this match.</p>
-      )}
+                        {p.rating?.toFixed(1) ?? ''}
+                      </td>
+                    </tr>
+                  )
+                })}
+              </tbody>
+            ) : null,
+          )}
+        </table>
+      </div>
     </Card>
   )
 }
-
-const daysBetween = (a: string, b: string) =>
-  (new Date(b).getTime() - new Date(a).getTime()) / 86_400_000
 
 const minuteText = (m: number, added: number) => (added ? `${m}+${added}′` : `${m}′`)
 

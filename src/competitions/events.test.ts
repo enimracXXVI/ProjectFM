@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { averageRating, teamMatchStats } from './matchStats'
+import { teamMatchStats } from './matchStats'
 import type { Fixture, TeamStats } from './types'
 import { halfTime, pensWinner, scoreText } from './view'
 
@@ -43,10 +43,6 @@ describe('match events', () => {
     expect(pensWinner(cremonese)).toBe(1125)
     expect(pensWinner(venezia)).toBeNull()
   })
-  it('needs a full XI of ratings for an average', () => {
-    expect(averageRating([7, 7, 7])).toBeNull()
-    expect(averageRating(Array(11).fill(6.5).concat([7.6]))).toBe(6.59)
-  })
 })
 
 describe('teamMatchStats', () => {
@@ -79,11 +75,10 @@ describe('teamMatchStats', () => {
     ball_distribution_percent: 53,
   } satisfies TeamStats
   it('rounds percentages down like FM', () => {
-    const { key, advanced } = teamMatchStats(base, base, [6.98, 6.5])
+    const { key, advanced } = teamMatchStats(base, base)
     expect(key.find((r) => r.label === 'Headers won')?.homeText).toBe('57% · 11/19')
     expect(advanced.find((r) => r.label === 'Crosses completed')?.homeText).toBe('16% · 7/43')
     expect(key.find((r) => r.label.startsWith('Distance'))?.home).toBe(124)
-    expect(advanced[0]).toMatchObject({ label: 'Average rating', homeText: '6.98' })
-    expect(teamMatchStats(base, base, [6.98, null]).advanced[0].awayText).toBe('–')
+    expect(advanced.some((r) => r.label === 'Average rating')).toBe(false)
   })
 })
