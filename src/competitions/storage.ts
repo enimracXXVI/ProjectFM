@@ -23,11 +23,17 @@ async function gunzip(blob: Blob): Promise<CompetitionsFile> {
   return JSON.parse(text) as CompetitionsFile
 }
 
-/** Saves a season's competitions (replacing the previous copy of that season). */
+/**
+ * Saves a season's competitions, merged into the copy already stored: FM drops old match
+ * reports and per-match player rows as the season goes on, so what an earlier import read is
+ * kept (newer data wins where both have the same match).
+ */
 export async function uploadCompetitions(careerId: string, file: CompetitionsFile): Promise<void> {
   if (file.season == null) return
   const path = `${await folder(careerId)}/${file.season}.json.gz`
-  const { error } = await supabase.storage.from(BUCKET).upload(path, await gzip(file), {
+  const { data: old } = await supabase.storage.from(BUCKET).download(path)
+  const merged = old ? mergeCompetitions(await gunzip(old).catch(() => null), file) : file
+  const { error } = await supabase.storage.from(BUCKET).upload(path, await gzip(merged), {
     upsert: true,
     contentType: 'application/gzip',
     cacheControl: '0',
@@ -80,4 +86,49 @@ export async function deleteCompetitions(careerId: string): Promise<void> {
     .remove(seasons.map((s) => `${dir}/${s.season}.json.gz`))
   if (error) throw new Error(error.message)
   for (const s of seasons) await deleteCachedWorld(cacheKey(careerId, s.season))
+}
+
+const unionBy = <T>(older: T[] | undefined, newer: T[] | undefined, key: (x: T) => string) => {
+  const out = new Map<string, T>()
+  for (const x of older ?? []) out.set(key(x), x)
+  for (const x of newer ?? []) out.set(key(x), x)
+  return [...out.values()]
+}
+
+/** The newer file, plus whatever only the older one still holds. */
+export function mergeCompetitions(
+  older: CompetitionsFile | null,
+  newer: CompetitionsFile,
+): CompetitionsFile {
+  if (!older || older.club !== newer.club) return newer
+  const fixtureKey = (f: CompetitionsFile['competitions'][number]['fixtures'][number]) =>
+    `${f.date}_${f.home}_${f.away}`
+  const competitions = newer.competitions.map((c) => {
+    const was = older.competitions.find((o) => o.id === c.id)
+    if (!was) return c
+    const oldFixtures = new Map(was.fixtures.map((f) => [fixtureKey(f), f]))
+    return {
+      ...c,
+      fixtures: c.fixtures.map((f) => {
+        const o = oldFixtures.get(fixtureKey(f))
+        // Goal times and penalties read earlier stay when the save no longer has them
+        return o && !f.events?.length && o.events?.length
+          ? { ...f, events: o.events, pens: f.pens ?? o.pens }
+          : f
+      }),
+    }
+  })
+  for (const o of older.competitions)
+    if (!competitions.some((c) => c.id === o.id)) competitions.push(o)
+  return {
+    ...newer,
+    competitions,
+    playerMatches: unionBy(
+      older.playerMatches,
+      newer.playerMatches,
+      (m) => `${m.comp}_${m.date}_${m.uniqueId ?? m.name}`,
+    ),
+    squads: unionBy(older.squads, newer.squads, (s) => `${s.date}_${s.home}_${s.away}`),
+    injuries: unionBy(older.injuries, newer.injuries, (i) => `${i.uniqueId}_${i.date}_${i.cause}`),
+  }
 }

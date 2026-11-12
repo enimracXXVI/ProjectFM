@@ -8,6 +8,7 @@ import { byLastName } from '../lib/names'
 import { relabel, type LearnedKind } from '../lib/learned'
 import { UNKNOWN_WORD, withValue } from '../lib/valueWord'
 import { loadStoredConfig, mergeConfig, saveConfig } from './config'
+import { recordLeavers } from './seasons'
 import { applyImportWords, DUMP_PRESENT, isReaderDump, type DumpSummary } from '../import/dump'
 import type { CoreField } from '../import/fields'
 import type { ImportedPlayer, ParseResult } from '../import/parse'
@@ -259,7 +260,10 @@ export async function importPlayers(opts: {
     const keep = new Set(saved.map((s) => s.id))
     const gone = existing.filter((p) => p.in_squad && !keep.has(p.id)).map((p) => p.id)
     if (gone.length) {
-      check(await supabase.from('players').update({ in_squad: false }).in('id', gone))
+      const rows = check(
+        await supabase.from('players').update({ in_squad: false }).in('id', gone).select('*'),
+      ) as PlayerRow[]
+      await recordLeavers(careerId, rows)
       left = gone.length
     }
   }
@@ -439,8 +443,9 @@ export async function importDump(opts: {
         .eq('career_id', career.id)
         .eq('in_squad', true)
         .in('fm_uid', gone)
-        .select('id'),
-    ) as { id: string }[]
+        .select('*'),
+    ) as PlayerRow[]
+    await recordLeavers(career.id, res)
     players.left += res.length
   }
 

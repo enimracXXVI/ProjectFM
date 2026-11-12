@@ -31,6 +31,7 @@ import { Competition } from './pages/Competition'
 import { Competitions } from './pages/Competitions'
 import { Match } from './pages/Match'
 import { Tactics } from './pages/Tactics'
+import { BestXI } from './pages/BestXI'
 import { BottomBarSettings } from './pages/settings/BottomBar'
 import { NamesSettings } from './pages/settings/Names'
 import { PersonalitySettings } from './pages/settings/Personality'
@@ -80,6 +81,7 @@ function SignedIn() {
         <Route path="check" element={<Check />} />
         <Route path="competitions" element={<Competitions />} />
         <Route path="tactics" element={<Tactics />} />
+        <Route path="best-xi" element={<BestXI />} />
         <Route path="competitions/:dbId" element={<Competition />} />
         <Route path="competitions/:dbId/match/:key" element={<Match />} />
         <Route path="explain" element={<Explain />} />

@@ -67,6 +67,8 @@ export interface AppConfig {
   footMins: number[]
   /** FM's team instructions and their options, by phase. */
   teamInstructions: InstructionDef[]
+  /** Best XI: the match rating a player must beat to add to his score. */
+  bestXiBaseline: number
 }
 
 export interface Learned {
@@ -115,6 +117,7 @@ export const DEFAULT_CONFIG: AppConfig = {
   footWords: DEFAULT_FOOT_WORDS,
   footMins: DEFAULT_FOOT_MINS,
   teamInstructions: DEFAULT_INSTRUCTIONS,
+  bestXiBaseline: 6,
 }
 
 type Stored = Partial<{ [K in ConfigKey]: AppConfig[K] }>
@@ -155,6 +158,7 @@ export function mergeConfig(stored: Stored): AppConfig {
     footWords: stored.footWords ?? DEFAULT_CONFIG.footWords,
     footMins: stored.footMins ?? DEFAULT_CONFIG.footMins,
     teamInstructions: stored.teamInstructions ?? DEFAULT_CONFIG.teamInstructions,
+    bestXiBaseline: stored.bestXiBaseline ?? DEFAULT_CONFIG.bestXiBaseline,
   }
 }
 

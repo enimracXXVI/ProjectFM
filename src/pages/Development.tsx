@@ -1,6 +1,6 @@
 import { clsx } from 'clsx'
 import { useMemo } from 'react'
-import { BOOL, useUrlState } from '../lib/urlState'
+import { useUrlState } from '../lib/urlState'
 import { Link } from 'react-router-dom'
 import { Sparkline } from '../components/Sparkline'
 import { Card, PageHeader, Placeholder, Stat } from '../components/ui'
@@ -25,15 +25,14 @@ export function Development() {
   const { data: snapshots, isPending, error } = useCareerSnapshots(career.id)
   const { data: players } = usePlayers(career.id)
   const [window, setWindow] = useUrlState<number | null>('last', 5)
-  const [showLeft, setShowLeft] = useUrlState('former', false, BOOL)
 
   const byId = useMemo(() => new Map((players ?? []).map((p) => [p.id, p])), [players])
   const rows = useMemo(
     () =>
       computeDevelopment(snapshots ?? [], window).filter(
-        (r) => byId.has(r.playerId) && (showLeft || byId.get(r.playerId)!.in_squad),
+        (r) => byId.has(r.playerId) && byId.get(r.playerId)!.in_squad,
       ),
-    [snapshots, window, byId, showLeft],
+    [snapshots, window, byId],
   )
 
   if (isPending) return <PageHeader title="Development" subtitle="Loading…" />
@@ -74,14 +73,6 @@ export function Development() {
           ))}
         </div>
         <span className="text-sm text-muted">imports</span>
-        <label className="ml-auto flex min-h-11 items-center gap-2 text-sm text-muted">
-          <input
-            type="checkbox"
-            checked={showLeft}
-            onChange={(e) => setShowLeft(e.target.checked)}
-          />
-          Show former players
-        </label>
       </div>
 
       {rows.length === 0 ? (

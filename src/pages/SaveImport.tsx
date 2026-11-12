@@ -3,7 +3,7 @@ import { useEffect, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { Button, ErrorText } from '../components/form'
 import { Card } from '../components/ui'
-import { importDump, importSave, importSaveTactics, isMissingTable } from '../data/api'
+import { importDump, importSave, importSaveTactics, isMissingTable, listPlayers } from '../data/api'
 import type { DumpSummary } from '../import/dump'
 import {
   fmNation,
@@ -16,6 +16,7 @@ import {
 import { useCurrentCareer } from '../lib/career'
 import { uploadWorld } from '../world/storage'
 import { uploadCompetitions } from '../competitions/storage'
+import { closeSeasonIfNew } from '../data/seasons'
 
 const KINDS: [StatsKind, string][] = [
   ['overall', 'All competitive matches'],
@@ -55,14 +56,21 @@ export function SaveImport({
 
   const mutation = useMutation({
     mutationFn: async () => {
+      // A save from a new season first keeps last season's squad, then moves the career on
+      const current = await closeSeasonIfNew(
+        career,
+        data.competitions?.season ?? null,
+        await listPlayers(career.id),
+      )
+      const label = current ?? (season || null)
       // Squad first, so contracts and stats reach players new to ProjectFM too
       const squad = await importDump({
         career,
         summary,
         includeOtherTeams: includeOther,
-        season: season || null,
+        season: label,
       })
-      const rest = await importSave({ career, data, kind, season: season || null, fileName })
+      const rest = await importSave({ career, data, kind, season: label, fileName })
       if (saveWorld) await uploadWorld(career.id, world)
       let competitions = 0
       if (data.competitions) {
@@ -94,6 +102,9 @@ export function SaveImport({
         'world',
         'competitions',
         'tactics',
+        'careers',
+        'squad-seasons',
+        'squad-season',
       ])
         qc.invalidateQueries({ queryKey: [key] })
     },

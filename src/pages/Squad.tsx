@@ -1,7 +1,8 @@
 import { clsx } from 'clsx'
-import { ChevronDown, ChevronUp, Scale, TrendingUp } from 'lucide-react'
+import { ChevronDown, ChevronUp, Scale, TrendingUp, Trophy } from 'lucide-react'
 import { useMemo } from 'react'
-import { BOOL, SORT, TEXT, useUrlState } from '../lib/urlState'
+import { SORT, TEXT, useUrlState } from '../lib/urlState'
+import { seasonText, seasonYear, useSquadSeason, useSquadSeasons } from '../data/seasons'
 import { Link } from 'react-router-dom'
 import { StatusChip } from '../components/StatusChip'
 import { TeamBadge, TeamSelect } from '../components/TeamSelect'
@@ -51,11 +52,25 @@ const PROFILE_KEYS = new Set([...PROFILE_COLS, ...HIDDEN_COLS].map((c) => c.key)
 export function Squad() {
   const career = useCurrentCareer()
   const config = useConfig()
-  const { data, isPending, error } = usePlayers(career.id)
+  const { data: live, isPending, error } = usePlayers(career.id)
+  // Current season from the database; past seasons from their end-of-season squad
+  const [season, setSeason] = useUrlState<number | null>('season', null)
+  const { data: pastSeasons } = useSquadSeasons(career.id)
+  const { data: past } = useSquadSeason(career.id, season)
+  const isPast = season !== null
+  const data = useMemo(() => {
+    if (!isPast) return (live ?? []).filter((p) => p.in_squad)
+    const squad = past?.squad ?? []
+    const ids = new Set(squad.map((p) => p.id))
+    // Players who left during the season come after the final squad, dimmed
+    return [
+      ...squad.map((p) => ({ ...p, in_squad: true })),
+      ...(past?.left ?? []).filter((p) => !ids.has(p.id)).map((p) => ({ ...p, in_squad: false })),
+    ]
+  }, [isPast, live, past])
   const [view, setView] = useUrlState<View>('view', 'profile', TEXT as never)
   const [role, setRole] = useUrlState<Role>('role', 'outfield', TEXT as never)
   const [filter, setFilter] = useUrlState('q', '', TEXT)
-  const [showLeft, setShowLeft] = useUrlState('former', false, BOOL)
   const [team, setTeam] = useUrlState<'all' | Team>('team', 'all', TEXT as never)
   const [sort, setSort] = useUrlState<SortKey>(
     'sort',
@@ -87,7 +102,6 @@ export function Squad() {
     const q = filter.toLowerCase()
     const list = (data ?? []).filter(
       (p) =>
-        (showLeft || p.in_squad) &&
         (team === 'all' || teamOf(p) === team) &&
         (view !== 'attributes' || isGoalkeeper(p.positions) === (role === 'goalkeepers')) &&
         (!q || p.name.toLowerCase().includes(q) || (p.positions ?? '').toLowerCase().includes(q)),
@@ -112,7 +126,7 @@ export function Squad() {
         typeof x === 'number' && typeof y === 'number' ? x - y : String(x).localeCompare(String(y))
       return sort.asc ? r : -r
     })
-  }, [data, filter, showLeft, sort, view, role, fits, profileCols, team])
+  }, [data, filter, sort, view, role, fits, profileCols, team])
 
   // Only sections/columns that have data for the players shown
   const sections = useMemo(
@@ -147,19 +161,22 @@ export function Squad() {
   if (isPending) return <PageHeader title="Squad" subtitle="Loading…" />
   if (error) return <Placeholder>{error.message}</Placeholder>
 
-  const total = (data ?? []).filter((p) => p.in_squad).length
+  const total = data.filter((p) => p.in_squad).length
+  const currentYear = seasonYear(career.current_season)
+  const seasonOptions = (pastSeasons ?? []).filter((y) => y !== currentYear)
 
   return (
     <>
       <PageHeader
         title="Squad"
-        subtitle={`${total} players · ${career.current_season ?? ''}`}
+        subtitle={`${total} players · ${isPast ? seasonText(season) : (career.current_season ?? '')}`}
         actions={
           <div className="flex flex-wrap gap-2">
             {(
               [
                 ['/development', 'Development', TrendingUp],
                 ['/compare', 'Compare', Scale],
+                ['/best-xi', 'Best XI', Trophy],
               ] as const
             ).map(([to, label, Icon]) => (
               <Link
@@ -175,7 +192,7 @@ export function Squad() {
         }
       />
 
-      {total === 0 && !showLeft ? (
+      {total === 0 && !isPast ? (
         <Placeholder>
           No players yet.{' '}
           <Link to="/import" className="text-accent underline">
@@ -251,15 +268,28 @@ export function Squad() {
               onChange={setTeam}
               options={[['all', 'All'], ...TEAMS.map(([t, l]) => [t, l] as [Team, string])]}
             />
-            <label className="flex min-h-11 items-center gap-2 text-sm text-muted">
-              <input
-                type="checkbox"
-                checked={showLeft}
-                onChange={(e) => setShowLeft(e.target.checked)}
-              />
-              Show former players
-            </label>
+            {seasonOptions.length > 0 && (
+              <select
+                aria-label="Season"
+                value={season ?? ''}
+                onChange={(e) => setSeason(e.target.value ? Number(e.target.value) : null)}
+                className="min-h-11 rounded-lg border border-border bg-surface px-3 text-sm"
+              >
+                <option value="">{career.current_season ?? 'Current season'} (current)</option>
+                {seasonOptions.map((y) => (
+                  <option key={y} value={y}>
+                    {seasonText(y)}
+                  </option>
+                ))}
+              </select>
+            )}
           </div>
+          {isPast && (
+            <p className="mb-3 text-sm text-muted">
+              The squad at the end of {seasonText(season)}. Players who left during the season are
+              listed dimmed after it.
+            </p>
+          )}
 
           {/* Phones: cards */}
           <ul className="grid gap-2 md:hidden">
@@ -432,7 +462,7 @@ export function Squad() {
                     ) : view === 'profile' ? (
                       [
                         <td key="team" className="px-4 py-1.5">
-                          <TeamSelect player={p} />
+                          {isPast ? <TeamBadge player={p} /> : <TeamSelect player={p} />}
                         </td>,
                       ].concat(
                         profileCols.map((c) => (
