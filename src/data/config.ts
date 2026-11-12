@@ -20,6 +20,8 @@ import {
   type StaffSection,
   type StaffTab,
 } from './staffInfo'
+import { DEFAULT_PERSONALITY_RULES, type PersonalityRule } from '../lib/personality'
+import { DEFAULT_FOOT_MINS, DEFAULT_FOOT_WORDS } from '../import/dump'
 import { DEFAULT_STATUSES, normalizeStatus, type StatusInfo } from './statusInfo'
 
 export type Layout = Record<Role, AttributeSection[][]>
@@ -51,6 +53,12 @@ export interface AppConfig {
   competitions: Record<string, CompetitionInfo>
   /** Sections in the phone bottom bar (paths, up to 5, in order). */
   mobileBar: string[]
+  /** Personality ranges and overlap rules, used to name personalities at import. */
+  personalityRules: PersonalityRule[]
+  /** Foot strength words, weakest to strongest. */
+  footWords: string[]
+  /** Lowest 1–20 value of each foot word (same order as footWords). */
+  footMins: number[]
 }
 
 export interface Learned {
@@ -93,6 +101,9 @@ export const DEFAULT_CONFIG: AppConfig = {
     '104551': { name: 'Friendlies', kind: 'friendlies' },
   },
   mobileBar: ['/', '/squad', '/development', '/scouting', '/world'],
+  personalityRules: DEFAULT_PERSONALITY_RULES,
+  footWords: DEFAULT_FOOT_WORDS,
+  footMins: DEFAULT_FOOT_MINS,
 }
 
 type Stored = Partial<{ [K in ConfigKey]: AppConfig[K] }>
@@ -127,6 +138,9 @@ export function mergeConfig(stored: Stored): AppConfig {
     learned: { ...DEFAULT_CONFIG.learned, ...stored.learned },
     competitions: { ...DEFAULT_CONFIG.competitions, ...stored.competitions },
     mobileBar: stored.mobileBar ?? DEFAULT_CONFIG.mobileBar,
+    personalityRules: stored.personalityRules ?? DEFAULT_CONFIG.personalityRules,
+    footWords: stored.footWords ?? DEFAULT_CONFIG.footWords,
+    footMins: stored.footMins ?? DEFAULT_CONFIG.footMins,
   }
 }
 

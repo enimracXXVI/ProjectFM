@@ -8,7 +8,7 @@ import { byLastName } from '../lib/names'
 import { relabel, type LearnedKind } from '../lib/learned'
 import { UNKNOWN_WORD, withValue } from '../lib/valueWord'
 import { loadStoredConfig, mergeConfig, saveConfig } from './config'
-import { DUMP_PRESENT, isReaderDump, type DumpSummary } from '../import/dump'
+import { applyImportWords, DUMP_PRESENT, isReaderDump, type DumpSummary } from '../import/dump'
 import type { CoreField } from '../import/fields'
 import type { ImportedPlayer, ParseResult } from '../import/parse'
 import {
@@ -367,7 +367,8 @@ export async function importDump(opts: {
   season: string | null
 }): Promise<DumpImportResult> {
   const { career, summary, includeOtherTeams, season } = opts
-  const { learned } = mergeConfig(await loadStoredConfig())
+  const config = mergeConfig(await loadStoredConfig())
+  const { learned } = config
   // A save says which team each player is in (0 first team, 1 U20, 2 U18)
   const saveTeams = isSaveDump(summary.meta)
   const chosen = summary.players
@@ -382,6 +383,7 @@ export async function importDump(opts: {
         ? { ...p, extra: { ...p.extra, Morale: relabel(p.extra.Morale, learned.morale) } }
         : p,
     )
+    .map((p) => applyImportWords(p, config))
 
   const attributeNames = new Set(chosen.flatMap((p) => Object.keys(p.attributes)))
   const columns: ParseResult['columns'] = [
@@ -510,7 +512,7 @@ export async function importSave(opts: {
   const { career, data, kind, season, fileName } = opts
   const existing = (await listPlayers(career.id)).filter((p) => p.fm_uid != null)
   const byUid = new Map(existing.map((p) => [p.fm_uid!, p]))
-  const updates = saveUpdates(data, kind)
+  const updates = saveUpdates(data, kind, mergeConfig(await loadStoredConfig()))
 
   const importRow = check(
     await supabase
@@ -587,10 +589,10 @@ export const isMissingColumn = (e: unknown) =>
 
 async function importScoutsOnly(career: Career, data: SaveData) {
   const staff = await listStaff(career.id)
-  const { learned } = mergeConfig(await loadStoredConfig())
+  const { learned, personalityRules } = mergeConfig(await loadStoredConfig())
   let scoutsAdded = 0
   let scoutsUpdated = 0
-  for (const raw of saveScouts(data)) {
+  for (const raw of saveScouts(data, personalityRules)) {
     const s = {
       ...raw,
       knowledge: raw.knowledge.map((k) => ({
@@ -638,8 +640,10 @@ async function importScoutsOnly(career: Career, data: SaveData) {
 /** Every member of staff from the save: job, team, attributes, personality, names. */
 async function importAllStaff(career: Career, data: SaveData) {
   const staff = await listStaff(career.id)
-  const { learned, staffScale, staffScaleMin } = mergeConfig(await loadStoredConfig())
-  const scouts = new Map(saveScouts(data).map((s) => [s.fm_uid, s]))
+  const { learned, staffScale, staffScaleMin, personalityRules } = mergeConfig(
+    await loadStoredConfig(),
+  )
+  const scouts = new Map(saveScouts(data, personalityRules).map((s) => [s.fm_uid, s]))
   let added = 0
   let updated = 0
   for (const raw of data.staff ?? []) {
@@ -670,13 +674,16 @@ async function importAllStaff(career: Career, data: SaveData) {
       age: raw.age,
       nation: raw.nation != null ? fmNation(raw.nation) : null,
       personality: raw.personality
-        ? personalityName({
-            ...raw.personality,
-            determination:
-              typeof raw.attributes?.determination === 'number'
-                ? Math.floor(raw.attributes.determination / 5)
-                : undefined,
-          })
+        ? personalityName(
+            {
+              ...raw.personality,
+              determination:
+                typeof raw.attributes?.determination === 'number'
+                  ? Math.floor(raw.attributes.determination / 5)
+                  : undefined,
+            },
+            personalityRules,
+          )
         : null,
       attributes,
       extra,

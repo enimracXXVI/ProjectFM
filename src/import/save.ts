@@ -6,11 +6,18 @@
 import type { CompetitionsFile } from '../competitions/types'
 import type { SaveTactics } from '../tactics/types'
 import fmNations from '../data/fmNations.json'
-import { personalityName } from '../lib/personality'
+import { personalityName, type PersonalityRule } from '../lib/personality'
 import type { KnowledgeEntry } from '../data/db'
 import { EUR_PER_GBP } from '../lib/money'
 import { isUnknownWord, UNKNOWN_WORD, withValue, wordOf } from '../lib/valueWord'
-import { footWithValue, staffWord, type Dump, type DumpMeta, type DumpPerson } from './dump'
+import {
+  footWithValue,
+  staffWord,
+  type ImportWords,
+  type Dump,
+  type DumpMeta,
+  type DumpPerson,
+} from './dump'
 
 export type StatsKind = 'overall' | 'league' | 'cup' | 'non_competitive'
 
@@ -189,14 +196,18 @@ export const SAVE_CONTRACT_KEYS = [
 ]
 
 /** What the save import changes per player, for one competition kind. */
-export function saveUpdates(data: SaveData, kind: StatsKind): SavePlayerUpdate[] {
+export function saveUpdates(
+  data: SaveData,
+  kind: StatsKind,
+  words?: ImportWords,
+): SavePlayerUpdate[] {
   return data.players.map((p) => {
     const contract = data.contracts.find((c) => c.uniqueId === p.uniqueId)
     const stats = data.stats.find((s) => s.uniqueId === p.uniqueId && s.kind === kind)
     return {
       uniqueId: p.uniqueId,
-      leftFoot: p.leftFoot ? footWithValue(p.leftFoot) : null,
-      rightFoot: p.rightFoot ? footWithValue(p.rightFoot) : null,
+      leftFoot: p.leftFoot ? footWithValue(p.leftFoot, words?.footWords, words?.footMins) : null,
+      rightFoot: p.rightFoot ? footWithValue(p.rightFoot, words?.footWords, words?.footMins) : null,
       contract: contract ? contractFields(contract) : null,
       stats: stats ? statsFields(stats) : null,
     }
@@ -255,7 +266,7 @@ export interface SaveScout {
 }
 
 /** The save's scouts as ProjectFM staff: rating words and knowledge per nation. */
-export function saveScouts(data: SaveData): SaveScout[] {
+export function saveScouts(data: SaveData, rules?: PersonalityRule[]): SaveScout[] {
   return (data.scouts ?? []).map((s) => {
     const attributes: Record<string, string> = {}
     for (const [key, label, scale] of SCOUT_ATTR) {
@@ -272,13 +283,16 @@ export function saveScouts(data: SaveData): SaveScout[] {
       role: s.chief ? 'Chief Scout' : 'Scout',
       // Staff determination is stored ×5, like the other staff attributes
       personality: s.personality
-        ? personalityName({
-            ...s.personality,
-            determination:
-              typeof s.attributes?.determination === 'number'
-                ? Math.floor(s.attributes.determination / 5)
-                : undefined,
-          })
+        ? personalityName(
+            {
+              ...s.personality,
+              determination:
+                typeof s.attributes?.determination === 'number'
+                  ? Math.floor(s.attributes.determination / 5)
+                  : undefined,
+            },
+            rules,
+          )
         : null,
       attributes,
       knowledge: s.knowledge.map((k) => ({

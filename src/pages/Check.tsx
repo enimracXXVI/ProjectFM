@@ -14,7 +14,6 @@ import type { UnknownCompetition, UnknownRound, UnknownValue } from '../lib/chec
 import type { CompetitionKind } from '../competitions/types'
 import { useSaveConfig } from '../lib/useSaveConfig'
 import type { LearnedKind } from '../lib/learned'
-import { PERSONALITY_NAMES } from '../lib/personality'
 import { useChecks } from '../lib/useChecks'
 
 const field = 'min-h-11 rounded-lg border border-border bg-surface-2 px-3 text-base md:text-sm'
@@ -222,6 +221,8 @@ function TeachRow({
 
 function PersonalityRow({ player }: { player: PlayerRow }) {
   const qc = useQueryClient()
+  const { personalityRules } = useConfig()
+  const names = [...new Set([...personalityRules.map((r) => r.name), 'Devoted'])].sort()
   const [word, setWord] = useState('')
   const save = useMutation({
     mutationFn: () => setPlayerPersonality(player.id, word),
@@ -239,7 +240,7 @@ function PersonalityRow({ player }: { player: PlayerRow }) {
         className={field}
       >
         <option value="">Pick the personality FM shows…</option>
-        {PERSONALITY_NAMES.map((n) => (
+        {names.map((n) => (
           <option key={n}>{n}</option>
         ))}
       </select>

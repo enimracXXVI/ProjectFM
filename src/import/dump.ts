@@ -3,8 +3,9 @@
  * Format reference: FMSuperScout core/Dumper.cs (MIT). Staff attribute keys in the dump are
  * Dutch; the mapping below was checked value by value against FM27's staff screen for 10 scouts.
  */
-import { UNKNOWN_WORD, withValue } from '../lib/valueWord'
-import { personalityName } from '../lib/personality'
+import { UNKNOWN_WORD, valueOf, withValue } from '../lib/valueWord'
+import { personalityName, type PersonalityRule } from '../lib/personality'
+import { scaleWord } from '../data/staffInfo'
 import type { Team } from '../data/teams'
 import type { ImportedPlayer } from './parse'
 
@@ -146,21 +147,65 @@ export const JOB_SCOUT = 14
 export const JOB_CHIEF_SCOUT = 44
 
 /**
- * FM27 foot strength word for a 1–20 value. Checked against the user's squad export
- * (Weak 5–8, Reasonable 9–11, Fairly Strong 12–13, Strong 16, Very Strong 20); the gaps in
- * between follow the same three-point steps.
+ * FM27 foot strength words and the lowest 1–20 value of each. Checked against the user's
+ * squad export (Weak 5–8, Reasonable 9–11, Fairly Strong 12–13, Strong 16, Very Strong 20);
+ * the gaps in between follow the same three-point steps. Editable in Settings.
  */
-export function footWord(n: number): string {
-  if (n <= 4) return 'Very Weak'
-  if (n <= 8) return 'Weak'
-  if (n <= 11) return 'Reasonable'
-  if (n <= 14) return 'Fairly Strong'
-  if (n <= 17) return 'Strong'
-  return 'Very Strong'
+export const DEFAULT_FOOT_WORDS = [
+  'Very Weak',
+  'Weak',
+  'Reasonable',
+  'Fairly Strong',
+  'Strong',
+  'Very Strong',
+]
+export const DEFAULT_FOOT_MINS = [1, 5, 9, 12, 15, 18]
+
+export function footWord(n: number, words = DEFAULT_FOOT_WORDS, mins = DEFAULT_FOOT_MINS): string {
+  return scaleWord(n, words, mins)
 }
 
 /** Foot word with the value, as stored: "Very Strong (20)". */
-export const footWithValue = (n: number) => withValue(footWord(n), n)
+export const footWithValue = (n: number, words?: string[], mins?: number[]) =>
+  withValue(footWord(n, words, mins), n)
+
+/** The words from Settings that the import applies on the main thread. */
+export interface ImportWords {
+  personalityRules: PersonalityRule[]
+  footWords: string[]
+  footMins: number[]
+}
+
+/** "Strong (16)" relabelled with the Settings words; other text is kept. */
+export function refoot(text: string | null, w: ImportWords): string | null {
+  const n = text ? valueOf(text) : null
+  return n == null ? text : footWithValue(n, w.footWords, w.footMins)
+}
+
+/** Re-applies the Settings personality rules and foot words to an imported player. */
+export function applyImportWords(p: ImportedPlayer, w: ImportWords): ImportedPlayer {
+  const num = (x: unknown) => {
+    const n = typeof x === 'number' ? x : typeof x === 'string' ? Number(x) : NaN
+    return Number.isFinite(n) && n > 0 ? n : undefined
+  }
+  const values = {
+    professionalism: num(p.extra.Professionalism),
+    pressure: num(p.extra.Pressure),
+    ambition: num(p.extra.Ambition),
+    temperament: num(p.extra.Temperament),
+    loyalty: num(p.extra.Loyalty),
+    sportsmanship: num(p.extra.Sportsmanship),
+    determination: num(p.attributes.Determination),
+    leadership: num(p.attributes.Leadership),
+  }
+  const known = values.professionalism !== undefined || values.ambition !== undefined
+  return {
+    ...p,
+    left_foot: refoot(p.left_foot, w),
+    right_foot: refoot(p.right_foot, w),
+    personality: known ? personalityName(values, w.personalityRules) : p.personality,
+  }
+}
 
 /**
  * FM27 morale words for the reader's 1–20 value, as confirmed by the user for 10 players.

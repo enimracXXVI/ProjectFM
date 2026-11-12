@@ -33,6 +33,7 @@ import { Match } from './pages/Match'
 import { Tactics } from './pages/Tactics'
 import { BottomBarSettings } from './pages/settings/BottomBar'
 import { NamesSettings } from './pages/settings/Names'
+import { PersonalitySettings } from './pages/settings/Personality'
 import { StaffAttributesSettings } from './pages/settings/StaffAttributes'
 import { Explain } from './pages/Explain'
 import { Squad } from './pages/Squad'
@@ -93,6 +94,7 @@ function SignedIn() {
         <Route path="settings/bottom-bar" element={<BottomBarSettings />} />
         <Route path="settings/staff-attributes" element={<StaffAttributesSettings />} />
         <Route path="settings/names" element={<NamesSettings />} />
+        <Route path="settings/personality" element={<PersonalitySettings />} />
         <Route path="*" element={<NotFound />} />
       </Route>
     </Routes>

@@ -267,14 +267,14 @@ function valuesOf(p: PlayerRow): PersonalityValues {
 
 function PersonalityExplainer() {
   const career = useCurrentCareer()
-  const { showHidden } = useConfig()
+  const { showHidden, personalityRules } = useConfig()
   const { data: players } = usePlayers(career.id)
   const withValues = (players ?? []).filter((p) => p.in_squad && p.extra.Ambition !== undefined)
   const [id, setId] = useState('')
   const player = withValues.find((p) => p.id === id) ?? withValues[0]
   const values = player ? valuesOf(player) : null
-  const matches = values ? personalityMatches(values) : []
-  const winner = values ? personalityName(values) : null
+  const matches = values ? personalityMatches(values, personalityRules) : []
+  const winner = values ? personalityName(values, personalityRules) : null
 
   return (
     <>
@@ -329,10 +329,11 @@ function PersonalityExplainer() {
 }
 
 function RangeBars({ name, values }: { name: string; values: PersonalityValues }) {
+  const { personalityRules } = useConfig()
   return (
     <div className="grid gap-2">
       <p className="text-xs text-muted">Green band: what {name} needs. Dot: this player.</p>
-      {personalityRanges(name).map(([key, min, max]) => {
+      {personalityRanges(name, personalityRules).map(([key, min, max]) => {
         const v = values[key]
         return (
           <div key={key} className="grid grid-cols-[8rem_1fr_2rem] items-center gap-2 text-sm">

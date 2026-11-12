@@ -197,32 +197,65 @@ function ambitiousBeats() {
   ]
 }
 
-function beats(a: string, b: string): boolean {
-  const r = RULES[a]
+/** One personality: its ranges (table column order) and how it wins overlaps. */
+export interface PersonalityRule {
+  name: string
+  /** One [min, max] per column (Pro, Pre, Amb, Tem, Loy, Spo, Det, Ldr), null = any. */
+  ranges: (Range | null)[]
+  /** Wins against every other personality except these. */
+  overridesAllExcept?: string[]
+  /** Wins only against these (absent with overridesAllExcept: loses to every overlap). */
+  overrides?: string[]
+}
+
+export type { Range as PersonalityRange }
+export const PERSONALITY_COLUMNS = COLS
+
+/** The built-in rules: the community table and overlap tests (editable in Settings). */
+export const DEFAULT_PERSONALITY_RULES: PersonalityRule[] = TABLE.map(([name, ranges]) => ({
+  name,
+  ranges,
+  ...RULES[name],
+}))
+
+function beats(rules: PersonalityRule[], a: string, b: string): boolean {
+  const r = rules.find((x) => x.name === a)
   if (!r) return false
-  return 'overrides' in r ? r.overrides.includes(b) : !r.overridesAllExcept.includes(b)
+  if (r.overridesAllExcept) return !r.overridesAllExcept.includes(b)
+  return (r.overrides ?? []).includes(b)
 }
 
 /** Every personality whose ranges the values fit. */
-export function personalityMatches(v: PersonalityValues): string[] {
-  return TABLE.filter(([, ranges]) =>
-    ranges.every((r, i) => {
-      if (!r) return true
-      const x = v[COLS[i]]
-      // Staff have no Leadership: treated as not a leader (fits 1–18, not the Leader rows)
-      if (x === undefined) return r[0] === 1
-      return typeof x === 'number' && x >= r[0] && x <= r[1]
-    }),
-  ).map(([name]) => name)
+export function personalityMatches(
+  v: PersonalityValues,
+  rules: PersonalityRule[] = DEFAULT_PERSONALITY_RULES,
+): string[] {
+  return rules
+    .filter(({ ranges }) =>
+      ranges.every((r, i) => {
+        if (!r) return true
+        const x = v[COLS[i]]
+        // Staff have no Leadership: treated as not a leader (fits 1–18, not the Leader rows)
+        if (x === undefined) return r[0] === 1
+        return typeof x === 'number' && x >= r[0] && x <= r[1]
+      }),
+    )
+    .map(({ name }) => name)
 }
 
 /** The personality FM shows, or null when the values fit none of the known ones. */
-export function personalityName(v: PersonalityValues): string | null {
-  const matches = personalityMatches(v)
+export function personalityName(
+  v: PersonalityValues,
+  rules: PersonalityRule[] = DEFAULT_PERSONALITY_RULES,
+): string | null {
+  const matches = personalityMatches(v, rules)
   if (matches.length <= 1) return matches[0] ?? null
   // Most head-to-head wins; ties keep the table's order
   const score = (a: string) =>
-    matches.reduce((s, b) => s + (b !== a && beats(a, b) && !beats(b, a) ? 1 : 0), 0)
+    matches.reduce(
+      (s, b) => s + (b !== a && beats(rules, a, b) && !beats(rules, b, a) ? 1 : 0),
+      0,
+    )
   return matches.reduce((best, m) => (score(m) > score(best) ? m : best))
 }
 
@@ -230,8 +263,11 @@ export function personalityName(v: PersonalityValues): string | null {
 export const PERSONALITY_NAMES = [...TABLE.map(([name]) => name), 'Devoted'].sort()
 
 /** The table row for a personality, as [value name, min, max] (for the explainer). */
-export function personalityRanges(name: string): [Key, number, number][] {
-  const row = TABLE.find(([n]) => n === name)
+export function personalityRanges(
+  name: string,
+  rules: PersonalityRule[] = DEFAULT_PERSONALITY_RULES,
+): [Key, number, number][] {
+  const row = rules.find((r) => r.name === name)
   if (!row) return []
-  return row[1].flatMap((r, i) => (r ? [[COLS[i], r[0], r[1]] as [Key, number, number]] : []))
+  return row.ranges.flatMap((r, i) => (r ? [[COLS[i], r[0], r[1]] as [Key, number, number]] : []))
 }

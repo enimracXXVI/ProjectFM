@@ -100,6 +100,11 @@ export function SettingsPage() {
                 'Morale words, competitions, cup rounds, staff job codes',
               ],
               [
+                '/settings/personality',
+                'Personality and feet',
+                'Personality ranges and overlap rules, foot strength words',
+              ],
+              [
                 '/settings/bottom-bar',
                 'Phone bottom bar',
                 'Which sections sit at the bottom on phones',
