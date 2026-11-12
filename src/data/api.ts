@@ -1,6 +1,7 @@
 import type { DevSnapshot } from '../lib/development'
 import type { Team } from './teams'
 import { supabase } from '../lib/supabase'
+import { byLastName } from '../lib/names'
 import { applyLearned, type LearnedKind } from '../lib/learned'
 import { UNKNOWN_WORD, withValue } from '../lib/valueWord'
 import { loadStoredConfig, mergeConfig, saveConfig } from './config'
@@ -72,7 +73,11 @@ export async function startFresh(career: Career, what: FreshStart): Promise<void
 }
 
 export async function listPlayers(careerId: string): Promise<PlayerRow[]> {
-  return check(await supabase.from('players').select('*').eq('career_id', careerId).order('name'))
+  const rows = check(
+    await supabase.from('players').select('*').eq('career_id', careerId),
+  ) as PlayerRow[]
+  // Every list starts sorted by last name (or nickname)
+  return rows.sort(byLastName)
 }
 
 export async function getPlayer(id: string): Promise<PlayerRow> {
@@ -296,15 +301,15 @@ export async function setCareerImage(
 export type StaffInput = Omit<StaffRow, 'id' | 'career_id' | 'created_at' | 'fm_uid'>
 
 export async function listStaff(careerId: string): Promise<StaffRow[]> {
-  return check(
+  const rows = check(
     await supabase
       .from('staff')
       .select(
         'id, career_id, fm_uid, name, role, age, nation, personality, reputation, attributes, knowledge, notes, created_at',
       )
-      .eq('career_id', careerId)
-      .order('name'),
-  )
+      .eq('career_id', careerId),
+  ) as StaffRow[]
+  return rows.sort(byLastName)
 }
 
 export async function saveStaff(
@@ -363,9 +368,15 @@ export async function importDump(opts: {
 }): Promise<DumpImportResult> {
   const { career, summary, includeOtherTeams, season } = opts
   const { learned } = mergeConfig(await loadStoredConfig())
+  // A save says which team each player is in (0 first team, 1 U20, 2 U18)
+  const saveTeams = isSaveDump(summary.meta)
   const chosen = summary.players
     .filter((p) => includeOtherTeams || p.level === 'first')
-    .map((p) => p.player)
+    .map((p) =>
+      saveTeams && p.team && p.team !== 'first'
+        ? { ...p.player, extra: { ...p.player.extra, team: p.team } }
+        : p.player,
+    )
     .map((p) =>
       p.extra.Morale
         ? { ...p, extra: { ...p.extra, Morale: applyLearned(p.extra.Morale, learned.morale) } }
@@ -386,7 +397,7 @@ export async function importDump(opts: {
       header: name,
       target: { kind: 'attribute' as const, name },
     })),
-    ...[...DUMP_PRESENT.extra].map((key) => ({
+    ...[...DUMP_PRESENT.extra, ...(saveTeams ? ['team'] : [])].map((key) => ({
       header: key,
       target: { kind: 'extra' as const, key },
     })),
@@ -685,7 +696,9 @@ export async function importSaveTactics(careerId: string, data: SaveTactics): Pr
     const old = existing.find((x) => x.save_index === t.index)
     const slots: TacticSlot[] = t.slots.map((s, i) => ({
       position: s.position,
+      positionOop: s.positionOop ?? s.position,
       role: old?.slots[i]?.role ?? null,
+      roleOop: old?.slots[i]?.roleOop ?? null,
       player:
         old?.slots[i]?.player ??
         byUid.get(starters.find((x) => x.slot === s.number)?.uniqueId ?? -1) ??

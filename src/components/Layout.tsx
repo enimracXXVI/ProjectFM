@@ -2,6 +2,7 @@ import { clsx } from 'clsx'
 import { PanelLeftClose, PanelLeftOpen } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { NavLink, Outlet } from 'react-router-dom'
+import { useConfig } from '../lib/config'
 import { useChecks } from '../lib/useChecks'
 import { navItems } from './nav'
 import { TopBar } from './TopBar'
@@ -19,6 +20,10 @@ function readCollapsed(): boolean {
 export function Layout() {
   const [collapsed, setCollapsed] = useState(readCollapsed)
   const checks = useChecks()
+  const { mobileBar } = useConfig()
+  const barItems = mobileBar
+    .map((to) => navItems.find((n) => n.to === to))
+    .filter((n): n is (typeof navItems)[number] => !!n)
 
   const toggle = () =>
     setCollapsed((c) => {
@@ -129,26 +134,27 @@ export function Layout() {
         aria-label="Main"
         className="fixed inset-x-0 bottom-0 z-20 border-t border-border bg-surface/95 pb-safe backdrop-blur md:hidden"
       >
-        <ul className="grid grid-cols-5">
-          {navItems
-            .filter((item) => item.mobile)
-            .map(({ to, label, icon: Icon }) => (
-              <li key={to}>
-                <NavLink
-                  to={to}
-                  end={to === '/'}
-                  className={({ isActive }) =>
-                    clsx(
-                      'flex min-h-14 flex-col items-center justify-center gap-0.5 text-[11px] font-medium select-none',
-                      isActive ? 'text-accent' : 'text-muted active:text-text',
-                    )
-                  }
-                >
-                  <Icon className="size-5" aria-hidden />
-                  {label}
-                </NavLink>
-              </li>
-            ))}
+        <ul
+          className="grid"
+          style={{ gridTemplateColumns: `repeat(${barItems.length}, minmax(0, 1fr))` }}
+        >
+          {barItems.map(({ to, label, icon: Icon }) => (
+            <li key={to}>
+              <NavLink
+                to={to}
+                end={to === '/'}
+                className={({ isActive }) =>
+                  clsx(
+                    'flex min-h-14 flex-col items-center justify-center gap-0.5 text-[11px] font-medium select-none',
+                    isActive ? 'text-accent' : 'text-muted active:text-text',
+                  )
+                }
+              >
+                <Icon className="size-5" aria-hidden />
+                <span className="max-w-full truncate px-0.5">{label}</span>
+              </NavLink>
+            </li>
+          ))}
         </ul>
       </nav>
     </div>

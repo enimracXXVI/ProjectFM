@@ -9,16 +9,6 @@ import type { MatchLogRow } from '../tactics/types'
 import { Button, ErrorText } from './form'
 import { Card } from './ui'
 
-const MENTALITIES = [
-  'Very Defensive',
-  'Defensive',
-  'Cautious',
-  'Balanced',
-  'Positive',
-  'Attacking',
-  'Very Attacking',
-]
-
 const field =
   'min-h-11 w-full rounded-lg border border-border bg-surface-2 px-3 text-base md:text-sm'
 
@@ -108,60 +98,21 @@ function Editor({
   return (
     <Card className="grid gap-3">
       <h2 className="font-semibold">Match log</h2>
-      <div className="grid gap-3 sm:grid-cols-2">
-        <label className="grid gap-1 text-sm">
-          <span className="text-muted">Your tactic</span>
-          <select
-            value={form.tactic_id ?? ''}
-            onChange={(e) => set('tactic_id', e.target.value)}
-            className={field}
-          >
-            <option value="">–</option>
-            {tactics.map((t) => (
-              <option key={t.id} value={t.id}>
-                {t.name}
-              </option>
-            ))}
-          </select>
-        </label>
-        <label className="grid gap-1 text-sm">
-          <span className="text-muted">Opponent formation</span>
-          <input
-            list="formations"
-            value={form.opponent_formation ?? ''}
-            onChange={(e) => set('opponent_formation', e.target.value)}
-            placeholder="e.g. 4-2-3-1"
-            className={field}
-          />
-          <datalist id="formations">
-            {Object.keys(FORMATIONS).map((f) => (
-              <option key={f} value={f} />
-            ))}
-          </datalist>
-        </label>
-        <label className="grid gap-1 text-sm">
-          <span className="text-muted">Opponent mentality</span>
-          <select
-            value={form.opponent_mentality ?? ''}
-            onChange={(e) => set('opponent_mentality', e.target.value)}
-            className={field}
-          >
-            <option value="">–</option>
-            {MENTALITIES.map((m) => (
-              <option key={m}>{m}</option>
-            ))}
-          </select>
-        </label>
-        <label className="grid gap-1 text-sm">
-          <span className="text-muted">Opponent style</span>
-          <input
-            value={form.opponent_style ?? ''}
-            onChange={(e) => set('opponent_style', e.target.value)}
-            placeholder="e.g. Gegenpress, low block…"
-            className={field}
-          />
-        </label>
-      </div>
+      <label className="grid gap-1 text-sm">
+        <span className="text-muted">Opponent formation</span>
+        <input
+          list="formations"
+          value={form.opponent_formation ?? ''}
+          onChange={(e) => set('opponent_formation', e.target.value)}
+          placeholder="e.g. 4-2-3-1"
+          className={field}
+        />
+        <datalist id="formations">
+          {Object.keys(FORMATIONS).map((f) => (
+            <option key={f} value={f} />
+          ))}
+        </datalist>
+      </label>
       <label className="grid gap-1 text-sm">
         <span className="text-muted">Notes</span>
         <textarea

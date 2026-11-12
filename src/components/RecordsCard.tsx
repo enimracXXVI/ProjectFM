@@ -1,35 +1,26 @@
 import { useAllCompetitions } from '../competitions/hooks'
 import { allGames, recordBy, type Record3 } from '../competitions/records'
-import { useMatchLog, useTactics } from '../data/hooks'
+import { useMatchLog } from '../data/hooks'
 import { useCurrentCareer } from '../lib/career'
 import { useConfig } from '../lib/config'
 import { Card } from './ui'
 
-/** Your record by opponent formation and by your tactic, from the match log. */
+/** Your record by opponent formation, from the match log. */
 export function RecordsCard() {
   const career = useCurrentCareer()
   const config = useConfig()
   const { data } = useAllCompetitions(career.id)
   const log = useMatchLog(career.id)
-  const tactics = useTactics(career.id)
   if (!log.data?.length) return null
   const games = allGames(data, config)
-  const tacticName = new Map((tactics.data ?? []).map((t) => [t.id, t.name]))
   const tables: [string, [string, Record3][]][] = [
     ['Against opponent formations', recordBy(games, log.data, (r) => r.opponent_formation)],
-    ['Against opponent mentality', recordBy(games, log.data, (r) => r.opponent_mentality)],
-    [
-      'With your tactics',
-      recordBy(games, log.data, (r) =>
-        r.tactic_id ? (tacticName.get(r.tactic_id) ?? null) : null,
-      ),
-    ],
   ]
   return (
     <Card className="mt-6">
       <h2 className="mb-1 font-semibold">Your records</h2>
       <p className="mb-3 text-xs text-muted">From the games you filled in on the match log.</p>
-      <div className="grid gap-4 md:grid-cols-3">
+      <div className="grid gap-4 md:grid-cols-2">
         {tables.map(([title, rows]) => (
           <section key={title}>
             <h3 className="mb-1 text-xs font-semibold tracking-wide text-muted uppercase">

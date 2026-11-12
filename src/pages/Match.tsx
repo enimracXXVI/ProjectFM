@@ -52,9 +52,14 @@ export function Match() {
   const squadUids = data.squads?.find(
     (s) => s.date === f.date && s.home === f.home && s.away === f.away,
   )
-  const mySquad = squadUids
-    ? new Set(f.home === data.club ? squadUids.homeSquad : squadUids.awaySquad)
-    : null
+  const myXI = f.home === data.club ? squadUids?.homeXI : squadUids?.awayXI
+  const myBench = f.home === data.club ? squadUids?.homeBench : squadUids?.awayBench
+  // The matchday squad: XI and bench from the report when read, else every ID in the report
+  const mySquad = myXI?.length
+    ? new Set([...myXI, ...(myBench ?? [])])
+    : squadUids
+      ? new Set(f.home === data.club ? squadUids.homeSquad : squadUids.awaySquad)
+      : null
   // Lines without minutes are bench players only when the matchday squad confirms it
   const mine = lines.filter(
     (m) =>
@@ -116,11 +121,21 @@ export function Match() {
       )}
 
       <div className="grid gap-4 lg:grid-cols-2">
-        <Lineup title={data.clubName} lines={mine} squadId={squadId} />
-        {theirs.length > 0 && (
+        <Lineup
+          title={data.clubName}
+          lines={mine}
+          squadId={squadId}
+          xi={f.home === data.club ? squadUids?.homeXI : squadUids?.awayXI}
+          bench={f.home === data.club ? squadUids?.homeBench : squadUids?.awayBench}
+          names={squadUids?.names}
+        />
+        {(theirs.length > 0 || squadUids?.homeXI?.length) && (
           <Lineup
             title={(f.home === opponentId ? f.homeShort : f.awayShort) ?? 'Opponent'}
             lines={theirs}
+            xi={f.home === opponentId ? squadUids?.homeXI : squadUids?.awayXI}
+            bench={f.home === opponentId ? squadUids?.homeBench : squadUids?.awayBench}
+            names={squadUids?.names}
           />
         )}
       </div>
@@ -168,11 +183,39 @@ function Lineup({
   title,
   lines,
   squadId,
+  xi,
+  bench,
+  names,
 }: {
   title: string
   lines: PlayerMatch[]
   squadId?: Map<number | null, string>
+  /** Starting XI and bench from FM's match report (Unique IDs), when known. */
+  xi?: number[]
+  bench?: number[]
+  names?: Record<string, string | null>
 }) {
+  if (xi?.length) {
+    // FM keeps per-player stats only for some players: the rest show by name
+    const known = (u: number) => lines.find((m) => m.uniqueId === u)
+    const line = (u: number): PlayerMatch =>
+      known(u) ?? { ...EMPTY_LINE, uniqueId: u, name: names?.[String(u)] ?? '?' }
+    const benchLines = (bench ?? []).map(line)
+    const noStats = (bench ?? []).filter((u) => !known(u)).map(line)
+    return (
+      <LineupGroups
+        title={title}
+        squadId={squadId}
+        groups={[
+          ['Starting XI', xi.map(line)],
+          ['Substitutes used', benchLines.filter((m) => (m.minutes ?? 0) > 0)],
+          ['Unused substitutes', benchLines.filter((m) => !m.minutes && known(m.uniqueId ?? -1))],
+          // FM kept no stats for these, so whether they came on is not known
+          ['Substitutes', noStats],
+        ]}
+      />
+    )
+  }
   const groups: [string, PlayerMatch[]][] = [
     [
       'Starting XI',
@@ -186,6 +229,37 @@ function Lineup({
     ],
     ['Unused substitutes', lines.filter((m) => role(m) === 'unused')],
   ]
+  return <LineupGroups title={title} squadId={squadId} groups={groups} />
+}
+
+const EMPTY_LINE: PlayerMatch = {
+  comp: 0,
+  date: '',
+  uniqueId: null,
+  name: null,
+  club: null,
+  clubName: null,
+  opponent: null,
+  minutes: null,
+  leftAt: null,
+  goals: null,
+  assists: null,
+  rating: null,
+  position: null,
+  passes: null,
+  passesDone: null,
+}
+
+function LineupGroups({
+  title,
+  squadId,
+  groups,
+}: {
+  title: string
+  squadId?: Map<number | null, string>
+  groups: [string, PlayerMatch[]][]
+}) {
+  const lines = groups.flatMap(([, ms]) => ms)
   return (
     <Card>
       <h2 className="mb-2 font-semibold">{title}</h2>

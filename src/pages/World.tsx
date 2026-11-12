@@ -10,6 +10,7 @@ import { parsePositions, roleScore, scoreColor } from '../lib/roleFit'
 import { useWorld } from '../world/hooks'
 import { eur } from '../lib/money'
 import { regionLookup, rowToPlayer, searchKey, type WorldRow } from '../world/world'
+import { byLastNameText } from '../lib/names'
 
 const POSITIONS = [
   'GK',
@@ -125,6 +126,8 @@ export function World() {
                 ? o.row[10]
                 : o.row[11]
     return out.sort((a, b) => {
+      if (col === 'name')
+        return asc ? byLastNameText(a.row[1], b.row[1]) : byLastNameText(b.row[1], a.row[1])
       const [x, y] = [val(a), val(b)]
       if (x === y) return 0
       if (x === null) return 1

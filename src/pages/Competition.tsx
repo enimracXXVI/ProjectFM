@@ -209,9 +209,9 @@ function Matchdays({ file, comp }: { file: CompetitionsFile; comp: SaveCompetiti
           ›
         </button>
       </div>
-      <Card className="grid gap-0.5 p-2">
+      <Card className="grid grid-cols-[minmax(0,1fr)] gap-0.5 p-2">
         {games.map((f, i) => (
-          <FixtureRow key={i} f={f} club={file.club} compDbId={comp.databaseId} />
+          <FixtureRow key={i} f={f} club={file.club} compDbId={comp.databaseId} label={`MD${md}`} />
         ))}
       </Card>
     </>
@@ -338,12 +338,21 @@ function PositionChart({ file, comp }: { file: CompetitionsFile; comp: SaveCompe
 }
 
 function MyGames({ file, comp }: { file: CompetitionsFile; comp: SaveCompetition }) {
+  const config = useConfig()
   const games = myFixtures(file, comp)
+  const kind = compInfo(config, comp)?.kind
+  const rounds = kind === 'cup' ? cupRounds(comp, config.learned.rounds ?? {}) : []
+  const labelOf = (f: (typeof games)[number]) =>
+    kind === 'league'
+      ? `MD${matchdayOf(f)}`
+      : kind === 'cup'
+        ? (rounds.find((r) => r.stage === f.stage)?.name ?? null)
+        : null
   return (
-    <Card className="grid gap-0.5 p-2">
+    <Card className="grid grid-cols-[minmax(0,1fr)] gap-0.5 p-2">
       {games.length === 0 && <p className="p-2 text-sm text-muted">No games.</p>}
       {games.map((f, i) => (
-        <FixtureRow key={i} f={f} club={file.club} compDbId={comp.databaseId} />
+        <FixtureRow key={i} f={f} club={file.club} compDbId={comp.databaseId} label={labelOf(f)} />
       ))}
     </Card>
   )
@@ -445,7 +454,7 @@ function Cup({ file, comp }: { file: CompetitionsFile; comp: SaveCompetition }) 
                   {r.name}
                   <span className="ml-2 text-xs font-normal text-muted">{r.date}</span>
                 </h2>
-                <Card className="grid gap-0.5 p-2">
+                <Card className="grid grid-cols-[minmax(0,1fr)] gap-0.5 p-2">
                   {mineFirst.map((t) =>
                     t.legs.length === 1 ? (
                       <FixtureRow

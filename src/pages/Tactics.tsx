@@ -22,6 +22,7 @@ import {
   pitchPlaces,
 } from '../tactics/positions'
 import type { PositionCode, TacticRow, TacticSlot } from '../tactics/types'
+import { byLastName, shortName } from '../lib/names'
 
 const field = 'min-h-11 rounded-lg border border-border bg-surface-2 px-3 text-base md:text-sm'
 
@@ -97,6 +98,7 @@ function TacticEditor({ tactic }: { tactic: TacticRow }) {
   const squad = (players ?? []).filter((p) => p.in_squad)
   const [form, setForm] = useState(tactic)
   const [active, setActive] = useState<number | null>(null)
+  const [phase, setPhase] = useState<Phase>('ip')
   const dirty = JSON.stringify(form) !== JSON.stringify(tactic)
   const done = () => qc.invalidateQueries({ queryKey: ['tactics'] })
   const save = useMutation({
@@ -114,9 +116,14 @@ function TacticEditor({ tactic }: { tactic: TacticRow }) {
 
   const setSlot = (i: number, patch: Partial<TacticSlot>) =>
     setForm({ ...form, slots: form.slots.map((s, j) => (j === i ? { ...s, ...patch } : s)) })
-  const roleOf = (s: TacticSlot) => config.roles.find((r) => r.id === s.role) ?? null
+  const roleOf = (s: TacticSlot) => config.roles.find((r) => r.id === roleIdOf(s, phase)) ?? null
   const playerOf = (s: TacticSlot) => squad.find((p) => p.id === s.player) ?? null
-  const places = pitchPlaces(form.slots.map((s) => s.position))
+  const positions = form.slots.map((s) => posOf(s, phase))
+  const places = pitchPlaces(positions)
+  const formation =
+    Object.keys(FORMATIONS).find(
+      (k) => JSON.stringify(FORMATIONS[k]) === JSON.stringify(positions),
+    ) ?? ''
   const rolesFor = (pos: PositionCode | null) =>
     pos ? config.roles.filter((r) => r.positions.includes(POSITION_TEXT[pos])) : []
   const used = new Set(form.slots.map((s) => s.player).filter(Boolean))
@@ -124,6 +131,28 @@ function TacticEditor({ tactic }: { tactic: TacticRow }) {
   return (
     <div className="grid gap-4 lg:grid-cols-[minmax(0,26rem)_1fr]">
       <div>
+        <div className="mb-3 flex rounded-lg border border-border p-1" role="tablist">
+          {(
+            [
+              ['ip', 'In possession'],
+              ['oop', 'Out of possession'],
+            ] as const
+          ).map(([ph, label]) => (
+            <button
+              key={ph}
+              type="button"
+              role="tab"
+              aria-selected={phase === ph}
+              onClick={() => setPhase(ph)}
+              className={clsx(
+                'min-h-10 flex-1 rounded-md text-sm',
+                phase === ph ? 'bg-surface-2 font-semibold' : 'text-muted',
+              )}
+            >
+              {label}
+            </button>
+          ))}
+        </div>
         {/* Pitch: attack at the top */}
         <div className="relative mx-auto aspect-[3/4] w-full max-w-md overflow-hidden rounded-xl border border-emerald-900/60 bg-emerald-950/40">
           <div className="absolute inset-x-[20%] top-0 h-[12%] border-x border-b border-emerald-800/50" />
@@ -143,11 +172,11 @@ function TacticEditor({ tactic }: { tactic: TacticRow }) {
                 className={clsx(
                   'absolute w-[22%] -translate-x-1/2 -translate-y-1/2 rounded-lg border bg-surface/95 px-1 py-1 text-center leading-tight shadow',
                   active === i ? 'border-accent ring-2 ring-accent/50' : 'border-border',
-                  !s.position && 'border-amber-400',
+                  !positions[i] && 'border-amber-400',
                 )}
               >
                 <span className="block text-[10px] text-muted">
-                  {s.position ?? '?'}
+                  {positions[i] ?? '?'}
                   {score !== null && (
                     <span className={clsx('ml-1 font-semibold', scoreTextColor(score))}>
                       {score}
@@ -155,7 +184,7 @@ function TacticEditor({ tactic }: { tactic: TacticRow }) {
                   )}
                 </span>
                 <span className="block truncate text-[11px] font-semibold">
-                  {p ? p.name.split(' ').at(-1) : '–'}
+                  {p ? shortName(p) : '–'}
                 </span>
                 <span className="block truncate text-[9px] text-muted">
                   {role?.name ?? 'No role'}
@@ -165,7 +194,8 @@ function TacticEditor({ tactic }: { tactic: TacticRow }) {
           })}
         </div>
         <p className="mt-2 text-center text-xs text-muted">
-          {formationLabel(form.slots.map((s) => s.position))} · tap a position to set it
+          {phase === 'ip' ? 'In possession' : 'Out of possession'}:{' '}
+          {formation || formationLabel(positions)} · tap a position to set it
         </p>
       </div>
 
@@ -173,7 +203,8 @@ function TacticEditor({ tactic }: { tactic: TacticRow }) {
         {active !== null && form.slots[active] && (
           <SlotPanel
             slot={form.slots[active]}
-            roles={rolesFor(form.slots[active].position)}
+            phase={phase}
+            roles={rolesFor(posOf(form.slots[active], phase)).filter((r) => r.phase === phase)}
             squad={squad}
             used={used}
             onChange={(patch) => setSlot(active, patch)}
@@ -209,22 +240,26 @@ function TacticEditor({ tactic }: { tactic: TacticRow }) {
           </div>
           {tactic.save_index === null && (
             <label className="grid gap-1 text-sm">
-              <span className="text-muted">Start from a formation</span>
+              <span className="text-muted">
+                Formation {phase === 'ip' ? 'in possession' : 'out of possession'}
+              </span>
               <select
-                value=""
+                value={formation}
                 onChange={(e) =>
                   e.target.value &&
                   setForm({
                     ...form,
-                    slots: FORMATIONS[e.target.value].map((position, i) => ({
-                      position,
-                      player: form.slots[i]?.player ?? null,
-                    })),
+                    slots: FORMATIONS[e.target.value].map((position, i) => {
+                      const old = form.slots[i] ?? { position: null }
+                      return phase === 'ip'
+                        ? { ...old, position, role: null }
+                        : { ...old, positionOop: position, roleOop: null }
+                    }),
                   })
                 }
                 className={field}
               >
-                <option value="">Pick a formation…</option>
+                <option value="">{formation ? 'Custom' : 'Pick a formation…'}</option>
                 {Object.keys(FORMATIONS).map((f) => (
                   <option key={f}>{f}</option>
                 ))}
@@ -283,6 +318,7 @@ function TacticEditor({ tactic }: { tactic: TacticRow }) {
 
 function SlotPanel({
   slot,
+  phase,
   roles,
   squad,
   used,
@@ -290,6 +326,7 @@ function SlotPanel({
   onClose,
 }: {
   slot: TacticSlot
+  phase: Phase
   roles: RoleDef[]
   squad: PlayerRow[]
   used: Set<string | null | undefined>
@@ -297,10 +334,10 @@ function SlotPanel({
   onClose: () => void
 }) {
   const config = useConfig()
-  const role = roles.find((r) => r.id === slot.role) ?? null
+  const role = roles.find((r) => r.id === roleIdOf(slot, phase)) ?? null
   const ranked = squad
     .map((p) => ({ p, score: role ? roleScore(p.attributes, role, config.roleWeights) : null }))
-    .sort((a, b) => (b.score ?? -1) - (a.score ?? -1) || a.p.name.localeCompare(b.p.name))
+    .sort((a, b) => (b.score ?? -1) - (a.score ?? -1) || byLastName(a.p, b.p))
   return (
     <Card className="grid gap-3 border-accent/50">
       <div className="flex items-center justify-between">
@@ -311,12 +348,17 @@ function SlotPanel({
       </div>
       <div className="grid gap-3 sm:grid-cols-2">
         <label className="grid gap-1 text-sm">
-          <span className="text-muted">Position</span>
+          <span className="text-muted">
+            Position {phase === 'ip' ? 'in possession' : 'out of possession'}
+          </span>
           <select
-            value={slot.position ?? ''}
-            onChange={(e) =>
-              onChange({ position: (e.target.value || null) as PositionCode | null, role: null })
-            }
+            value={posOf(slot, phase) ?? ''}
+            onChange={(e) => {
+              const v = (e.target.value || null) as PositionCode | null
+              onChange(
+                phase === 'ip' ? { position: v, role: null } : { positionOop: v, roleOop: null },
+              )
+            }}
             className={field}
           >
             <option value="">?</option>
@@ -330,21 +372,21 @@ function SlotPanel({
         <label className="grid gap-1 text-sm">
           <span className="text-muted">Role</span>
           <select
-            value={slot.role ?? ''}
-            onChange={(e) => onChange({ role: e.target.value || null })}
+            value={roleIdOf(slot, phase) ?? ''}
+            onChange={(e) =>
+              onChange(
+                phase === 'ip'
+                  ? { role: e.target.value || null }
+                  : { roleOop: e.target.value || null },
+              )
+            }
             className={field}
           >
             <option value="">Pick a role…</option>
-            {(['ip', 'oop'] as const).map((phase) => (
-              <optgroup key={phase} label={phase === 'ip' ? 'In possession' : 'Out of possession'}>
-                {roles
-                  .filter((r) => r.phase === phase)
-                  .map((r) => (
-                    <option key={r.id} value={r.id}>
-                      {r.name}
-                    </option>
-                  ))}
-              </optgroup>
+            {roles.map((r) => (
+              <option key={r.id} value={r.id}>
+                {r.name}
+              </option>
             ))}
           </select>
         </label>
@@ -391,3 +433,10 @@ function SlotPanel({
     </Card>
   )
 }
+
+type Phase = 'ip' | 'oop'
+
+const posOf = (s: TacticSlot, phase: Phase) =>
+  phase === 'ip' ? s.position : (s.positionOop ?? s.position)
+
+const roleIdOf = (s: TacticSlot, phase: Phase) => (phase === 'ip' ? s.role : s.roleOop)

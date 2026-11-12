@@ -35,6 +35,8 @@ export interface AppConfig {
   learned: Learned
   /** Competitions by FM database id: name and type. */
   competitions: Record<string, CompetitionInfo>
+  /** Sections in the phone bottom bar (paths, up to 5, in order). */
+  mobileBar: string[]
 }
 
 export interface Learned {
@@ -64,6 +66,7 @@ export const DEFAULT_CONFIG: AppConfig = {
     '1301412': { name: 'Coppa Italia', kind: 'cup' },
     '104551': { name: 'Friendlies', kind: 'friendlies' },
   },
+  mobileBar: ['/', '/squad', '/development', '/scouting', '/world'],
 }
 
 type Stored = Partial<{ [K in ConfigKey]: AppConfig[K] }>
@@ -94,6 +97,7 @@ export function mergeConfig(stored: Stored): AppConfig {
     showHidden: stored.showHidden ?? DEFAULT_CONFIG.showHidden,
     learned: { ...DEFAULT_CONFIG.learned, ...stored.learned },
     competitions: { ...DEFAULT_CONFIG.competitions, ...stored.competitions },
+    mobileBar: stored.mobileBar ?? DEFAULT_CONFIG.mobileBar,
   }
 }
 

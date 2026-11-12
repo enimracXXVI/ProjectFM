@@ -16,9 +16,14 @@ export type PositionCode =
   | 'ST'
 
 export interface TacticSlot {
+  /** Position in possession. */
   position: PositionCode | null
-  /** Role id from Settings → Roles. */
+  /** Position out of possession (same as in possession when not set). */
+  positionOop?: PositionCode | null
+  /** In-possession role id from Settings → Roles. */
   role?: string | null
+  /** Out-of-possession role id. */
+  roleOop?: string | null
   /** Preferred player (ProjectFM player id). */
   player?: string | null
 }

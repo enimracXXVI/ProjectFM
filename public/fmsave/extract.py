@@ -45,7 +45,7 @@ def _plain(v):
 
 
 # Raised whenever extract() returns new data, so the app can spot an outdated copy
-READER_VERSION = 6
+READER_VERSION = 8
 
 JOB_SCOUT, JOB_CHIEF_SCOUT = 14, 44
 _FF8 = b"\xff" * 8
@@ -154,6 +154,8 @@ def _dump(save, club_uid, club_name, extras):
         row = {
             "id": p.unique_id,
             "name": p.name,
+            "lastName": p.last_name,
+            "commonName": p.common_name,
             "age": p.age,
             "natDb": [nation_db_ids.get(n) for n in nats if n is not None],
             "club": p.club_name,
@@ -376,6 +378,39 @@ def _team_block(report, team_id):
     return None
 
 
+def _lineup(report, uids):
+    """(starting XI, bench) of one team in a match report, by Unique ID.
+
+    The report opens with each team's starting XI as Unique IDs 50 bytes apart; every
+    player of the matchday squad also has a record where his ID repeats 31 bytes later.
+    """
+    found = []
+    for u in uids:
+        pat = struct.pack("<I", u)
+        i = report.find(pat)
+        while i != -1:
+            found.append((i, u))
+            i = report.find(pat, i + 1)
+    found.sort()
+    at = {pos: u for pos, u in found}
+    xi = []
+    for pos, u in found:
+        run = [u]
+        nxt = pos + 50
+        while nxt in at and len(run) < 11:
+            run.append(at[nxt])
+            nxt += 50
+        if len(run) == 11:
+            xi = run
+            break
+    squad = []
+    for pos, u in found:
+        if report[pos + 31:pos + 35] == struct.pack("<I", u) and u not in squad:
+            squad.append(u)
+    bench = [u for u in squad if u not in xi]
+    return xi, bench
+
+
 def _matchday_squads(save, club_uid, fixtures):
     """Who was in each of the club's matchday squads (Unique IDs), from FM's match reports.
 
@@ -392,9 +427,11 @@ def _matchday_squads(save, club_uid, fixtures):
     if not mine:
         return []
     clubs = {}
+    names = {}
     for p in save.players():
         if p.unique_id is not None and p.club_uid is not None:
             clubs.setdefault(p.club_uid, []).append(p.unique_id)
+            names[p.unique_id] = p.name
     out = []
     with save._context.section("match_stats_cfg") as section:
         for start, size in index_entries(section, layout, "save"):
@@ -406,8 +443,10 @@ def _matchday_squads(save, club_uid, fixtures):
             if f is None:
                 continue
             squads = {}
+            lineups = {}
             for side, uid in (("home", f.home_club_uid), ("away", f.away_club_uid)):
                 squads[side] = [u for u in clubs.get(uid, []) if struct.pack("<I", u) in report]
+                lineups[side] = _lineup(report, squads[side])
             def block(team_id):
                 try:
                     return _team_block(report, team_id)
@@ -421,6 +460,11 @@ def _matchday_squads(save, club_uid, fixtures):
                 "awaySquad": squads["away"],
                 "homeStats": block(head.home_team_id),
                 "awayStats": block(head.away_team_id),
+                "homeXI": lineups["home"][0],
+                "homeBench": lineups["home"][1],
+                "awayXI": lineups["away"][0],
+                "awayBench": lineups["away"][1],
+                "names": {str(u): names.get(u) for u in squads["home"] + squads["away"]},
             })
     return out
 

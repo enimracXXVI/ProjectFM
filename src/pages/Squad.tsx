@@ -16,6 +16,7 @@ import { useCurrentCareer } from '../lib/career'
 import { useConfig } from '../lib/config'
 import { allRoleFits, roleScore, scoreColor, type RoleFit } from '../lib/roleFit'
 import { sortValue } from '../lib/values'
+import { byLastName } from '../lib/names'
 
 type View = 'profile' | 'attributes' | 'contract' | 'stats' | 'roles'
 type Role = 'outfield' | 'goalkeepers'
@@ -98,8 +99,10 @@ export function Squad() {
       return profile ? profile.get(p) : attrNumber(p.attributes[sort.col])
     }
     return list.sort((a, b) => {
+      // Names sort by last name (or nickname)
+      if (sort.col === 'name') return sort.asc ? byLastName(a, b) : byLastName(b, a)
       const [x, y] = [value(a), value(b)]
-      if (x === y) return a.name.localeCompare(b.name)
+      if (x === y) return byLastName(a, b)
       if (x === null) return 1
       if (y === null) return -1
       const r =

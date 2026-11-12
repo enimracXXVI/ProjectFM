@@ -33,17 +33,25 @@ export function FixtureRow({
   f,
   club,
   compDbId,
+  label,
   showDate = true,
 }: {
   f: Fixture
   club: number
   compDbId: number | null
+  /** Shown above the date, e.g. "MD1" or a cup round. */
+  label?: string | null
   showDate?: boolean
 }) {
   const mine = f.home === club || f.away === club
   const content = (
     <>
-      {showDate && <span className="w-14 shrink-0 text-xs text-muted">{fmtDate(f.date)}</span>}
+      {showDate && (
+        <span className="grid w-14 shrink-0 leading-tight">
+          {label && <span className="truncate text-[11px] font-semibold text-accent">{label}</span>}
+          <span className="text-xs text-muted">{fmtDate(f.date)}</span>
+        </span>
+      )}
       <span
         className={clsx('min-w-0 flex-1 truncate text-right', f.home === club && 'font-semibold')}
       >
@@ -66,7 +74,7 @@ export function FixtureRow({
     </>
   )
   const cls = clsx(
-    'flex min-h-10 items-center gap-2 rounded-lg px-2 text-sm',
+    'flex min-h-11 min-w-0 items-center gap-2 rounded-lg px-2 text-sm',
     mine && 'bg-accent/5',
   )
   return mine && f.played ? (
@@ -92,7 +100,7 @@ export function Tabs<T extends string>({
 }) {
   return (
     <div
-      className="mb-3 flex gap-1 overflow-x-auto rounded-lg border border-border p-1"
+      className="mb-3 flex [scrollbar-width:none] gap-1 overflow-x-auto rounded-lg border border-border p-1 [&::-webkit-scrollbar]:hidden"
       role="tablist"
     >
       {options.map(([v, label]) => (

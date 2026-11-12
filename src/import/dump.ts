@@ -5,6 +5,7 @@
  */
 import { UNKNOWN_WORD, withValue } from '../lib/valueWord'
 import { personalityName } from '../lib/personality'
+import type { Team } from '../data/teams'
 import type { ImportedPlayer } from './parse'
 
 export interface DumpMeta {
@@ -37,6 +38,9 @@ export interface DumpPerson {
   condition?: number
   morale?: number
   posRatings?: Record<string, number>
+  // FM save additions
+  lastName?: string | null
+  commonName?: string | null
   job?: string
   jobId?: number
   adaptability?: number
@@ -105,7 +109,13 @@ export const PERSONALITY_KEYS = [
 
 /** Values that FM keeps hidden; stored in `extra` and shown only when the user allows it. */
 /** Raw values from the ProjectFM Reader, not shown until mapped to FM's display. */
-export const READER_EXTRA_KEYS = ['Condition', 'Morale', 'Reader positions']
+export const READER_EXTRA_KEYS = [
+  'Condition',
+  'Morale',
+  'Reader positions',
+  'Last name',
+  'Common name',
+]
 
 export const HIDDEN_EXTRA_KEYS = new Set([
   'CA',
@@ -224,6 +234,8 @@ export function playerFromDump(p: DumpPerson): ImportedPlayer {
       .map(([k, v]) => `${k}:${v}`)
       .join(' ')
   }
+  if (p.lastName) extra['Last name'] = p.lastName
+  if (p.commonName) extra['Common name'] = p.commonName
   if (p.ca) extra.CA = String(p.ca)
   if (p.pa) extra.PA = String(p.pa)
   for (const [key, label] of PERSONALITY_KEYS) {
@@ -308,7 +320,7 @@ export interface DumpSummary {
   totalPlayers: number
   totalStaff: number
   /** My club's players, first team and other teams (reserves / youth). */
-  players: { player: ImportedPlayer; level: TeamLevel; squadNo: number | null }[]
+  players: { player: ImportedPlayer; level: TeamLevel; squadNo: number | null; team: Team }[]
   scouts: DumpStaff[]
   /** Current club of each requested Unique ID (to spot players who left). */
   clubOf: Record<number, string | null>
@@ -333,6 +345,8 @@ export function summarizeDump(dump: Dump, knownUids: number[]): DumpSummary {
       player: playerFromDump(p),
       level: teamLevel(p),
       squadNo: readerSquadNumber(p),
+      // FM team slot from the save: 0 first team, 1 U20, 2 U18
+      team: (['first', 'u21', 'u18'] as const)[p.teamType ?? 0] ?? 'first',
     })),
     scouts: scouts.map(staffFromDump),
     clubOf,

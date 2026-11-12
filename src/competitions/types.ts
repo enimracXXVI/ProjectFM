@@ -17,6 +17,12 @@ export interface CompetitionsFile {
     awaySquad: number[]
     homeStats?: RawTeamStats | null
     awayStats?: RawTeamStats | null
+    /** Starting XI and bench (Unique IDs) from the match report; names of both squads. */
+    homeXI?: number[]
+    homeBench?: number[]
+    awayXI?: number[]
+    awayBench?: number[]
+    names?: Record<string, string | null>
   }[]
   /** Injuries recorded for the club's players (no duration in the save). */
   injuries?: {

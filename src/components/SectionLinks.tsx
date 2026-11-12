@@ -1,11 +1,13 @@
 import { Link } from 'react-router-dom'
+import { useConfig } from '../lib/config'
 import { useChecks } from '../lib/useChecks'
 import { navItems } from './nav'
 
 /** On phones: every section that is not in the bottom bar, as big tiles. */
 export function SectionLinks() {
   const checks = useChecks()
-  const items = navItems.filter((i) => !i.mobile)
+  const { mobileBar } = useConfig()
+  const items = navItems.filter((i) => !mobileBar.includes(i.to))
   return (
     <section className="mb-5 md:hidden" aria-label="More sections">
       <h2 className="mb-2 text-sm font-semibold text-muted">More sections</h2>

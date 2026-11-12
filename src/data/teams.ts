@@ -3,7 +3,7 @@ import type { PlayerRow } from './db'
 /** Squad teams a player can be assigned to (stored in players.extra.team). */
 export const TEAMS = [
   ['first', 'First team'],
-  ['u21', 'U21'],
+  ['u21', 'U20'],
   ['u18', 'U18'],
 ] as const
 

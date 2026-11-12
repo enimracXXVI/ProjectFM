@@ -82,6 +82,11 @@ export function SettingsPage() {
                 'Staff ratings',
                 'Rating words and scouting knowledge levels',
               ],
+              [
+                '/settings/bottom-bar',
+                'Phone bottom bar',
+                'Which sections sit at the bottom on phones',
+              ],
             ].map(([to, label, hint]) => (
               <li key={to}>
                 <Link

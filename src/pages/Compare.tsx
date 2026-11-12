@@ -24,6 +24,7 @@ import { saveCompareIds } from '../lib/compare'
 import { useConfig } from '../lib/config'
 import { allRoleFits, roleScore } from '../lib/roleFit'
 import { SERIES_COLORS } from '../lib/seriesColors'
+import { byLastName } from '../lib/names'
 
 const MAX_PLAYERS = 5
 
@@ -73,9 +74,7 @@ export function Compare() {
     return vals.length ? vals.reduce((s, v) => s + v, 0) / vals.length : null
   }
 
-  const available = (data ?? [])
-    .filter((p) => p.in_squad && !ids.includes(p.id))
-    .sort((a, b) => a.name.localeCompare(b.name))
+  const available = (data ?? []).filter((p) => p.in_squad && !ids.includes(p.id)).sort(byLastName)
 
   const rows = buildRows(players, sections, role, config)
 
