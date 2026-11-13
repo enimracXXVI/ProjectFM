@@ -32,12 +32,15 @@ export function SaveImport({
   world,
   fileName,
   onDone,
+  onBusy,
 }: {
   data: SaveData
   summary: DumpSummary
   world: Blob
   fileName: string
   onDone: () => void
+  /** True while the save is being written into the app (the page shows the progress). */
+  onBusy?: (busy: boolean) => void
 }) {
   const career = useCurrentCareer()
   const { setCurrentId } = useCareer()
@@ -111,15 +114,9 @@ export function SaveImport({
     mutation.mutate(career)
   }, [check, outdated, mutation, career])
 
-  if (mutation.isPending || newCareer.isPending || check === 'checking')
-    return (
-      <Card className="mt-4">
-        <p className="font-semibold">Importing {fileName}…</p>
-        <p className="mt-1 text-sm text-muted">
-          Squad, staff, competitions, tactics and the world database. This takes a few seconds.
-        </p>
-      </Card>
-    )
+  const busy = mutation.isPending || newCareer.isPending || check === 'checking'
+  useEffect(() => onBusy?.(busy), [busy, onBusy])
+  if (busy) return null
 
   const r = mutation.data
   if (r)
