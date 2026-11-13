@@ -110,6 +110,9 @@ export interface ReportPlayer {
   headersWon: number
   yellow: number
   red: number
+  /** Who he came on for / was replaced by (your own team's matches, reader 13). */
+  for?: string | null
+  replacedBy?: string | null
 }
 
 /** A team's match stats as FM's match stats screen shows them. */

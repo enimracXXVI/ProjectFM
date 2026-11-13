@@ -266,13 +266,23 @@ function Lineup({
                             </span>
                           )}
                           {p.on && (
-                            <span className="shrink-0 text-xs text-emerald-400" title="Came on">
+                            <span
+                              className="shrink-0 text-xs whitespace-nowrap text-emerald-400"
+                              title={p.for ? `Came on for ${p.for}` : 'Came on'}
+                            >
                               ↑{p.on}′
+                              {p.for && <span className="text-muted"> for {lastName(p.for)}</span>}
                             </span>
                           )}
                           {p.off && (
-                            <span className="shrink-0 text-xs text-red-400" title="Went off">
+                            <span
+                              className="shrink-0 text-xs whitespace-nowrap text-red-400"
+                              title={p.replacedBy ? `Replaced by ${p.replacedBy}` : 'Went off'}
+                            >
                               ↓{p.off}′
+                              {p.replacedBy && (
+                                <span className="text-muted"> {lastName(p.replacedBy)}</span>
+                              )}
                             </span>
                           )}
                           {p.yellow > 0 && (
@@ -313,6 +323,9 @@ function Lineup({
     </Card>
   )
 }
+
+/** "Mateo Pellegrino" → "Pellegrino" (one-word names stay as they are). */
+const lastName = (name: string) => name.split(' ').slice(1).join(' ') || name
 
 const minuteText = (m: number, added: number) => (added ? `${m}+${added}′` : `${m}′`)
 

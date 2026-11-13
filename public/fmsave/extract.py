@@ -45,7 +45,7 @@ def _plain(v):
 
 
 # Raised whenever extract() returns new data, so the app can spot an outdated copy
-READER_VERSION = 12
+READER_VERSION = 13
 
 JOB_SCOUT, JOB_CHIEF_SCOUT = 14, 44
 _FF8 = b"\xff" * 8
@@ -401,6 +401,31 @@ def _tactics(save, club_uid):
     return {"tactics": out, "selection": selection}
 
 
+def _substitutions(report, squads):
+    """Who replaced whom, from the list of the managed team's touchline actions at the end of
+    its match reports (found by ProjectFM in FM27 saves). A substitution is: 04, time (u32),
+    team (0 home, 1 away), minute, slot going off, slot coming on, where slots are the order of
+    the squad's player records (0-10 the starting XI). Kept only when both players' own records
+    agree (one went off and the other came on at that minute). Only the managed team's
+    substitutions are in this list.
+    """
+    import re
+
+    sides = (squads.home, squads.away)
+    tail = max(sides[0][-1], sides[1][-1]) + 250
+    found = []
+    seen = set()
+    for m in re.finditer(rb"(?=\x04(.{4})([\x00\x01])(.)(.)(.))", report[tail:], re.S):
+        team, minute, off, on = m.group(2)[0], m.group(3)[0], m.group(4)[0], m.group(5)[0]
+        side = sides[team]
+        if not minute or off == on or off >= len(side) or not 11 <= on < len(side) or (team, on) in seen:
+            continue
+        if report[side[off] - 33] == minute and report[side[on] - 29] == minute:
+            seen.add((team, on))
+            found.append((team, off, on))
+    return found
+
+
 def _matchday_squads(save, club_uid, fixtures):
     """Both matchday squads of every match FM keeps a report for, with each player's stats.
 
@@ -483,6 +508,11 @@ def _matchday_squads(save, club_uid, fixtures):
             sides = {}
             for side, anchors in (("home", squads.home), ("away", squads.away)):
                 sides[side] = [player(report, a, i < 11) for i, a in enumerate(anchors)]
+            for team, off_slot, on_slot in _substitutions(report, squads):
+                lineup = sides["home" if team == 0 else "away"]
+                went, came = lineup[off_slot], lineup[on_slot]
+                came["for"] = went["name"]
+                went["replacedBy"] = came["name"]
             out.append({
                 "date": f.date.isoformat(),
                 "home": f.home_club_uid,
