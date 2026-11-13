@@ -50,3 +50,17 @@ home/away and half splits, set pieces, facilities, transfer windows.
 | hall_of_fame                   | 0.8 MB  | Hall of fame                                           |                |
 | humans, manager_manager        | 1.9 MB  | Manager profile and history                            |                |
 | news                           | 10 MB   | Inbox items (structured, ids; no match write-ups)      |                |
+
+## scout_man (first pass)
+
+- **Assignments**: name strings (user-made, e.g. "terzino sx", and "Serie A Enilive", "Serie BKT",
+  "Head - Italy", "Head - Southern Europe", "Scout - Brazil, Argentina & Uruguay"…), each with a
+  filter block of 4-letter tags stored reversed (`frlptlif`, `lvlf` level filters, `roip`, `rfsc`…).
+- **Player lists with dates**: entries `02 · player pid (record index + 1) · date · 00000000 0100 6c07`.
+  Date = u16 (low 9 bits: day of year) + u16 year (e.g. `c9 1a ea 07` = day 201 of 2026, 20 July).
+  Runs of 2 to 291 players (young Italian prospects, Bundesliga, Ligue 1, South America…). Which
+  assignment or scout a run belongs to is not settled: runs do not line up with the name before them.
+- **~3,900 entries with three value pairs** `05 xx xx · 01 a b · 01 c d · 01 e f · 04 · u32 · player pid
+· u32` (pairs like 17-19, 17-17, 18-18; `ff ff` = unknown), including every Fiorentina player.
+  Likely the club's star estimates (value / 4 = stars, 20 = 5 stars) of ability and potential; the
+  u32s either side look like values. To confirm against FM's screens.
