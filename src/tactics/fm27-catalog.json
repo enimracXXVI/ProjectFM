@@ -1,0 +1,1845 @@
+{
+  "Positions": [
+    { "Id": "GK", "Mask": 1, "X": 50, "Y": 92 },
+    { "Id": "DR", "Mask": 4, "X": 86, "Y": 76 },
+    { "Id": "DL", "Mask": 8, "X": 14, "Y": 76 },
+    { "Id": "DC", "Mask": 16, "X": 50, "Y": 78 },
+    { "Id": "DCR", "Mask": 2097168, "X": 67, "Y": 78 },
+    { "Id": "DCL", "Mask": 1048592, "X": 33, "Y": 78 },
+    { "Id": "WBR", "Mask": 32, "X": 91, "Y": 62 },
+    { "Id": "WBL", "Mask": 64, "X": 9, "Y": 62 },
+    { "Id": "DMC", "Mask": 128, "X": 50, "Y": 61 },
+    { "Id": "DMR", "Mask": 2097280, "X": 67, "Y": 61 },
+    { "Id": "DML", "Mask": 1048704, "X": 33, "Y": 61 },
+    { "Id": "MR", "Mask": 256, "X": 89, "Y": 45 },
+    { "Id": "ML", "Mask": 512, "X": 11, "Y": 45 },
+    { "Id": "MC", "Mask": 1024, "X": 50, "Y": 45 },
+    { "Id": "MCR", "Mask": 2098176, "X": 67, "Y": 45 },
+    { "Id": "MCL", "Mask": 1049600, "X": 33, "Y": 45 },
+    { "Id": "AMR", "Mask": 2048, "X": 88, "Y": 28 },
+    { "Id": "AML", "Mask": 4096, "X": 12, "Y": 28 },
+    { "Id": "AMC", "Mask": 8192, "X": 50, "Y": 28 },
+    { "Id": "AMCR", "Mask": 2105344, "X": 67, "Y": 28 },
+    { "Id": "AMCL", "Mask": 1056768, "X": 33, "Y": 28 },
+    { "Id": "ST", "Mask": 16384, "X": 50, "Y": 12 },
+    { "Id": "STR", "Mask": 2113536, "X": 67, "Y": 12 },
+    { "Id": "STL", "Mask": 1064960, "X": 33, "Y": 12 }
+  ],
+  "Roles": [
+    { "Id": "OPWideCentreBack", "Name": "Wide Centre-Back", "Flags": "64" },
+    {
+      "Id": "OPTrackingWideMidfielder",
+      "Name": "Tracking Wide Midfielder",
+      "Flags": "68719476736"
+    },
+    { "Id": "OPCoveringCentreBack", "Name": "Covering Centre-Back", "Flags": "32" },
+    { "Id": "OPAttackingMidfielder", "Name": "Attacking Midfielder", "Flags": "1073741824" },
+    { "Id": "AdvancedWingBack", "Name": "Advanced Wing-Back", "Flags": "274877906944" },
+    { "Id": "PlaymakingWinger", "Name": "Playmaking Winger", "Flags": "8796093022208" },
+    { "Id": "PlaymakingWingBack", "Name": "Playmaking Wing-Back", "Flags": "36028797018963968" },
+    { "Id": "NoNonsenseCentreBack", "Name": "No-Nonsense Centre-Back", "Flags": "536870912" },
+    { "Id": "OPCoveringWideCentreBack", "Name": "Covering Wide Centre-Back", "Flags": "256" },
+    {
+      "Id": "OPScreeningDefensiveMidfielder",
+      "Name": "Screening Defensive Midfielder",
+      "Flags": "262144"
+    },
+    {
+      "Id": "OverlappingCentreBack",
+      "Name": "Overlapping Centre-Back",
+      "Flags": "18014398509481984"
+    },
+    { "Id": "MidfieldPlaymaker", "Name": "Midfield Playmaker", "Flags": "144115188075855872" },
+    { "Id": "OPHoldingFullBack", "Name": "Holding Full-Back", "Flags": "2048" },
+    { "Id": "OPDefensiveMidfielder", "Name": "Defensive Midfielder", "Flags": "32768" },
+    {
+      "Id": "OPDroppingDefensiveMidfielder",
+      "Name": "Dropping Defensive Midfielder",
+      "Flags": "65536"
+    },
+    { "Id": "NoNonsenseGoalkeeper", "Name": "No-Nonsense Goalkeeper", "Flags": "9007199254740992" },
+    { "Id": "AttackingMidfielder", "Name": "Attacking Midfielder", "Flags": "512" },
+    { "Id": "OPWideOutletWinger", "Name": "Wide Outlet Winger", "Flags": "2199023255552" },
+    { "Id": "OPWinger", "Name": "Winger", "Flags": "274877906944" },
+    {
+      "Id": "OPSplittingOutletCentreForward",
+      "Name": "Splitting Outlet Centre Forward",
+      "Flags": "35184372088832"
+    },
+    { "Id": "WideCentreBack", "Name": "Wide Centre-Back", "Flags": "2251799813685248" },
+    { "Id": "OPHoldingWingBack", "Name": "Holding Wing-Back", "Flags": "16384" },
+    { "Id": "TargetForward", "Name": "Target Forward", "Flags": "262144" },
+    { "Id": "DeepLyingForward", "Name": "Deep-Lying Forward", "Flags": "1024" },
+    { "Id": "OPStoppingWideCentreBack", "Name": "Stopping Wide Centre-Back", "Flags": "128" },
+    { "Id": "InsideFullBack", "Name": "Inside Full-Back", "Flags": "4503599627370496" },
+    { "Id": "BallPlayingGoalkeeper", "Name": "Ball-Playing Goalkeeper", "Flags": "4096" },
+    {
+      "Id": "OPCentralOutletAttackingMidfielder",
+      "Name": "Central Outlet Attacking Midfielder",
+      "Flags": "4294967296"
+    },
+    { "Id": "FalseNine", "Name": "False Nine", "Flags": "1099511627776" },
+    {
+      "Id": "WideCentralMidfielder",
+      "Name": "Wide Central Midfielder",
+      "Flags": "281474976710656"
+    },
+    { "Id": "OPCentralMidfielder", "Name": "Central Midfielder", "Flags": "1048576" },
+    {
+      "Id": "OPWideOutletWideMidfielder",
+      "Name": "Wide Outlet Wide Midfielder",
+      "Flags": "137438953472"
+    },
+    { "Id": "BoxToBoxPlaymaker", "Name": "Box-To-Box Playmaker", "Flags": "70368744177664" },
+    { "Id": "InsideForward", "Name": "Inside Forward", "Flags": "134217728" },
+    { "Id": "OPPressingFullBack", "Name": "Pressing Full-Back", "Flags": "1024" },
+    { "Id": "OPWingBack", "Name": "Wing-Back", "Flags": "4096" },
+    { "Id": "OPPressingWingBack", "Name": "Pressing Wing-Back", "Flags": "8192" },
+    { "Id": "CentralMidfielder", "Name": "Central Midfielder", "Flags": "32" },
+    {
+      "Id": "OPTrackingCentreForward",
+      "Name": "Tracking Centre Forward",
+      "Flags": "8796093022208"
+    },
+    {
+      "Id": "OPPressingCentralMidfielder",
+      "Name": "Pressing Central Midfielder",
+      "Flags": "134217728"
+    },
+    { "Id": "SecondStriker", "Name": "Second Striker", "Flags": "2199023255552" },
+    { "Id": "Goalkeeper", "Name": "Goalkeeper", "Flags": "1" },
+    { "Id": "FreeRole", "Name": "Free Role", "Flags": "4294967296" },
+    { "Id": "OPCentreBack", "Name": "Centre-Back", "Flags": "8" },
+    { "Id": "HalfBack", "Name": "Half Back", "Flags": "34359738368" },
+    { "Id": "InsideWinger", "Name": "Inside Winger", "Flags": "562949953421312" },
+    { "Id": "CentreForward", "Name": "Centre Forward", "Flags": "2048" },
+    { "Id": "BallPlayingCentreBack", "Name": "Ball-Playing Centre-Back", "Flags": "16777216" },
+    { "Id": "OPFullBack", "Name": "Full-Back", "Flags": "512" },
+    { "Id": "InsideWingBack", "Name": "Inside Wing-Back", "Flags": "17592186044416" },
+    { "Id": "OPGoalkeeper", "Name": "Goalkeeper", "Flags": "1" },
+    { "Id": "BoxToBoxMidfielder", "Name": "Box-To-Box Midfielder", "Flags": "65536" },
+    { "Id": "WingBack", "Name": "Wing-Back", "Flags": "8" },
+    { "Id": "OPStoppingCentreBack", "Name": "Stopping Centre-Back", "Flags": "16" },
+    { "Id": "OPCentreForward", "Name": "Centre Forward", "Flags": "4398046511104" },
+    { "Id": "ChannelForward", "Name": "Channel Forward", "Flags": "2147483648" },
+    { "Id": "Winger", "Name": "Winger", "Flags": "128" },
+    { "Id": "DeepLyingPlaymaker", "Name": "Deep-Lying Playmaker", "Flags": "32768" },
+    { "Id": "OPInsideOutletWinger", "Name": "Inside Outlet Winger", "Flags": "1099511627776" },
+    {
+      "Id": "OPWideCoverDefensiveMidfielder",
+      "Name": "Wide Covering Defensive Midfielder",
+      "Flags": "524288"
+    },
+    { "Id": "AdvancedPlaymaker", "Name": "Advanced Playmaker", "Flags": "131072" },
+    {
+      "Id": "OPTrackingAttackingMidfielder",
+      "Name": "Tracking Attacking Midfielder",
+      "Flags": "2147483648"
+    },
+    { "Id": "DefensiveMidfielder", "Name": "Defensive Midfielder", "Flags": "16" },
+    { "Id": "OPWideMidfielder", "Name": "Wide Midfielder", "Flags": "34359738368" },
+    {
+      "Id": "OPWideCoverCentralMidfielder",
+      "Name": "Wide Covering Central Midfielder",
+      "Flags": "536870912"
+    },
+    {
+      "Id": "OPSplittingOutletAttackingMidfielder",
+      "Name": "Splitting Outlet Attacking Midfielder",
+      "Flags": "8589934592"
+    },
+    {
+      "Id": "OPPressingDefensiveMidfielder",
+      "Name": "Pressing Defensive Midfielder",
+      "Flags": "131072"
+    },
+    { "Id": "CentreBack", "Name": "Centre-Back", "Flags": "2" },
+    { "Id": "AdvancedCentreBack", "Name": "Advanced Centre-Back", "Flags": "16384" },
+    { "Id": "FullBack", "Name": "Full-Back", "Flags": "4" },
+    { "Id": "OPLineKeeper", "Name": "Line-Holding Goalkeeper", "Flags": "4" },
+    {
+      "Id": "OPScreeningCentralMidfielder",
+      "Name": "Screening Central Midfielder",
+      "Flags": "268435456"
+    },
+    {
+      "Id": "OPCentralOutletCentreForward",
+      "Name": "Central Outlet Centre Forward",
+      "Flags": "17592186044416"
+    },
+    { "Id": "WideMidfielder", "Name": "Wide Midfielder", "Flags": "64" },
+    { "Id": "ChannelMidfielder", "Name": "Channel Midfielder", "Flags": "72057594037927936" },
+    { "Id": "OPSweeperKeeper", "Name": "Sweeper Keeper", "Flags": "2" },
+    { "Id": "Poacher", "Name": "Poacher", "Flags": "524288" },
+    { "Id": "OPTrackingWinger", "Name": "Tracking Winger", "Flags": "549755813888" },
+    { "Id": "WideForward", "Name": "Wide Forward", "Flags": "35184372088832" }
+  ],
+  "Eligibility": {
+    "0:0": {
+      "GK": [
+        ["NoNonsenseGoalkeeper", "BallPlayingGoalkeeper", "Goalkeeper"],
+        ["OPGoalkeeper", "OPLineKeeper", "OPSweeperKeeper"]
+      ],
+      "DR": [
+        ["PlaymakingWingBack", "InsideFullBack", "InsideWingBack", "WingBack", "FullBack"],
+        ["OPHoldingFullBack", "OPPressingFullBack", "OPFullBack"]
+      ],
+      "DL": [
+        ["PlaymakingWingBack", "InsideFullBack", "InsideWingBack", "WingBack", "FullBack"],
+        ["OPHoldingFullBack", "OPPressingFullBack", "OPFullBack"]
+      ],
+      "DC": [
+        ["NoNonsenseCentreBack", "BallPlayingCentreBack", "CentreBack", "AdvancedCentreBack"],
+        ["OPCoveringCentreBack", "OPCentreBack", "OPStoppingCentreBack"]
+      ],
+      "DCR": [
+        ["NoNonsenseCentreBack", "BallPlayingCentreBack", "CentreBack", "AdvancedCentreBack"],
+        ["OPCoveringCentreBack", "OPCentreBack", "OPStoppingCentreBack"]
+      ],
+      "DCL": [
+        ["NoNonsenseCentreBack", "BallPlayingCentreBack", "CentreBack", "AdvancedCentreBack"],
+        ["OPCoveringCentreBack", "OPCentreBack", "OPStoppingCentreBack"]
+      ],
+      "WBR": [
+        ["AdvancedWingBack", "PlaymakingWingBack", "InsideWingBack", "WingBack"],
+        ["OPHoldingWingBack", "OPWingBack", "OPPressingWingBack"]
+      ],
+      "WBL": [
+        ["AdvancedWingBack", "PlaymakingWingBack", "InsideWingBack", "WingBack"],
+        ["OPHoldingWingBack", "OPWingBack", "OPPressingWingBack"]
+      ],
+      "DMC": [
+        ["HalfBack", "DeepLyingPlaymaker", "DefensiveMidfielder"],
+        [
+          "OPScreeningDefensiveMidfielder",
+          "OPDefensiveMidfielder",
+          "OPDroppingDefensiveMidfielder",
+          "OPPressingDefensiveMidfielder"
+        ]
+      ],
+      "DMR": [
+        [
+          "BoxToBoxPlaymaker",
+          "HalfBack",
+          "BoxToBoxMidfielder",
+          "DeepLyingPlaymaker",
+          "DefensiveMidfielder"
+        ],
+        [
+          "OPScreeningDefensiveMidfielder",
+          "OPDefensiveMidfielder",
+          "OPDroppingDefensiveMidfielder",
+          "OPWideCoverDefensiveMidfielder",
+          "OPPressingDefensiveMidfielder"
+        ]
+      ],
+      "DML": [
+        [
+          "BoxToBoxPlaymaker",
+          "HalfBack",
+          "BoxToBoxMidfielder",
+          "DeepLyingPlaymaker",
+          "DefensiveMidfielder"
+        ],
+        [
+          "OPScreeningDefensiveMidfielder",
+          "OPDefensiveMidfielder",
+          "OPDroppingDefensiveMidfielder",
+          "OPWideCoverDefensiveMidfielder",
+          "OPPressingDefensiveMidfielder"
+        ]
+      ],
+      "MR": [
+        ["PlaymakingWinger", "InsideWinger", "Winger", "WideMidfielder"],
+        ["OPTrackingWideMidfielder", "OPWideOutletWideMidfielder", "OPWideMidfielder"]
+      ],
+      "ML": [
+        ["PlaymakingWinger", "InsideWinger", "Winger", "WideMidfielder"],
+        ["OPTrackingWideMidfielder", "OPWideOutletWideMidfielder", "OPWideMidfielder"]
+      ],
+      "MC": [
+        [
+          "MidfieldPlaymaker",
+          "AttackingMidfielder",
+          "CentralMidfielder",
+          "AdvancedPlaymaker",
+          "ChannelMidfielder"
+        ],
+        ["OPCentralMidfielder", "OPPressingCentralMidfielder", "OPScreeningCentralMidfielder"]
+      ],
+      "MCR": [
+        [
+          "MidfieldPlaymaker",
+          "AttackingMidfielder",
+          "WideCentralMidfielder",
+          "CentralMidfielder",
+          "AdvancedPlaymaker",
+          "ChannelMidfielder"
+        ],
+        [
+          "OPCentralMidfielder",
+          "OPPressingCentralMidfielder",
+          "OPWideCoverCentralMidfielder",
+          "OPScreeningCentralMidfielder"
+        ]
+      ],
+      "MCL": [
+        [
+          "MidfieldPlaymaker",
+          "AttackingMidfielder",
+          "WideCentralMidfielder",
+          "CentralMidfielder",
+          "AdvancedPlaymaker",
+          "ChannelMidfielder"
+        ],
+        [
+          "OPCentralMidfielder",
+          "OPPressingCentralMidfielder",
+          "OPWideCoverCentralMidfielder",
+          "OPScreeningCentralMidfielder"
+        ]
+      ],
+      "AMR": [
+        ["PlaymakingWinger", "InsideForward", "InsideWinger", "Winger", "WideForward"],
+        ["OPWideOutletWinger", "OPWinger", "OPInsideOutletWinger", "OPTrackingWinger"]
+      ],
+      "AML": [
+        ["PlaymakingWinger", "InsideForward", "InsideWinger", "Winger", "WideForward"],
+        ["OPWideOutletWinger", "OPWinger", "OPInsideOutletWinger", "OPTrackingWinger"]
+      ],
+      "AMC": [
+        [
+          "AttackingMidfielder",
+          "SecondStriker",
+          "FreeRole",
+          "AdvancedPlaymaker",
+          "ChannelMidfielder"
+        ],
+        [
+          "OPAttackingMidfielder",
+          "OPCentralOutletAttackingMidfielder",
+          "OPTrackingAttackingMidfielder"
+        ]
+      ],
+      "AMCR": [
+        [
+          "AttackingMidfielder",
+          "SecondStriker",
+          "FreeRole",
+          "AdvancedPlaymaker",
+          "ChannelMidfielder"
+        ],
+        [
+          "OPAttackingMidfielder",
+          "OPCentralOutletAttackingMidfielder",
+          "OPTrackingAttackingMidfielder",
+          "OPSplittingOutletAttackingMidfielder"
+        ]
+      ],
+      "AMCL": [
+        [
+          "AttackingMidfielder",
+          "SecondStriker",
+          "FreeRole",
+          "AdvancedPlaymaker",
+          "ChannelMidfielder"
+        ],
+        [
+          "OPAttackingMidfielder",
+          "OPCentralOutletAttackingMidfielder",
+          "OPTrackingAttackingMidfielder",
+          "OPSplittingOutletAttackingMidfielder"
+        ]
+      ],
+      "ST": [
+        [
+          "TargetForward",
+          "DeepLyingForward",
+          "FalseNine",
+          "CentreForward",
+          "ChannelForward",
+          "Poacher"
+        ],
+        ["OPTrackingCentreForward", "OPCentreForward", "OPCentralOutletCentreForward"]
+      ],
+      "STR": [
+        [
+          "TargetForward",
+          "DeepLyingForward",
+          "FalseNine",
+          "CentreForward",
+          "ChannelForward",
+          "Poacher"
+        ],
+        [
+          "OPSplittingOutletCentreForward",
+          "OPTrackingCentreForward",
+          "OPCentreForward",
+          "OPCentralOutletCentreForward"
+        ]
+      ],
+      "STL": [
+        [
+          "TargetForward",
+          "DeepLyingForward",
+          "FalseNine",
+          "CentreForward",
+          "ChannelForward",
+          "Poacher"
+        ],
+        [
+          "OPSplittingOutletCentreForward",
+          "OPTrackingCentreForward",
+          "OPCentreForward",
+          "OPCentralOutletCentreForward"
+        ]
+      ]
+    },
+    "0:1": {
+      "GK": [
+        ["NoNonsenseGoalkeeper", "BallPlayingGoalkeeper", "Goalkeeper"],
+        ["OPGoalkeeper", "OPLineKeeper", "OPSweeperKeeper"]
+      ],
+      "DR": [
+        ["PlaymakingWingBack", "InsideFullBack", "InsideWingBack", "WingBack", "FullBack"],
+        ["OPHoldingFullBack", "OPPressingFullBack", "OPFullBack"]
+      ],
+      "DL": [
+        ["PlaymakingWingBack", "InsideFullBack", "InsideWingBack", "WingBack", "FullBack"],
+        ["OPHoldingFullBack", "OPPressingFullBack", "OPFullBack"]
+      ],
+      "DC": [
+        ["NoNonsenseCentreBack", "BallPlayingCentreBack", "CentreBack", "AdvancedCentreBack"],
+        ["OPCoveringCentreBack", "OPCentreBack", "OPStoppingCentreBack"]
+      ],
+      "DCR": [
+        ["NoNonsenseCentreBack", "BallPlayingCentreBack", "CentreBack", "AdvancedCentreBack"],
+        ["OPCoveringCentreBack", "OPCentreBack", "OPStoppingCentreBack"]
+      ],
+      "DCL": [
+        ["NoNonsenseCentreBack", "BallPlayingCentreBack", "CentreBack", "AdvancedCentreBack"],
+        ["OPCoveringCentreBack", "OPCentreBack", "OPStoppingCentreBack"]
+      ],
+      "WBR": [
+        ["AdvancedWingBack", "PlaymakingWingBack", "InsideWingBack", "WingBack"],
+        ["OPHoldingWingBack", "OPWingBack", "OPPressingWingBack"]
+      ],
+      "WBL": [
+        ["AdvancedWingBack", "PlaymakingWingBack", "InsideWingBack", "WingBack"],
+        ["OPHoldingWingBack", "OPWingBack", "OPPressingWingBack"]
+      ],
+      "DMC": [
+        ["HalfBack", "DeepLyingPlaymaker", "DefensiveMidfielder"],
+        ["OPScreeningDefensiveMidfielder", "OPDefensiveMidfielder", "OPDroppingDefensiveMidfielder"]
+      ],
+      "DMR": [
+        [
+          "BoxToBoxPlaymaker",
+          "HalfBack",
+          "BoxToBoxMidfielder",
+          "DeepLyingPlaymaker",
+          "DefensiveMidfielder"
+        ],
+        [
+          "OPScreeningDefensiveMidfielder",
+          "OPDefensiveMidfielder",
+          "OPDroppingDefensiveMidfielder",
+          "OPWideCoverDefensiveMidfielder"
+        ]
+      ],
+      "DML": [
+        [
+          "BoxToBoxPlaymaker",
+          "HalfBack",
+          "BoxToBoxMidfielder",
+          "DeepLyingPlaymaker",
+          "DefensiveMidfielder"
+        ],
+        [
+          "OPScreeningDefensiveMidfielder",
+          "OPDefensiveMidfielder",
+          "OPDroppingDefensiveMidfielder",
+          "OPWideCoverDefensiveMidfielder"
+        ]
+      ],
+      "MR": [
+        ["PlaymakingWinger", "InsideWinger", "Winger", "WideMidfielder"],
+        ["OPTrackingWideMidfielder", "OPWideOutletWideMidfielder", "OPWideMidfielder"]
+      ],
+      "ML": [
+        ["PlaymakingWinger", "InsideWinger", "Winger", "WideMidfielder"],
+        ["OPTrackingWideMidfielder", "OPWideOutletWideMidfielder", "OPWideMidfielder"]
+      ],
+      "MC": [
+        [
+          "MidfieldPlaymaker",
+          "AttackingMidfielder",
+          "CentralMidfielder",
+          "AdvancedPlaymaker",
+          "ChannelMidfielder"
+        ],
+        ["OPCentralMidfielder", "OPPressingCentralMidfielder", "OPScreeningCentralMidfielder"]
+      ],
+      "MCR": [
+        [
+          "MidfieldPlaymaker",
+          "AttackingMidfielder",
+          "WideCentralMidfielder",
+          "CentralMidfielder",
+          "AdvancedPlaymaker",
+          "ChannelMidfielder"
+        ],
+        [
+          "OPCentralMidfielder",
+          "OPPressingCentralMidfielder",
+          "OPWideCoverCentralMidfielder",
+          "OPScreeningCentralMidfielder"
+        ]
+      ],
+      "MCL": [
+        [
+          "MidfieldPlaymaker",
+          "AttackingMidfielder",
+          "WideCentralMidfielder",
+          "CentralMidfielder",
+          "AdvancedPlaymaker",
+          "ChannelMidfielder"
+        ],
+        [
+          "OPCentralMidfielder",
+          "OPPressingCentralMidfielder",
+          "OPWideCoverCentralMidfielder",
+          "OPScreeningCentralMidfielder"
+        ]
+      ],
+      "AMR": [
+        ["PlaymakingWinger", "InsideForward", "InsideWinger", "Winger", "WideForward"],
+        ["OPWideOutletWinger", "OPWinger", "OPInsideOutletWinger", "OPTrackingWinger"]
+      ],
+      "AML": [
+        ["PlaymakingWinger", "InsideForward", "InsideWinger", "Winger", "WideForward"],
+        ["OPWideOutletWinger", "OPWinger", "OPInsideOutletWinger", "OPTrackingWinger"]
+      ],
+      "AMC": [
+        [
+          "AttackingMidfielder",
+          "SecondStriker",
+          "FreeRole",
+          "AdvancedPlaymaker",
+          "ChannelMidfielder"
+        ],
+        [
+          "OPAttackingMidfielder",
+          "OPCentralOutletAttackingMidfielder",
+          "OPTrackingAttackingMidfielder"
+        ]
+      ],
+      "AMCR": [
+        [
+          "AttackingMidfielder",
+          "SecondStriker",
+          "FreeRole",
+          "AdvancedPlaymaker",
+          "ChannelMidfielder"
+        ],
+        [
+          "OPAttackingMidfielder",
+          "OPCentralOutletAttackingMidfielder",
+          "OPTrackingAttackingMidfielder",
+          "OPSplittingOutletAttackingMidfielder"
+        ]
+      ],
+      "AMCL": [
+        [
+          "AttackingMidfielder",
+          "SecondStriker",
+          "FreeRole",
+          "AdvancedPlaymaker",
+          "ChannelMidfielder"
+        ],
+        [
+          "OPAttackingMidfielder",
+          "OPCentralOutletAttackingMidfielder",
+          "OPTrackingAttackingMidfielder",
+          "OPSplittingOutletAttackingMidfielder"
+        ]
+      ],
+      "ST": [
+        [
+          "TargetForward",
+          "DeepLyingForward",
+          "FalseNine",
+          "CentreForward",
+          "ChannelForward",
+          "Poacher"
+        ],
+        ["OPTrackingCentreForward", "OPCentreForward", "OPCentralOutletCentreForward"]
+      ],
+      "STR": [
+        [
+          "TargetForward",
+          "DeepLyingForward",
+          "FalseNine",
+          "CentreForward",
+          "ChannelForward",
+          "Poacher"
+        ],
+        [
+          "OPSplittingOutletCentreForward",
+          "OPTrackingCentreForward",
+          "OPCentreForward",
+          "OPCentralOutletCentreForward"
+        ]
+      ],
+      "STL": [
+        [
+          "TargetForward",
+          "DeepLyingForward",
+          "FalseNine",
+          "CentreForward",
+          "ChannelForward",
+          "Poacher"
+        ],
+        [
+          "OPSplittingOutletCentreForward",
+          "OPTrackingCentreForward",
+          "OPCentreForward",
+          "OPCentralOutletCentreForward"
+        ]
+      ]
+    },
+    "3:0": {
+      "GK": [
+        ["NoNonsenseGoalkeeper", "BallPlayingGoalkeeper", "Goalkeeper"],
+        ["OPGoalkeeper", "OPLineKeeper", "OPSweeperKeeper"]
+      ],
+      "DR": [
+        ["PlaymakingWingBack", "InsideFullBack", "InsideWingBack", "WingBack", "FullBack"],
+        ["OPHoldingFullBack", "OPPressingFullBack", "OPFullBack"]
+      ],
+      "DL": [
+        ["PlaymakingWingBack", "InsideFullBack", "InsideWingBack", "WingBack", "FullBack"],
+        ["OPHoldingFullBack", "OPPressingFullBack", "OPFullBack"]
+      ],
+      "DC": [
+        ["NoNonsenseCentreBack", "BallPlayingCentreBack", "CentreBack", "AdvancedCentreBack"],
+        ["OPCoveringCentreBack", "OPCentreBack", "OPStoppingCentreBack"]
+      ],
+      "DCR": [
+        [
+          "NoNonsenseCentreBack",
+          "OverlappingCentreBack",
+          "WideCentreBack",
+          "BallPlayingCentreBack",
+          "CentreBack",
+          "AdvancedCentreBack"
+        ],
+        [
+          "OPWideCentreBack",
+          "OPCoveringCentreBack",
+          "OPCoveringWideCentreBack",
+          "OPStoppingWideCentreBack",
+          "OPCentreBack",
+          "OPStoppingCentreBack"
+        ]
+      ],
+      "DCL": [
+        [
+          "NoNonsenseCentreBack",
+          "OverlappingCentreBack",
+          "WideCentreBack",
+          "BallPlayingCentreBack",
+          "CentreBack",
+          "AdvancedCentreBack"
+        ],
+        [
+          "OPWideCentreBack",
+          "OPCoveringCentreBack",
+          "OPCoveringWideCentreBack",
+          "OPStoppingWideCentreBack",
+          "OPCentreBack",
+          "OPStoppingCentreBack"
+        ]
+      ],
+      "WBR": [
+        ["AdvancedWingBack", "PlaymakingWingBack", "InsideWingBack", "WingBack"],
+        ["OPHoldingWingBack", "OPWingBack", "OPPressingWingBack"]
+      ],
+      "WBL": [
+        ["AdvancedWingBack", "PlaymakingWingBack", "InsideWingBack", "WingBack"],
+        ["OPHoldingWingBack", "OPWingBack", "OPPressingWingBack"]
+      ],
+      "DMC": [
+        ["HalfBack", "DeepLyingPlaymaker", "DefensiveMidfielder"],
+        [
+          "OPScreeningDefensiveMidfielder",
+          "OPDefensiveMidfielder",
+          "OPDroppingDefensiveMidfielder",
+          "OPPressingDefensiveMidfielder"
+        ]
+      ],
+      "DMR": [
+        [
+          "BoxToBoxPlaymaker",
+          "HalfBack",
+          "BoxToBoxMidfielder",
+          "DeepLyingPlaymaker",
+          "DefensiveMidfielder"
+        ],
+        [
+          "OPScreeningDefensiveMidfielder",
+          "OPDefensiveMidfielder",
+          "OPDroppingDefensiveMidfielder",
+          "OPWideCoverDefensiveMidfielder",
+          "OPPressingDefensiveMidfielder"
+        ]
+      ],
+      "DML": [
+        [
+          "BoxToBoxPlaymaker",
+          "HalfBack",
+          "BoxToBoxMidfielder",
+          "DeepLyingPlaymaker",
+          "DefensiveMidfielder"
+        ],
+        [
+          "OPScreeningDefensiveMidfielder",
+          "OPDefensiveMidfielder",
+          "OPDroppingDefensiveMidfielder",
+          "OPWideCoverDefensiveMidfielder",
+          "OPPressingDefensiveMidfielder"
+        ]
+      ],
+      "MR": [
+        ["PlaymakingWinger", "InsideWinger", "Winger", "WideMidfielder"],
+        ["OPTrackingWideMidfielder", "OPWideOutletWideMidfielder", "OPWideMidfielder"]
+      ],
+      "ML": [
+        ["PlaymakingWinger", "InsideWinger", "Winger", "WideMidfielder"],
+        ["OPTrackingWideMidfielder", "OPWideOutletWideMidfielder", "OPWideMidfielder"]
+      ],
+      "MC": [
+        [
+          "MidfieldPlaymaker",
+          "AttackingMidfielder",
+          "CentralMidfielder",
+          "AdvancedPlaymaker",
+          "ChannelMidfielder"
+        ],
+        ["OPCentralMidfielder", "OPPressingCentralMidfielder", "OPScreeningCentralMidfielder"]
+      ],
+      "MCR": [
+        [
+          "MidfieldPlaymaker",
+          "AttackingMidfielder",
+          "WideCentralMidfielder",
+          "CentralMidfielder",
+          "AdvancedPlaymaker",
+          "ChannelMidfielder"
+        ],
+        [
+          "OPCentralMidfielder",
+          "OPPressingCentralMidfielder",
+          "OPWideCoverCentralMidfielder",
+          "OPScreeningCentralMidfielder"
+        ]
+      ],
+      "MCL": [
+        [
+          "MidfieldPlaymaker",
+          "AttackingMidfielder",
+          "WideCentralMidfielder",
+          "CentralMidfielder",
+          "AdvancedPlaymaker",
+          "ChannelMidfielder"
+        ],
+        [
+          "OPCentralMidfielder",
+          "OPPressingCentralMidfielder",
+          "OPWideCoverCentralMidfielder",
+          "OPScreeningCentralMidfielder"
+        ]
+      ],
+      "AMR": [
+        ["PlaymakingWinger", "InsideForward", "InsideWinger", "Winger", "WideForward"],
+        ["OPWideOutletWinger", "OPWinger", "OPInsideOutletWinger", "OPTrackingWinger"]
+      ],
+      "AML": [
+        ["PlaymakingWinger", "InsideForward", "InsideWinger", "Winger", "WideForward"],
+        ["OPWideOutletWinger", "OPWinger", "OPInsideOutletWinger", "OPTrackingWinger"]
+      ],
+      "AMC": [
+        [
+          "AttackingMidfielder",
+          "SecondStriker",
+          "FreeRole",
+          "AdvancedPlaymaker",
+          "ChannelMidfielder"
+        ],
+        [
+          "OPAttackingMidfielder",
+          "OPCentralOutletAttackingMidfielder",
+          "OPTrackingAttackingMidfielder"
+        ]
+      ],
+      "AMCR": [
+        [
+          "AttackingMidfielder",
+          "SecondStriker",
+          "FreeRole",
+          "AdvancedPlaymaker",
+          "ChannelMidfielder"
+        ],
+        [
+          "OPAttackingMidfielder",
+          "OPCentralOutletAttackingMidfielder",
+          "OPTrackingAttackingMidfielder",
+          "OPSplittingOutletAttackingMidfielder"
+        ]
+      ],
+      "AMCL": [
+        [
+          "AttackingMidfielder",
+          "SecondStriker",
+          "FreeRole",
+          "AdvancedPlaymaker",
+          "ChannelMidfielder"
+        ],
+        [
+          "OPAttackingMidfielder",
+          "OPCentralOutletAttackingMidfielder",
+          "OPTrackingAttackingMidfielder",
+          "OPSplittingOutletAttackingMidfielder"
+        ]
+      ],
+      "ST": [
+        [
+          "TargetForward",
+          "DeepLyingForward",
+          "FalseNine",
+          "CentreForward",
+          "ChannelForward",
+          "Poacher"
+        ],
+        ["OPTrackingCentreForward", "OPCentreForward", "OPCentralOutletCentreForward"]
+      ],
+      "STR": [
+        [
+          "TargetForward",
+          "DeepLyingForward",
+          "FalseNine",
+          "CentreForward",
+          "ChannelForward",
+          "Poacher"
+        ],
+        [
+          "OPSplittingOutletCentreForward",
+          "OPTrackingCentreForward",
+          "OPCentreForward",
+          "OPCentralOutletCentreForward"
+        ]
+      ],
+      "STL": [
+        [
+          "TargetForward",
+          "DeepLyingForward",
+          "FalseNine",
+          "CentreForward",
+          "ChannelForward",
+          "Poacher"
+        ],
+        [
+          "OPSplittingOutletCentreForward",
+          "OPTrackingCentreForward",
+          "OPCentreForward",
+          "OPCentralOutletCentreForward"
+        ]
+      ]
+    },
+    "3:1": {
+      "GK": [
+        ["NoNonsenseGoalkeeper", "BallPlayingGoalkeeper", "Goalkeeper"],
+        ["OPGoalkeeper", "OPLineKeeper", "OPSweeperKeeper"]
+      ],
+      "DR": [
+        ["PlaymakingWingBack", "InsideFullBack", "InsideWingBack", "WingBack", "FullBack"],
+        ["OPHoldingFullBack", "OPPressingFullBack", "OPFullBack"]
+      ],
+      "DL": [
+        ["PlaymakingWingBack", "InsideFullBack", "InsideWingBack", "WingBack", "FullBack"],
+        ["OPHoldingFullBack", "OPPressingFullBack", "OPFullBack"]
+      ],
+      "DC": [
+        ["NoNonsenseCentreBack", "BallPlayingCentreBack", "CentreBack", "AdvancedCentreBack"],
+        ["OPCoveringCentreBack", "OPCentreBack", "OPStoppingCentreBack"]
+      ],
+      "DCR": [
+        [
+          "NoNonsenseCentreBack",
+          "OverlappingCentreBack",
+          "WideCentreBack",
+          "BallPlayingCentreBack",
+          "CentreBack",
+          "AdvancedCentreBack"
+        ],
+        [
+          "OPWideCentreBack",
+          "OPCoveringCentreBack",
+          "OPCoveringWideCentreBack",
+          "OPStoppingWideCentreBack",
+          "OPCentreBack",
+          "OPStoppingCentreBack"
+        ]
+      ],
+      "DCL": [
+        [
+          "NoNonsenseCentreBack",
+          "OverlappingCentreBack",
+          "WideCentreBack",
+          "BallPlayingCentreBack",
+          "CentreBack",
+          "AdvancedCentreBack"
+        ],
+        [
+          "OPWideCentreBack",
+          "OPCoveringCentreBack",
+          "OPCoveringWideCentreBack",
+          "OPStoppingWideCentreBack",
+          "OPCentreBack",
+          "OPStoppingCentreBack"
+        ]
+      ],
+      "WBR": [
+        ["AdvancedWingBack", "PlaymakingWingBack", "InsideWingBack", "WingBack"],
+        ["OPHoldingWingBack", "OPWingBack", "OPPressingWingBack"]
+      ],
+      "WBL": [
+        ["AdvancedWingBack", "PlaymakingWingBack", "InsideWingBack", "WingBack"],
+        ["OPHoldingWingBack", "OPWingBack", "OPPressingWingBack"]
+      ],
+      "DMC": [
+        ["HalfBack", "DeepLyingPlaymaker", "DefensiveMidfielder"],
+        ["OPScreeningDefensiveMidfielder", "OPDefensiveMidfielder", "OPDroppingDefensiveMidfielder"]
+      ],
+      "DMR": [
+        [
+          "BoxToBoxPlaymaker",
+          "HalfBack",
+          "BoxToBoxMidfielder",
+          "DeepLyingPlaymaker",
+          "DefensiveMidfielder"
+        ],
+        [
+          "OPScreeningDefensiveMidfielder",
+          "OPDefensiveMidfielder",
+          "OPDroppingDefensiveMidfielder",
+          "OPWideCoverDefensiveMidfielder"
+        ]
+      ],
+      "DML": [
+        [
+          "BoxToBoxPlaymaker",
+          "HalfBack",
+          "BoxToBoxMidfielder",
+          "DeepLyingPlaymaker",
+          "DefensiveMidfielder"
+        ],
+        [
+          "OPScreeningDefensiveMidfielder",
+          "OPDefensiveMidfielder",
+          "OPDroppingDefensiveMidfielder",
+          "OPWideCoverDefensiveMidfielder"
+        ]
+      ],
+      "MR": [
+        ["PlaymakingWinger", "InsideWinger", "Winger", "WideMidfielder"],
+        ["OPTrackingWideMidfielder", "OPWideOutletWideMidfielder", "OPWideMidfielder"]
+      ],
+      "ML": [
+        ["PlaymakingWinger", "InsideWinger", "Winger", "WideMidfielder"],
+        ["OPTrackingWideMidfielder", "OPWideOutletWideMidfielder", "OPWideMidfielder"]
+      ],
+      "MC": [
+        [
+          "MidfieldPlaymaker",
+          "AttackingMidfielder",
+          "CentralMidfielder",
+          "AdvancedPlaymaker",
+          "ChannelMidfielder"
+        ],
+        ["OPCentralMidfielder", "OPPressingCentralMidfielder", "OPScreeningCentralMidfielder"]
+      ],
+      "MCR": [
+        [
+          "MidfieldPlaymaker",
+          "AttackingMidfielder",
+          "WideCentralMidfielder",
+          "CentralMidfielder",
+          "AdvancedPlaymaker",
+          "ChannelMidfielder"
+        ],
+        [
+          "OPCentralMidfielder",
+          "OPPressingCentralMidfielder",
+          "OPWideCoverCentralMidfielder",
+          "OPScreeningCentralMidfielder"
+        ]
+      ],
+      "MCL": [
+        [
+          "MidfieldPlaymaker",
+          "AttackingMidfielder",
+          "WideCentralMidfielder",
+          "CentralMidfielder",
+          "AdvancedPlaymaker",
+          "ChannelMidfielder"
+        ],
+        [
+          "OPCentralMidfielder",
+          "OPPressingCentralMidfielder",
+          "OPWideCoverCentralMidfielder",
+          "OPScreeningCentralMidfielder"
+        ]
+      ],
+      "AMR": [
+        ["PlaymakingWinger", "InsideForward", "InsideWinger", "Winger", "WideForward"],
+        ["OPWideOutletWinger", "OPWinger", "OPInsideOutletWinger", "OPTrackingWinger"]
+      ],
+      "AML": [
+        ["PlaymakingWinger", "InsideForward", "InsideWinger", "Winger", "WideForward"],
+        ["OPWideOutletWinger", "OPWinger", "OPInsideOutletWinger", "OPTrackingWinger"]
+      ],
+      "AMC": [
+        [
+          "AttackingMidfielder",
+          "SecondStriker",
+          "FreeRole",
+          "AdvancedPlaymaker",
+          "ChannelMidfielder"
+        ],
+        [
+          "OPAttackingMidfielder",
+          "OPCentralOutletAttackingMidfielder",
+          "OPTrackingAttackingMidfielder"
+        ]
+      ],
+      "AMCR": [
+        [
+          "AttackingMidfielder",
+          "SecondStriker",
+          "FreeRole",
+          "AdvancedPlaymaker",
+          "ChannelMidfielder"
+        ],
+        [
+          "OPAttackingMidfielder",
+          "OPCentralOutletAttackingMidfielder",
+          "OPTrackingAttackingMidfielder",
+          "OPSplittingOutletAttackingMidfielder"
+        ]
+      ],
+      "AMCL": [
+        [
+          "AttackingMidfielder",
+          "SecondStriker",
+          "FreeRole",
+          "AdvancedPlaymaker",
+          "ChannelMidfielder"
+        ],
+        [
+          "OPAttackingMidfielder",
+          "OPCentralOutletAttackingMidfielder",
+          "OPTrackingAttackingMidfielder",
+          "OPSplittingOutletAttackingMidfielder"
+        ]
+      ],
+      "ST": [
+        [
+          "TargetForward",
+          "DeepLyingForward",
+          "FalseNine",
+          "CentreForward",
+          "ChannelForward",
+          "Poacher"
+        ],
+        ["OPTrackingCentreForward", "OPCentreForward", "OPCentralOutletCentreForward"]
+      ],
+      "STR": [
+        [
+          "TargetForward",
+          "DeepLyingForward",
+          "FalseNine",
+          "CentreForward",
+          "ChannelForward",
+          "Poacher"
+        ],
+        [
+          "OPSplittingOutletCentreForward",
+          "OPTrackingCentreForward",
+          "OPCentreForward",
+          "OPCentralOutletCentreForward"
+        ]
+      ],
+      "STL": [
+        [
+          "TargetForward",
+          "DeepLyingForward",
+          "FalseNine",
+          "CentreForward",
+          "ChannelForward",
+          "Poacher"
+        ],
+        [
+          "OPSplittingOutletCentreForward",
+          "OPTrackingCentreForward",
+          "OPCentreForward",
+          "OPCentralOutletCentreForward"
+        ]
+      ]
+    }
+  },
+  "Instructions": [
+    {
+      "Group": "PassingDirectness",
+      "Label": "Passing directness",
+      "Out": false,
+      "Current": 0,
+      "Options": [
+        { "Bit": 4, "Label": "Much shorter passes" },
+        { "Bit": 3, "Label": "Shorter passes" },
+        { "Bit": 0, "Label": "Standard" },
+        { "Bit": 2, "Label": "More direct passes" },
+        { "Bit": 1, "Label": "Much more direct passes" }
+      ]
+    },
+    {
+      "Group": "Tempo",
+      "Label": "Tempo",
+      "Out": false,
+      "Current": 0,
+      "Options": [
+        { "Bit": 49, "Label": "Much lower" },
+        { "Bit": 48, "Label": "Lower" },
+        { "Bit": 0, "Label": "Standard" },
+        { "Bit": 47, "Label": "Higher" },
+        { "Bit": 46, "Label": "Much higher" }
+      ]
+    },
+    {
+      "Group": "AttackingWidth",
+      "Label": "Attacking width",
+      "Out": false,
+      "Current": 0,
+      "Options": [
+        { "Bit": 53, "Label": "Much narrower" },
+        { "Bit": 52, "Label": "Narrower" },
+        { "Bit": 0, "Label": "Standard" },
+        { "Bit": 51, "Label": "Wider" },
+        { "Bit": 50, "Label": "Much wider" }
+      ]
+    },
+    {
+      "Group": "AttackingTransition",
+      "Label": "Attacking transition",
+      "Out": false,
+      "Current": 0,
+      "Options": [
+        { "Bit": 55, "Label": "Hold shape" },
+        { "Bit": 0, "Label": "Standard" },
+        { "Bit": 54, "Label": "Counter-attack" }
+      ]
+    },
+    {
+      "Group": "CreativeFreedom",
+      "Label": "Creative freedom",
+      "Out": false,
+      "Current": 0,
+      "Options": [
+        { "Bit": 20, "Label": "Be more disciplined" },
+        { "Bit": 0, "Label": "Balanced" },
+        { "Bit": 19, "Label": "Be more expressive" }
+      ]
+    },
+    {
+      "Group": "TimeWasting",
+      "Label": "Time wasting",
+      "Out": false,
+      "Current": 0,
+      "Options": [
+        { "Bit": 0, "Label": "Standard" },
+        { "Bit": 79, "Label": "Sometimes" },
+        { "Bit": 78, "Label": "Often" }
+      ]
+    },
+    {
+      "Group": "PlayForSetPieces",
+      "Label": "Play for set pieces",
+      "Out": false,
+      "Current": 0,
+      "Options": [
+        { "Bit": 0, "Label": "Keep ball in play" },
+        { "Bit": 18, "Label": "Play for set pieces" }
+      ]
+    },
+    {
+      "Group": "Patience",
+      "Label": "Patience",
+      "Out": false,
+      "Current": 0,
+      "Options": [
+        { "Bit": 9, "Label": "Hit early crosses" },
+        { "Bit": 0, "Label": "Standard" },
+        { "Bit": 17, "Label": "Work ball into box" }
+      ]
+    },
+    {
+      "Group": "ShotsFromDistance",
+      "Label": "Shots from distance",
+      "Out": false,
+      "Current": 0,
+      "Options": [
+        { "Bit": 16, "Label": "Discourage" },
+        { "Bit": 0, "Label": "Standard" },
+        { "Bit": 15, "Label": "Encourage" }
+      ]
+    },
+    {
+      "Group": "Crossing",
+      "Label": "Crossing style",
+      "Out": false,
+      "Current": 0,
+      "Options": [
+        { "Bit": 0, "Label": "Mixed crosses" },
+        { "Bit": 10, "Label": "Floated crosses" },
+        { "Bit": 11, "Label": "Whipped crosses" },
+        { "Bit": 12, "Label": "Low crosses" }
+      ]
+    },
+    {
+      "Group": "Dribbling",
+      "Label": "Dribbling",
+      "Out": false,
+      "Current": 0,
+      "Options": [
+        { "Bit": 14, "Label": "Discourage" },
+        { "Bit": 0, "Label": "Standard" },
+        { "Bit": 13, "Label": "Encourage" }
+      ]
+    },
+    {
+      "Group": "SupportingRunsSecondary",
+      "Label": "Overlap",
+      "Out": false,
+      "Current": 0,
+      "Options": [
+        { "Bit": 0, "Label": "Balanced" },
+        { "Bit": 26, "Label": "Overlap left" },
+        { "Bit": 27, "Label": "Overlap right" },
+        { "Bit": 25, "Label": "Overlap both flanks" }
+      ]
+    },
+    {
+      "Group": "SupportingRuns",
+      "Label": "Underlap",
+      "Out": false,
+      "Current": 0,
+      "Options": [
+        { "Bit": 0, "Label": "Balanced" },
+        { "Bit": 29, "Label": "Underlap left" },
+        { "Bit": 30, "Label": "Underlap right" },
+        { "Bit": 28, "Label": "Underlap both flanks" }
+      ]
+    },
+    {
+      "Group": "ProgressThrough",
+      "Label": "Progress through",
+      "Out": false,
+      "Current": 0,
+      "Options": [
+        { "Bit": 0, "Label": "Balanced" },
+        { "Bit": 23, "Label": "Centre" },
+        { "Bit": 21, "Label": "Left flank" },
+        { "Bit": 22, "Label": "Right flank" },
+        { "Bit": 24, "Label": "Both flanks" }
+      ]
+    },
+    {
+      "Group": "PassReception",
+      "Label": "Pass reception",
+      "Out": false,
+      "Current": 0,
+      "Options": [
+        { "Bit": 6, "Label": "Pass to feet" },
+        { "Bit": 0, "Label": "Standard" },
+        { "Bit": 5, "Label": "Pass into space" }
+      ]
+    },
+    {
+      "Group": "BuildUpStrategy",
+      "Label": "Build-up strategy",
+      "Out": false,
+      "Current": 0,
+      "Options": [
+        { "Bit": 7, "Label": "Play through the press" },
+        { "Bit": 0, "Label": "Standard" },
+        { "Bit": 8, "Label": "Bypass the press" }
+      ]
+    },
+    {
+      "Group": "GoalKicks",
+      "Label": "Goal kicks",
+      "Out": false,
+      "Current": 0,
+      "Options": [
+        { "Bit": 44, "Label": "Shorter passes" },
+        { "Bit": 0, "Label": "Mixed" },
+        { "Bit": 45, "Label": "Long passing" }
+      ]
+    },
+    {
+      "Group": "GoalkeeperDistributionSpeed",
+      "Label": "GK distribution speed",
+      "Out": false,
+      "Current": 0,
+      "Options": [
+        { "Bit": 43, "Label": "Slow pace down" },
+        { "Bit": 0, "Label": "Balanced" },
+        { "Bit": 42, "Label": "Distribute quickly" }
+      ]
+    },
+    {
+      "Group": "GoalkeeperDistributionTarget",
+      "Label": "Goalkeeper distribution",
+      "Out": false,
+      "Current": 0,
+      "Options": [
+        { "Bit": 0, "Label": "Balanced" },
+        { "Bit": 35, "Label": "Centre-back" },
+        { "Bit": 36, "Label": "Full-back" },
+        { "Bit": 37, "Label": "Flanks" },
+        { "Bit": 39, "Label": "Playmaker" },
+        { "Bit": 40, "Label": "Target forward" },
+        { "Bit": 38, "Label": "Bypass the defensive line" }
+      ]
+    },
+    {
+      "Group": "GoalkeeperUpForAttackingSetPieces",
+      "Label": "GK on attacking set pieces",
+      "Out": false,
+      "Current": 0,
+      "Options": [
+        { "Bit": 0, "Label": "Do not participate" },
+        { "Bit": 60, "Label": "Participate" }
+      ]
+    },
+    {
+      "Group": "LineOfEngagement",
+      "Label": "Line of engagement",
+      "Out": true,
+      "Current": 62,
+      "Options": [
+        { "Bit": 63, "Label": "Low block" },
+        { "Bit": 62, "Label": "Mid block" },
+        { "Bit": 61, "Label": "High press" }
+      ]
+    },
+    {
+      "Group": "DefensiveLine",
+      "Label": "Defensive line height",
+      "Out": true,
+      "Current": 0,
+      "Options": [
+        { "Bit": 59, "Label": "Much lower" },
+        { "Bit": 58, "Label": "Lower" },
+        { "Bit": 0, "Label": "Standard" },
+        { "Bit": 57, "Label": "Higher" },
+        { "Bit": 56, "Label": "Much higher" }
+      ]
+    },
+    {
+      "Group": "DefensiveLineBehaviour",
+      "Label": "Defensive line behaviour",
+      "Out": true,
+      "Current": 0,
+      "Options": [
+        { "Bit": 76, "Label": "Step up more" },
+        { "Bit": 0, "Label": "Balanced" },
+        { "Bit": 77, "Label": "Drop off more" }
+      ]
+    },
+    {
+      "Group": "TriggerPress",
+      "Label": "Trigger press",
+      "Out": true,
+      "Current": 0,
+      "Options": [
+        { "Bit": 68, "Label": "Much less often" },
+        { "Bit": 67, "Label": "Less often" },
+        { "Bit": 0, "Label": "Standard" },
+        { "Bit": 66, "Label": "More often" },
+        { "Bit": 65, "Label": "Much more often" }
+      ]
+    },
+    {
+      "Group": "DefensiveTransition",
+      "Label": "Defensive transition",
+      "Out": true,
+      "Current": 0,
+      "Options": [
+        { "Bit": 71, "Label": "Regroup" },
+        { "Bit": 0, "Label": "Standard" },
+        { "Bit": 70, "Label": "Counter-press" }
+      ]
+    },
+    {
+      "Group": "Tackling",
+      "Label": "Tackling",
+      "Out": true,
+      "Current": 0,
+      "Options": [
+        { "Bit": 73, "Label": "Stay on feet" },
+        { "Bit": 0, "Label": "Standard" },
+        { "Bit": 72, "Label": "Get stuck in" }
+      ]
+    },
+    {
+      "Group": "PreventShortGKDistribution",
+      "Label": "Prevent short GK distribution",
+      "Out": true,
+      "Current": 0,
+      "Options": [
+        { "Bit": 0, "Label": "No" },
+        { "Bit": 69, "Label": "Yes" }
+      ]
+    },
+    {
+      "Group": "PressingTrap",
+      "Label": "Pressing trap",
+      "Out": true,
+      "Current": 0,
+      "Options": [
+        { "Bit": 80, "Label": "Trap inside" },
+        { "Bit": 0, "Label": "Standard" },
+        { "Bit": 81, "Label": "Trap outside" }
+      ]
+    },
+    {
+      "Group": "CrossEngagement",
+      "Label": "Cross engagement",
+      "Out": true,
+      "Current": 0,
+      "Options": [
+        { "Bit": 82, "Label": "Stop crosses" },
+        { "Bit": 0, "Label": "Standard" },
+        { "Bit": 83, "Label": "Invite crosses" }
+      ]
+    }
+  ],
+  "Conflicts": [
+    [25, 28],
+    [25, 29],
+    [25, 30],
+    [26, 28],
+    [26, 29],
+    [27, 28],
+    [27, 30]
+  ],
+  "PlayerInstructions": [
+    {
+      "Id": 0,
+      "Label": "Attacking width",
+      "Phase": 0,
+      "Options": [
+        { "Bit": 25, "Label": "Stay wider" },
+        { "Bit": 26, "Label": "Sit narrower" },
+        { "Bit": 27, "Label": "Move into channels" },
+        { "Bit": 0, "Label": "Standard" }
+      ]
+    },
+    {
+      "Id": 1,
+      "Label": "Dribbling direction",
+      "Phase": 0,
+      "Options": [
+        { "Bit": 15, "Label": "Run wide with ball" },
+        { "Bit": 16, "Label": "Cut inside with ball" },
+        { "Bit": 0, "Label": "Standard" }
+      ]
+    },
+    {
+      "Id": 2,
+      "Label": "Dribbling frequency",
+      "Phase": 0,
+      "Options": [
+        { "Bit": 13, "Label": "Dribble more" },
+        { "Bit": 14, "Label": "Dribble less" },
+        { "Bit": 0, "Label": "Standard" }
+      ]
+    },
+    {
+      "Id": 3,
+      "Label": "Forward runs",
+      "Phase": 0,
+      "Options": [
+        { "Bit": 22, "Label": "Make more runs" },
+        { "Bit": 0, "Label": "Standard" },
+        { "Bit": 23, "Label": "Hold position" }
+      ]
+    },
+    {
+      "Id": 4,
+      "Label": "Freedom of movement",
+      "Phase": 0,
+      "Options": [
+        { "Bit": 24, "Label": "Roam from position" },
+        { "Bit": 0, "Label": "Follow tactical shape" }
+      ]
+    },
+    {
+      "Id": 5,
+      "Label": "Hold up ball",
+      "Phase": 0,
+      "Options": [
+        { "Bit": 17, "Label": "Yes" },
+        { "Bit": 0, "Label": "No" }
+      ]
+    },
+    {
+      "Id": 6,
+      "Label": "Shooting",
+      "Phase": 0,
+      "Options": [
+        { "Bit": 18, "Label": "Shoot more often" },
+        { "Bit": 19, "Label": "Shoot less often" },
+        { "Bit": 0, "Label": "Standard" }
+      ]
+    },
+    {
+      "Id": 7,
+      "Label": "Passing strategy",
+      "Phase": 0,
+      "Options": [
+        { "Bit": 1, "Label": "Shorter passing" },
+        { "Bit": 2, "Label": "More direct passing" },
+        { "Bit": 0, "Label": "Standard" }
+      ]
+    },
+    {
+      "Id": 8,
+      "Label": "Passing risk",
+      "Phase": 0,
+      "Options": [
+        { "Bit": 3, "Label": "Take more risks" },
+        { "Bit": 4, "Label": "Take fewer risks" },
+        { "Bit": 0, "Label": "Standard" }
+      ]
+    },
+    {
+      "Id": 9,
+      "Label": "Crossing strategy",
+      "Phase": 0,
+      "Options": [
+        { "Bit": 10, "Label": "Aim for far post" },
+        { "Bit": 11, "Label": "Aim for centre" },
+        { "Bit": 9, "Label": "Aim for near post" },
+        { "Bit": 12, "Label": "Aim for target forward" },
+        { "Bit": 0, "Label": "Standard" }
+      ]
+    },
+    {
+      "Id": 10,
+      "Label": "Cross from",
+      "Phase": 0,
+      "Options": [
+        { "Bit": 7, "Label": "Cross from deep" },
+        { "Bit": 8, "Label": "Cross from byline" },
+        { "Bit": 0, "Label": "Standard" }
+      ]
+    },
+    {
+      "Id": 11,
+      "Label": "Trigger press",
+      "Phase": 1,
+      "Options": [
+        { "Bit": 29, "Label": "More often" },
+        { "Bit": 30, "Label": "Less often" },
+        { "Bit": 0, "Label": "Standard" }
+      ]
+    },
+    {
+      "Id": 12,
+      "Label": "Marking",
+      "Phase": 1,
+      "Options": [
+        { "Bit": 33, "Label": "Mark tighter" },
+        { "Bit": 0, "Label": "Standard" }
+      ]
+    },
+    {
+      "Id": 13,
+      "Label": "Tackling",
+      "Phase": 1,
+      "Options": [
+        { "Bit": 31, "Label": "Tackle harder" },
+        { "Bit": 32, "Label": "Ease off tackles" },
+        { "Bit": 0, "Label": "Standard" }
+      ]
+    },
+    {
+      "Id": 14,
+      "Label": "Marking target",
+      "Phase": 1,
+      "Options": [
+        { "Bit": 34, "Label": "Mark specific player" },
+        { "Bit": 35, "Label": "Mark specific position" },
+        { "Bit": 0, "Label": "Standard" }
+      ]
+    },
+    {
+      "Id": 15,
+      "Label": "Attack box \u2013 side",
+      "Phase": 0,
+      "Options": [
+        { "Bit": 36, "Label": "Centre" },
+        { "Bit": 37, "Label": "Left" },
+        { "Bit": 38, "Label": "Right" },
+        { "Bit": 39, "Label": "Near post" },
+        { "Bit": 40, "Label": "Far post" },
+        { "Bit": 0, "Label": "Standard" }
+      ]
+    },
+    {
+      "Id": 16,
+      "Label": "Attack box \u2013 depth",
+      "Phase": 0,
+      "Options": [
+        { "Bit": 41, "Label": "Attack defensive line" },
+        { "Bit": 42, "Label": "Arrive from deep" },
+        { "Bit": 0, "Label": "Standard" }
+      ]
+    }
+  ],
+  "PlayerInstructionPolicies": {
+    "0:GK:NoNonsenseGoalkeeper": "0002311111111231111111111111111111111111111",
+    "0:GK:BallPlayingGoalkeeper": "0003211111111001111111111111111111111111111",
+    "0:GK:Goalkeeper": "0000011111111001111111111111111111111111111",
+    "1:GK:OPGoalkeeper": "0111111111111111111111111111111001111111111",
+    "1:GK:OPLineKeeper": "0111111111111111111111111111111001111111111",
+    "1:GK:OPSweeperKeeper": "0111111111111111111111111111111001111111111",
+    "0:DR:PlaymakingWingBack": "0000011000000000010011003001111111111111111",
+    "0:DR:InsideFullBack": "0000011000000000010011001001111111111111111",
+    "0:DR:InsideWingBack": "0000011002222000010011030001111111111111111",
+    "0:DR:WingBack": "0000011000000000010011001001111111111111111",
+    "0:DR:FullBack": "0000011000000000010011001001111111111111111",
+    "1:DR:OPHoldingFullBack": "0111111111111111111111111111123000001111111",
+    "1:DR:OPPressingFullBack": "0111111111111111111111111111132000001111111",
+    "1:DR:OPFullBack": "0111111111111111111111111111100000001111111",
+    "0:DL:PlaymakingWingBack": "0000011000000000010011003001111111111111111",
+    "0:DL:InsideFullBack": "0000011000000000010011001001111111111111111",
+    "0:DL:InsideWingBack": "0000011002222000010011030001111111111111111",
+    "0:DL:WingBack": "0000011000000000010011001001111111111111111",
+    "0:DL:FullBack": "0000011000000000010011001001111111111111111",
+    "1:DL:OPHoldingFullBack": "0111111111111111111111111111123000001111111",
+    "1:DL:OPPressingFullBack": "0111111111111111111111111111132000001111111",
+    "1:DL:OPFullBack": "0111111111111111111111111111100000001111111",
+    "0:DC:NoNonsenseCentreBack": "0232311111111231110011101111111111111111111",
+    "0:DC:OverlappingCentreBack": "0000011101111001110011321111111111111111111",
+    "0:DC:WideCentreBack": "0000011000000001110011101111111111111111111",
+    "0:DC:BallPlayingCentreBack": "0023211111111001110011101111111111111111111",
+    "0:DC:CentreBack": "0000011111111001110011101111111111111111111",
+    "0:DC:AdvancedCentreBack": "0000011111111001110011131111111111111111111",
+    "1:DC:OPWideCentreBack": "0111111111111111111111111111100000001111111",
+    "1:DC:OPCoveringCentreBack": "0111111111111111111111111111123000001111111",
+    "1:DC:OPCoveringWideCentreBack": "0111111111111111111111111111100000001111111",
+    "1:DC:OPStoppingWideCentreBack": "0111111111111111111111111111100000001111111",
+    "1:DC:OPCentreBack": "0111111111111111111111111111100000001111111",
+    "1:DC:OPStoppingCentreBack": "0111111111111111111111111111132000001111111",
+    "0:DCR:NoNonsenseCentreBack": "0232311111111231110011101011111111111111111",
+    "0:DCR:OverlappingCentreBack": "0000011101111001110011321011111111111111111",
+    "0:DCR:WideCentreBack": "0000011000000001110011101011111111111111111",
+    "0:DCR:BallPlayingCentreBack": "0023211111111001110011101011111111111111111",
+    "0:DCR:CentreBack": "0000011111111001110011101011111111111111111",
+    "0:DCR:AdvancedCentreBack": "0000011111111001110011131011111111111111111",
+    "1:DCR:OPWideCentreBack": "0111111111111111111111111111100000001111111",
+    "1:DCR:OPCoveringCentreBack": "0111111111111111111111111111123000001111111",
+    "1:DCR:OPCoveringWideCentreBack": "0111111111111111111111111111100000001111111",
+    "1:DCR:OPStoppingWideCentreBack": "0111111111111111111111111111100000001111111",
+    "1:DCR:OPCentreBack": "0111111111111111111111111111100000001111111",
+    "1:DCR:OPStoppingCentreBack": "0111111111111111111111111111132000001111111",
+    "0:DCL:NoNonsenseCentreBack": "0232311111111231110011101011111111111111111",
+    "0:DCL:OverlappingCentreBack": "0000011101111001110011321011111111111111111",
+    "0:DCL:WideCentreBack": "0000011000000001110011101011111111111111111",
+    "0:DCL:BallPlayingCentreBack": "0023211111111001110011101011111111111111111",
+    "0:DCL:CentreBack": "0000011111111001110011101011111111111111111",
+    "0:DCL:AdvancedCentreBack": "0000011111111001110011131011111111111111111",
+    "1:DCL:OPWideCentreBack": "0111111111111111111111111111100000001111111",
+    "1:DCL:OPCoveringCentreBack": "0111111111111111111111111111123000001111111",
+    "1:DCL:OPCoveringWideCentreBack": "0111111111111111111111111111100000001111111",
+    "1:DCL:OPStoppingWideCentreBack": "0111111111111111111111111111100000001111111",
+    "1:DCL:OPCentreBack": "0111111111111111111111111111100000001111111",
+    "1:DCL:OPStoppingCentreBack": "0111111111111111111111111111132000001111111",
+    "0:WBR:AdvancedWingBack": "0000011200000000010011321001111111111111111",
+    "0:WBR:PlaymakingWingBack": "0000011000000000010011003001111111111111111",
+    "0:WBR:InsideWingBack": "0000011002222000010011030001111111111111111",
+    "0:WBR:WingBack": "0000011000000000010011001001111111111111111",
+    "1:WBR:OPHoldingWingBack": "0111111111111111111111111111123000001111111",
+    "1:WBR:OPWingBack": "0111111111111111111111111111100000001111111",
+    "1:WBR:OPPressingWingBack": "0111111111111111111111111111132000001111111",
+    "0:WBL:AdvancedWingBack": "0000011200000000010011321001111111111111111",
+    "0:WBL:PlaymakingWingBack": "0000011000000000010011003001111111111111111",
+    "0:WBL:InsideWingBack": "0000011002222000010011030001111111111111111",
+    "0:WBL:WingBack": "0000011000000000010011001001111111111111111",
+    "1:WBL:OPHoldingWingBack": "0111111111111111111111111111123000001111111",
+    "1:WBL:OPWingBack": "0111111111111111111111111111100000001111111",
+    "1:WBL:OPPressingWingBack": "0111111111111111111111111111132000001111111",
+    "0:DMC:BoxToBoxPlaymaker": "0000011111111001110011001110111111111111123",
+    "0:DMC:HalfBack": "0000011111111001110011031111111111111111111",
+    "0:DMC:BoxToBoxMidfielder": "0000011111111001110011000110111111111111100",
+    "0:DMC:DeepLyingPlaymaker": "0000211111111001110011231111111111111111111",
+    "0:DMC:DefensiveMidfielder": "0000011111111031110011001111111111111111111",
+    "1:DMC:OPScreeningDefensiveMidfielder": "0111111111111111111111111111123000001111111",
+    "1:DMC:OPDefensiveMidfielder": "0111111111111111111111111111100000001111111",
+    "1:DMC:OPDroppingDefensiveMidfielder": "0111111111111111111111111111100000001111111",
+    "1:DMC:OPWideCoverDefensiveMidfielder": "0111111111111111111111111111100000001111111",
+    "1:DMC:OPPressingDefensiveMidfielder": "0111111111111111111111111111132000001111111",
+    "0:DMR:BoxToBoxPlaymaker": "0000011111111001110011001210111111110101123",
+    "0:DMR:HalfBack": "0000011111111001110011031011111111111111111",
+    "0:DMR:BoxToBoxMidfielder": "0000011111111001110011000010111111110101100",
+    "0:DMR:DeepLyingPlaymaker": "0000211111111001110011231011111111111111111",
+    "0:DMR:DefensiveMidfielder": "0000011111111031110011001011111111111111111",
+    "1:DMR:OPScreeningDefensiveMidfielder": "0111111111111111111111111111123000001111111",
+    "1:DMR:OPDefensiveMidfielder": "0111111111111111111111111111100000001111111",
+    "1:DMR:OPDroppingDefensiveMidfielder": "0111111111111111111111111111100000001111111",
+    "1:DMR:OPWideCoverDefensiveMidfielder": "0111111111111111111111111111100000001111111",
+    "1:DMR:OPPressingDefensiveMidfielder": "0111111111111111111111111111132000001111111",
+    "0:DML:BoxToBoxPlaymaker": "0000011111111001110011001210111111110011123",
+    "0:DML:HalfBack": "0000011111111001110011031011111111111111111",
+    "0:DML:BoxToBoxMidfielder": "0000011111111001110011000010111111110011100",
+    "0:DML:DeepLyingPlaymaker": "0000211111111001110011231011111111111111111",
+    "0:DML:DefensiveMidfielder": "0000011111111031110011001011111111111111111",
+    "1:DML:OPScreeningDefensiveMidfielder": "0111111111111111111111111111123000001111111",
+    "1:DML:OPDefensiveMidfielder": "0111111111111111111111111111100000001111111",
+    "1:DML:OPDroppingDefensiveMidfielder": "0111111111111111111111111111100000001111111",
+    "1:DML:OPWideCoverDefensiveMidfielder": "0111111111111111111111111111100000001111111",
+    "1:DML:OPPressingDefensiveMidfielder": "0111111111111111111111111111132000001111111",
+    "0:MR:PlaymakingWinger": "0000211222222000010011033231111111110101123",
+    "0:MR:InsideWinger": "0000011000000000010011000001111111110101100",
+    "0:MR:Winger": "0000011000000000000011000001111111112121100",
+    "0:MR:WideMidfielder": "0000011000000000010011000001111111111111100",
+    "1:MR:OPTrackingWideMidfielder": "0111111111111111111111111111100000001111111",
+    "1:MR:OPWideOutletWideMidfielder": "0111111111111111111111111111100000001111111",
+    "1:MR:OPWideMidfielder": "0111111111111111111111111111100000001111111",
+    "0:ML:PlaymakingWinger": "0000211222222000010011033231111111110011123",
+    "0:ML:InsideWinger": "0000011000000000010011000001111111110011100",
+    "0:ML:Winger": "0000011000000000000011000001111111112211100",
+    "0:ML:WideMidfielder": "0000011000000000010011000001111111111111100",
+    "1:ML:OPTrackingWideMidfielder": "0111111111111111111111111111100000001111111",
+    "1:ML:OPWideOutletWideMidfielder": "0111111111111111111111111111100000001111111",
+    "1:ML:OPWideMidfielder": "0111111111111111111111111111100000001111111",
+    "0:MC:MidfieldPlaymaker": "0000211111111001110011000111111111112221111",
+    "0:MC:AttackingMidfielder": "0000011111111001110011000111111111110000000",
+    "0:MC:WideCentralMidfielder": "0000011111111001110011000111111111111111111",
+    "0:MC:CentralMidfielder": "0000011111111001110011000110111111111111111",
+    "0:MC:AdvancedPlaymaker": "0003211111111001110011200111111111110000023",
+    "0:MC:ChannelMidfielder": "0000011111111001110011000113111111112221100",
+    "1:MC:OPCentralMidfielder": "0111111111111111111111111111100000001111111",
+    "1:MC:OPPressingCentralMidfielder": "0111111111111111111111111111132000001111111",
+    "1:MC:OPWideCoverCentralMidfielder": "0111111111111111111111111111100000001111111",
+    "1:MC:OPScreeningCentralMidfielder": "0111111111111111111111111111123000001111111",
+    "0:MCR:MidfieldPlaymaker": "0000211110000000110011000011111111112121111",
+    "0:MCR:AttackingMidfielder": "0000011110000000110011000010111111110101100",
+    "0:MCR:WideCentralMidfielder": "0000011110000000110011000311111111111111111",
+    "0:MCR:CentralMidfielder": "0000011110000000110011000010111111111111111",
+    "0:MCR:AdvancedPlaymaker": "0003211110000000110011200011111111110101123",
+    "0:MCR:ChannelMidfielder": "0000011110000000110011000013111111112121100",
+    "1:MCR:OPCentralMidfielder": "0111111111111111111111111111100000001111111",
+    "1:MCR:OPPressingCentralMidfielder": "0111111111111111111111111111132000001111111",
+    "1:MCR:OPWideCoverCentralMidfielder": "0111111111111111111111111111100000001111111",
+    "1:MCR:OPScreeningCentralMidfielder": "0111111111111111111111111111123000001111111",
+    "0:MCL:MidfieldPlaymaker": "0000211110000000110011000011111111112211111",
+    "0:MCL:AttackingMidfielder": "0000011110000000110011000010111111110011100",
+    "0:MCL:WideCentralMidfielder": "0000011110000000110011000311111111111111111",
+    "0:MCL:CentralMidfielder": "0000011110000000110011000010111111111111111",
+    "0:MCL:AdvancedPlaymaker": "0003211110000000110011200011111111110011123",
+    "0:MCL:ChannelMidfielder": "0000011110000000110011000013111111112211100",
+    "1:MCL:OPCentralMidfielder": "0111111111111111111111111111100000001111111",
+    "1:MCL:OPPressingCentralMidfielder": "0111111111111111111111111111132000001111111",
+    "1:MCL:OPWideCoverCentralMidfielder": "0111111111111111111111111111100000001111111",
+    "1:MCL:OPScreeningCentralMidfielder": "0111111111111111111111111111123000001111111",
+    "0:AMR:PlaymakingWinger": "0000211222222000000011033231111111110101123",
+    "0:AMR:InsideForward": "0000011000000000000011320001111111110101132",
+    "0:AMR:InsideWinger": "0000011000000000000011000001111111110101100",
+    "0:AMR:Winger": "0000011000000000000011000001111111112121100",
+    "0:AMR:WideForward": "0320011002222000000011320001111111112121132",
+    "1:AMR:OPWideOutletWinger": "0111111111111111111111111111100000001111111",
+    "1:AMR:OPWinger": "0111111111111111111111111111100000001111111",
+    "1:AMR:OPInsideOutletWinger": "0111111111111111111111111111100000001111111",
+    "1:AMR:OPTrackingWinger": "0111111111111111111111111111100000001111111",
+    "0:AML:PlaymakingWinger": "0000211222222000000011033231111111110011123",
+    "0:AML:InsideForward": "0000011000000000000011320001111111110011132",
+    "0:AML:InsideWinger": "0000011000000000000011000001111111110011100",
+    "0:AML:Winger": "0000011000000000000011000001111111112211100",
+    "0:AML:WideForward": "0320011002222000000011320001111111112211132",
+    "1:AML:OPWideOutletWinger": "0111111111111111111111111111100000001111111",
+    "1:AML:OPWinger": "0111111111111111111111111111100000001111111",
+    "1:AML:OPInsideOutletWinger": "0111111111111111111111111111100000001111111",
+    "1:AML:OPTrackingWinger": "0111111111111111111111111111100000001111111",
+    "0:AMC:AttackingMidfielder": "0000011110000001100011000110111111110000000",
+    "0:AMC:SecondStriker": "0000011110000001100011320110111111110000032",
+    "0:AMC:FreeRole": "0003211110000321100011020110111111110000000",
+    "0:AMC:AdvancedPlaymaker": "0003211110000001100011200110111111110000023",
+    "0:AMC:ChannelMidfielder": "0000011110000001100011000113111111110000000",
+    "1:AMC:OPAttackingMidfielder": "0111111111111111111111111111100000001111111",
+    "1:AMC:OPCentralOutletAttackingMidfielder": "0111111111111111111111111111100000001111111",
+    "1:AMC:OPTrackingAttackingMidfielder": "0111111111111111111111111111100000001111111",
+    "1:AMC:OPSplittingOutletAttackingMidfielder": "0111111111111111111111111111100000001111111",
+    "0:AMCR:AttackingMidfielder": "0000011110000000100011000010111111110101100",
+    "0:AMCR:SecondStriker": "0000011110000000100011320010111111110101132",
+    "0:AMCR:FreeRole": "0003211110000320100011020010111111110101100",
+    "0:AMCR:AdvancedPlaymaker": "0003211110000000100011200010111111110101123",
+    "0:AMCR:ChannelMidfielder": "0000011110000000100011000013111111110101100",
+    "1:AMCR:OPAttackingMidfielder": "0111111111111111111111111111100000001111111",
+    "1:AMCR:OPCentralOutletAttackingMidfielder": "0111111111111111111111111111100000001111111",
+    "1:AMCR:OPTrackingAttackingMidfielder": "0111111111111111111111111111100000001111111",
+    "1:AMCR:OPSplittingOutletAttackingMidfielder": "0111111111111111111111111111100000001111111",
+    "0:AMCL:AttackingMidfielder": "0000011110000000100011000010111111110011100",
+    "0:AMCL:SecondStriker": "0000011110000000100011320010111111110011132",
+    "0:AMCL:FreeRole": "0003211110000320100011020010111111110011100",
+    "0:AMCL:AdvancedPlaymaker": "0003211110000000100011200010111111110011123",
+    "0:AMCL:ChannelMidfielder": "0000011110000000100011000013111111110011100",
+    "1:AMCL:OPAttackingMidfielder": "0111111111111111111111111111100000001111111",
+    "1:AMCL:OPCentralOutletAttackingMidfielder": "0111111111111111111111111111100000001111111",
+    "1:AMCL:OPTrackingAttackingMidfielder": "0111111111111111111111111111100000001111111",
+    "1:AMCL:OPSplittingOutletAttackingMidfielder": "0111111111111111111111111111100000001111111",
+    "0:ST:TargetForward": "0000011111111001130011100110111111110000000",
+    "0:ST:DeepLyingForward": "0000011111111001130011100110111111110000000",
+    "0:ST:FalseNine": "0000011111111001100011123110111111110000023",
+    "0:ST:CentreForward": "0000011111111001100011100110111111110000000",
+    "0:ST:ChannelForward": "0002011111111201100011000110111111110000032",
+    "0:ST:Poacher": "0000011111111001100011102110111111110000032",
+    "1:ST:OPSplittingOutletCentreForward": "0111111111111111111111111111100000001111111",
+    "1:ST:OPTrackingCentreForward": "0111111111111111111111111111100000001111111",
+    "1:ST:OPCentreForward": "0111111111111111111111111111100000001111111",
+    "1:ST:OPCentralOutletCentreForward": "0111111111111111111111111111100000001111111",
+    "0:STR:TargetForward": "0000011111111000130011100010111111110101100",
+    "0:STR:DeepLyingForward": "0000011111111000130011100010111111110101100",
+    "0:STR:FalseNine": "0000011111111000100011123010111111110101123",
+    "0:STR:CentreForward": "0000011111111000100011100010111111110101100",
+    "0:STR:ChannelForward": "0002011111111200100011000010111111110101132",
+    "0:STR:Poacher": "0000011111111000100011102010111111110101132",
+    "1:STR:OPSplittingOutletCentreForward": "0111111111111111111111111111100000001111111",
+    "1:STR:OPTrackingCentreForward": "0111111111111111111111111111100000001111111",
+    "1:STR:OPCentreForward": "0111111111111111111111111111100000001111111",
+    "1:STR:OPCentralOutletCentreForward": "0111111111111111111111111111100000001111111",
+    "0:STL:TargetForward": "0000011111111000130011100010111111110011100",
+    "0:STL:DeepLyingForward": "0000011111111000130011100010111111110011100",
+    "0:STL:FalseNine": "0000011111111000100011123010111111110011123",
+    "0:STL:CentreForward": "0000011111111000100011100010111111110011100",
+    "0:STL:ChannelForward": "0002011111111200100011000010111111110011132",
+    "0:STL:Poacher": "0000011111111000100011102010111111110011132",
+    "1:STL:OPSplittingOutletCentreForward": "0111111111111111111111111111100000001111111",
+    "1:STL:OPTrackingCentreForward": "0111111111111111111111111111100000001111111",
+    "1:STL:OPCentreForward": "0111111111111111111111111111100000001111111",
+    "1:STL:OPCentralOutletCentreForward": "0111111111111111111111111111100000001111111"
+  }
+}
