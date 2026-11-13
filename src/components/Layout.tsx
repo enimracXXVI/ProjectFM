@@ -6,6 +6,7 @@ import { useConfig } from '../lib/config'
 import { useChecks } from '../lib/useChecks'
 import { navItems, sections } from './nav'
 import { TopBar } from './TopBar'
+import { Logo } from './Logo'
 
 const COLLAPSED_KEY = 'projectfm.sidebarCollapsed'
 
@@ -62,13 +63,7 @@ export function Layout() {
             collapsed ? 'justify-center' : 'px-5',
           )}
         >
-          {collapsed ? (
-            <span className="text-accent">FM</span>
-          ) : (
-            <>
-              Project<span className="text-accent">FM</span>
-            </>
-          )}
+          <Logo className={collapsed ? 'h-8 w-auto' : 'h-10 w-auto'} />
         </div>
         <nav
           aria-label="Main"

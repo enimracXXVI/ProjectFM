@@ -2,6 +2,7 @@ import { clsx } from 'clsx'
 import { useState, type FormEvent } from 'react'
 import { Button, ErrorText, Field } from '../components/form'
 import { sendLoginEmail, signInWithPassword, verifyLoginCode } from '../lib/authActions'
+import { Logo } from '../components/Logo'
 
 type Mode = 'password' | 'email'
 
@@ -41,8 +42,8 @@ export function Login() {
   return (
     <div className="grid min-h-full place-items-center px-4 pt-safe">
       <div className="w-full max-w-sm">
-        <h1 className="mb-1 text-3xl font-bold tracking-tight">
-          Project<span className="text-accent">FM</span>
+        <h1 className="mb-4">
+          <Logo className="h-20 w-auto" />
         </h1>
         <p className="mb-6 text-sm text-muted">Your Football Manager careers, on every device.</p>
 
