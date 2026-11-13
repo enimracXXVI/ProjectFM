@@ -54,7 +54,9 @@ export async function listNotes(careerId: string): Promise<NoteRow[]> {
 export async function saveNote(
   careerId: string,
   id: string | null,
-  patch: Partial<Pick<NoteRow, 'category' | 'body' | 'pinned' | 'done'>>,
+  patch: Partial<
+    Pick<NoteRow, 'category' | 'body' | 'pinned' | 'done' | 'player_id' | 'staff_id' | 'match_key'>
+  >,
 ): Promise<void> {
   if (id) check(await supabase.from('notes').update(patch).eq('id', id))
   else check(await supabase.from('notes').insert({ career_id: careerId, ...patch }))
@@ -76,3 +78,49 @@ export function sortNotes(notes: NoteRow[]): NoteRow[] {
       b.created_at.localeCompare(a.created_at),
   )
 }
+
+/** What a note can be linked to: a player, a staff member or a match. */
+export type NoteLink =
+  { kind: 'player'; id: string } | { kind: 'staff'; id: string } | { kind: 'match'; id: string }
+
+/** A match's link key: competition database id, fixture key and season, e.g. "32|2026-08-22_1129_1179|2026". */
+export const matchLinkKey = (dbId: number | null, fixtureKey: string, season: number | null) =>
+  `${dbId ?? ''}|${fixtureKey}|${season ?? ''}`
+
+/** The match page of a match link key. */
+export function matchLinkHref(key: string): string {
+  const [db, fixture, season] = key.split('|')
+  return `/competitions/${db}/match/${fixture}${season ? `?season=${season}` : ''}`
+}
+
+export const linkOf = (
+  n: Pick<NoteRow, 'player_id' | 'staff_id' | 'match_key'>,
+): NoteLink | null =>
+  n.player_id
+    ? { kind: 'player', id: n.player_id }
+    : n.staff_id
+      ? { kind: 'staff', id: n.staff_id }
+      : n.match_key
+        ? { kind: 'match', id: n.match_key }
+        : null
+
+/** The note columns for a link (the other two cleared). */
+export const linkColumns = (link: NoteLink | null) => ({
+  player_id: link?.kind === 'player' ? link.id : null,
+  staff_id: link?.kind === 'staff' ? link.id : null,
+  match_key: link?.kind === 'match' ? link.id : null,
+})
+
+/** "player:<id>" and back, for pickers. */
+export const linkValue = (link: NoteLink | null) => (link ? `${link.kind}:${link.id}` : '')
+export function parseLinkValue(v: string): NoteLink | null {
+  const i = v.indexOf(':')
+  if (i < 0) return null
+  const kind = v.slice(0, i) as NoteLink['kind']
+  return ['player', 'staff', 'match'].includes(kind)
+    ? ({ kind, id: v.slice(i + 1) } as NoteLink)
+    : null
+}
+
+export const sameLink = (a: NoteLink | null, b: NoteLink | null) =>
+  !!a && !!b && a.kind === b.kind && a.id === b.id

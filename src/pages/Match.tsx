@@ -4,11 +4,13 @@ import { Link, useParams, useSearchParams } from 'react-router-dom'
 import { HeadToHead } from '../components/HeadToHead'
 import { MatchLogCard } from '../components/MatchLogCard'
 import { MatchStatsCard } from '../components/MatchStatsCard'
+import { NotesPanel } from '../components/NotesPanel'
 import { Card, Placeholder } from '../components/ui'
 import { useCompetitions } from '../competitions/hooks'
 import { EVENT, type Fixture, type ReportPlayer } from '../competitions/types'
 import { compLabel, fixtureKey, halfTime, resultFor } from '../competitions/view'
 import { usePlayers } from '../data/hooks'
+import { matchLinkKey } from '../data/notes'
 import { useCurrentCareer } from '../lib/career'
 import { useConfig } from '../lib/config'
 import { ResultBadge } from './competitionParts'
@@ -170,6 +172,12 @@ export function Match() {
           <MatchLogCard matchKey={key} competitionDbId={comp.databaseId} season={data.season} />
         </div>
       )}
+
+      <div className="mt-4">
+        <NotesPanel
+          scope={{ kind: 'match', id: matchLinkKey(comp.databaseId, key, data.season) }}
+        />
+      </div>
     </>
   )
 }

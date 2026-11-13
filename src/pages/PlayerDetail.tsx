@@ -1,3 +1,4 @@
+import { NotesPanel } from '../components/NotesPanel'
 import { clsx } from 'clsx'
 import { ArrowLeft, Scale } from 'lucide-react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
@@ -212,6 +213,10 @@ export function PlayerDetail() {
             ` · changes compared with ${new Date(previous.created_at).toLocaleDateString()}`}
         </p>
       )}
+
+      <div className="mt-6">
+        <NotesPanel scope={{ kind: 'player', id: p.id }} />
+      </div>
     </>
   )
 }

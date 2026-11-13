@@ -1,3 +1,4 @@
+import { NotesPanel } from '../components/NotesPanel'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { clsx } from 'clsx'
 import { ArrowLeft, Plus, Trash2 } from 'lucide-react'
@@ -109,239 +110,246 @@ function StaffForm({ existing }: { existing: StaffRow | null }) {
   }
 
   return (
-    <form onSubmit={submit}>
-      <Link
-        to="/staff"
-        className="mb-3 inline-flex min-h-11 items-center gap-1 text-sm text-muted hover:text-text"
-      >
-        <ArrowLeft className="size-4" aria-hidden /> Staff
-      </Link>
-      <PageHeader title={existing ? existing.name : 'Add staff'} />
+    <>
+      <form onSubmit={submit}>
+        <Link
+          to="/staff"
+          className="mb-3 inline-flex min-h-11 items-center gap-1 text-sm text-muted hover:text-text"
+        >
+          <ArrowLeft className="size-4" aria-hidden /> Staff
+        </Link>
+        <PageHeader title={existing ? existing.name : 'Add staff'} />
 
-      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
-        <Field
-          label="Name"
-          required
-          className="lg:col-span-2"
-          value={form.name}
-          onChange={(e) => set('name', e.target.value)}
-        />
-        <label className="grid gap-1 text-sm">
-          <span className="text-muted">Job</span>
-          <select
-            value={form.role ?? ''}
-            onChange={(e) => {
-              set('role', e.target.value || null)
-              setTab(tabForJob(e.target.value || null))
-            }}
-            className={input}
-          >
-            {form.role && !JOB_TITLES.some(([t]) => t === form.role) && (
-              <option>{form.role}</option>
-            )}
-            {STAFF_GROUPS.map(([g, label]) => (
-              <optgroup key={g} label={label}>
-                {JOB_TITLES.filter(([t]) => groupOf(t, config.staffGroups) === g).map(([t]) => (
-                  <option key={t}>{t}</option>
-                ))}
-              </optgroup>
-            ))}
-          </select>
-        </label>
-        <Field
-          label="Age"
-          inputMode="numeric"
-          value={form.age ?? ''}
-          onChange={(e) => set('age', e.target.value ? Number(e.target.value) || null : null)}
-        />
-        <Field
-          label="Nationality"
-          list="countries"
-          value={form.nation ?? ''}
-          onChange={(e) => set('nation', e.target.value || null)}
-        />
-        <Field
-          label="Personality"
-          className="lg:col-span-2"
-          value={form.personality ?? ''}
-          onChange={(e) => set('personality', e.target.value || null)}
-        />
-        <Field
-          label="Reputation"
-          list="reputations"
-          value={form.reputation ?? ''}
-          onChange={(e) => set('reputation', e.target.value || null)}
-        />
-      </div>
-      <datalist id="reputations">
-        {KNOWN_REPUTATIONS.map((r) => (
-          <option key={r} value={r} />
-        ))}
-      </datalist>
-      <datalist id="countries">
-        {countries.map((c) => (
-          <option key={c} value={c} />
-        ))}
-      </datalist>
+        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
+          <Field
+            label="Name"
+            required
+            className="lg:col-span-2"
+            value={form.name}
+            onChange={(e) => set('name', e.target.value)}
+          />
+          <label className="grid gap-1 text-sm">
+            <span className="text-muted">Job</span>
+            <select
+              value={form.role ?? ''}
+              onChange={(e) => {
+                set('role', e.target.value || null)
+                setTab(tabForJob(e.target.value || null))
+              }}
+              className={input}
+            >
+              {form.role && !JOB_TITLES.some(([t]) => t === form.role) && (
+                <option>{form.role}</option>
+              )}
+              {STAFF_GROUPS.map(([g, label]) => (
+                <optgroup key={g} label={label}>
+                  {JOB_TITLES.filter(([t]) => groupOf(t, config.staffGroups) === g).map(([t]) => (
+                    <option key={t}>{t}</option>
+                  ))}
+                </optgroup>
+              ))}
+            </select>
+          </label>
+          <Field
+            label="Age"
+            inputMode="numeric"
+            value={form.age ?? ''}
+            onChange={(e) => set('age', e.target.value ? Number(e.target.value) || null : null)}
+          />
+          <Field
+            label="Nationality"
+            list="countries"
+            value={form.nation ?? ''}
+            onChange={(e) => set('nation', e.target.value || null)}
+          />
+          <Field
+            label="Personality"
+            className="lg:col-span-2"
+            value={form.personality ?? ''}
+            onChange={(e) => set('personality', e.target.value || null)}
+          />
+          <Field
+            label="Reputation"
+            list="reputations"
+            value={form.reputation ?? ''}
+            onChange={(e) => set('reputation', e.target.value || null)}
+          />
+        </div>
+        <datalist id="reputations">
+          {KNOWN_REPUTATIONS.map((r) => (
+            <option key={r} value={r} />
+          ))}
+        </datalist>
+        <datalist id="countries">
+          {countries.map((c) => (
+            <option key={c} value={c} />
+          ))}
+        </datalist>
 
-      <div className="mt-6 mb-3 flex flex-wrap gap-1" role="tablist">
-        {STAFF_TABS.map(([t, label]) => (
-          <button
-            key={t}
-            type="button"
-            role="tab"
-            aria-selected={tab === t}
-            onClick={() => setTab(t)}
-            className={clsx(
-              'min-h-10 rounded-lg border px-4 text-sm',
-              tab === t
-                ? 'border-accent bg-accent/15 font-semibold text-accent'
-                : 'border-border hover:bg-surface-2',
-            )}
-          >
-            {label}
-          </button>
-        ))}
-      </div>
-      <div className="grid gap-x-5 gap-y-4 md:grid-cols-2 xl:grid-cols-3">
-        {sections.map((section) => (
-          <section key={section.label}>
-            <h2 className="mb-1 border-b border-border pb-1 text-xs font-semibold text-muted">
-              {section.label}
-            </h2>
-            <ul className="text-sm">
-              {section.attributes.map((a) => {
-                const key = keyAttrs.includes(a)
-                return (
-                  <li
-                    key={a}
-                    className={clsx(
-                      'flex min-h-11 items-center justify-between gap-2 px-3 odd:bg-surface even:bg-surface/40',
-                      key && 'border-l-2 border-accent',
-                    )}
-                  >
-                    <span>{a}</span>
-                    <select
-                      aria-label={a}
-                      value={form.attributes[a] ?? ''}
-                      onChange={(e) => setAttr(a, e.target.value)}
+        <div className="mt-6 mb-3 flex flex-wrap gap-1" role="tablist">
+          {STAFF_TABS.map(([t, label]) => (
+            <button
+              key={t}
+              type="button"
+              role="tab"
+              aria-selected={tab === t}
+              onClick={() => setTab(t)}
+              className={clsx(
+                'min-h-10 rounded-lg border px-4 text-sm',
+                tab === t
+                  ? 'border-accent bg-accent/15 font-semibold text-accent'
+                  : 'border-border hover:bg-surface-2',
+              )}
+            >
+              {label}
+            </button>
+          ))}
+        </div>
+        <div className="grid gap-x-5 gap-y-4 md:grid-cols-2 xl:grid-cols-3">
+          {sections.map((section) => (
+            <section key={section.label}>
+              <h2 className="mb-1 border-b border-border pb-1 text-xs font-semibold text-muted">
+                {section.label}
+              </h2>
+              <ul className="text-sm">
+                {section.attributes.map((a) => {
+                  const key = keyAttrs.includes(a)
+                  return (
+                    <li
+                      key={a}
                       className={clsx(
-                        'min-h-9 w-44 shrink-0 rounded-lg border border-border bg-surface-2 px-2 text-right text-sm font-semibold',
-                        ratingColor(form.attributes[a], config.staffScale),
+                        'flex min-h-11 items-center justify-between gap-2 px-3 odd:bg-surface even:bg-surface/40',
+                        key && 'border-l-2 border-accent',
                       )}
                     >
-                      <option value="">–</option>
-                      {form.attributes[a] && !config.staffScale.includes(form.attributes[a]) && (
-                        <option value={form.attributes[a]}>{form.attributes[a]}</option>
-                      )}
-                      {config.staffScale.map((w, i) => (
-                        <option key={w} value={w}>
-                          {`${w} (${scaleRanges(config.staffScaleMin)[i] ?? ''})`}
-                        </option>
-                      ))}
-                    </select>
-                  </li>
-                )
-              })}
+                      <span>{a}</span>
+                      <select
+                        aria-label={a}
+                        value={form.attributes[a] ?? ''}
+                        onChange={(e) => setAttr(a, e.target.value)}
+                        className={clsx(
+                          'min-h-9 w-44 shrink-0 rounded-lg border border-border bg-surface-2 px-2 text-right text-sm font-semibold',
+                          ratingColor(form.attributes[a], config.staffScale),
+                        )}
+                      >
+                        <option value="">–</option>
+                        {form.attributes[a] && !config.staffScale.includes(form.attributes[a]) && (
+                          <option value={form.attributes[a]}>{form.attributes[a]}</option>
+                        )}
+                        {config.staffScale.map((w, i) => (
+                          <option key={w} value={w}>
+                            {`${w} (${scaleRanges(config.staffScaleMin)[i] ?? ''})`}
+                          </option>
+                        ))}
+                      </select>
+                    </li>
+                  )
+                })}
+              </ul>
+            </section>
+          ))}
+
+          {/* FM shows scouting knowledge on the Scouting tab */}
+          <section hidden={tab !== 'scouting' && form.knowledge.length === 0}>
+            <h2 className="mb-1 border-b border-border pb-1 text-xs font-semibold text-muted">
+              Scouting Knowledge
+            </h2>
+            <ul className="grid gap-2">
+              {form.knowledge.map((k, i) => (
+                <li key={i} className="flex items-center gap-2">
+                  <input
+                    aria-label="Nation"
+                    list="countries"
+                    placeholder="Nation"
+                    value={k.nation}
+                    onChange={(e) => setKnowledge(i, { nation: e.target.value })}
+                    className={input}
+                  />
+                  <select
+                    aria-label="Knowledge"
+                    value={k.level}
+                    onChange={(e) => setKnowledge(i, { level: e.target.value })}
+                    className={`${input} w-36`}
+                  >
+                    {!config.knowledgeLevels.includes(k.level) && <option>{k.level}</option>}
+                    {config.knowledgeLevels.map((l) => (
+                      <option key={l}>{l}</option>
+                    ))}
+                  </select>
+                  <button
+                    type="button"
+                    aria-label={`Remove ${k.nation || 'nation'}`}
+                    onClick={() =>
+                      set(
+                        'knowledge',
+                        form.knowledge.filter((_, j) => j !== i),
+                      )
+                    }
+                    className="grid size-11 shrink-0 place-items-center rounded-lg text-muted hover:bg-surface-2 hover:text-red-400"
+                  >
+                    <Trash2 className="size-4" aria-hidden />
+                  </button>
+                </li>
+              ))}
             </ul>
+            <button
+              type="button"
+              onClick={() =>
+                set('knowledge', [
+                  ...form.knowledge,
+                  { nation: '', level: config.knowledgeLevels.at(-1) ?? '' },
+                ])
+              }
+              className="mt-2 inline-flex min-h-11 items-center gap-1 text-sm font-semibold text-accent"
+            >
+              <Plus className="size-4" aria-hidden /> Add nation
+            </button>
           </section>
-        ))}
+        </div>
 
-        {/* FM shows scouting knowledge on the Scouting tab */}
-        <section hidden={tab !== 'scouting' && form.knowledge.length === 0}>
-          <h2 className="mb-1 border-b border-border pb-1 text-xs font-semibold text-muted">
-            Scouting Knowledge
-          </h2>
-          <ul className="grid gap-2">
-            {form.knowledge.map((k, i) => (
-              <li key={i} className="flex items-center gap-2">
-                <input
-                  aria-label="Nation"
-                  list="countries"
-                  placeholder="Nation"
-                  value={k.nation}
-                  onChange={(e) => setKnowledge(i, { nation: e.target.value })}
-                  className={input}
-                />
-                <select
-                  aria-label="Knowledge"
-                  value={k.level}
-                  onChange={(e) => setKnowledge(i, { level: e.target.value })}
-                  className={`${input} w-36`}
-                >
-                  {!config.knowledgeLevels.includes(k.level) && <option>{k.level}</option>}
-                  {config.knowledgeLevels.map((l) => (
-                    <option key={l}>{l}</option>
-                  ))}
-                </select>
-                <button
-                  type="button"
-                  aria-label={`Remove ${k.nation || 'nation'}`}
-                  onClick={() =>
-                    set(
-                      'knowledge',
-                      form.knowledge.filter((_, j) => j !== i),
-                    )
-                  }
-                  className="grid size-11 shrink-0 place-items-center rounded-lg text-muted hover:bg-surface-2 hover:text-red-400"
-                >
-                  <Trash2 className="size-4" aria-hidden />
-                </button>
-              </li>
-            ))}
-          </ul>
-          <button
-            type="button"
-            onClick={() =>
-              set('knowledge', [
-                ...form.knowledge,
-                { nation: '', level: config.knowledgeLevels.at(-1) ?? '' },
-              ])
-            }
-            className="mt-2 inline-flex min-h-11 items-center gap-1 text-sm font-semibold text-accent"
-          >
-            <Plus className="size-4" aria-hidden /> Add nation
-          </button>
-        </section>
-      </div>
+        <label className="mt-6 grid max-w-2xl gap-1 text-sm">
+          <span className="text-muted">Notes</span>
+          <textarea
+            rows={3}
+            value={form.notes ?? ''}
+            onChange={(e) => set('notes', e.target.value || null)}
+            className={`${input} py-2`}
+          />
+        </label>
 
-      <label className="mt-6 grid max-w-2xl gap-1 text-sm">
-        <span className="text-muted">Notes</span>
-        <textarea
-          rows={3}
-          value={form.notes ?? ''}
-          onChange={(e) => set('notes', e.target.value || null)}
-          className={`${input} py-2`}
-        />
-      </label>
-
-      <div className="mt-6 flex flex-wrap items-center gap-3">
-        <Button type="submit" disabled={save.isPending}>
-          {save.isPending ? 'Saving…' : 'Save'}
-        </Button>
-        {existing && (
-          <Button
-            type="button"
-            variant="danger"
-            className="ml-auto"
-            disabled={remove.isPending}
-            onClick={async () => {
-              if (
-                await confirm({
-                  title: `Delete ${existing.name}?`,
-                  message: 'They are also removed from the scouting network.',
-                  confirmLabel: 'Delete',
-                  danger: true,
-                })
-              )
-                remove.mutate()
-            }}
-          >
-            Delete
+        <div className="mt-6 flex flex-wrap items-center gap-3">
+          <Button type="submit" disabled={save.isPending}>
+            {save.isPending ? 'Saving…' : 'Save'}
           </Button>
-        )}
-        <ErrorText error={save.error ?? remove.error} />
-      </div>
-    </form>
+          {existing && (
+            <Button
+              type="button"
+              variant="danger"
+              className="ml-auto"
+              disabled={remove.isPending}
+              onClick={async () => {
+                if (
+                  await confirm({
+                    title: `Delete ${existing.name}?`,
+                    message: 'They are also removed from the scouting network.',
+                    confirmLabel: 'Delete',
+                    danger: true,
+                  })
+                )
+                  remove.mutate()
+              }}
+            >
+              Delete
+            </Button>
+          )}
+          <ErrorText error={save.error ?? remove.error} />
+        </div>
+      </form>
+      {existing && (
+        <div className="mt-6">
+          <NotesPanel scope={{ kind: 'staff', id: existing.id }} />
+        </div>
+      )}
+    </>
   )
 }
