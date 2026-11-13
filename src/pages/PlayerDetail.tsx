@@ -12,6 +12,7 @@ import { isGoalkeeper } from '../data/attributeInfo'
 import { HIDDEN_PLAYER_ATTRS, PERSONALITY_KEYS } from '../import/dump'
 import { attributeLabel } from '../data/config'
 import { compareUrlWith } from '../lib/compare'
+import { useCurrentCareer } from '../lib/career'
 import { useConfig } from '../lib/config'
 import {
   attrColor,
@@ -26,13 +27,11 @@ const HIDDEN_LIST = [...HIDDEN_PLAYER_ATTRS, ...PERSONALITY_KEYS.map(([, label])
 export function PlayerDetail() {
   const { id = '' } = useParams()
   const config = useConfig()
+  const career = useCurrentCareer()
   const navigate = useNavigate()
   const { data: p, isPending, error } = usePlayer(id)
   const { data: allSnapshots } = useSnapshots(id)
   const snapshots = allSnapshots?.filter((s) => Object.keys(s.attributes).length > 0)
-  const latestStats = allSnapshots
-    ?.filter((s) => config.views.stats.columns.some((c) => s.extra?.[c.key] !== undefined))
-    .at(-1)
 
   if (isPending) return <p className="text-sm text-muted">Loading…</p>
   if (error || !p) return <Placeholder>{error?.message ?? 'Player not found'}</Placeholder>
@@ -135,7 +134,9 @@ export function PlayerDetail() {
           <section key={view.label} className="mb-5">
             <h2 className="mb-1 border-b border-border pb-1 text-xs font-semibold text-muted">
               {view.label}
-              {view === config.views.stats && latestStats?.season ? ` · ${latestStats.season}` : ''}
+              {view === config.views.stats && career.current_season
+                ? ` · ${career.current_season}`
+                : ''}
             </h2>
             <dl className="grid grid-cols-2 gap-2 text-sm sm:grid-cols-3 lg:grid-cols-5">
               {items.map((c) => (

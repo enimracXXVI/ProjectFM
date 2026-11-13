@@ -131,8 +131,9 @@ export function Explain() {
           <Chip>+/− per attribute</Chip>
         </div>
         <p className="mt-2 text-sm text-muted">
-          Every import keeps a snapshot. Only attributes present in both snapshots are compared, so
-          a new column never counts as growth.
+          A copy of a player's attributes is kept whenever an import finds they changed (or his age
+          or positions did). Only attributes present in both copies are compared, so a new column
+          never counts as growth.
         </p>
       </Topic>
 

@@ -214,6 +214,38 @@ export function mergePlayer(
   }
 }
 
+const stableJson = (o: Record<string, unknown>) =>
+  JSON.stringify(
+    Object.keys(o ?? {})
+      .sort()
+      .map((k) => [k, o[k]]),
+  )
+
+/** Each player's most recent development copy (read newest first, page by page). */
+async function lastCopies(careerId: string, wanted: Set<string>) {
+  type Copy = {
+    player_id: string
+    age: number | null
+    attributes: Record<string, unknown>
+    extra: Record<string, string> | null
+  }
+  const last = new Map<string, Copy>()
+  const page = 1000
+  for (let from = 0; last.size < wanted.size; from += page) {
+    const rows = check(
+      await supabase
+        .from('player_snapshots')
+        .select('player_id, age, attributes, extra, created_at')
+        .eq('career_id', careerId)
+        .order('created_at', { ascending: false })
+        .range(from, from + page - 1),
+    ) as Copy[]
+    for (const r of rows) if (!last.has(r.player_id)) last.set(r.player_id, r)
+    if (rows.length < page) break
+  }
+  return last
+}
+
 /**
  * Saves parsed players into a career.
  * Matches on FM Unique ID (falls back to name), merges with stored data, records a
@@ -277,6 +309,9 @@ async function importPlayers(opts: {
 
   const savedId = (p: ImportedPlayer) =>
     saved.find((s) => (p.fm_uid != null ? s.fm_uid === p.fm_uid : s.name === p.name))?.id
+  // Development copies: attributes, age and positions only, and only when one of them changed
+  // since the player's last copy (FM moves attributes slowly; most imports change nothing)
+  const last = await lastCopies(careerId, new Set(saved.map((x) => x.id)))
   const snapshots = players
     .map((p) => ({
       player_id: savedId(p),
@@ -285,9 +320,18 @@ async function importPlayers(opts: {
       season,
       age: p.age,
       attributes: p.attributes,
-      extra: p.extra,
+      extra: p.positions ? { positions: p.positions } : {},
     }))
-    .filter((s) => s.player_id)
+    .filter((x) => {
+      if (!x.player_id) return false
+      const before = last.get(x.player_id)
+      return (
+        !before ||
+        before.age !== x.age ||
+        (before.extra?.positions ?? null) !== (x.extra.positions ?? null) ||
+        stableJson(before.attributes) !== stableJson(x.attributes)
+      )
+    })
   if (snapshots.length) check(await supabase.from('player_snapshots').insert(snapshots))
 
   let left = 0

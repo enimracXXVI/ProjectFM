@@ -72,7 +72,7 @@ export function Development() {
             </button>
           ))}
         </div>
-        <span className="text-sm text-muted">imports</span>
+        <span className="text-sm text-muted">changes</span>
       </div>
 
       {rows.length === 0 ? (

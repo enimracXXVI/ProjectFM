@@ -87,7 +87,7 @@ export const TABLE_NOTES: Record<string, string> = {
   players:
     'One row per player per career, matched on FM Unique ID (fm_uid): his latest state. Each import updates this row; it is never duplicated. Contract and season stats sit in extra. in_squad is false once he has left.',
   player_snapshots:
-    "History: one row per player per import, a copy of his attributes, age and stats at that moment. The Development page compares these copies. A player's copies are deleted when he leaves the club.",
+    "History: a copy of a player's attributes, age and positions, stored only when an import finds one of them changed. The Development page compares these copies. A player's copies are deleted when he leaves the club.",
   staff: 'Everyone on the staff screen of the latest save, replaced on each import.',
   imports: 'The import log: one row per save imported (file, season, number of players).',
   app_settings:
@@ -108,7 +108,8 @@ export const COLUMN_NOTES: Record<string, string> = {
   'player_snapshots.player_id': 'The player this copy belongs to',
   'player_snapshots.import_id': 'The import that made this copy',
   'player_snapshots.game_date': 'Not used',
-  'player_snapshots.stats': 'Not used (stats are in extra)',
+  'player_snapshots.stats': 'Not used',
+  'player_snapshots.extra': 'Positions at the time (older copies also hold stats)',
   'staff.fm_uid': 'FM Unique ID',
   'staff.knowledge': 'Scouting knowledge per nation',
   'careers.scouting': 'Region heads, scouts and their countries, board limits',

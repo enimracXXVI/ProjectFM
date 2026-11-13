@@ -29,8 +29,9 @@ export function DatabaseSettings() {
             row is updated. Not found: a row is added. A player only ever has one row.
           </li>
           <li>
-            A copy of every player's attributes, age and stats goes into <b>player_snapshots</b>,
-            one row per player per import, linked to the player. Development compares these copies.
+            For each player whose attributes, age or positions changed since his last copy, a new
+            copy goes into <b>player_snapshots</b>, linked to the player. Unchanged players get no
+            copy. Development compares these copies.
           </li>
           <li>Players no longer at the club get in_squad = false and their copies are deleted.</li>
           <li>
