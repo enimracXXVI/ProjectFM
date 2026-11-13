@@ -42,6 +42,7 @@ export function SettingsPage() {
           <ul className="grid">
             {[
               ['/import', 'Import', 'Your FM save (.fm)'],
+              ['/settings/database', 'Database', 'Every table and file, and what an import does'],
               [
                 '/check',
                 checks.total ? `Check in game (${checks.total})` : 'Check in game',

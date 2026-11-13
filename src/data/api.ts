@@ -98,6 +98,58 @@ export async function listSnapshots(playerId: string): Promise<SnapshotRow[]> {
   )
 }
 
+/**
+ * Older save imports were logged twice (a squad line named "FM save", then the contracts and
+ * stats line with the file name, seconds apart). This folds each pair into the second line:
+ * each player's two development copies become one, and the extra line goes.
+ */
+export async function mergeImportPairs(careerId: string): Promise<number> {
+  const rows = (
+    check(
+      await supabase
+        .from('imports')
+        .select('*')
+        .eq('career_id', careerId)
+        .eq('view_type', 'FM save')
+        .order('created_at'),
+    ) as ImportRow[]
+  ).map((r) => ({ ...r, t: Date.parse(r.created_at) }))
+  let merged = 0
+  for (let i = 0; i < rows.length - 1; i++) {
+    const squad = rows[i]
+    const rest = rows[i + 1]
+    if (squad.file_name !== 'FM save' || rest.file_name === 'FM save') continue
+    if (rest.t - squad.t > 120_000) continue
+    const snaps = check(
+      await supabase
+        .from('player_snapshots')
+        .select('id, player_id, import_id, extra')
+        .in('import_id', [squad.id, rest.id]),
+    ) as { id: string; player_id: string; import_id: string; extra: Record<string, string> }[]
+    const statsOf = new Map(
+      snaps.filter((x) => x.import_id === rest.id).map((x) => [x.player_id, x]),
+    )
+    // The squad copy keeps the attributes and takes the stats; the stats-only copy goes
+    for (const x of snaps.filter((y) => y.import_id === squad.id)) {
+      const stats = statsOf.get(x.player_id)
+      check(
+        await supabase
+          .from('player_snapshots')
+          .update({ import_id: rest.id, extra: { ...x.extra, ...stats?.extra } })
+          .eq('id', x.id),
+      )
+    }
+    const statsOnly = snaps.filter((x) => x.import_id === rest.id).map((x) => x.id)
+    if (statsOnly.length)
+      check(await supabase.from('player_snapshots').delete().in('id', statsOnly))
+    check(await supabase.from('imports').update({ row_count: squad.row_count }).eq('id', rest.id))
+    check(await supabase.from('imports').delete().eq('id', squad.id))
+    merged++
+    i++
+  }
+  return merged
+}
+
 export async function listImports(careerId: string): Promise<ImportRow[]> {
   return check(
     await supabase

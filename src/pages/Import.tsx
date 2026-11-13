@@ -1,6 +1,8 @@
 import { clsx } from 'clsx'
 import { FileUp } from 'lucide-react'
-import { useState, type DragEvent } from 'react'
+import { useQueryClient } from '@tanstack/react-query'
+import { useEffect, useState, type DragEvent } from 'react'
+import { mergeImportPairs } from '../data/api'
 import { ErrorText } from '../components/form'
 import { PageHeader } from '../components/ui'
 import { useImports, usePlayers } from '../data/hooks'
@@ -17,6 +19,17 @@ export function Import() {
   const [reading, setReading] = useState<string | null>(null)
   const [save, setSave] = useState<({ name: string } & ReadSaveResult) | null>(null)
   const { data: knownPlayers } = usePlayers(career.id)
+  const qc = useQueryClient()
+  // Older imports were logged twice: fold each pair into one line, once
+  const hasPairs = (imports.data ?? []).some((i) => i.file_name === 'FM save')
+  useEffect(() => {
+    if (!hasPairs) return
+    mergeImportPairs(career.id)
+      .then((n) => {
+        if (n) qc.invalidateQueries()
+      })
+      .catch(() => {})
+  }, [hasPairs, career.id, qc])
 
   const load = async (f: File | undefined) => {
     if (!f) return
