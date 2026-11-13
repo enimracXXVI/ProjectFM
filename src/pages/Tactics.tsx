@@ -1,6 +1,6 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { clsx } from 'clsx'
-import { Plus, Trash2 } from 'lucide-react'
+import { Lock, LockOpen, Plus, Redo2, Trash2, Undo2, Wand2 } from 'lucide-react'
 import { useState } from 'react'
 import { TEXT, useUrlState } from '../lib/urlState'
 import { useConfirm } from '../components/confirm'
@@ -16,6 +16,7 @@ import { scoreTextColor } from '../lib/attributes'
 import { useCurrentCareer } from '../lib/career'
 import { useConfig } from '../lib/config'
 import { roleScore } from '../lib/roleFit'
+import { benchCover, bestXi, gradeTactic, suggestions } from '../tactics/analysis'
 import {
   FORMATIONS,
   POSITION_CODES,
@@ -97,8 +98,32 @@ function TacticEditor({ tactic }: { tactic: TacticRow }) {
   const confirm = useConfirm()
   const qc = useQueryClient()
   const { data: players } = usePlayers(career.id)
-  const squad = (players ?? []).filter((p) => p.in_squad)
-  const [form, setForm] = useState(tactic)
+  const [youth, setYouth] = useState(false)
+  // First team by default; U20 and U18 players on request
+  const squad = (players ?? []).filter((p) => p.in_squad && (youth || !p.extra.team))
+  const [form, setFormRaw] = useState(tactic)
+  // Undo / redo of every edit since the tactic was opened
+  const [past, setPast] = useState<TacticRow[]>([])
+  const [future, setFuture] = useState<TacticRow[]>([])
+  const setForm = (next: TacticRow) => {
+    setPast((p) => [...p.slice(-49), form])
+    setFuture([])
+    setFormRaw(next)
+  }
+  const undo = () => {
+    if (!past.length) return
+    setFuture((f) => [form, ...f])
+    setFormRaw(past[past.length - 1])
+    setPast((p) => p.slice(0, -1))
+  }
+  const redo = () => {
+    if (!future.length) return
+    setPast((p) => [...p, form])
+    setFormRaw(future[0])
+    setFuture((f) => f.slice(1))
+  }
+  const [locked, setLocked] = useState<Set<number>>(new Set())
+  const [dragFrom, setDragFrom] = useState<number | null>(null)
   const [active, setActive] = useState<number | null>(null)
   const [phase, setPhase] = useUrlState<Phase>('phase', 'ip', TEXT as never)
   const dirty = JSON.stringify(form) !== JSON.stringify(tactic)
@@ -131,6 +156,13 @@ function TacticEditor({ tactic }: { tactic: TacticRow }) {
 
   const setSlot = (i: number, patch: Partial<TacticSlot>) =>
     setForm({ ...form, slots: form.slots.map((s, j) => (j === i ? { ...s, ...patch } : s)) })
+  /** Swaps the players of two slots (positions and roles stay with the slots). */
+  const swap = (a: number, b: number) => {
+    if (a === b) return
+    const slots = form.slots.map((s) => ({ ...s }))
+    ;[slots[a].player, slots[b].player] = [slots[b].player, slots[a].player]
+    setForm({ ...form, slots })
+  }
   const roleOf = (s: TacticSlot) => config.roles.find((r) => r.id === roleIdOf(s, phase)) ?? null
   const playerOf = (s: TacticSlot) => squad.find((p) => p.id === s.player) ?? null
   const positions = form.slots.map((s) => posOf(s, phase))
@@ -182,6 +214,13 @@ function TacticEditor({ tactic }: { tactic: TacticRow }) {
               <button
                 key={i}
                 type="button"
+                draggable
+                onDragStart={() => setDragFrom(i)}
+                onDragOver={(e) => e.preventDefault()}
+                onDrop={() => {
+                  if (dragFrom !== null) swap(dragFrom, i)
+                  setDragFrom(null)
+                }}
                 onClick={() => setActive(active === i ? null : i)}
                 style={{ left: `${x * 100}%`, top: `${(1 - y) * 100}%` }}
                 className={clsx(
@@ -210,11 +249,27 @@ function TacticEditor({ tactic }: { tactic: TacticRow }) {
         </div>
         <p className="mt-2 text-center text-xs text-muted">
           {phase === 'ip' ? 'In possession' : 'Out of possession'}:{' '}
-          {formation || formationLabel(positions)} · tap a position to set it
+          {formation || formationLabel(positions)} · tap a position to set it, drag to swap
         </p>
       </div>
 
       <div className="grid content-start gap-4">
+        <SquadFit
+          slots={form.slots}
+          squad={squad}
+          locked={locked}
+          youth={youth}
+          onYouth={setYouth}
+          onLock={(i) => {
+            const n = new Set(locked)
+            if (n.has(i)) n.delete(i)
+            else n.add(i)
+            setLocked(n)
+          }}
+          onSlots={(slots) => setForm({ ...form, slots })}
+          undo={past.length ? undo : null}
+          redo={future.length ? redo : null}
+        />
         {active !== null && form.slots[active] && (
           <SlotPanel
             slot={form.slots[active]}
@@ -223,6 +278,12 @@ function TacticEditor({ tactic }: { tactic: TacticRow }) {
             squad={squad}
             used={used}
             onChange={(patch) => setSlot(active, patch)}
+            onSwap={(other) => swap(active, other)}
+            others={form.slots.map((s, i) => ({
+              i,
+              label: `${posOf(s, phase) ?? '?'} · ${playerOf(s) ? shortName(playerOf(s)!) : '–'}`,
+            }))}
+            index={active}
             onClose={() => setActive(null)}
           />
         )}
@@ -343,6 +404,9 @@ function SlotPanel({
   squad,
   used,
   onChange,
+  onSwap,
+  others,
+  index,
   onClose,
 }: {
   slot: TacticSlot
@@ -351,6 +415,9 @@ function SlotPanel({
   squad: PlayerRow[]
   used: Set<string | null | undefined>
   onChange: (patch: Partial<TacticSlot>) => void
+  onSwap: (other: number) => void
+  others: { i: number; label: string }[]
+  index: number
   onClose: () => void
 }) {
   const config = useConfig()
@@ -411,6 +478,23 @@ function SlotPanel({
           </select>
         </label>
       </div>
+      <label className="grid gap-1 text-sm">
+        <span className="text-muted">Swap player with</span>
+        <select
+          value=""
+          onChange={(e) => e.target.value && onSwap(Number(e.target.value))}
+          className={field}
+        >
+          <option value="">Pick a position…</option>
+          {others
+            .filter((o) => o.i !== index)
+            .map((o) => (
+              <option key={o.i} value={o.i}>
+                {o.label}
+              </option>
+            ))}
+        </select>
+      </label>
       <div>
         <p className="mb-1 text-sm text-muted">
           Preferred player {role ? '(best for the role first)' : ''}
@@ -549,5 +633,204 @@ function InstructionsEditor({
         + Add instruction
       </button>
     </section>
+  )
+}
+
+/** Squad fit of the tactic: team and slot scores, best XI, suggestions and bench cover. */
+function SquadFit({
+  slots,
+  squad,
+  locked,
+  youth,
+  onYouth,
+  onLock,
+  onSlots,
+  undo,
+  redo,
+}: {
+  slots: TacticSlot[]
+  squad: PlayerRow[]
+  locked: Set<number>
+  youth: boolean
+  onYouth: (v: boolean) => void
+  onLock: (i: number) => void
+  onSlots: (slots: TacticSlot[]) => void
+  undo: (() => void) | null
+  redo: (() => void) | null
+}) {
+  const config = useConfig()
+  const ctx = { roles: config.roles, weights: config.roleWeights }
+  const { fits, team } = gradeTactic(slots, squad, ctx)
+  const tips = suggestions(slots, squad, ctx)
+  const cover = benchCover(slots, squad, ctx)
+  const best = bestXi(slots, squad, ctx, locked)
+  const bestTeam = gradeTactic(
+    slots.map((s, i) => ({ ...s, player: best[i] })),
+    squad,
+    ctx,
+  ).team
+  const roleName = (id: string | null | undefined) => {
+    const r = config.roles.find((x) => x.id === id)
+    return r ? roleShort(r) : '–'
+  }
+  return (
+    <Card className="grid gap-3">
+      <div className="flex flex-wrap items-center gap-3">
+        <div>
+          <p className="text-xs text-muted">Squad fit</p>
+          <p
+            className={clsx(
+              'text-3xl font-bold tabular-nums',
+              team !== null && scoreTextColor(team),
+            )}
+          >
+            {team ?? '–'}
+          </p>
+        </div>
+        {bestTeam !== null && bestTeam !== team && (
+          <p className="text-sm text-muted">
+            Best XI would score{' '}
+            <span className={clsx('font-semibold', scoreTextColor(bestTeam))}>{bestTeam}</span>
+          </p>
+        )}
+        <div className="ml-auto flex flex-wrap items-center gap-1">
+          <button
+            type="button"
+            aria-label="Undo"
+            title="Undo"
+            disabled={!undo}
+            onClick={() => undo?.()}
+            className="grid size-10 place-items-center rounded-lg text-muted hover:bg-surface-2 disabled:opacity-30"
+          >
+            <Undo2 className="size-4" aria-hidden />
+          </button>
+          <button
+            type="button"
+            aria-label="Redo"
+            title="Redo"
+            disabled={!redo}
+            onClick={() => redo?.()}
+            className="grid size-10 place-items-center rounded-lg text-muted hover:bg-surface-2 disabled:opacity-30"
+          >
+            <Redo2 className="size-4" aria-hidden />
+          </button>
+          <Button onClick={() => onSlots(slots.map((s, i) => ({ ...s, player: best[i] })))}>
+            <Wand2 className="size-4" aria-hidden /> Pick best XI
+          </Button>
+        </div>
+      </div>
+      <label className="flex min-h-9 items-center gap-2 text-sm text-muted">
+        <input type="checkbox" checked={youth} onChange={(e) => onYouth(e.target.checked)} />
+        Include U20 and U18 players
+      </label>
+      <div className="overflow-x-auto">
+        <table className="w-full text-sm">
+          <thead className="text-left text-xs text-muted">
+            <tr>
+              <th className="py-1 pr-1 font-normal" title="Lock: Pick best XI keeps this player">
+                <Lock className="size-3.5" aria-label="Lock" />
+              </th>
+              <th className="py-1 pr-2 font-normal">Pos</th>
+              <th className="py-1 pr-2 font-normal">Roles</th>
+              <th className="py-1 pr-2 font-normal">Player</th>
+              <th className="py-1 pr-2 text-right font-normal">Fit</th>
+              <th className="py-1 pr-2 font-normal">Suggestion</th>
+              <th className="py-1 font-normal">Cover</th>
+            </tr>
+          </thead>
+          <tbody>
+            {slots.map((s, i) => {
+              const f = fits[i]
+              const tip =
+                tips.find((t) => t.slot === i && t.kind === 'role') ??
+                tips.find((t) => t.slot === i)
+              const c = cover[i]
+              return (
+                <tr key={i} className="border-t border-border/50 align-middle">
+                  <td className="py-1 pr-1">
+                    <button
+                      type="button"
+                      aria-label={locked.has(i) ? 'Unlock' : 'Lock'}
+                      onClick={() => onLock(i)}
+                      className={clsx(
+                        'grid size-8 place-items-center rounded-md',
+                        locked.has(i) ? 'text-accent' : 'text-muted hover:text-text',
+                      )}
+                    >
+                      {locked.has(i) ? (
+                        <Lock className="size-3.5" aria-hidden />
+                      ) : (
+                        <LockOpen className="size-3.5" aria-hidden />
+                      )}
+                    </button>
+                  </td>
+                  <td className="py-1 pr-2 text-muted">{s.position ?? '?'}</td>
+                  <td className="py-1 pr-2 text-xs whitespace-nowrap text-muted">
+                    {roleName(s.role)}
+                    {s.roleOop ? ` / ${roleName(s.roleOop)}` : ''}
+                  </td>
+                  <td className="py-1 pr-2 whitespace-nowrap">
+                    {f.player ? shortName(f.player) : <span className="text-muted">–</span>}
+                    {f.outOfPosition && (
+                      <span className="ml-1 text-xs text-amber-300" title="Not his position">
+                        out of position
+                      </span>
+                    )}
+                  </td>
+                  <td
+                    className={clsx(
+                      'py-1 pr-2 text-right font-semibold tabular-nums',
+                      f.score !== null && scoreTextColor(f.score),
+                    )}
+                  >
+                    {f.score ?? '–'}
+                  </td>
+                  <td className="py-1 pr-2 text-xs">
+                    {tip && (
+                      <button
+                        type="button"
+                        onClick={() =>
+                          onSlots(
+                            slots.map((x, j) =>
+                              j !== i
+                                ? x
+                                : tip.kind === 'role'
+                                  ? { ...x, role: tip.value }
+                                  : { ...x, player: tip.value },
+                            ),
+                          )
+                        }
+                        className="text-left text-accent hover:underline"
+                        title="Apply"
+                      >
+                        {tip.kind === 'role' ? 'Role: ' : 'Player: '}
+                        {tip.label} ({tip.from ?? '–'} → {tip.to})
+                      </button>
+                    )}
+                  </td>
+                  <td className="py-1 text-xs whitespace-nowrap text-muted">
+                    {c ? (
+                      <>
+                        {shortName(c.player)}{' '}
+                        <span className={clsx('font-semibold', scoreTextColor(c.score))}>
+                          {c.score}
+                        </span>
+                      </>
+                    ) : (
+                      <span className="text-amber-300">none</span>
+                    )}
+                  </td>
+                </tr>
+              )
+            })}
+          </tbody>
+        </table>
+      </div>
+      <p className="text-xs text-muted">
+        Fit: the player&apos;s role scores in this slot (both phases), 0–100. Pick best XI fills
+        every unlocked slot with the best players who can play the position. Cover: the best player
+        outside the XI for that position.
+      </p>
+    </Card>
   )
 }
