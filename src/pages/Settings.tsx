@@ -41,7 +41,7 @@ export function SettingsPage() {
           <h2 className="mb-2 font-semibold">Import and help</h2>
           <ul className="grid">
             {[
-              ['/import', 'Import', 'Your FM save, dump.json or an HTML export'],
+              ['/import', 'Import', 'Your FM save (.fm)'],
               [
                 '/check',
                 checks.total ? `Check in game (${checks.total})` : 'Check in game',

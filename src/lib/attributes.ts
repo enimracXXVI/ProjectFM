@@ -1,4 +1,4 @@
-import type { AttributeValue } from '../import/parse'
+import type { AttributeValue } from '../import/types'
 
 export function formatAttr(v: AttributeValue | undefined): string {
   if (v === undefined) return '–'

@@ -8,20 +8,18 @@ import { byLastName } from '../lib/names'
 import { relabel, type LearnedKind } from '../lib/learned'
 import { UNKNOWN_WORD, withValue } from '../lib/valueWord'
 import { loadStoredConfig, mergeConfig, saveConfig } from './config'
-import { recordLeavers } from './seasons'
-import { applyImportWords, DUMP_PRESENT, isReaderDump, type DumpSummary } from '../import/dump'
+import { closeSeasonIfNew, recordLeavers } from './seasons'
+import { applyImportWords, DUMP_PRESENT, type DumpSummary } from '../import/dump'
 import type { CoreField } from '../import/fields'
-import type { ImportedPlayer, ParseResult } from '../import/parse'
+import type { ImportColumns, ImportedPlayer } from '../import/types'
 import {
   SAVE_CONTRACT_KEYS,
   SAVE_STATS_KEYS,
   fmNation,
-  isSaveDump,
   mergeKnowledge,
   saveScouts,
   saveUpdates,
   type SaveData,
-  type StatsKind,
 } from '../import/save'
 import type { Career, ImportRow, PlayerRow, ScoutingNetwork, SnapshotRow, StaffRow } from './db'
 import type { MatchLogRow, SaveTactics, TacticRow, TacticSlot } from '../tactics/types'
@@ -170,16 +168,15 @@ export function mergePlayer(
  * snapshot per player for development history, and for full-squad imports marks
  * players missing from the file as gone.
  */
-export async function importPlayers(opts: {
+async function importPlayers(opts: {
   careerId: string
   season: string | null
-  viewType: string
-  fileName: string
+  importId: string
   players: ImportedPlayer[]
-  columns: ParseResult['columns']
+  columns: ImportColumns
   markMissingAsLeft: boolean
 }): Promise<ImportSummary> {
-  const { careerId, season, viewType, fileName, players, columns, markMissingAsLeft } = opts
+  const { careerId, season, importId, players, columns, markMissingAsLeft } = opts
 
   const present = {
     core: new Set<string>(),
@@ -200,20 +197,6 @@ export async function importPlayers(opts: {
   ) as unknown as ExistingPlayer[]
   const byUid = new Map(existing.filter((p) => p.fm_uid != null).map((p) => [p.fm_uid, p]))
   const byName = new Map(existing.map((p) => [p.name.toLowerCase(), p]))
-
-  const importRow = check(
-    await supabase
-      .from('imports')
-      .insert({
-        career_id: careerId,
-        view_type: viewType,
-        file_name: fileName,
-        season,
-        row_count: players.length,
-      })
-      .select('id')
-      .single(),
-  ) as { id: string }
 
   const matched = players.map((p) => {
     const match = (p.fm_uid != null && byUid.get(p.fm_uid)) || byName.get(p.name.toLowerCase())
@@ -246,7 +229,7 @@ export async function importPlayers(opts: {
     .map((p) => ({
       player_id: savedId(p),
       career_id: careerId,
-      import_id: importRow.id,
+      import_id: importId,
       season,
       age: p.age,
       attributes: p.attributes,
@@ -352,7 +335,7 @@ export async function listCareerSnapshots(careerId: string): Promise<DevSnapshot
   )
 }
 
-// --- FMSuperScout dump import ---
+// --- FM save import ---
 
 export interface DumpImportResult {
   players: ImportSummary
@@ -360,166 +343,35 @@ export interface DumpImportResult {
   scoutsUpdated: number
 }
 
-/**
- * Saves a dump: chosen squad players (merged like any import, plus hidden values),
- * marks squad players now at another club as gone, and updates or adds scouts.
- */
-export async function importDump(opts: {
-  career: Career
-  summary: DumpSummary
-  includeOtherTeams: boolean
+/** What one FM save import changed. */
+export interface FmImportResult {
   season: string | null
-}): Promise<DumpImportResult> {
-  const { career, summary, includeOtherTeams, season } = opts
-  const config = mergeConfig(await loadStoredConfig())
-  const { learned } = config
-  // A save says which team each player is in (0 first team, 1 U20, 2 U18)
-  const saveTeams = isSaveDump(summary.meta)
-  const chosen = summary.players
-    .filter((p) => includeOtherTeams || p.level === 'first')
-    .map((p) =>
-      saveTeams && p.team && p.team !== 'first'
-        ? { ...p.player, extra: { ...p.player.extra, team: p.team } }
-        : p.player,
-    )
-    .map((p) =>
-      p.extra.Morale
-        ? { ...p, extra: { ...p.extra, Morale: relabel(p.extra.Morale, learned.morale) } }
-        : p,
-    )
-    .map((p) => applyImportWords(p, config))
-
-  const attributeNames = new Set(chosen.flatMap((p) => Object.keys(p.attributes)))
-  const columns: ParseResult['columns'] = [
-    // Feet only come from the ProjectFM Reader; older FMSuperScout dumps leave them alone
-    ...[
-      ...DUMP_PRESENT.core,
-      ...(isReaderDump(summary.meta) ? ['left_foot', 'right_foot'] : []),
-    ].map((field) => ({
-      header: field,
-      target: { kind: 'core' as const, field: field as CoreField },
-    })),
-    ...[...attributeNames].map((name) => ({
-      header: name,
-      target: { kind: 'attribute' as const, name },
-    })),
-    ...[...DUMP_PRESENT.extra, ...(saveTeams ? ['team'] : [])].map((key) => ({
-      header: key,
-      target: { kind: 'extra' as const, key },
-    })),
-  ]
-  const players = await importPlayers({
-    careerId: career.id,
-    season,
-    viewType: isSaveDump(summary.meta) ? 'FM save' : 'FMSuperScout',
-    fileName: isSaveDump(summary.meta) ? 'FM save' : 'dump.json',
-    players: chosen,
-    columns,
-    markMissingAsLeft: false,
-  })
-
-  // Squad numbers: only where the reader found one, so blanks never wipe a known number
-  for (const p of summary.players) {
-    if (p.squadNo === null || (!includeOtherTeams && p.level !== 'first')) continue
-    check(
-      await supabase
-        .from('players')
-        .update({ squad_number: p.squadNo })
-        .eq('career_id', career.id)
-        .eq('fm_uid', p.player.fm_uid!),
-    )
-  }
-
-  // Players whose current club in FM is no longer yours (sold, released or loaned out)
-  const myClub = summary.meta.myClub
-  const gone = Object.entries(summary.clubOf)
-    .filter(([, club]) => club !== myClub)
-    .map(([uid]) => Number(uid))
-  if (gone.length) {
-    const res = check(
-      await supabase
-        .from('players')
-        .update({ in_squad: false })
-        .eq('career_id', career.id)
-        .eq('in_squad', true)
-        .in('fm_uid', gone)
-        .select('*'),
-    ) as PlayerRow[]
-    await recordLeavers(career.id, res)
-    players.left += res.length
-  }
-
-  // Scouts: match on Unique ID, then on name (scouts typed in by hand have no ID yet)
-  const staff = await listStaff(career.id)
-  let scoutsAdded = 0
-  let scoutsUpdated = 0
-  for (const s of summary.scouts) {
-    const match =
-      staff.find((x) => x.fm_uid === s.fm_uid) ??
-      staff.find((x) => x.name.toLowerCase() === s.name.toLowerCase())
-    if (match) {
-      check(
-        await supabase
-          .from('staff')
-          .update({
-            fm_uid: s.fm_uid,
-            role: s.role,
-            age: s.age ?? match.age,
-            nation: match.nation ?? s.nation,
-            // Authority is not in the dump, so the value entered by hand stays
-            attributes: { ...match.attributes, ...s.attributes },
-          })
-          .eq('id', match.id),
-      )
-      scoutsUpdated++
-    } else {
-      check(
-        await supabase.from('staff').insert({
-          career_id: career.id,
-          fm_uid: s.fm_uid,
-          name: s.name,
-          role: s.role,
-          age: s.age,
-          nation: s.nation,
-          attributes: s.attributes,
-        }),
-      )
-      scoutsAdded++
-    }
-  }
-  return { players, scoutsAdded, scoutsUpdated }
-}
-
-/** Moves a player between first team, U20 and U18 (kept in extra, untouched by imports). */
-export async function setPlayerTeam(player: PlayerRow, team: Team): Promise<void> {
-  const extra = { ...player.extra }
-  if (team === 'first') delete extra.team
-  else extra.team = team
-  check(await supabase.from('players').update({ extra }).eq('id', player.id))
-}
-
-// --- FM save import (fmsave) ---
-
-/** Writes contract and season stats from a save into the squad (players already in ProjectFM). */
-export async function importSave(opts: {
-  career: Career
-  data: SaveData
-  kind: StatsKind
-  season: string | null
-  fileName: string
-}): Promise<{
-  updated: number
-  notInSquad: number
-  scoutsAdded: number
-  scoutsUpdated: number
+  players: ImportSummary
+  staffAdded: number
+  staffUpdated: number
   staffRemoved: number
   staffNeedsUpdate: boolean
-}> {
-  const { career, data, kind, season, fileName } = opts
-  const existing = (await listPlayers(career.id)).filter((p) => p.fm_uid != null)
-  const byUid = new Map(existing.map((p) => [p.fm_uid!, p]))
-  const updates = saveUpdates(data, kind, mergeConfig(await loadStoredConfig()))
+}
 
+/**
+ * Imports an FM save into a career in one go. The save is the truth: every player at the club
+ * (all teams) is added or updated (attributes, profile, contract, season stats, feet, number,
+ * team) with one development copy each, players no longer at the club leave the squad, and the
+ * staff list becomes the save's. A save from a new season first closes the old one.
+ */
+export async function importFmSave(opts: {
+  career: Career
+  data: SaveData
+  summary: DumpSummary
+  fileName: string
+}): Promise<FmImportResult> {
+  const { career, data, summary, fileName } = opts
+  const config = mergeConfig(await loadStoredConfig())
+  const season = await closeSeasonIfNew(
+    career,
+    data.competitions?.season ?? null,
+    await listPlayers(career.id),
+  )
   const importRow = check(
     await supabase
       .from('imports')
@@ -528,66 +380,78 @@ export async function importSave(opts: {
         view_type: 'FM save',
         file_name: fileName,
         season,
-        row_count: updates.length,
+        row_count: summary.players.length,
       })
       .select('id')
       .single(),
   ) as { id: string }
 
-  let updated = 0
-  const snapshots: Record<string, unknown>[] = []
-  for (const u of updates) {
-    const p = byUid.get(u.uniqueId)
-    if (!p) continue
-    const extra = { ...p.extra }
-    // Each group replaces what an earlier import wrote, so nothing goes stale
-    if (u.contract) {
-      for (const k of SAVE_CONTRACT_KEYS) delete extra[k]
-      Object.assign(extra, u.contract)
+  // Contract, season stats (all competitive matches) and feet, by Unique ID
+  const fromSave = new Map(saveUpdates(data, 'overall', config).map((u) => [u.uniqueId, u]))
+  const chosen = summary.players.map(({ player, team, squadNo }) => {
+    let p = team && team !== 'first' ? { ...player, extra: { ...player.extra, team } } : player
+    if (p.extra.Morale)
+      p = { ...p, extra: { ...p.extra, Morale: relabel(p.extra.Morale, config.learned.morale) } }
+    p = applyImportWords(p, config)
+    const u = p.fm_uid != null ? fromSave.get(p.fm_uid) : undefined
+    return {
+      ...p,
+      squad_number: squadNo,
+      left_foot: u?.leftFoot ?? p.left_foot,
+      right_foot: u?.rightFoot ?? p.right_foot,
+      extra: { ...p.extra, ...u?.contract, ...u?.stats },
     }
-    if (u.stats) {
-      for (const k of SAVE_STATS_KEYS) delete extra[k]
-      Object.assign(extra, u.stats)
-      snapshots.push({
-        player_id: p.id,
-        career_id: career.id,
-        import_id: importRow.id,
-        season,
-        age: p.age,
-        attributes: {},
-        extra: u.stats,
-      })
-    }
-    check(
-      await supabase
-        .from('players')
-        .update({
-          extra,
-          left_foot: u.leftFoot ?? p.left_foot,
-          right_foot: u.rightFoot ?? p.right_foot,
-        })
-        .eq('id', p.id),
-    )
-    updated++
-  }
-  if (snapshots.length) check(await supabase.from('player_snapshots').insert(snapshots))
+  })
+
+  // Every field the save provides replaces what was stored (a blank clears it)
+  const attributeNames = new Set(chosen.flatMap((p) => Object.keys(p.attributes)))
+  const columns: ImportColumns = [
+    ...[...DUMP_PRESENT.core, 'squad_number', 'left_foot', 'right_foot'].map((field) => ({
+      header: field,
+      target: { kind: 'core' as const, field: field as CoreField },
+    })),
+    ...[...attributeNames].map((name) => ({
+      header: name,
+      target: { kind: 'attribute' as const, name },
+    })),
+    ...[...DUMP_PRESENT.extra, 'team', ...SAVE_CONTRACT_KEYS, ...SAVE_STATS_KEYS].map((key) => ({
+      header: key,
+      target: { kind: 'extra' as const, key },
+    })),
+  ]
+  const players = await importPlayers({
+    careerId: career.id,
+    season,
+    importId: importRow.id,
+    players: chosen,
+    columns,
+    markMissingAsLeft: true,
+  })
 
   // Staff: everyone on FM's staff screen (needs migration 0007), else the scouts only
-  let staffResult: { added: number; updated: number; removed?: number; needsUpdate: boolean }
+  let staff: { added: number; updated: number; removed?: number; needsUpdate: boolean }
   try {
-    staffResult = { ...(await importAllStaff(career, data)), needsUpdate: false }
+    staff = { ...(await importAllStaff(career, data)), needsUpdate: false }
   } catch (e) {
     if (!isMissingColumn(e)) throw e
-    staffResult = { ...(await importScoutsOnly(career, data)), needsUpdate: true }
+    staff = { ...(await importScoutsOnly(career, data)), needsUpdate: true }
   }
   return {
-    updated,
-    notInSquad: updates.length - updated,
-    scoutsAdded: staffResult.added,
-    scoutsUpdated: staffResult.updated,
-    staffRemoved: staffResult.removed ?? 0,
-    staffNeedsUpdate: staffResult.needsUpdate,
+    season,
+    players,
+    staffAdded: staff.added,
+    staffUpdated: staff.updated,
+    staffRemoved: staff.removed ?? 0,
+    staffNeedsUpdate: staff.needsUpdate,
   }
+}
+
+/** Moves a player between first team, U20 and U18 (kept in extra, untouched by imports). */
+export async function setPlayerTeam(player: PlayerRow, team: Team): Promise<void> {
+  const extra = { ...player.extra }
+  if (team === 'first') delete extra.team
+  else extra.team = team
+  check(await supabase.from('players').update({ extra }).eq('id', player.id))
 }
 
 /** True when the staff table has no team / job_code / extra columns yet (migration 0007). */

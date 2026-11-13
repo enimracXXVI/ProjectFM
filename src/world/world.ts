@@ -12,7 +12,7 @@ import {
   type DumpMeta,
   type DumpPerson,
 } from '../import/dump'
-import type { AttributeValue } from '../import/parse'
+import type { AttributeValue } from '../import/types'
 
 export const WORLD_VERSION = 1
 

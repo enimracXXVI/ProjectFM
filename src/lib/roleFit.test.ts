@@ -1,8 +1,8 @@
 import { describe, expect, it } from 'vitest'
 import { ATTRIBUTE_INFO } from '../data/attributeInfo'
 import { DEFAULT_ROLES } from '../data/roles'
-import fixture from '../import/fixtures/squad-attributes.html?raw'
-import { parsePlayers } from '../import/parse'
+import fixture from '../import/fixtures/squad-attributes.json'
+import type { AttributeValue } from '../import/types'
 import { DEFAULT_ROLE_WEIGHTS as W, allRoleFits, parsePositions, roleScore } from './roleFit'
 
 const role = (id: string) => DEFAULT_ROLES.find((r) => r.id === id)!
@@ -53,7 +53,11 @@ describe('roleScore', () => {
   })
 
   it('ranks real squad players sensibly', () => {
-    const { players } = parsePlayers(fixture)
+    const players = fixture.players as {
+      name: string
+      positions: string | null
+      attributes: Record<string, AttributeValue>
+    }[]
     const fit = (name: string) => {
       const p = players.find((x) => x.name === name)!
       return allRoleFits(p.attributes, p.positions, DEFAULT_ROLES, W)

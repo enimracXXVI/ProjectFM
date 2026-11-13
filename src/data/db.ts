@@ -1,4 +1,4 @@
-import type { AttributeValue } from '../import/parse'
+import type { AttributeValue } from '../import/types'
 
 /** Row shapes of the Supabase tables (see supabase/migrations). */
 

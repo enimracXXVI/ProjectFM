@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest'
-import type { ImportedPlayer } from '../import/parse'
+import type { ImportedPlayer } from '../import/types'
 import { mergePlayer } from './api'
 
 vi.mock('../lib/supabase', () => ({ supabase: {} }))

@@ -1,15 +1,12 @@
 import { describe, expect, it } from 'vitest'
-import { ATTRIBUTE_GROUPS, classifyHeader } from '../import/fields'
-import fixture from '../import/fixtures/squad-attributes.html?raw'
-import { parseHtmlTable } from '../import/parse'
+import { ATTRIBUTE_GROUPS } from '../import/fields'
+import fixture from '../import/fixtures/squad-attributes.json'
 import { ATTRIBUTE_INFO, PROFILE_COLUMNS, isGoalkeeper } from './attributeInfo'
 import { tableSections } from './config'
 
 describe('attribute layouts', () => {
   it('outfield table order matches the FM squad attributes view', () => {
-    const exported = parseHtmlTable(fixture)
-      .headers.map(classifyHeader)
-      .flatMap((t) => (t.kind === 'attribute' ? [t.name] : []))
+    const exported = fixture.attributeOrder
     expect(tableSections(PROFILE_COLUMNS, 'outfield').flatMap((s) => s.attributes)).toEqual(
       exported,
     )

@@ -154,11 +154,11 @@ export function World() {
       <>
         <PageHeader title="World" />
         <Placeholder>
-          No world database yet. On your PC, press F9 in FM with FMSuperScout running, then{' '}
+          No world database yet.{' '}
           <Link to="/import" className="text-accent underline">
-            import dump.json
+            Import your FM save
           </Link>{' '}
-          with “Save world database” ticked.
+          to fill it with every player.
         </Placeholder>
       </>
     )

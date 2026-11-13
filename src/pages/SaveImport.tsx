@@ -3,31 +3,29 @@ import { useEffect, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { Button, ErrorText } from '../components/form'
 import { Card } from '../components/ui'
-import { importDump, importSave, importSaveTactics, isMissingTable, listPlayers } from '../data/api'
-import type { DumpSummary } from '../import/dump'
-import {
-  fmNation,
-  isUnconfirmedKnowledge,
-  READER_VERSION,
-  knowledgeWord,
-  type SaveData,
-  type StatsKind,
-} from '../import/save'
-import { useCurrentCareer } from '../lib/career'
-import { uploadWorld } from '../world/storage'
 import { uploadCompetitions } from '../competitions/storage'
-import { closeSeasonIfNew } from '../data/seasons'
+import {
+  createCareer,
+  importFmSave,
+  importSaveTactics,
+  isMissingTable,
+  updateCareer,
+} from '../data/api'
+import type { Career } from '../data/db'
+import { usePlayers, useStaff } from '../data/hooks'
+import { seasonText } from '../data/seasons'
+import type { DumpSummary } from '../import/dump'
+import { READER_VERSION, type SaveData } from '../import/save'
+import { useCareer, useCurrentCareer } from '../lib/career'
+import { uploadWorld } from '../world/storage'
 
-const KINDS: [StatsKind, string][] = [
-  ['overall', 'All competitive matches'],
-  ['league', 'League'],
-  ['cup', 'Cups'],
-  ['non_competitive', 'Friendlies'],
-]
+const sameClub = (a: string, b: string) =>
+  a.toLowerCase().includes(b.toLowerCase()) || b.toLowerCase().includes(a.toLowerCase())
 
-const field = 'min-h-11 rounded-lg border border-border bg-surface-2 px-3 text-base md:text-sm'
-
-/** One import for everything in an FM save: squad, contracts, stats, scouts, world. */
+/**
+ * Imports an FM save in one step: squad, staff, competitions, tactics and the world database.
+ * A save from another club than the career's offers a new career instead.
+ */
 export function SaveImport({
   data,
   summary,
@@ -42,46 +40,27 @@ export function SaveImport({
   onDone: () => void
 }) {
   const career = useCurrentCareer()
+  const { setCurrentId } = useCareer()
   const qc = useQueryClient()
-  const [saved] = useState(readOptions)
-  const [kind, setKindState] = useState<StatsKind>(saved.kind)
-  const [season, setSeason] = useState(career.current_season ?? '')
-  const [includeOther, setIncludeOtherState] = useState(saved.includeOther)
-  const [saveWorld, setSaveWorldState] = useState(saved.saveWorld)
-  const remember = (patch: Partial<ImportOptions>) =>
-    writeOptions({ kind, includeOther, saveWorld, ...patch })
-  const setKind = (v: StatsKind) => (setKindState(v), remember({ kind: v }))
-  const setIncludeOther = (v: boolean) => (setIncludeOtherState(v), remember({ includeOther: v }))
-  const setSaveWorld = (v: boolean) => (setSaveWorldState(v), remember({ saveWorld: v }))
+  const [into, setInto] = useState<Career | null>(null)
 
   const mutation = useMutation({
-    mutationFn: async () => {
-      // A save from a new season first keeps last season's squad, then moves the career on
-      const current = await closeSeasonIfNew(
-        career,
-        data.competitions?.season ?? null,
-        await listPlayers(career.id),
-      )
-      const label = current ?? (season || null)
-      // Squad first, so contracts and stats reach players new to ProjectFM too
-      const squad = await importDump({
-        career,
-        summary,
-        includeOtherTeams: includeOther,
-        season: label,
-      })
-      const rest = await importSave({ career, data, kind, season: label, fileName })
-      if (saveWorld) await uploadWorld(career.id, world)
+    mutationFn: async (target: Career) => {
+      // A career with nothing in it yet takes the save's club name
+      if (!sameClub(target.club, data.club))
+        target = await updateCareer(target.id, { club: data.club })
+      const result = await importFmSave({ career: target, data, summary, fileName })
+      await uploadWorld(target.id, world)
       let competitions = 0
       if (data.competitions) {
-        await uploadCompetitions(career.id, { version: 1, ...data.competitions })
+        await uploadCompetitions(target.id, { version: 1, ...data.competitions })
         competitions = data.competitions.competitions.length
       }
       // Tactics need the 0006 tables; the rest of the import never depends on them
       let tactics: number | string = 0
       if (data.tactics) {
         try {
-          tactics = await importSaveTactics(career.id, data.tactics)
+          tactics = await importSaveTactics(target.id, data.tactics)
         } catch (e) {
           tactics = isMissingTable(e)
             ? 'needs the one-time database update (see Tactics)'
@@ -90,132 +69,90 @@ export function SaveImport({
               : String(e)
         }
       }
-      return { squad: squad.players, ...rest, competitions, tactics }
+      return { ...result, competitions, tactics }
     },
-    onSuccess: () => {
-      for (const key of [
-        'players',
-        'imports',
-        'player',
-        'snapshots',
-        'staff',
-        'world',
-        'competitions',
-        'tactics',
-        'careers',
-        'squad-seasons',
-        'squad-season',
-      ])
-        qc.invalidateQueries({ queryKey: [key] })
+    onSuccess: () => qc.invalidateQueries(),
+  })
+
+  // Another club than the career's: only a problem when the career already holds data
+  const players = usePlayers(career.id)
+  const staff = useStaff(career.id)
+  const check: 'checking' | 'ok' | 'other-club' = sameClub(career.club, data.club)
+    ? 'ok'
+    : players.isPending || staff.isPending
+      ? 'checking'
+      : players.data?.length || staff.data?.length
+        ? 'other-club'
+        : 'ok'
+
+  const newCareer = useMutation({
+    mutationFn: async () => {
+      const year = data.competitions?.season ?? null
+      const created = await createCareer({
+        name: data.club,
+        club: data.club,
+        nation: null,
+        start_season: year ? seasonText(year) : null,
+        current_season: year ? seasonText(year) : null,
+      })
+      await qc.invalidateQueries({ queryKey: ['careers'] })
+      setCurrentId(created.id)
+      setInto(created)
+      mutation.mutate(created)
     },
   })
 
-  const wrongClub =
-    !data.club.toLowerCase().includes(career.club.toLowerCase()) &&
-    !career.club.toLowerCase().includes(data.club.toLowerCase())
-
-  // One step: import straight away with the choices used last time, unless something
-  // needs a look first (another club's save, or an outdated save reader)
+  // One step: import straight away, unless the save is from another club or the reader is old
   const outdated = (data.reader ?? 0) < READER_VERSION
   const started = useRef(false)
   useEffect(() => {
-    if (started.current || wrongClub || outdated) return
+    if (started.current || check !== 'ok' || outdated) return
     started.current = true
-    mutation.mutate()
-  }, [wrongClub, outdated, mutation])
+    mutation.mutate(career)
+  }, [check, outdated, mutation, career])
 
-  if (mutation.isPending)
+  if (mutation.isPending || newCareer.isPending || check === 'checking')
     return (
       <Card className="mt-4">
-        <p className="font-semibold">Importing your save…</p>
+        <p className="font-semibold">Importing {fileName}…</p>
         <p className="mt-1 text-sm text-muted">
-          Squad, contracts, stats, scouts, competitions and the world database. This takes a few
-          seconds.
+          Squad, staff, competitions, tactics and the world database. This takes a few seconds.
         </p>
       </Card>
     )
-
-  const first = summary.players.filter((p) => p.level === 'first').length
-  const other = summary.players.length - first
-  const options = (
-    <div className="mt-4 grid gap-3 sm:grid-cols-2">
-      <label className="grid gap-1 text-sm">
-        <span className="text-muted">Stats from</span>
-        <select
-          value={kind}
-          onChange={(e) => setKind(e.target.value as StatsKind)}
-          className={field}
-        >
-          {KINDS.map(([k, label]) => (
-            <option key={k} value={k}>
-              {label}
-            </option>
-          ))}
-        </select>
-      </label>
-      <label className="grid gap-1 text-sm">
-        <span className="text-muted">Season</span>
-        <input value={season} onChange={(e) => setSeason(e.target.value)} className={field} />
-      </label>
-      {other > 0 && (
-        <label className="flex min-h-11 items-center gap-2 text-sm">
-          <input
-            type="checkbox"
-            checked={includeOther}
-            onChange={(e) => setIncludeOther(e.target.checked)}
-            className="size-5"
-          />
-          Also add the {other} players in your other teams (reserves, youth)
-        </label>
-      )}
-      <label className="flex min-h-11 items-center gap-2 text-sm">
-        <input
-          type="checkbox"
-          checked={saveWorld}
-          onChange={(e) => setSaveWorld(e.target.checked)}
-          className="size-5"
-        />
-        Save the world database
-      </label>
-    </div>
-  )
 
   const r = mutation.data
   if (r)
     return (
       <Card className="mt-4 border-accent/50">
-        <p className="font-semibold text-accent">Save import complete</p>
+        <p className="font-semibold text-accent">
+          Import complete{into ? ` · new career ${into.name}` : ''}
+        </p>
         <ul className="mt-1 grid gap-0.5 text-sm">
           <li>
-            Squad: {r.squad.added} added · {r.squad.updated} updated
-            {r.squad.left ? ` · ${r.squad.left} no longer at the club` : ''}
+            {data.club} · in-game {data.gameDate ?? '?'} · season {r.season ?? '?'}
           </li>
-          <li>Contracts, season stats and feet: {r.updated} players</li>
+          <li>
+            Squad: {r.players.added} added · {r.players.updated} updated
+            {r.players.left ? ` · ${r.players.left} no longer at the club` : ''}
+          </li>
           <li className={r.staffNeedsUpdate ? 'text-amber-300' : ''}>
             {r.staffNeedsUpdate
-              ? `Scouts only: ${r.scoutsUpdated} updated · ${r.scoutsAdded} added (all staff needs the one-time database update, see Staff)`
-              : `Staff: ${r.scoutsUpdated} updated · ${r.scoutsAdded} added · ${r.staffRemoved} no longer at the club, removed`}
+              ? `Scouts only: ${r.staffUpdated} updated · ${r.staffAdded} added (all staff needs the one-time database update, see Staff)`
+              : `Staff: ${r.staffUpdated} updated · ${r.staffAdded} added · ${r.staffRemoved} no longer at the club`}
           </li>
           <li className={typeof r.tactics === 'number' ? '' : 'text-amber-300'}>
             {typeof r.tactics === 'number'
-              ? `Tactics: ${r.tactics} with the current XI as preferred XI`
+              ? `Tactics: ${r.tactics}`
               : `Tactics: not saved (${r.tactics})`}
           </li>
           <li className={r.competitions ? '' : 'text-amber-300'}>
             {r.competitions
-              ? `Competitions: ${r.competitions} saved for this season`
+              ? `Competitions: ${r.competitions} this season`
               : `Competitions: not read${data.competitionsError ? ` (${data.competitionsError})` : ''}`}
           </li>
-          {saveWorld && (
-            <li>
-              World database: {summary.totalPlayers.toLocaleString()} players, on all your devices
-            </li>
-          )}
+          <li>World: {summary.totalPlayers.toLocaleString()} players</li>
         </ul>
-        <details className="mt-3 text-sm">
-          <summary className="cursor-pointer text-muted">Options for the next import</summary>
-          {options}
-        </details>
         <div className="mt-2 flex flex-wrap gap-4 text-sm font-semibold text-accent">
           <Link to="/squad" className="underline">
             Squad
@@ -223,8 +160,8 @@ export function SaveImport({
           <Link to="/staff" className="underline">
             Staff
           </Link>
-          <Link to="/world" className="underline">
-            World
+          <Link to="/competitions" className="underline">
+            Competitions
           </Link>
           <button type="button" className="underline" onClick={onDone}>
             Close
@@ -233,113 +170,38 @@ export function SaveImport({
       </Card>
     )
 
-  const scouts = data.scouts ?? []
-  const unconfirmed = scouts.flatMap((s) =>
-    s.knowledge
-      .filter((k) => isUnconfirmedKnowledge(knowledgeWord(k.value)))
-      .map((k) => `${s.name} – ${fmNation(k.nation)} (${k.value})`),
-  )
-  const withStats = new Set(data.stats.filter((s) => s.kind === kind).map((s) => s.uniqueId)).size
-
   return (
     <Card className="mt-4">
-      <h2 className="font-semibold">FM save</h2>
-      {(data.reader ?? 0) < READER_VERSION && (
-        <p className="mt-2 rounded-lg border border-amber-400/50 bg-amber-400/10 p-2 text-sm text-amber-200">
-          This save was read with an older copy of the save reader, so some data (competitions) is
-          missing. Close the app completely, open it again and import the save once more.
+      {outdated && (
+        <p className="rounded-lg border border-amber-400/50 bg-amber-400/10 p-2 text-sm text-amber-200">
+          This save was read with an older copy of the save reader, so some data is missing. Close
+          the app completely, open it again and import the save once more.
         </p>
       )}
-      <p className="mt-1 text-sm text-muted">
-        {data.club} · in-game {data.gameDate ?? '?'} · {summary.totalPlayers.toLocaleString()}{' '}
-        players in the world
-      </p>
-      {wrongClub && (
-        <p className="mt-2 text-sm text-amber-400">
-          This save is for {data.club}, but the current career is {career.club}. Check you picked
-          the right career before importing.
-        </p>
+      {check === 'other-club' && (
+        <>
+          <h2 className="font-semibold">This save is for {data.club}</h2>
+          <p className="mt-1 text-sm text-muted">
+            The career {career.name} is {career.club}. Start a new career for {data.club} and import
+            the save there? {career.name} stays as it is.
+          </p>
+          <div className="mt-4 flex flex-wrap items-center gap-3">
+            <Button onClick={() => newCareer.mutate()}>Start a new career for {data.club}</Button>
+            <Button variant="ghost" onClick={onDone}>
+              Cancel
+            </Button>
+          </div>
+        </>
       )}
-      <ul className="mt-3 grid gap-1 text-sm">
-        <li>
-          <strong>Squad ({first} first-team players):</strong> attributes, positions, age,
-          nationality, height, feet, squad numbers, condition, morale, personality{' '}
-          <span className="text-muted">
-            (plus CA/PA, hidden and personality values, shown only if allowed in Settings)
-          </span>
-        </li>
-        <li>
-          <strong>Contracts:</strong> playing time, contract type, wage, expiry, release clause,
-          club extension option
-        </li>
-        <li>
-          <strong>Season stats</strong> for {withStats} players: apps, minutes, rating, goals,
-          assists, xG, xA, per-90 figures and more
-        </li>
-        {scouts.length > 0 && (
-          <li>
-            <strong>{scouts.length} scouts:</strong> attributes including Authority, and scouting
-            knowledge per nation
-          </li>
-        )}
-        {data.competitions && (
-          <li>
-            <strong>Competitions:</strong> {data.competitions.competitions.length} this season, with
-            every fixture, result and per-player match stats
-          </li>
-        )}
-        <li>
-          <strong>World database:</strong> every player, searchable on all your devices
-        </li>
-      </ul>
-      {unconfirmed.length > 0 && (
-        <details className="mt-3 text-sm">
-          <summary className="cursor-pointer text-muted">
-            {unconfirmed.length} knowledge values not matched to an FM word yet (saved as “Unknown
-            (value)”, or your own word where you set one)
-          </summary>
-          <ul className="mt-1 list-disc pl-5 text-muted">
-            {unconfirmed.map((u) => (
-              <li key={u}>{u}</li>
-            ))}
-          </ul>
-        </details>
+      {check === 'ok' && outdated && (
+        <div className="mt-4 flex flex-wrap items-center gap-3">
+          <Button onClick={() => mutation.mutate(career)}>Import anyway</Button>
+          <Button variant="ghost" onClick={onDone}>
+            Cancel
+          </Button>
+        </div>
       )}
-      {options}
-      <div className="mt-4 flex flex-wrap items-center gap-3">
-        <Button onClick={() => mutation.mutate()} disabled={mutation.isPending}>
-          {mutation.isPending ? 'Importing…' : 'Import'}
-        </Button>
-        <Button variant="ghost" onClick={onDone}>
-          Cancel
-        </Button>
-        <ErrorText error={mutation.error} />
-      </div>
+      <ErrorText error={mutation.error ?? newCareer.error} />
     </Card>
   )
-}
-
-interface ImportOptions {
-  kind: StatsKind
-  includeOther: boolean
-  saveWorld: boolean
-}
-
-const OPTIONS_KEY = 'projectfm.saveImportOptions'
-
-function readOptions(): ImportOptions {
-  const fallback: ImportOptions = { kind: 'overall', includeOther: false, saveWorld: true }
-  try {
-    return { ...fallback, ...JSON.parse(localStorage.getItem(OPTIONS_KEY) ?? '{}') }
-  } catch {
-    return fallback
-  }
-}
-
-function writeOptions(o: ImportOptions) {
-  try {
-    localStorage.setItem(OPTIONS_KEY, JSON.stringify(o))
-  } catch {
-    // remembered only on this device, when allowed
-  }
 }

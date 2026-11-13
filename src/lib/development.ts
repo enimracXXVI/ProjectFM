@@ -1,4 +1,4 @@
-import type { AttributeValue } from '../import/parse'
+import type { AttributeValue } from '../import/types'
 import { attrNumber } from './attributes'
 
 export interface DevSnapshot {

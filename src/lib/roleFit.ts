@@ -1,5 +1,5 @@
 import { ATTRIBUTE_GROUPS } from '../import/fields'
-import type { AttributeValue } from '../import/parse'
+import type { AttributeValue } from '../import/types'
 import type { RoleDef } from '../data/roles'
 import { attrNumber, scoreBarColor } from './attributes'
 

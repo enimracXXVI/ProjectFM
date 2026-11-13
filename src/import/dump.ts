@@ -7,7 +7,7 @@ import { UNKNOWN_WORD, valueOf, withValue } from '../lib/valueWord'
 import { personalityName, type PersonalityRule } from '../lib/personality'
 import { scaleWord } from '../data/staffInfo'
 import type { Team } from '../data/teams'
-import type { ImportedPlayer } from './parse'
+import type { ImportedPlayer } from './types'
 
 export interface DumpMeta {
   game?: string

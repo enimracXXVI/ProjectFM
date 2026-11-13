@@ -51,15 +51,16 @@ export function Explain() {
         <Flow
           from="Your FM save (.fm)"
           to={[
-            'Squad: attributes, positions, feet, squad numbers, condition, morale, CA/PA, hidden values',
-            'Contracts and season stats',
-            'Scouts: attributes, Authority, knowledge per nation',
-            'World database: every player',
+            'Squad (all teams): attributes, positions, feet, numbers, morale, contracts, season stats',
+            'Staff: everyone at the club, with attributes and scouting knowledge',
+            'Competitions: fixtures, results, goals, match reports and player stats',
+            'Tactics and the World database (every player)',
           ]}
         />
         <p className="mt-3 text-sm text-muted">
-          Imports update what is already saved; anything the file does not contain stays as it was.
-          To start over, use Careers → Edit → Start fresh.
+          Every import makes the app match the save: players and staff no longer at the club leave,
+          each player's attributes are kept for the Development page, and a save from a new season
+          first stores last season's squad. A save from another club offers a new career.
         </p>
       </Topic>
 
