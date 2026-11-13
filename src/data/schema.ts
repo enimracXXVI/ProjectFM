@@ -93,7 +93,7 @@ export const TABLE_NOTES: Record<string, string> = {
   app_settings:
     'Your Settings, one row per section (key), shared by all your careers: words, layouts, roles, instructions…',
   tactics:
-    'Tactics read from the save (save_index) or made in the app, with roles and preferred XI.',
+    'Tactics read from the save (save_index) or made in the app: shape, roles, team and player instructions (as FM codes) and preferred XI.',
   match_log: 'Your notes on a match: tactic used and the opponent’s shape and style.',
   notes: 'Your Dashboard notes, one set per career: text, category, pinned, done.',
   scout_targets: 'Not used by the app (left from an early version).',
@@ -114,7 +114,8 @@ export const COLUMN_NOTES: Record<string, string> = {
   'staff.fm_uid': 'FM Unique ID',
   'staff.knowledge': 'Scouting knowledge per nation',
   'careers.scouting': 'Region heads, scouts and their countries, board limits',
-  'app_settings.key': 'Settings section, e.g. roles, staffShort, teamInstructions',
+  'app_settings.key':
+    'Settings section, e.g. roles, staffShort, teamInstructions, playerInstructions, fmCodes',
 }
 
 /** Files kept next to the tables (Supabase Storage). */

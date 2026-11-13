@@ -1,0 +1,3174 @@
+{
+  "game": "FM27",
+  "mentalities": [
+    "Very Defensive",
+    "Defensive",
+    "Cautious",
+    "Balanced",
+    "Positive",
+    "Attacking",
+    "Very Attacking"
+  ],
+  "roleCodeMask": "18446744056414339071",
+  "positions": [
+    {
+      "id": "GK",
+      "position": "GK",
+      "side": null,
+      "mask": 1
+    },
+    {
+      "id": "DR",
+      "position": "DR",
+      "side": null,
+      "mask": 4
+    },
+    {
+      "id": "DL",
+      "position": "DL",
+      "side": null,
+      "mask": 8
+    },
+    {
+      "id": "DC",
+      "position": "DC",
+      "side": "C",
+      "mask": 16
+    },
+    {
+      "id": "DCR",
+      "position": "DC",
+      "side": "R",
+      "mask": 2097168
+    },
+    {
+      "id": "DCL",
+      "position": "DC",
+      "side": "L",
+      "mask": 1048592
+    },
+    {
+      "id": "WBR",
+      "position": "WBR",
+      "side": null,
+      "mask": 32
+    },
+    {
+      "id": "WBL",
+      "position": "WBL",
+      "side": null,
+      "mask": 64
+    },
+    {
+      "id": "DMC",
+      "position": "DM",
+      "side": "C",
+      "mask": 128
+    },
+    {
+      "id": "DMR",
+      "position": "DM",
+      "side": "R",
+      "mask": 2097280
+    },
+    {
+      "id": "DML",
+      "position": "DM",
+      "side": "L",
+      "mask": 1048704
+    },
+    {
+      "id": "MR",
+      "position": "MR",
+      "side": null,
+      "mask": 256
+    },
+    {
+      "id": "ML",
+      "position": "ML",
+      "side": null,
+      "mask": 512
+    },
+    {
+      "id": "MC",
+      "position": "MC",
+      "side": "C",
+      "mask": 1024
+    },
+    {
+      "id": "MCR",
+      "position": "MC",
+      "side": "R",
+      "mask": 2098176
+    },
+    {
+      "id": "MCL",
+      "position": "MC",
+      "side": "L",
+      "mask": 1049600
+    },
+    {
+      "id": "AMR",
+      "position": "AMR",
+      "side": null,
+      "mask": 2048
+    },
+    {
+      "id": "AML",
+      "position": "AML",
+      "side": null,
+      "mask": 4096
+    },
+    {
+      "id": "AMC",
+      "position": "AMC",
+      "side": "C",
+      "mask": 8192
+    },
+    {
+      "id": "AMCR",
+      "position": "AMC",
+      "side": "R",
+      "mask": 2105344
+    },
+    {
+      "id": "AMCL",
+      "position": "AMC",
+      "side": "L",
+      "mask": 1056768
+    },
+    {
+      "id": "ST",
+      "position": "ST",
+      "side": "C",
+      "mask": 16384
+    },
+    {
+      "id": "STR",
+      "position": "ST",
+      "side": "R",
+      "mask": 2113536
+    },
+    {
+      "id": "STL",
+      "position": "ST",
+      "side": "L",
+      "mask": 1064960
+    }
+  ],
+  "teamInstructions": [
+    {
+      "phase": "ip",
+      "name": "Passing directness",
+      "options": [
+        {
+          "label": "Much shorter passes",
+          "code": 4
+        },
+        {
+          "label": "Shorter passes",
+          "code": 3
+        },
+        {
+          "label": "Standard",
+          "code": 0
+        },
+        {
+          "label": "More direct passes",
+          "code": 2
+        },
+        {
+          "label": "Much more direct passes",
+          "code": 1
+        }
+      ],
+      "default": 0
+    },
+    {
+      "phase": "ip",
+      "name": "Tempo",
+      "options": [
+        {
+          "label": "Much lower",
+          "code": 49
+        },
+        {
+          "label": "Lower",
+          "code": 48
+        },
+        {
+          "label": "Standard",
+          "code": 0
+        },
+        {
+          "label": "Higher",
+          "code": 47
+        },
+        {
+          "label": "Much higher",
+          "code": 46
+        }
+      ],
+      "default": 0
+    },
+    {
+      "phase": "ip",
+      "name": "Attacking width",
+      "options": [
+        {
+          "label": "Much narrower",
+          "code": 53
+        },
+        {
+          "label": "Narrower",
+          "code": 52
+        },
+        {
+          "label": "Standard",
+          "code": 0
+        },
+        {
+          "label": "Wider",
+          "code": 51
+        },
+        {
+          "label": "Much wider",
+          "code": 50
+        }
+      ],
+      "default": 0
+    },
+    {
+      "phase": "ip",
+      "name": "Attacking transition",
+      "options": [
+        {
+          "label": "Hold shape",
+          "code": 55
+        },
+        {
+          "label": "Standard",
+          "code": 0
+        },
+        {
+          "label": "Counter-attack",
+          "code": 54
+        }
+      ],
+      "default": 0
+    },
+    {
+      "phase": "ip",
+      "name": "Creative freedom",
+      "options": [
+        {
+          "label": "Be more disciplined",
+          "code": 20
+        },
+        {
+          "label": "Balanced",
+          "code": 0
+        },
+        {
+          "label": "Be more expressive",
+          "code": 19
+        }
+      ],
+      "default": 0
+    },
+    {
+      "phase": "ip",
+      "name": "Time wasting",
+      "options": [
+        {
+          "label": "Standard",
+          "code": 0
+        },
+        {
+          "label": "Sometimes",
+          "code": 79
+        },
+        {
+          "label": "Often",
+          "code": 78
+        }
+      ],
+      "default": 0
+    },
+    {
+      "phase": "ip",
+      "name": "Play for set pieces",
+      "options": [
+        {
+          "label": "Keep ball in play",
+          "code": 0
+        },
+        {
+          "label": "Play for set pieces",
+          "code": 18
+        }
+      ],
+      "default": 0
+    },
+    {
+      "phase": "ip",
+      "name": "Patience",
+      "options": [
+        {
+          "label": "Hit early crosses",
+          "code": 9
+        },
+        {
+          "label": "Standard",
+          "code": 0
+        },
+        {
+          "label": "Work ball into box",
+          "code": 17
+        }
+      ],
+      "default": 0
+    },
+    {
+      "phase": "ip",
+      "name": "Shots from distance",
+      "options": [
+        {
+          "label": "Discourage",
+          "code": 16
+        },
+        {
+          "label": "Standard",
+          "code": 0
+        },
+        {
+          "label": "Encourage",
+          "code": 15
+        }
+      ],
+      "default": 0
+    },
+    {
+      "phase": "ip",
+      "name": "Crossing style",
+      "options": [
+        {
+          "label": "Mixed crosses",
+          "code": 0
+        },
+        {
+          "label": "Floated crosses",
+          "code": 10
+        },
+        {
+          "label": "Whipped crosses",
+          "code": 11
+        },
+        {
+          "label": "Low crosses",
+          "code": 12
+        }
+      ],
+      "default": 0
+    },
+    {
+      "phase": "ip",
+      "name": "Dribbling",
+      "options": [
+        {
+          "label": "Discourage",
+          "code": 14
+        },
+        {
+          "label": "Standard",
+          "code": 0
+        },
+        {
+          "label": "Encourage",
+          "code": 13
+        }
+      ],
+      "default": 0
+    },
+    {
+      "phase": "ip",
+      "name": "Overlap",
+      "options": [
+        {
+          "label": "Balanced",
+          "code": 0
+        },
+        {
+          "label": "Overlap left",
+          "code": 26
+        },
+        {
+          "label": "Overlap right",
+          "code": 27
+        },
+        {
+          "label": "Overlap both flanks",
+          "code": 25
+        }
+      ],
+      "default": 0
+    },
+    {
+      "phase": "ip",
+      "name": "Underlap",
+      "options": [
+        {
+          "label": "Balanced",
+          "code": 0
+        },
+        {
+          "label": "Underlap left",
+          "code": 29
+        },
+        {
+          "label": "Underlap right",
+          "code": 30
+        },
+        {
+          "label": "Underlap both flanks",
+          "code": 28
+        }
+      ],
+      "default": 0
+    },
+    {
+      "phase": "ip",
+      "name": "Progress through",
+      "options": [
+        {
+          "label": "Balanced",
+          "code": 0
+        },
+        {
+          "label": "Centre",
+          "code": 23
+        },
+        {
+          "label": "Left flank",
+          "code": 21
+        },
+        {
+          "label": "Right flank",
+          "code": 22
+        },
+        {
+          "label": "Both flanks",
+          "code": 24
+        }
+      ],
+      "default": 0
+    },
+    {
+      "phase": "ip",
+      "name": "Pass reception",
+      "options": [
+        {
+          "label": "Pass to feet",
+          "code": 6
+        },
+        {
+          "label": "Standard",
+          "code": 0
+        },
+        {
+          "label": "Pass into space",
+          "code": 5
+        }
+      ],
+      "default": 0
+    },
+    {
+      "phase": "ip",
+      "name": "Build-up strategy",
+      "options": [
+        {
+          "label": "Play through the press",
+          "code": 7
+        },
+        {
+          "label": "Standard",
+          "code": 0
+        },
+        {
+          "label": "Bypass the press",
+          "code": 8
+        }
+      ],
+      "default": 0
+    },
+    {
+      "phase": "ip",
+      "name": "Goal kicks",
+      "options": [
+        {
+          "label": "Shorter passes",
+          "code": 44
+        },
+        {
+          "label": "Mixed",
+          "code": 0
+        },
+        {
+          "label": "Long passing",
+          "code": 45
+        }
+      ],
+      "default": 0
+    },
+    {
+      "phase": "ip",
+      "name": "GK distribution speed",
+      "options": [
+        {
+          "label": "Slow pace down",
+          "code": 43
+        },
+        {
+          "label": "Balanced",
+          "code": 0
+        },
+        {
+          "label": "Distribute quickly",
+          "code": 42
+        }
+      ],
+      "default": 0
+    },
+    {
+      "phase": "ip",
+      "name": "Goalkeeper distribution",
+      "options": [
+        {
+          "label": "Balanced",
+          "code": 0
+        },
+        {
+          "label": "Centre-back",
+          "code": 35
+        },
+        {
+          "label": "Full-back",
+          "code": 36
+        },
+        {
+          "label": "Flanks",
+          "code": 37
+        },
+        {
+          "label": "Playmaker",
+          "code": 39
+        },
+        {
+          "label": "Target forward",
+          "code": 40
+        },
+        {
+          "label": "Bypass the defensive line",
+          "code": 38
+        }
+      ],
+      "default": 0
+    },
+    {
+      "phase": "ip",
+      "name": "GK on attacking set pieces",
+      "options": [
+        {
+          "label": "Do not participate",
+          "code": 0
+        },
+        {
+          "label": "Participate",
+          "code": 60
+        }
+      ],
+      "default": 0
+    },
+    {
+      "phase": "oop",
+      "name": "Line of engagement",
+      "options": [
+        {
+          "label": "Low block",
+          "code": 63
+        },
+        {
+          "label": "Mid block",
+          "code": 62
+        },
+        {
+          "label": "High press",
+          "code": 61
+        }
+      ],
+      "default": 62
+    },
+    {
+      "phase": "oop",
+      "name": "Defensive line height",
+      "options": [
+        {
+          "label": "Much lower",
+          "code": 59
+        },
+        {
+          "label": "Lower",
+          "code": 58
+        },
+        {
+          "label": "Standard",
+          "code": 0
+        },
+        {
+          "label": "Higher",
+          "code": 57
+        },
+        {
+          "label": "Much higher",
+          "code": 56
+        }
+      ],
+      "default": 0
+    },
+    {
+      "phase": "oop",
+      "name": "Defensive line behaviour",
+      "options": [
+        {
+          "label": "Step up more",
+          "code": 76
+        },
+        {
+          "label": "Balanced",
+          "code": 0
+        },
+        {
+          "label": "Drop off more",
+          "code": 77
+        }
+      ],
+      "default": 0
+    },
+    {
+      "phase": "oop",
+      "name": "Trigger press",
+      "options": [
+        {
+          "label": "Much less often",
+          "code": 68
+        },
+        {
+          "label": "Less often",
+          "code": 67
+        },
+        {
+          "label": "Standard",
+          "code": 0
+        },
+        {
+          "label": "More often",
+          "code": 66
+        },
+        {
+          "label": "Much more often",
+          "code": 65
+        }
+      ],
+      "default": 0
+    },
+    {
+      "phase": "oop",
+      "name": "Defensive transition",
+      "options": [
+        {
+          "label": "Regroup",
+          "code": 71
+        },
+        {
+          "label": "Standard",
+          "code": 0
+        },
+        {
+          "label": "Counter-press",
+          "code": 70
+        }
+      ],
+      "default": 0
+    },
+    {
+      "phase": "oop",
+      "name": "Tackling",
+      "options": [
+        {
+          "label": "Stay on feet",
+          "code": 73
+        },
+        {
+          "label": "Standard",
+          "code": 0
+        },
+        {
+          "label": "Get stuck in",
+          "code": 72
+        }
+      ],
+      "default": 0
+    },
+    {
+      "phase": "oop",
+      "name": "Prevent short GK distribution",
+      "options": [
+        {
+          "label": "No",
+          "code": 0
+        },
+        {
+          "label": "Yes",
+          "code": 69
+        }
+      ],
+      "default": 0
+    },
+    {
+      "phase": "oop",
+      "name": "Pressing trap",
+      "options": [
+        {
+          "label": "Trap inside",
+          "code": 80
+        },
+        {
+          "label": "Standard",
+          "code": 0
+        },
+        {
+          "label": "Trap outside",
+          "code": 81
+        }
+      ],
+      "default": 0
+    },
+    {
+      "phase": "oop",
+      "name": "Cross engagement",
+      "options": [
+        {
+          "label": "Stop crosses",
+          "code": 82
+        },
+        {
+          "label": "Standard",
+          "code": 0
+        },
+        {
+          "label": "Invite crosses",
+          "code": 83
+        }
+      ],
+      "default": 0
+    }
+  ],
+  "playerInstructions": [
+    {
+      "phase": "ip",
+      "name": "Attacking width",
+      "options": [
+        {
+          "label": "Stay wider",
+          "code": 25
+        },
+        {
+          "label": "Sit narrower",
+          "code": 26
+        },
+        {
+          "label": "Move into channels",
+          "code": 27
+        },
+        {
+          "label": "Standard",
+          "code": 0
+        }
+      ]
+    },
+    {
+      "phase": "ip",
+      "name": "Dribbling direction",
+      "options": [
+        {
+          "label": "Run wide with ball",
+          "code": 15
+        },
+        {
+          "label": "Cut inside with ball",
+          "code": 16
+        },
+        {
+          "label": "Standard",
+          "code": 0
+        }
+      ]
+    },
+    {
+      "phase": "ip",
+      "name": "Dribbling frequency",
+      "options": [
+        {
+          "label": "Dribble more",
+          "code": 13
+        },
+        {
+          "label": "Dribble less",
+          "code": 14
+        },
+        {
+          "label": "Standard",
+          "code": 0
+        }
+      ]
+    },
+    {
+      "phase": "ip",
+      "name": "Forward runs",
+      "options": [
+        {
+          "label": "Make more runs",
+          "code": 22
+        },
+        {
+          "label": "Standard",
+          "code": 0
+        },
+        {
+          "label": "Hold position",
+          "code": 23
+        }
+      ]
+    },
+    {
+      "phase": "ip",
+      "name": "Freedom of movement",
+      "options": [
+        {
+          "label": "Roam from position",
+          "code": 24
+        },
+        {
+          "label": "Follow tactical shape",
+          "code": 0
+        }
+      ]
+    },
+    {
+      "phase": "ip",
+      "name": "Hold up ball",
+      "options": [
+        {
+          "label": "Yes",
+          "code": 17
+        },
+        {
+          "label": "No",
+          "code": 0
+        }
+      ]
+    },
+    {
+      "phase": "ip",
+      "name": "Shooting",
+      "options": [
+        {
+          "label": "Shoot more often",
+          "code": 18
+        },
+        {
+          "label": "Shoot less often",
+          "code": 19
+        },
+        {
+          "label": "Standard",
+          "code": 0
+        }
+      ]
+    },
+    {
+      "phase": "ip",
+      "name": "Passing strategy",
+      "options": [
+        {
+          "label": "Shorter passing",
+          "code": 1
+        },
+        {
+          "label": "More direct passing",
+          "code": 2
+        },
+        {
+          "label": "Standard",
+          "code": 0
+        }
+      ]
+    },
+    {
+      "phase": "ip",
+      "name": "Passing risk",
+      "options": [
+        {
+          "label": "Take more risks",
+          "code": 3
+        },
+        {
+          "label": "Take fewer risks",
+          "code": 4
+        },
+        {
+          "label": "Standard",
+          "code": 0
+        }
+      ]
+    },
+    {
+      "phase": "ip",
+      "name": "Crossing strategy",
+      "options": [
+        {
+          "label": "Aim for far post",
+          "code": 10
+        },
+        {
+          "label": "Aim for centre",
+          "code": 11
+        },
+        {
+          "label": "Aim for near post",
+          "code": 9
+        },
+        {
+          "label": "Aim for target forward",
+          "code": 12
+        },
+        {
+          "label": "Standard",
+          "code": 0
+        }
+      ]
+    },
+    {
+      "phase": "ip",
+      "name": "Cross from",
+      "options": [
+        {
+          "label": "Cross from deep",
+          "code": 7
+        },
+        {
+          "label": "Cross from byline",
+          "code": 8
+        },
+        {
+          "label": "Standard",
+          "code": 0
+        }
+      ]
+    },
+    {
+      "phase": "oop",
+      "name": "Trigger press",
+      "options": [
+        {
+          "label": "More often",
+          "code": 29
+        },
+        {
+          "label": "Less often",
+          "code": 30
+        },
+        {
+          "label": "Standard",
+          "code": 0
+        }
+      ]
+    },
+    {
+      "phase": "oop",
+      "name": "Marking",
+      "options": [
+        {
+          "label": "Mark tighter",
+          "code": 33
+        },
+        {
+          "label": "Standard",
+          "code": 0
+        }
+      ]
+    },
+    {
+      "phase": "oop",
+      "name": "Tackling",
+      "options": [
+        {
+          "label": "Tackle harder",
+          "code": 31
+        },
+        {
+          "label": "Ease off tackles",
+          "code": 32
+        },
+        {
+          "label": "Standard",
+          "code": 0
+        }
+      ]
+    },
+    {
+      "phase": "oop",
+      "name": "Marking target",
+      "options": [
+        {
+          "label": "Mark specific player",
+          "code": 34,
+          "target": "player"
+        },
+        {
+          "label": "Mark specific position",
+          "code": 35,
+          "target": "position"
+        },
+        {
+          "label": "Standard",
+          "code": 0
+        }
+      ]
+    },
+    {
+      "phase": "ip",
+      "name": "Attack box \u2013 side",
+      "options": [
+        {
+          "label": "Centre",
+          "code": 36
+        },
+        {
+          "label": "Left",
+          "code": 37
+        },
+        {
+          "label": "Right",
+          "code": 38
+        },
+        {
+          "label": "Near post",
+          "code": 39
+        },
+        {
+          "label": "Far post",
+          "code": 40
+        },
+        {
+          "label": "Standard",
+          "code": 0
+        }
+      ]
+    },
+    {
+      "phase": "ip",
+      "name": "Attack box \u2013 depth",
+      "options": [
+        {
+          "label": "Attack defensive line",
+          "code": 41
+        },
+        {
+          "label": "Arrive from deep",
+          "code": 42
+        },
+        {
+          "label": "Standard",
+          "code": 0
+        }
+      ]
+    }
+  ],
+  "roles": {
+    "wcb-oop": {
+      "code": "64",
+      "where": [
+        {
+          "pos": "DCR",
+          "when": "back-three"
+        },
+        {
+          "pos": "DCL",
+          "when": "back-three"
+        }
+      ],
+      "instructions": {
+        "DCR": {
+          "allowed": [29, 30, 31, 32, 33, 34, 35],
+          "forced": []
+        },
+        "DCL": {
+          "allowed": [29, 30, 31, 32, 33, 34, 35],
+          "forced": []
+        }
+      }
+    },
+    "twm": {
+      "code": "68719476736",
+      "where": [
+        {
+          "pos": "MR"
+        },
+        {
+          "pos": "ML"
+        }
+      ],
+      "instructions": {
+        "MR": {
+          "allowed": [29, 30, 31, 32, 33, 34, 35],
+          "forced": []
+        },
+        "ML": {
+          "allowed": [29, 30, 31, 32, 33, 34, 35],
+          "forced": []
+        }
+      }
+    },
+    "ccb": {
+      "code": "32",
+      "where": [
+        {
+          "pos": "DC"
+        },
+        {
+          "pos": "DCR"
+        },
+        {
+          "pos": "DCL"
+        }
+      ],
+      "instructions": {
+        "DC": {
+          "allowed": [31, 32, 33, 34, 35],
+          "forced": [30]
+        },
+        "DCR": {
+          "allowed": [31, 32, 33, 34, 35],
+          "forced": [30]
+        },
+        "DCL": {
+          "allowed": [31, 32, 33, 34, 35],
+          "forced": [30]
+        }
+      }
+    },
+    "am-oop": {
+      "code": "1073741824",
+      "where": [
+        {
+          "pos": "AMC"
+        },
+        {
+          "pos": "AMCR"
+        },
+        {
+          "pos": "AMCL"
+        }
+      ],
+      "instructions": {
+        "AMC": {
+          "allowed": [29, 30, 31, 32, 33, 34, 35],
+          "forced": []
+        },
+        "AMCR": {
+          "allowed": [29, 30, 31, 32, 33, 34, 35],
+          "forced": []
+        },
+        "AMCL": {
+          "allowed": [29, 30, 31, 32, 33, 34, 35],
+          "forced": []
+        }
+      }
+    },
+    "awb": {
+      "code": "274877906944",
+      "where": [
+        {
+          "pos": "WBR"
+        },
+        {
+          "pos": "WBL"
+        }
+      ],
+      "instructions": {
+        "WBR": {
+          "allowed": [1, 2, 3, 4, 8, 9, 10, 11, 12, 13, 14, 15, 16, 18, 19, 25, 26],
+          "forced": [22]
+        },
+        "WBL": {
+          "allowed": [1, 2, 3, 4, 8, 9, 10, 11, 12, 13, 14, 15, 16, 18, 19, 25, 26],
+          "forced": [22]
+        }
+      }
+    },
+    "pw": {
+      "code": "8796093022208",
+      "where": [
+        {
+          "pos": "MR"
+        },
+        {
+          "pos": "ML"
+        },
+        {
+          "pos": "AMR"
+        },
+        {
+          "pos": "AML"
+        }
+      ],
+      "instructions": {
+        "MR": {
+          "allowed": [1, 2, 3, 13, 14, 15, 16, 18, 19, 22, 36, 38],
+          "forced": [23, 24, 26, 42]
+        },
+        "ML": {
+          "allowed": [1, 2, 3, 13, 14, 15, 16, 18, 19, 22, 36, 37],
+          "forced": [23, 24, 26, 42]
+        },
+        "AMR": {
+          "allowed": [1, 2, 3, 13, 14, 15, 16, 17, 18, 19, 22, 36, 38],
+          "forced": [23, 24, 26, 42]
+        },
+        "AML": {
+          "allowed": [1, 2, 3, 13, 14, 15, 16, 17, 18, 19, 22, 36, 37],
+          "forced": [23, 24, 26, 42]
+        }
+      }
+    },
+    "pwb-ip": {
+      "code": "36028797018963968",
+      "where": [
+        {
+          "pos": "DR"
+        },
+        {
+          "pos": "DL"
+        },
+        {
+          "pos": "WBR"
+        },
+        {
+          "pos": "WBL"
+        }
+      ],
+      "instructions": {
+        "DR": {
+          "allowed": [1, 2, 3, 4, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 18, 19, 22, 23, 25, 26],
+          "forced": [24]
+        },
+        "DL": {
+          "allowed": [1, 2, 3, 4, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 18, 19, 22, 23, 25, 26],
+          "forced": [24]
+        },
+        "WBR": {
+          "allowed": [1, 2, 3, 4, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 18, 19, 22, 23, 25, 26],
+          "forced": [24]
+        },
+        "WBL": {
+          "allowed": [1, 2, 3, 4, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 18, 19, 22, 23, 25, 26],
+          "forced": [24]
+        }
+      }
+    },
+    "ncb": {
+      "code": "536870912",
+      "where": [
+        {
+          "pos": "DC"
+        },
+        {
+          "pos": "DCR"
+        },
+        {
+          "pos": "DCL"
+        }
+      ],
+      "instructions": {
+        "DC": {
+          "allowed": [18, 19, 23],
+          "forced": [2, 4, 14]
+        },
+        "DCR": {
+          "allowed": [18, 19, 23, 25],
+          "forced": [2, 4, 14]
+        },
+        "DCL": {
+          "allowed": [18, 19, 23, 25],
+          "forced": [2, 4, 14]
+        }
+      }
+    },
+    "cwd": {
+      "code": "256",
+      "where": [
+        {
+          "pos": "DCR",
+          "when": "back-three"
+        },
+        {
+          "pos": "DCL",
+          "when": "back-three"
+        }
+      ],
+      "instructions": {
+        "DCR": {
+          "allowed": [29, 30, 31, 32, 33, 34, 35],
+          "forced": []
+        },
+        "DCL": {
+          "allowed": [29, 30, 31, 32, 33, 34, 35],
+          "forced": []
+        }
+      }
+    },
+    "sdm": {
+      "code": "262144",
+      "where": [
+        {
+          "pos": "DMC"
+        },
+        {
+          "pos": "DMR"
+        },
+        {
+          "pos": "DML"
+        }
+      ],
+      "instructions": {
+        "DMC": {
+          "allowed": [31, 32, 33, 34, 35],
+          "forced": [30]
+        },
+        "DMR": {
+          "allowed": [31, 32, 33, 34, 35],
+          "forced": [30]
+        },
+        "DML": {
+          "allowed": [31, 32, 33, 34, 35],
+          "forced": [30]
+        }
+      }
+    },
+    "ocb": {
+      "code": "18014398509481984",
+      "where": [
+        {
+          "pos": "DCR",
+          "when": "back-three"
+        },
+        {
+          "pos": "DCL",
+          "when": "back-three"
+        }
+      ],
+      "instructions": {
+        "DCR": {
+          "allowed": [1, 2, 3, 4, 8, 13, 14, 18, 19, 25],
+          "forced": [22]
+        },
+        "DCL": {
+          "allowed": [1, 2, 3, 4, 8, 13, 14, 18, 19, 25],
+          "forced": [22]
+        }
+      }
+    },
+    "mpm": {
+      "code": "144115188075855872",
+      "where": [
+        {
+          "pos": "MC"
+        },
+        {
+          "pos": "MCR"
+        },
+        {
+          "pos": "MCL"
+        }
+      ],
+      "instructions": {
+        "MC": {
+          "allowed": [1, 2, 3, 13, 14, 18, 19, 22, 23, 24],
+          "forced": []
+        },
+        "MCR": {
+          "allowed": [1, 2, 3, 9, 10, 11, 12, 13, 14, 15, 18, 19, 22, 23, 24, 25],
+          "forced": []
+        },
+        "MCL": {
+          "allowed": [1, 2, 3, 9, 10, 11, 12, 13, 14, 15, 18, 19, 22, 23, 24, 25],
+          "forced": []
+        }
+      }
+    },
+    "hfb": {
+      "code": "2048",
+      "where": [
+        {
+          "pos": "DR"
+        },
+        {
+          "pos": "DL"
+        }
+      ],
+      "instructions": {
+        "DR": {
+          "allowed": [31, 32, 33, 34, 35],
+          "forced": [30]
+        },
+        "DL": {
+          "allowed": [31, 32, 33, 34, 35],
+          "forced": [30]
+        }
+      }
+    },
+    "dm-oop": {
+      "code": "32768",
+      "where": [
+        {
+          "pos": "DMC"
+        },
+        {
+          "pos": "DMR"
+        },
+        {
+          "pos": "DML"
+        }
+      ],
+      "instructions": {
+        "DMC": {
+          "allowed": [29, 30, 31, 32, 33, 34, 35],
+          "forced": []
+        },
+        "DMR": {
+          "allowed": [29, 30, 31, 32, 33, 34, 35],
+          "forced": []
+        },
+        "DML": {
+          "allowed": [29, 30, 31, 32, 33, 34, 35],
+          "forced": []
+        }
+      }
+    },
+    "ddm": {
+      "code": "65536",
+      "where": [
+        {
+          "pos": "DMC"
+        },
+        {
+          "pos": "DMR"
+        },
+        {
+          "pos": "DML"
+        }
+      ],
+      "instructions": {
+        "DMC": {
+          "allowed": [29, 30, 31, 32, 33, 34, 35],
+          "forced": []
+        },
+        "DMR": {
+          "allowed": [29, 30, 31, 32, 33, 34, 35],
+          "forced": []
+        },
+        "DML": {
+          "allowed": [29, 30, 31, 32, 33, 34, 35],
+          "forced": []
+        }
+      }
+    },
+    "ngk": {
+      "code": "9007199254740992",
+      "where": [
+        {
+          "pos": "GK"
+        }
+      ],
+      "instructions": {
+        "GK": {
+          "allowed": [1, 2],
+          "forced": [4, 14]
+        }
+      }
+    },
+    "am-ip": {
+      "code": "512",
+      "where": [
+        {
+          "pos": "MC"
+        },
+        {
+          "pos": "MCR"
+        },
+        {
+          "pos": "MCL"
+        },
+        {
+          "pos": "AMC"
+        },
+        {
+          "pos": "AMCR"
+        },
+        {
+          "pos": "AMCL"
+        }
+      ],
+      "instructions": {
+        "MC": {
+          "allowed": [1, 2, 3, 4, 13, 14, 18, 19, 22, 23, 24, 36, 37, 38, 39, 40, 41, 42],
+          "forced": []
+        },
+        "MCR": {
+          "allowed": [
+            1, 2, 3, 4, 9, 10, 11, 12, 13, 14, 15, 18, 19, 22, 23, 24, 25, 27, 36, 38, 41, 42
+          ],
+          "forced": []
+        },
+        "MCL": {
+          "allowed": [
+            1, 2, 3, 4, 9, 10, 11, 12, 13, 14, 15, 18, 19, 22, 23, 24, 25, 27, 36, 37, 41, 42
+          ],
+          "forced": []
+        },
+        "AMC": {
+          "allowed": [
+            1, 2, 3, 4, 9, 10, 11, 12, 13, 14, 17, 18, 19, 22, 23, 24, 27, 36, 37, 38, 39, 40, 41,
+            42
+          ],
+          "forced": []
+        },
+        "AMCR": {
+          "allowed": [
+            1, 2, 3, 4, 9, 10, 11, 12, 13, 14, 15, 17, 18, 19, 22, 23, 24, 25, 27, 36, 38, 41, 42
+          ],
+          "forced": []
+        },
+        "AMCL": {
+          "allowed": [
+            1, 2, 3, 4, 9, 10, 11, 12, 13, 14, 15, 17, 18, 19, 22, 23, 24, 25, 27, 36, 37, 41, 42
+          ],
+          "forced": []
+        }
+      }
+    },
+    "wow": {
+      "code": "2199023255552",
+      "where": [
+        {
+          "pos": "AMR"
+        },
+        {
+          "pos": "AML"
+        }
+      ],
+      "instructions": {
+        "AMR": {
+          "allowed": [29, 30, 31, 32, 33, 34, 35],
+          "forced": []
+        },
+        "AML": {
+          "allowed": [29, 30, 31, 32, 33, 34, 35],
+          "forced": []
+        }
+      }
+    },
+    "w-oop": {
+      "code": "274877906944",
+      "where": [
+        {
+          "pos": "AMR"
+        },
+        {
+          "pos": "AML"
+        }
+      ],
+      "instructions": {
+        "AMR": {
+          "allowed": [29, 30, 31, 32, 33, 34, 35],
+          "forced": []
+        },
+        "AML": {
+          "allowed": [29, 30, 31, 32, 33, 34, 35],
+          "forced": []
+        }
+      }
+    },
+    "scf": {
+      "code": "35184372088832",
+      "where": [
+        {
+          "pos": "STR"
+        },
+        {
+          "pos": "STL"
+        }
+      ],
+      "instructions": {
+        "STR": {
+          "allowed": [29, 30, 31, 32, 33, 34, 35],
+          "forced": []
+        },
+        "STL": {
+          "allowed": [29, 30, 31, 32, 33, 34, 35],
+          "forced": []
+        }
+      }
+    },
+    "wcb-ip": {
+      "code": "2251799813685248",
+      "where": [
+        {
+          "pos": "DCR",
+          "when": "back-three"
+        },
+        {
+          "pos": "DCL",
+          "when": "back-three"
+        }
+      ],
+      "instructions": {
+        "DCR": {
+          "allowed": [1, 2, 3, 4, 7, 8, 9, 10, 11, 12, 13, 14, 18, 19, 23, 25],
+          "forced": []
+        },
+        "DCL": {
+          "allowed": [1, 2, 3, 4, 7, 8, 9, 10, 11, 12, 13, 14, 18, 19, 23, 25],
+          "forced": []
+        }
+      }
+    },
+    "hwb": {
+      "code": "16384",
+      "where": [
+        {
+          "pos": "WBR"
+        },
+        {
+          "pos": "WBL"
+        }
+      ],
+      "instructions": {
+        "WBR": {
+          "allowed": [31, 32, 33, 34, 35],
+          "forced": [30]
+        },
+        "WBL": {
+          "allowed": [31, 32, 33, 34, 35],
+          "forced": [30]
+        }
+      }
+    },
+    "tf": {
+      "code": "262144",
+      "where": [
+        {
+          "pos": "ST"
+        },
+        {
+          "pos": "STR"
+        },
+        {
+          "pos": "STL"
+        }
+      ],
+      "instructions": {
+        "ST": {
+          "allowed": [1, 2, 3, 4, 13, 14, 18, 19, 23, 24, 27, 36, 37, 38, 39, 40, 41, 42],
+          "forced": [17]
+        },
+        "STR": {
+          "allowed": [1, 2, 3, 4, 13, 14, 15, 18, 19, 23, 24, 25, 27, 36, 38, 41, 42],
+          "forced": [17]
+        },
+        "STL": {
+          "allowed": [1, 2, 3, 4, 13, 14, 15, 18, 19, 23, 24, 25, 27, 36, 37, 41, 42],
+          "forced": [17]
+        }
+      }
+    },
+    "dlf": {
+      "code": "1024",
+      "where": [
+        {
+          "pos": "ST"
+        },
+        {
+          "pos": "STR"
+        },
+        {
+          "pos": "STL"
+        }
+      ],
+      "instructions": {
+        "ST": {
+          "allowed": [1, 2, 3, 4, 13, 14, 18, 19, 23, 24, 27, 36, 37, 38, 39, 40, 41, 42],
+          "forced": [17]
+        },
+        "STR": {
+          "allowed": [1, 2, 3, 4, 13, 14, 15, 18, 19, 23, 24, 25, 27, 36, 38, 41, 42],
+          "forced": [17]
+        },
+        "STL": {
+          "allowed": [1, 2, 3, 4, 13, 14, 15, 18, 19, 23, 24, 25, 27, 36, 37, 41, 42],
+          "forced": [17]
+        }
+      }
+    },
+    "swd": {
+      "code": "128",
+      "where": [
+        {
+          "pos": "DCR",
+          "when": "back-three"
+        },
+        {
+          "pos": "DCL",
+          "when": "back-three"
+        }
+      ],
+      "instructions": {
+        "DCR": {
+          "allowed": [29, 30, 31, 32, 33, 34, 35],
+          "forced": []
+        },
+        "DCL": {
+          "allowed": [29, 30, 31, 32, 33, 34, 35],
+          "forced": []
+        }
+      }
+    },
+    "ifb": {
+      "code": "4503599627370496",
+      "where": [
+        {
+          "pos": "DR"
+        },
+        {
+          "pos": "DL"
+        }
+      ],
+      "instructions": {
+        "DR": {
+          "allowed": [1, 2, 3, 4, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 18, 19, 22, 23, 25, 26],
+          "forced": []
+        },
+        "DL": {
+          "allowed": [1, 2, 3, 4, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 18, 19, 22, 23, 25, 26],
+          "forced": []
+        }
+      }
+    },
+    "bgk": {
+      "code": "4096",
+      "where": [
+        {
+          "pos": "GK"
+        }
+      ],
+      "instructions": {
+        "GK": {
+          "allowed": [1, 2, 13, 14],
+          "forced": [3]
+        }
+      }
+    },
+    "oam": {
+      "code": "4294967296",
+      "where": [
+        {
+          "pos": "AMC"
+        },
+        {
+          "pos": "AMCR"
+        },
+        {
+          "pos": "AMCL"
+        }
+      ],
+      "instructions": {
+        "AMC": {
+          "allowed": [29, 30, 31, 32, 33, 34, 35],
+          "forced": []
+        },
+        "AMCR": {
+          "allowed": [29, 30, 31, 32, 33, 34, 35],
+          "forced": []
+        },
+        "AMCL": {
+          "allowed": [29, 30, 31, 32, 33, 34, 35],
+          "forced": []
+        }
+      }
+    },
+    "f9": {
+      "code": "1099511627776",
+      "where": [
+        {
+          "pos": "ST"
+        },
+        {
+          "pos": "STR"
+        },
+        {
+          "pos": "STL"
+        }
+      ],
+      "instructions": {
+        "ST": {
+          "allowed": [1, 2, 3, 4, 13, 14, 17, 18, 19, 27, 36, 37, 38, 39, 40],
+          "forced": [24, 42]
+        },
+        "STR": {
+          "allowed": [1, 2, 3, 4, 13, 14, 15, 17, 18, 19, 25, 27, 36, 38],
+          "forced": [24, 42]
+        },
+        "STL": {
+          "allowed": [1, 2, 3, 4, 13, 14, 15, 17, 18, 19, 25, 27, 36, 37],
+          "forced": [24, 42]
+        }
+      }
+    },
+    "wcm-ip": {
+      "code": "281474976710656",
+      "where": [
+        {
+          "pos": "MCR"
+        },
+        {
+          "pos": "MCL"
+        }
+      ],
+      "instructions": {
+        "MCR": {
+          "allowed": [1, 2, 3, 4, 9, 10, 11, 12, 13, 14, 15, 18, 19, 22, 23, 24],
+          "forced": [25]
+        },
+        "MCL": {
+          "allowed": [1, 2, 3, 4, 9, 10, 11, 12, 13, 14, 15, 18, 19, 22, 23, 24],
+          "forced": [25]
+        }
+      }
+    },
+    "cm-oop": {
+      "code": "1048576",
+      "where": [
+        {
+          "pos": "MC"
+        },
+        {
+          "pos": "MCR"
+        },
+        {
+          "pos": "MCL"
+        }
+      ],
+      "instructions": {
+        "MC": {
+          "allowed": [29, 30, 31, 32, 33, 34, 35],
+          "forced": []
+        },
+        "MCR": {
+          "allowed": [29, 30, 31, 32, 33, 34, 35],
+          "forced": []
+        },
+        "MCL": {
+          "allowed": [29, 30, 31, 32, 33, 34, 35],
+          "forced": []
+        }
+      }
+    },
+    "owm": {
+      "code": "137438953472",
+      "where": [
+        {
+          "pos": "MR"
+        },
+        {
+          "pos": "ML"
+        }
+      ],
+      "instructions": {
+        "MR": {
+          "allowed": [29, 30, 31, 32, 33, 34, 35],
+          "forced": []
+        },
+        "ML": {
+          "allowed": [29, 30, 31, 32, 33, 34, 35],
+          "forced": []
+        }
+      }
+    },
+    "bbp": {
+      "code": "70368744177664",
+      "where": [
+        {
+          "pos": "DMR"
+        },
+        {
+          "pos": "DML"
+        }
+      ],
+      "instructions": {
+        "DMR": {
+          "allowed": [1, 2, 3, 4, 13, 14, 18, 19, 22, 23, 27, 36, 38],
+          "forced": [42]
+        },
+        "DML": {
+          "allowed": [1, 2, 3, 4, 13, 14, 18, 19, 22, 23, 27, 36, 37],
+          "forced": [42]
+        }
+      }
+    },
+    "if": {
+      "code": "134217728",
+      "where": [
+        {
+          "pos": "AMR"
+        },
+        {
+          "pos": "AML"
+        }
+      ],
+      "instructions": {
+        "AMR": {
+          "allowed": [
+            1, 2, 3, 4, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 24, 25, 26, 36, 38
+          ],
+          "forced": [22, 41]
+        },
+        "AML": {
+          "allowed": [
+            1, 2, 3, 4, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 24, 25, 26, 36, 37
+          ],
+          "forced": [22, 41]
+        }
+      }
+    },
+    "pfb": {
+      "code": "1024",
+      "where": [
+        {
+          "pos": "DR"
+        },
+        {
+          "pos": "DL"
+        }
+      ],
+      "instructions": {
+        "DR": {
+          "allowed": [31, 32, 33, 34, 35],
+          "forced": [29]
+        },
+        "DL": {
+          "allowed": [31, 32, 33, 34, 35],
+          "forced": [29]
+        }
+      }
+    },
+    "wb-oop": {
+      "code": "4096",
+      "where": [
+        {
+          "pos": "WBR"
+        },
+        {
+          "pos": "WBL"
+        }
+      ],
+      "instructions": {
+        "WBR": {
+          "allowed": [29, 30, 31, 32, 33, 34, 35],
+          "forced": []
+        },
+        "WBL": {
+          "allowed": [29, 30, 31, 32, 33, 34, 35],
+          "forced": []
+        }
+      }
+    },
+    "pwb-oop": {
+      "code": "8192",
+      "where": [
+        {
+          "pos": "WBR"
+        },
+        {
+          "pos": "WBL"
+        }
+      ],
+      "instructions": {
+        "WBR": {
+          "allowed": [31, 32, 33, 34, 35],
+          "forced": [29]
+        },
+        "WBL": {
+          "allowed": [31, 32, 33, 34, 35],
+          "forced": [29]
+        }
+      }
+    },
+    "cm-ip": {
+      "code": "32",
+      "where": [
+        {
+          "pos": "MC"
+        },
+        {
+          "pos": "MCR"
+        },
+        {
+          "pos": "MCL"
+        }
+      ],
+      "instructions": {
+        "MC": {
+          "allowed": [1, 2, 3, 4, 13, 14, 18, 19, 22, 23, 24, 27],
+          "forced": []
+        },
+        "MCR": {
+          "allowed": [1, 2, 3, 4, 9, 10, 11, 12, 13, 14, 15, 18, 19, 22, 23, 24, 25, 27],
+          "forced": []
+        },
+        "MCL": {
+          "allowed": [1, 2, 3, 4, 9, 10, 11, 12, 13, 14, 15, 18, 19, 22, 23, 24, 25, 27],
+          "forced": []
+        }
+      }
+    },
+    "tcf": {
+      "code": "8796093022208",
+      "where": [
+        {
+          "pos": "ST"
+        },
+        {
+          "pos": "STR"
+        },
+        {
+          "pos": "STL"
+        }
+      ],
+      "instructions": {
+        "ST": {
+          "allowed": [29, 30, 31, 32, 33, 34, 35],
+          "forced": []
+        },
+        "STR": {
+          "allowed": [29, 30, 31, 32, 33, 34, 35],
+          "forced": []
+        },
+        "STL": {
+          "allowed": [29, 30, 31, 32, 33, 34, 35],
+          "forced": []
+        }
+      }
+    },
+    "pcm": {
+      "code": "134217728",
+      "where": [
+        {
+          "pos": "MC"
+        },
+        {
+          "pos": "MCR"
+        },
+        {
+          "pos": "MCL"
+        }
+      ],
+      "instructions": {
+        "MC": {
+          "allowed": [31, 32, 33, 34, 35],
+          "forced": [29]
+        },
+        "MCR": {
+          "allowed": [31, 32, 33, 34, 35],
+          "forced": [29]
+        },
+        "MCL": {
+          "allowed": [31, 32, 33, 34, 35],
+          "forced": [29]
+        }
+      }
+    },
+    "ss": {
+      "code": "2199023255552",
+      "where": [
+        {
+          "pos": "AMC"
+        },
+        {
+          "pos": "AMCR"
+        },
+        {
+          "pos": "AMCL"
+        }
+      ],
+      "instructions": {
+        "AMC": {
+          "allowed": [1, 2, 3, 4, 9, 10, 11, 12, 13, 14, 17, 18, 19, 24, 27, 36, 37, 38, 39, 40],
+          "forced": [22, 41]
+        },
+        "AMCR": {
+          "allowed": [1, 2, 3, 4, 9, 10, 11, 12, 13, 14, 15, 17, 18, 19, 24, 25, 27, 36, 38],
+          "forced": [22, 41]
+        },
+        "AMCL": {
+          "allowed": [1, 2, 3, 4, 9, 10, 11, 12, 13, 14, 15, 17, 18, 19, 24, 25, 27, 36, 37],
+          "forced": [22, 41]
+        }
+      }
+    },
+    "gk-ip": {
+      "code": "1",
+      "where": [
+        {
+          "pos": "GK"
+        }
+      ],
+      "instructions": {
+        "GK": {
+          "allowed": [1, 2, 3, 4, 13, 14],
+          "forced": []
+        }
+      }
+    },
+    "fr": {
+      "code": "4294967296",
+      "where": [
+        {
+          "pos": "AMC"
+        },
+        {
+          "pos": "AMCR"
+        },
+        {
+          "pos": "AMCL"
+        }
+      ],
+      "instructions": {
+        "AMC": {
+          "allowed": [1, 2, 9, 10, 11, 12, 17, 18, 19, 22, 24, 27, 36, 37, 38, 39, 40, 41, 42],
+          "forced": [3, 13]
+        },
+        "AMCR": {
+          "allowed": [1, 2, 9, 10, 11, 12, 15, 17, 18, 19, 22, 24, 25, 27, 36, 38, 41, 42],
+          "forced": [3, 13]
+        },
+        "AMCL": {
+          "allowed": [1, 2, 9, 10, 11, 12, 15, 17, 18, 19, 22, 24, 25, 27, 36, 37, 41, 42],
+          "forced": [3, 13]
+        }
+      }
+    },
+    "cb-oop": {
+      "code": "8",
+      "where": [
+        {
+          "pos": "DC"
+        },
+        {
+          "pos": "DCR"
+        },
+        {
+          "pos": "DCL"
+        }
+      ],
+      "instructions": {
+        "DC": {
+          "allowed": [29, 30, 31, 32, 33, 34, 35],
+          "forced": []
+        },
+        "DCR": {
+          "allowed": [29, 30, 31, 32, 33, 34, 35],
+          "forced": []
+        },
+        "DCL": {
+          "allowed": [29, 30, 31, 32, 33, 34, 35],
+          "forced": []
+        }
+      }
+    },
+    "hb": {
+      "code": "34359738368",
+      "where": [
+        {
+          "pos": "DMC"
+        },
+        {
+          "pos": "DMR"
+        },
+        {
+          "pos": "DML"
+        }
+      ],
+      "instructions": {
+        "DMC": {
+          "allowed": [1, 2, 3, 4, 13, 14, 18, 19, 22],
+          "forced": [23]
+        },
+        "DMR": {
+          "allowed": [1, 2, 3, 4, 13, 14, 18, 19, 22, 25],
+          "forced": [23]
+        },
+        "DML": {
+          "allowed": [1, 2, 3, 4, 13, 14, 18, 19, 22, 25],
+          "forced": [23]
+        }
+      }
+    },
+    "iw": {
+      "code": "562949953421312",
+      "where": [
+        {
+          "pos": "MR"
+        },
+        {
+          "pos": "ML"
+        },
+        {
+          "pos": "AMR"
+        },
+        {
+          "pos": "AML"
+        }
+      ],
+      "instructions": {
+        "MR": {
+          "allowed": [
+            1, 2, 3, 4, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 18, 19, 22, 23, 24, 25, 26, 36, 38, 41,
+            42
+          ],
+          "forced": []
+        },
+        "ML": {
+          "allowed": [
+            1, 2, 3, 4, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 18, 19, 22, 23, 24, 25, 26, 36, 37, 41,
+            42
+          ],
+          "forced": []
+        },
+        "AMR": {
+          "allowed": [
+            1, 2, 3, 4, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 22, 23, 24, 25, 26, 36, 38,
+            41, 42
+          ],
+          "forced": []
+        },
+        "AML": {
+          "allowed": [
+            1, 2, 3, 4, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 22, 23, 24, 25, 26, 36, 37,
+            41, 42
+          ],
+          "forced": []
+        }
+      }
+    },
+    "cfd-ip": {
+      "code": "2048",
+      "where": [
+        {
+          "pos": "ST"
+        },
+        {
+          "pos": "STR"
+        },
+        {
+          "pos": "STL"
+        }
+      ],
+      "instructions": {
+        "ST": {
+          "allowed": [1, 2, 3, 4, 13, 14, 17, 18, 19, 23, 24, 27, 36, 37, 38, 39, 40, 41, 42],
+          "forced": []
+        },
+        "STR": {
+          "allowed": [1, 2, 3, 4, 13, 14, 15, 17, 18, 19, 23, 24, 25, 27, 36, 38, 41, 42],
+          "forced": []
+        },
+        "STL": {
+          "allowed": [1, 2, 3, 4, 13, 14, 15, 17, 18, 19, 23, 24, 25, 27, 36, 37, 41, 42],
+          "forced": []
+        }
+      }
+    },
+    "bcb": {
+      "code": "16777216",
+      "where": [
+        {
+          "pos": "DC"
+        },
+        {
+          "pos": "DCR"
+        },
+        {
+          "pos": "DCL"
+        }
+      ],
+      "instructions": {
+        "DC": {
+          "allowed": [1, 13, 14, 18, 19, 23],
+          "forced": [3]
+        },
+        "DCR": {
+          "allowed": [1, 13, 14, 18, 19, 23, 25],
+          "forced": [3]
+        },
+        "DCL": {
+          "allowed": [1, 13, 14, 18, 19, 23, 25],
+          "forced": [3]
+        }
+      }
+    },
+    "fb-oop": {
+      "code": "512",
+      "where": [
+        {
+          "pos": "DR"
+        },
+        {
+          "pos": "DL"
+        }
+      ],
+      "instructions": {
+        "DR": {
+          "allowed": [29, 30, 31, 32, 33, 34, 35],
+          "forced": []
+        },
+        "DL": {
+          "allowed": [29, 30, 31, 32, 33, 34, 35],
+          "forced": []
+        }
+      }
+    },
+    "iwb": {
+      "code": "17592186044416",
+      "where": [
+        {
+          "pos": "DR"
+        },
+        {
+          "pos": "DL"
+        },
+        {
+          "pos": "WBR"
+        },
+        {
+          "pos": "WBL"
+        }
+      ],
+      "instructions": {
+        "DR": {
+          "allowed": [1, 2, 3, 4, 7, 8, 13, 14, 15, 16, 18, 19, 22, 24, 25, 26],
+          "forced": [23]
+        },
+        "DL": {
+          "allowed": [1, 2, 3, 4, 7, 8, 13, 14, 15, 16, 18, 19, 22, 24, 25, 26],
+          "forced": [23]
+        },
+        "WBR": {
+          "allowed": [1, 2, 3, 4, 7, 8, 13, 14, 15, 16, 18, 19, 22, 24, 25, 26],
+          "forced": [23]
+        },
+        "WBL": {
+          "allowed": [1, 2, 3, 4, 7, 8, 13, 14, 15, 16, 18, 19, 22, 24, 25, 26],
+          "forced": [23]
+        }
+      }
+    },
+    "gk-oop": {
+      "code": "1",
+      "where": [
+        {
+          "pos": "GK"
+        }
+      ],
+      "instructions": {
+        "GK": {
+          "allowed": [31, 32],
+          "forced": []
+        }
+      }
+    },
+    "bbm": {
+      "code": "65536",
+      "where": [
+        {
+          "pos": "DMR"
+        },
+        {
+          "pos": "DML"
+        }
+      ],
+      "instructions": {
+        "DMR": {
+          "allowed": [1, 2, 3, 4, 13, 14, 18, 19, 22, 23, 24, 25, 27, 36, 38, 41, 42],
+          "forced": []
+        },
+        "DML": {
+          "allowed": [1, 2, 3, 4, 13, 14, 18, 19, 22, 23, 24, 25, 27, 36, 37, 41, 42],
+          "forced": []
+        }
+      }
+    },
+    "wb-ip": {
+      "code": "8",
+      "where": [
+        {
+          "pos": "DR"
+        },
+        {
+          "pos": "DL"
+        },
+        {
+          "pos": "WBR"
+        },
+        {
+          "pos": "WBL"
+        }
+      ],
+      "instructions": {
+        "DR": {
+          "allowed": [1, 2, 3, 4, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 18, 19, 22, 23, 25, 26],
+          "forced": []
+        },
+        "DL": {
+          "allowed": [1, 2, 3, 4, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 18, 19, 22, 23, 25, 26],
+          "forced": []
+        },
+        "WBR": {
+          "allowed": [1, 2, 3, 4, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 18, 19, 22, 23, 25, 26],
+          "forced": []
+        },
+        "WBL": {
+          "allowed": [1, 2, 3, 4, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 18, 19, 22, 23, 25, 26],
+          "forced": []
+        }
+      }
+    },
+    "scb": {
+      "code": "16",
+      "where": [
+        {
+          "pos": "DC"
+        },
+        {
+          "pos": "DCR"
+        },
+        {
+          "pos": "DCL"
+        }
+      ],
+      "instructions": {
+        "DC": {
+          "allowed": [31, 32, 33, 34, 35],
+          "forced": [29]
+        },
+        "DCR": {
+          "allowed": [31, 32, 33, 34, 35],
+          "forced": [29]
+        },
+        "DCL": {
+          "allowed": [31, 32, 33, 34, 35],
+          "forced": [29]
+        }
+      }
+    },
+    "cfd-oop": {
+      "code": "4398046511104",
+      "where": [
+        {
+          "pos": "ST"
+        },
+        {
+          "pos": "STR"
+        },
+        {
+          "pos": "STL"
+        }
+      ],
+      "instructions": {
+        "ST": {
+          "allowed": [29, 30, 31, 32, 33, 34, 35],
+          "forced": []
+        },
+        "STR": {
+          "allowed": [29, 30, 31, 32, 33, 34, 35],
+          "forced": []
+        },
+        "STL": {
+          "allowed": [29, 30, 31, 32, 33, 34, 35],
+          "forced": []
+        }
+      }
+    },
+    "chf": {
+      "code": "2147483648",
+      "where": [
+        {
+          "pos": "ST"
+        },
+        {
+          "pos": "STR"
+        },
+        {
+          "pos": "STL"
+        }
+      ],
+      "instructions": {
+        "ST": {
+          "allowed": [1, 2, 4, 14, 17, 18, 19, 22, 23, 24, 27, 36, 37, 38, 39, 40],
+          "forced": [41]
+        },
+        "STR": {
+          "allowed": [1, 2, 4, 14, 15, 17, 18, 19, 22, 23, 24, 25, 27, 36, 38],
+          "forced": [41]
+        },
+        "STL": {
+          "allowed": [1, 2, 4, 14, 15, 17, 18, 19, 22, 23, 24, 25, 27, 36, 37],
+          "forced": [41]
+        }
+      }
+    },
+    "w-ip": {
+      "code": "128",
+      "where": [
+        {
+          "pos": "MR"
+        },
+        {
+          "pos": "ML"
+        },
+        {
+          "pos": "AMR"
+        },
+        {
+          "pos": "AML"
+        }
+      ],
+      "instructions": {
+        "MR": {
+          "allowed": [
+            1, 2, 3, 4, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 22, 23, 24, 25, 26, 41, 42
+          ],
+          "forced": []
+        },
+        "ML": {
+          "allowed": [
+            1, 2, 3, 4, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 22, 23, 24, 25, 26, 41, 42
+          ],
+          "forced": []
+        },
+        "AMR": {
+          "allowed": [
+            1, 2, 3, 4, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 22, 23, 24, 25, 26, 41, 42
+          ],
+          "forced": []
+        },
+        "AML": {
+          "allowed": [
+            1, 2, 3, 4, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 22, 23, 24, 25, 26, 41, 42
+          ],
+          "forced": []
+        }
+      }
+    },
+    "dlp": {
+      "code": "32768",
+      "where": [
+        {
+          "pos": "DMC"
+        },
+        {
+          "pos": "DMR"
+        },
+        {
+          "pos": "DML"
+        }
+      ],
+      "instructions": {
+        "DMC": {
+          "allowed": [1, 2, 3, 13, 14, 18, 19],
+          "forced": [23]
+        },
+        "DMR": {
+          "allowed": [1, 2, 3, 13, 14, 18, 19, 25],
+          "forced": [23]
+        },
+        "DML": {
+          "allowed": [1, 2, 3, 13, 14, 18, 19, 25],
+          "forced": [23]
+        }
+      }
+    },
+    "iow": {
+      "code": "1099511627776",
+      "where": [
+        {
+          "pos": "AMR"
+        },
+        {
+          "pos": "AML"
+        }
+      ],
+      "instructions": {
+        "AMR": {
+          "allowed": [29, 30, 31, 32, 33, 34, 35],
+          "forced": []
+        },
+        "AML": {
+          "allowed": [29, 30, 31, 32, 33, 34, 35],
+          "forced": []
+        }
+      }
+    },
+    "wdm": {
+      "code": "524288",
+      "where": [
+        {
+          "pos": "DMR"
+        },
+        {
+          "pos": "DML"
+        }
+      ],
+      "instructions": {
+        "DMR": {
+          "allowed": [29, 30, 31, 32, 33, 34, 35],
+          "forced": []
+        },
+        "DML": {
+          "allowed": [29, 30, 31, 32, 33, 34, 35],
+          "forced": []
+        }
+      }
+    },
+    "ap": {
+      "code": "131072",
+      "where": [
+        {
+          "pos": "MC"
+        },
+        {
+          "pos": "MCR"
+        },
+        {
+          "pos": "MCL"
+        },
+        {
+          "pos": "AMC"
+        },
+        {
+          "pos": "AMCR"
+        },
+        {
+          "pos": "AMCL"
+        }
+      ],
+      "instructions": {
+        "MC": {
+          "allowed": [1, 2, 13, 14, 18, 19, 23, 24, 36, 37, 38, 39, 40],
+          "forced": [3, 42]
+        },
+        "MCR": {
+          "allowed": [1, 2, 9, 10, 11, 12, 13, 14, 15, 18, 19, 23, 24, 25, 36, 38],
+          "forced": [3, 42]
+        },
+        "MCL": {
+          "allowed": [1, 2, 9, 10, 11, 12, 13, 14, 15, 18, 19, 23, 24, 25, 36, 37],
+          "forced": [3, 42]
+        },
+        "AMC": {
+          "allowed": [1, 2, 9, 10, 11, 12, 13, 14, 17, 18, 19, 23, 24, 27, 36, 37, 38, 39, 40],
+          "forced": [3, 42]
+        },
+        "AMCR": {
+          "allowed": [1, 2, 9, 10, 11, 12, 13, 14, 15, 17, 18, 19, 23, 24, 25, 27, 36, 38],
+          "forced": [3, 42]
+        },
+        "AMCL": {
+          "allowed": [1, 2, 9, 10, 11, 12, 13, 14, 15, 17, 18, 19, 23, 24, 25, 27, 36, 37],
+          "forced": [3, 42]
+        }
+      }
+    },
+    "tam": {
+      "code": "2147483648",
+      "where": [
+        {
+          "pos": "AMC"
+        },
+        {
+          "pos": "AMCR"
+        },
+        {
+          "pos": "AMCL"
+        }
+      ],
+      "instructions": {
+        "AMC": {
+          "allowed": [29, 30, 31, 32, 33, 34, 35],
+          "forced": []
+        },
+        "AMCR": {
+          "allowed": [29, 30, 31, 32, 33, 34, 35],
+          "forced": []
+        },
+        "AMCL": {
+          "allowed": [29, 30, 31, 32, 33, 34, 35],
+          "forced": []
+        }
+      }
+    },
+    "dm-ip": {
+      "code": "16",
+      "where": [
+        {
+          "pos": "DMC"
+        },
+        {
+          "pos": "DMR"
+        },
+        {
+          "pos": "DML"
+        }
+      ],
+      "instructions": {
+        "DMC": {
+          "allowed": [1, 2, 3, 4, 13, 18, 19, 22, 23],
+          "forced": [14]
+        },
+        "DMR": {
+          "allowed": [1, 2, 3, 4, 13, 18, 19, 22, 23, 25],
+          "forced": [14]
+        },
+        "DML": {
+          "allowed": [1, 2, 3, 4, 13, 18, 19, 22, 23, 25],
+          "forced": [14]
+        }
+      }
+    },
+    "wmf": {
+      "code": "34359738368",
+      "where": [
+        {
+          "pos": "MR"
+        },
+        {
+          "pos": "ML"
+        }
+      ],
+      "instructions": {
+        "MR": {
+          "allowed": [29, 30, 31, 32, 33, 34, 35],
+          "forced": []
+        },
+        "ML": {
+          "allowed": [29, 30, 31, 32, 33, 34, 35],
+          "forced": []
+        }
+      }
+    },
+    "wcm-oop": {
+      "code": "536870912",
+      "where": [
+        {
+          "pos": "MCR"
+        },
+        {
+          "pos": "MCL"
+        }
+      ],
+      "instructions": {
+        "MCR": {
+          "allowed": [29, 30, 31, 32, 33, 34, 35],
+          "forced": []
+        },
+        "MCL": {
+          "allowed": [29, 30, 31, 32, 33, 34, 35],
+          "forced": []
+        }
+      }
+    },
+    "sam": {
+      "code": "8589934592",
+      "where": [
+        {
+          "pos": "AMCR"
+        },
+        {
+          "pos": "AMCL"
+        }
+      ],
+      "instructions": {
+        "AMCR": {
+          "allowed": [29, 30, 31, 32, 33, 34, 35],
+          "forced": []
+        },
+        "AMCL": {
+          "allowed": [29, 30, 31, 32, 33, 34, 35],
+          "forced": []
+        }
+      }
+    },
+    "pdm": {
+      "code": "131072",
+      "where": [
+        {
+          "pos": "DMC",
+          "when": "two-dms"
+        },
+        {
+          "pos": "DMR",
+          "when": "two-dms"
+        },
+        {
+          "pos": "DML",
+          "when": "two-dms"
+        }
+      ],
+      "instructions": {
+        "DMC": {
+          "allowed": [31, 32, 33, 34, 35],
+          "forced": [29]
+        },
+        "DMR": {
+          "allowed": [31, 32, 33, 34, 35],
+          "forced": [29]
+        },
+        "DML": {
+          "allowed": [31, 32, 33, 34, 35],
+          "forced": [29]
+        }
+      }
+    },
+    "cb-ip": {
+      "code": "2",
+      "where": [
+        {
+          "pos": "DC"
+        },
+        {
+          "pos": "DCR"
+        },
+        {
+          "pos": "DCL"
+        }
+      ],
+      "instructions": {
+        "DC": {
+          "allowed": [1, 2, 3, 4, 13, 14, 18, 19, 23],
+          "forced": []
+        },
+        "DCR": {
+          "allowed": [1, 2, 3, 4, 13, 14, 18, 19, 23, 25],
+          "forced": []
+        },
+        "DCL": {
+          "allowed": [1, 2, 3, 4, 13, 14, 18, 19, 23, 25],
+          "forced": []
+        }
+      }
+    },
+    "acb": {
+      "code": "16384",
+      "where": [
+        {
+          "pos": "DC"
+        },
+        {
+          "pos": "DCR"
+        },
+        {
+          "pos": "DCL"
+        }
+      ],
+      "instructions": {
+        "DC": {
+          "allowed": [1, 2, 3, 4, 13, 14, 18, 19],
+          "forced": [23]
+        },
+        "DCR": {
+          "allowed": [1, 2, 3, 4, 13, 14, 18, 19, 25],
+          "forced": [23]
+        },
+        "DCL": {
+          "allowed": [1, 2, 3, 4, 13, 14, 18, 19, 25],
+          "forced": [23]
+        }
+      }
+    },
+    "fb-ip": {
+      "code": "4",
+      "where": [
+        {
+          "pos": "DR"
+        },
+        {
+          "pos": "DL"
+        }
+      ],
+      "instructions": {
+        "DR": {
+          "allowed": [1, 2, 3, 4, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 18, 19, 22, 23, 25, 26],
+          "forced": []
+        },
+        "DL": {
+          "allowed": [1, 2, 3, 4, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 18, 19, 22, 23, 25, 26],
+          "forced": []
+        }
+      }
+    },
+    "lhk": {
+      "code": "4",
+      "where": [
+        {
+          "pos": "GK"
+        }
+      ],
+      "instructions": {
+        "GK": {
+          "allowed": [31, 32],
+          "forced": []
+        }
+      }
+    },
+    "scm": {
+      "code": "268435456",
+      "where": [
+        {
+          "pos": "MC"
+        },
+        {
+          "pos": "MCR"
+        },
+        {
+          "pos": "MCL"
+        }
+      ],
+      "instructions": {
+        "MC": {
+          "allowed": [31, 32, 33, 34, 35],
+          "forced": [30]
+        },
+        "MCR": {
+          "allowed": [31, 32, 33, 34, 35],
+          "forced": [30]
+        },
+        "MCL": {
+          "allowed": [31, 32, 33, 34, 35],
+          "forced": [30]
+        }
+      }
+    },
+    "ocf": {
+      "code": "17592186044416",
+      "where": [
+        {
+          "pos": "ST"
+        },
+        {
+          "pos": "STR"
+        },
+        {
+          "pos": "STL"
+        }
+      ],
+      "instructions": {
+        "ST": {
+          "allowed": [29, 30, 31, 32, 33, 34, 35],
+          "forced": []
+        },
+        "STR": {
+          "allowed": [29, 30, 31, 32, 33, 34, 35],
+          "forced": []
+        },
+        "STL": {
+          "allowed": [29, 30, 31, 32, 33, 34, 35],
+          "forced": []
+        }
+      }
+    },
+    "wm": {
+      "code": "64",
+      "where": [
+        {
+          "pos": "MR"
+        },
+        {
+          "pos": "ML"
+        }
+      ],
+      "instructions": {
+        "MR": {
+          "allowed": [
+            1, 2, 3, 4, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 18, 19, 22, 23, 24, 25, 26, 41, 42
+          ],
+          "forced": []
+        },
+        "ML": {
+          "allowed": [
+            1, 2, 3, 4, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 18, 19, 22, 23, 24, 25, 26, 41, 42
+          ],
+          "forced": []
+        }
+      }
+    },
+    "chm": {
+      "code": "72057594037927936",
+      "where": [
+        {
+          "pos": "MC"
+        },
+        {
+          "pos": "MCR"
+        },
+        {
+          "pos": "MCL"
+        },
+        {
+          "pos": "AMC"
+        },
+        {
+          "pos": "AMCR"
+        },
+        {
+          "pos": "AMCL"
+        }
+      ],
+      "instructions": {
+        "MC": {
+          "allowed": [1, 2, 3, 4, 13, 14, 18, 19, 22, 23, 24, 41, 42],
+          "forced": [27]
+        },
+        "MCR": {
+          "allowed": [1, 2, 3, 4, 9, 10, 11, 12, 13, 14, 15, 18, 19, 22, 23, 24, 25, 41, 42],
+          "forced": [27]
+        },
+        "MCL": {
+          "allowed": [1, 2, 3, 4, 9, 10, 11, 12, 13, 14, 15, 18, 19, 22, 23, 24, 25, 41, 42],
+          "forced": [27]
+        },
+        "AMC": {
+          "allowed": [
+            1, 2, 3, 4, 9, 10, 11, 12, 13, 14, 17, 18, 19, 22, 23, 24, 36, 37, 38, 39, 40, 41, 42
+          ],
+          "forced": [27]
+        },
+        "AMCR": {
+          "allowed": [
+            1, 2, 3, 4, 9, 10, 11, 12, 13, 14, 15, 17, 18, 19, 22, 23, 24, 25, 36, 38, 41, 42
+          ],
+          "forced": [27]
+        },
+        "AMCL": {
+          "allowed": [
+            1, 2, 3, 4, 9, 10, 11, 12, 13, 14, 15, 17, 18, 19, 22, 23, 24, 25, 36, 37, 41, 42
+          ],
+          "forced": [27]
+        }
+      }
+    },
+    "sk": {
+      "code": "2",
+      "where": [
+        {
+          "pos": "GK"
+        }
+      ],
+      "instructions": {
+        "GK": {
+          "allowed": [31, 32],
+          "forced": []
+        }
+      }
+    },
+    "p": {
+      "code": "524288",
+      "where": [
+        {
+          "pos": "ST"
+        },
+        {
+          "pos": "STR"
+        },
+        {
+          "pos": "STL"
+        }
+      ],
+      "instructions": {
+        "ST": {
+          "allowed": [1, 2, 3, 4, 13, 14, 17, 18, 19, 23, 27, 36, 37, 38, 39, 40],
+          "forced": [41]
+        },
+        "STR": {
+          "allowed": [1, 2, 3, 4, 13, 14, 15, 17, 18, 19, 23, 25, 27, 36, 38],
+          "forced": [41]
+        },
+        "STL": {
+          "allowed": [1, 2, 3, 4, 13, 14, 15, 17, 18, 19, 23, 25, 27, 36, 37],
+          "forced": [41]
+        }
+      }
+    },
+    "tw": {
+      "code": "549755813888",
+      "where": [
+        {
+          "pos": "AMR"
+        },
+        {
+          "pos": "AML"
+        }
+      ],
+      "instructions": {
+        "AMR": {
+          "allowed": [29, 30, 31, 32, 33, 34, 35],
+          "forced": []
+        },
+        "AML": {
+          "allowed": [29, 30, 31, 32, 33, 34, 35],
+          "forced": []
+        }
+      }
+    },
+    "wfd": {
+      "code": "35184372088832",
+      "where": [
+        {
+          "pos": "AMR"
+        },
+        {
+          "pos": "AML"
+        }
+      ],
+      "instructions": {
+        "AMR": {
+          "allowed": [3, 4, 7, 8, 13, 14, 15, 16, 17, 18, 19, 24, 25, 26],
+          "forced": [1, 22, 41]
+        },
+        "AML": {
+          "allowed": [3, 4, 7, 8, 13, 14, 15, 16, 17, 18, 19, 24, 25, 26],
+          "forced": [1, 22, 41]
+        }
+      }
+    }
+  }
+}

@@ -45,7 +45,7 @@ def _plain(v):
 
 
 # Raised whenever extract() returns new data, so the app can spot an outdated copy
-READER_VERSION = 13
+READER_VERSION = 14
 
 JOB_SCOUT, JOB_CHIEF_SCOUT = 14, 44
 _FF8 = b"\xff" * 8
@@ -343,17 +343,40 @@ def _competitions(save, club_uid, club_name):
     }
 
 
-# Tactic position bits (fmsave names 11 of them). Bit 10 carries no name in fmsave; in the
-# user's tactic it is the pair between DM and the AMs, flagged as left/right halves: M (C)
-# (confirmed by the user on FM's tactic screen: CM and WCM).
+# Tactic position bits (fmsave names 11 of them; 5 and 6 are the wing-backs, 10 is M (C)).
+# The app decodes the whole stored number (with its left/right flags) from Settings > FM codes.
 _TACTIC_POSITION = {
-    0: "GK", 2: "DR", 3: "DL", 4: "DC", 7: "DM", 8: "MR", 9: "ML", 10: "MC",
+    0: "GK", 2: "DR", 3: "DL", 4: "DC", 5: "WBR", 6: "WBL", 7: "DM", 8: "MR", 9: "ML", 10: "MC",
     11: "AMR", 12: "AML", 13: "AMC", 14: "ST",
 }
 
 
+def _slot_codes(role_bits, trail_bits, settings):
+    """A slot block's role number, player instruction bits and marked position.
+
+    fmsave slices the block as: first key (8 bytes), units of 24 bytes, trail (4 bytes). FM
+    writes it as: count, then per entry a role key (8 bytes) followed by its player
+    instructions (02 02 02, 8-byte bits, FF, 4-byte marked position), then 4 zero bytes and
+    the active role number (8 bytes). So a unit's head byte and first field are an entry's
+    instruction bits, its second field holds the marked position and the next entry's key; the
+    last unit's top word and the trail hold the active role number. The entry whose key is
+    the active role carries the instructions in use.
+    """
+    if not settings:
+        role = ((role_bits or 0) >> 32) | ((trail_bits or 0) << 32)
+        return str(role), None, None
+    last = settings[-1]
+    role = last.second_bits_high | ((trail_bits or 0) << 32)
+    keys = [role_bits or 0] + [u.second_bits_middle | (u.second_bits_high << 32) for u in settings[:-1]]
+    mask = 0xFFFFFFFBF91FFFFF
+    pick = next((i for i, k in enumerate(keys) if k & mask == role & mask), len(settings) - 1)
+    unit = settings[pick]
+    bits = unit.head_byte | (unit.first_bits << 8)
+    return str(role), str(bits), unit.second_bits_low
+
+
 def _tactics(save, club_uid):
-    """The first team's tactics (formation, style, mentality) and current selection."""
+    """The first team's tactics (formation, style, mentality, roles, instructions) and selection."""
     players = {p.uid: p.unique_id for p in save.players() if p.club_uid == club_uid}
     out = []
     for t in save.tactics():
@@ -364,28 +387,24 @@ def _tactics(save, club_uid):
             raw = [_raw(x) for x in s.in_possession_positions]
             raw_oop = [_raw(x) for x in s.out_of_possession_positions]
             u = s.unknown or {}
-
-            def role(prefix, settings):
-                # Role code plus its settings: one tactic is not enough to decode FM27's roles,
-                # so the app matches this signature against roles the user confirmed
-                return {
-                    "bits": u.get(prefix + "_role_bits"),
-                    "trail": u.get(prefix + "_trail_bits"),
-                    "settings": [
-                        [x.head_byte, x.first_bits, x.second_bits_low, x.second_bits_middle, x.second_bits_high]
-                        for x in settings
-                    ],
-                }
-
+            role, pi, _ = _slot_codes(u.get("in_possession_role_bits"), u.get("in_possession_trail_bits"),
+                                      s.in_possession_settings)
+            role_oop, pi_oop, mark_oop = _slot_codes(u.get("out_of_possession_role_bits"),
+                                                     u.get("out_of_possession_trail_bits"),
+                                                     s.out_of_possession_settings)
             slots.append({
-                "ipRole": role("in_possession", s.in_possession_settings),
-                "oopRole": role("out_of_possession", s.out_of_possession_settings),
                 "number": s.number,
                 "position": _TACTIC_POSITION.get(raw[0]) if raw else None,
                 "positionOop": _TACTIC_POSITION.get(raw_oop[0]) if raw_oop else None,
-                "rawPosition": raw[0] if raw else None,
+                "mask": s.in_possession_mask,
+                "maskOop": s.out_of_possession_mask,
+                "role": role,
+                "roleOop": role_oop,
+                "pi": pi,
+                "piOop": pi_oop,
+                "markOop": mark_oop,
             })
-        out.append({
+    out.append({
             "index": t.index,
             "name": t.name,
             "style": t.style_name,

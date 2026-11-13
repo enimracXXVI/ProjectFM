@@ -14,6 +14,7 @@ import {
 import { ATTRIBUTE_GROUPS } from '../../import/fields'
 import { useConfig } from '../../lib/config'
 import { useSaveConfig } from '../../lib/useSaveConfig'
+import { CONDITION_TEXT, type RoleCondition, type RoleFm } from '../../tactics/fm'
 
 const input =
   'min-h-11 w-full rounded-lg border border-border bg-surface-2 px-3 text-base md:text-sm'
@@ -253,6 +254,8 @@ export function RolesSettings() {
                     </div>
                   </div>
 
+                  <RoleFmEditor role={r} onChange={(fm) => update(r.id, { fm })} />
+
                   <div>
                     <p className="mb-1 text-xs text-muted">
                       Attributes ({r.key.length} key, {r.preferred.length} preferred)
@@ -297,5 +300,174 @@ export function RolesSettings() {
         <Plus className="size-4" aria-hidden /> Add role
       </button>
     </SettingsShell>
+  )
+}
+
+type Rule = 'no' | 'yes' | 'forced'
+
+/**
+ * FM's codes for a role: the number the save stores, where FM offers the role (with any shape
+ * condition), and which player instructions it has at each of those positions.
+ */
+function RoleFmEditor({ role, onChange }: { role: RoleDef; onChange: (fm: RoleFm) => void }) {
+  const config = useConfig()
+  const fm = role.fm ?? {}
+  const where = fm.where ?? []
+  const [open, setOpen] = useState<string | null>(null)
+  const defs = config.playerInstructions.filter((d) => d.phase === role.phase)
+  const ruleOf = (pos: string, code: number): Rule => {
+    const r = fm.instructions?.[pos]
+    return r?.forced.includes(code) ? 'forced' : r?.allowed.includes(code) ? 'yes' : 'no'
+  }
+  // Tap cycles: not offered → offered → forced by the role → not offered
+  const cycle = (pos: string, code: number) => {
+    const r = fm.instructions?.[pos] ?? { allowed: [], forced: [] }
+    const now = ruleOf(pos, code)
+    const allowed = r.allowed.filter((c) => c !== code)
+    const forced = r.forced.filter((c) => c !== code)
+    if (now === 'no') allowed.push(code)
+    if (now === 'yes') forced.push(code)
+    onChange({
+      ...fm,
+      instructions: {
+        ...fm.instructions,
+        [pos]: { allowed: allowed.sort((a, b) => a - b), forced: forced.sort((a, b) => a - b) },
+      },
+    })
+  }
+  return (
+    <details className="rounded-lg border border-border">
+      <summary className="flex min-h-11 cursor-pointer items-center px-3 text-sm font-semibold">
+        FM codes and player instructions
+      </summary>
+      <div className="grid gap-3 border-t border-border p-3">
+        <label className="grid gap-1 text-xs text-muted">
+          Number the save and tactic files store for the role
+          <input
+            value={fm.code ?? ''}
+            inputMode="numeric"
+            onChange={(e) =>
+              onChange({ ...fm, code: e.target.value.replace(/\D/g, '') || undefined })
+            }
+            className={`${input} tabular-nums`}
+          />
+        </label>
+        <div>
+          <p className="mb-1 text-xs text-muted">
+            Where FM offers the role (FM positions; left, centre and right of a pair or trio count
+            separately). With none, the positions above are used.
+          </p>
+          <ul className="grid gap-1">
+            {where.map((w, i) => (
+              <li key={i} className="flex flex-wrap items-center gap-1">
+                <select
+                  aria-label="FM position"
+                  value={w.pos}
+                  onChange={(e) =>
+                    onChange({
+                      ...fm,
+                      where: where.map((x, j) => (j === i ? { ...x, pos: e.target.value } : x)),
+                    })
+                  }
+                  className={`${input} w-28`}
+                >
+                  {config.fmCodes.positions.map((p) => (
+                    <option key={p.id}>{p.id}</option>
+                  ))}
+                </select>
+                <select
+                  aria-label={`When at ${w.pos}`}
+                  value={w.when ?? ''}
+                  onChange={(e) =>
+                    onChange({
+                      ...fm,
+                      where: where.map((x, j) =>
+                        j === i
+                          ? { ...x, when: (e.target.value || undefined) as RoleCondition }
+                          : x,
+                      ),
+                    })
+                  }
+                  className={`${input} min-w-0 flex-1`}
+                >
+                  <option value="">always</option>
+                  {(Object.keys(CONDITION_TEXT) as RoleCondition[]).map((c) => (
+                    <option key={c} value={c}>
+                      {CONDITION_TEXT[c]}
+                    </option>
+                  ))}
+                </select>
+                <button
+                  type="button"
+                  onClick={() => setOpen(open === w.pos ? null : w.pos)}
+                  className="min-h-11 rounded-lg border border-border px-3 text-sm"
+                  aria-expanded={open === w.pos}
+                >
+                  Instructions
+                </button>
+                <button
+                  type="button"
+                  aria-label={`Remove ${w.pos}`}
+                  onClick={() => onChange({ ...fm, where: where.filter((_, j) => j !== i) })}
+                  className="grid size-11 place-items-center rounded-lg text-muted hover:bg-surface-2 hover:text-red-400"
+                >
+                  <Trash2 className="size-4" aria-hidden />
+                </button>
+                {open === w.pos && (
+                  <div className="mt-1 grid w-full gap-2 rounded-lg bg-surface-2/50 p-2">
+                    <p className="text-xs text-muted">
+                      Tap an option: <span className="text-text">not offered</span> →{' '}
+                      <span className="text-accent">offered</span> →{' '}
+                      <span className="text-sky-300">always on for this role</span>.
+                    </p>
+                    {defs.map((d) => (
+                      <div key={d.name}>
+                        <p className="mb-1 text-xs text-muted">{d.name}</p>
+                        <div className="flex flex-wrap gap-1">
+                          {d.options
+                            .filter((o) => o.code)
+                            .map((o) => {
+                              const rule = ruleOf(w.pos, o.code)
+                              return (
+                                <button
+                                  key={o.code}
+                                  type="button"
+                                  aria-label={`${o.label}: ${rule}`}
+                                  onClick={() => cycle(w.pos, o.code)}
+                                  className={clsx(
+                                    'min-h-9 rounded-full border px-3 text-sm',
+                                    rule === 'yes' && 'border-accent bg-accent/15 text-accent',
+                                    rule === 'forced' &&
+                                      'border-sky-400 bg-sky-400/15 text-sky-300',
+                                    rule === 'no' && 'border-border text-muted',
+                                  )}
+                                >
+                                  {o.label}
+                                </button>
+                              )
+                            })}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </li>
+            ))}
+          </ul>
+          <button
+            type="button"
+            onClick={() =>
+              onChange({
+                ...fm,
+                where: [...where, { pos: config.fmCodes.positions[0]?.id ?? 'GK' }],
+              })
+            }
+            className="mt-2 inline-flex min-h-11 items-center gap-1 text-sm font-semibold text-accent"
+          >
+            <Plus className="size-4" aria-hidden /> Add position
+          </button>
+        </div>
+      </div>
+    </details>
   )
 }

@@ -10,7 +10,7 @@ import type { CompetitionInfo } from '../competitions/types'
 import { DEFAULT_VIEWS, type ExtraView, type ExtraViewKey } from './columns'
 import { DEFAULT_ROLE_WEIGHTS, type RoleWeights } from '../lib/roleFit'
 import { DEFAULT_REGIONS, type Region } from './regions'
-import { DEFAULT_ROLES, type RoleDef } from './roles'
+import { DEFAULT_ROLES, withFmCodes, type RoleDef } from './roles'
 import {
   DEFAULT_KNOWLEDGE_LEVELS,
   DEFAULT_STAFF_SCALE,
@@ -23,7 +23,14 @@ import {
 import { DEFAULT_PERSONALITY_RULES, type PersonalityRule } from '../lib/personality'
 import { DEFAULT_FOOT_MINS, DEFAULT_FOOT_WORDS } from '../import/dump'
 import { DEFAULT_JOB_GROUPS, DEFAULT_STAFF_SHORT, type StaffGroup } from './staffJobs'
-import { DEFAULT_INSTRUCTIONS, type InstructionDef } from '../tactics/instructionList'
+import {
+  DEFAULT_FM_CODES,
+  DEFAULT_PLAYER_INSTRUCTIONS,
+  DEFAULT_TEAM_INSTRUCTIONS,
+  isInstructionList,
+  type FmCodes,
+  type FmInstruction,
+} from '../tactics/fm'
 import { DEFAULT_NOTE_CATEGORIES, type NoteCategory } from './notes'
 import { DEFAULT_STATUSES, normalizeStatus, type StatusInfo } from './statusInfo'
 
@@ -66,8 +73,12 @@ export interface AppConfig {
   footWords: string[]
   /** Lowest 1–20 value of each foot word (same order as footWords). */
   footMins: number[]
-  /** FM's team instructions and their options, by phase. */
-  teamInstructions: InstructionDef[]
+  /** FM's team instructions, their options and the code FM stores for each. */
+  teamInstructions: FmInstruction[]
+  /** FM's player instructions, their options and codes. */
+  playerInstructions: FmInstruction[]
+  /** FM's codes for mentalities and positions (save and tactic files). */
+  fmCodes: FmCodes
   /** Best XI: the match rating a player must beat to add to his score. */
   bestXiBaseline: number
   /** Categories for Dashboard notes, in order. */
@@ -81,10 +92,6 @@ export interface Learned {
   rounds?: Record<string, string>
   /** Staff job titles by the save's job code. */
   jobs?: Record<string, string>
-  /** Tactic role ids by the save's role signature. */
-  roles?: Record<string, string>
-  /** Team instruction words by the save's instruction codes. */
-  instructions?: Record<string, { ip?: [string, string][]; oop?: [string, string][] }>
 }
 
 export type ConfigKey = keyof AppConfig
@@ -119,7 +126,9 @@ export const DEFAULT_CONFIG: AppConfig = {
   personalityRules: DEFAULT_PERSONALITY_RULES,
   footWords: DEFAULT_FOOT_WORDS,
   footMins: DEFAULT_FOOT_MINS,
-  teamInstructions: DEFAULT_INSTRUCTIONS,
+  teamInstructions: DEFAULT_TEAM_INSTRUCTIONS,
+  playerInstructions: DEFAULT_PLAYER_INSTRUCTIONS,
+  fmCodes: DEFAULT_FM_CODES,
   bestXiBaseline: 6,
   noteCategories: DEFAULT_NOTE_CATEGORIES,
 }
@@ -152,7 +161,7 @@ export function mergeConfig(stored: Stored): AppConfig {
     staffGroups: { ...DEFAULT_CONFIG.staffGroups, ...stored.staffGroups },
     staffShort: { ...DEFAULT_CONFIG.staffShort, ...stored.staffShort },
     knowledgeLevels: withOutstanding(stored.knowledgeLevels) ?? DEFAULT_CONFIG.knowledgeLevels,
-    roles: stored.roles ?? DEFAULT_CONFIG.roles,
+    roles: stored.roles ? withFmCodes(stored.roles) : DEFAULT_CONFIG.roles,
     roleWeights: { ...DEFAULT_CONFIG.roleWeights, ...stored.roleWeights },
     showHidden: stored.showHidden ?? DEFAULT_CONFIG.showHidden,
     learned: { ...DEFAULT_CONFIG.learned, ...stored.learned },
@@ -161,7 +170,14 @@ export function mergeConfig(stored: Stored): AppConfig {
     personalityRules: stored.personalityRules ?? DEFAULT_CONFIG.personalityRules,
     footWords: stored.footWords ?? DEFAULT_CONFIG.footWords,
     footMins: stored.footMins ?? DEFAULT_CONFIG.footMins,
-    teamInstructions: stored.teamInstructions ?? DEFAULT_CONFIG.teamInstructions,
+    // Lists saved before instructions had codes are replaced by FM's full list
+    teamInstructions: isInstructionList(stored.teamInstructions)
+      ? stored.teamInstructions
+      : DEFAULT_CONFIG.teamInstructions,
+    playerInstructions: isInstructionList(stored.playerInstructions)
+      ? stored.playerInstructions
+      : DEFAULT_CONFIG.playerInstructions,
+    fmCodes: { ...DEFAULT_CONFIG.fmCodes, ...stored.fmCodes },
     bestXiBaseline: stored.bestXiBaseline ?? DEFAULT_CONFIG.bestXiBaseline,
     noteCategories: stored.noteCategories ?? DEFAULT_CONFIG.noteCategories,
   }

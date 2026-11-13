@@ -64,3 +64,25 @@ home/away and half splits, set pieces, facilities, transfer windows.
 · u32` (pairs like 17-19, 17-17, 18-18; `ff ff` = unknown), including every Fiorentina player.
   Likely the club's star estimates (value / 4 = stars, 20 = 5 stars) of ability and potential; the
   u32s either side look like values. To confirm against FM's screens.
+
+## Tactics (`tactics_man`) and FM tactic files (.fmf)
+
+Decoded from the user's own FM Tactic Generator (its role and instruction list is kept in
+`docs/fm27-tactic-catalog.json`; the app's editable defaults are `src/tactics/fm-defaults.json`).
+
+- **Team instructions:** fmsave's 19 `team_instruction_*` bytes. Byte 2 is the mentality
+  (1 = Very Defensive … 7 = Very Attacking). Bytes 6–17 are a 96-bit field: each option is
+  one bit (its code); an instruction with no bit set is on its standard option.
+- **Slot block** (per slot, in and out of possession): `44 00 02`, position (u32: position bit
+  plus bit 20 = left / bit 21 = right of a pair or trio), `00 01 01`, entry count (u32), then
+  per entry a role key (u64) and its player instructions (`02 02 02`, u64 bits, `FF`, u32
+  marked position), then u32 0 and the active role number (u64). The out-of-possession block
+  ends with an index byte pairing it with an in-possession block.
+- **Role:** the active role number with FM's flag bits removed (mask `0xFFFFFFFBF91FFFFF`).
+  The entry whose key is that role carries the player instructions in use.
+- fmsave slices the same bytes as: first key (8), 24-byte units (head byte + 7-byte field =
+  the entry's instruction bits; 12-byte field = marked position + next key), trail (4) — see
+  `_slot_codes` in `public/fmsave/extract.py`.
+- **.fmf:** archive header `02 01 fmf. 08 00 00`, the tactic (`.tac`) and details (`.aom`)
+  members as Zstandard frames, and a directory frame at the end. Written by
+  `src/tactics/fmf.ts`; raw (uncompressed) Zstandard blocks are enough.

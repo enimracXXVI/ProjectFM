@@ -79,11 +79,25 @@ export function SettingsPage() {
               ['/settings/attributes', 'Attributes', 'Names, short headers and descriptions'],
               ['/settings/layout', 'Layout', 'Grouping and order of attributes'],
               ['/settings/columns', 'Contract & Stats', 'Columns, order, names and tooltips'],
-              ['/settings/roles', 'Roles', 'FM27 roles, positions, key and preferred attributes'],
+              [
+                '/settings/roles',
+                'Roles',
+                'Roles, positions, attributes, FM codes and instructions',
+              ],
               [
                 '/settings/instructions',
                 'Team instructions',
-                'Every instruction and the options you can pick in FM',
+                'Every instruction, its options and the codes FM stores',
+              ],
+              [
+                '/settings/player-instructions',
+                'Player instructions',
+                'Every player instruction, its options and codes',
+              ],
+              [
+                '/settings/fm-codes',
+                'FM codes',
+                'Mentalities, positions and role numbers in saves and tactic files',
               ],
               [
                 '/settings/role-weights',

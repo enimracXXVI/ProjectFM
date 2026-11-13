@@ -7,11 +7,14 @@ import type { PlayerRow } from '../data/db'
 import type { RoleDef } from '../data/roles'
 import { parsePositions, roleScore, type RoleWeights } from '../lib/roleFit'
 import { POSITION_TEXT } from './positions'
+import { fmPositions, rolesAt, shapeOf, type FmCodes } from './fm'
 import type { PositionCode, TacticSlot } from './types'
 
 export interface FitContext {
   roles: RoleDef[]
   weights: RoleWeights
+  /** With FM's codes, role suggestions keep to the roles FM offers at each position. */
+  fmCodes?: FmCodes
 }
 
 const roleById = (ctx: FitContext, id: string | null | undefined) =>
@@ -163,14 +166,18 @@ export function suggestions(
   margin = 5,
 ): Suggestion[] {
   const out: Suggestion[] = []
+  const at = ctx.fmCodes ? fmPositions(slots, 'ip', ctx.fmCodes) : null
+  const shape = shapeOf(slots, 'ip')
   slots.forEach((s, i) => {
     const player = squad.find((p) => p.id === s.player)
     const current = player ? slotScore(player, s, ctx) : null
     // Better in-possession role for the same player at the same position
     if (player && s.position) {
-      const options = ctx.roles.filter(
-        (r) => r.phase === 'ip' && r.positions.includes(POSITION_TEXT[s.position!]),
-      )
+      const options = at
+        ? rolesAt(ctx.roles, 'ip', at[i], shape, (p) => POSITION_TEXT[p])
+        : ctx.roles.filter(
+            (r) => r.phase === 'ip' && r.positions.includes(POSITION_TEXT[s.position!]),
+          )
       let best: { r: RoleDef; score: number } | null = null
       for (const r of options) {
         const sc = slotScore(player, { ...s, role: r.id }, ctx)

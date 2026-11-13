@@ -1,4 +1,4 @@
-import type { SaveRole } from './saveRoles'
+import type { Side } from './fm'
 
 /** FM position codes used for tactic slots. */
 export type PositionCode =
@@ -26,9 +26,17 @@ export interface TacticSlot {
   role?: string | null
   /** Out-of-possession role id. */
   roleOop?: string | null
-  /** Role signatures from the save (to remember roles the user sets). */
-  ipSig?: string | null
-  oopSig?: string | null
+  /** Side of a paired position (two or three DCs, DMs…) as the save stores it. */
+  side?: Side | null
+  sideOop?: Side | null
+  /** Player instruction codes in possession and out of possession. */
+  pi?: number[]
+  piOop?: number[]
+  /** FM position (id) to mark, for "Mark specific position". */
+  markOop?: string | null
+  /** Role numbers from the save that match no role in Settings (to check in game). */
+  unknownRole?: string | null
+  unknownRoleOop?: string | null
   /** Preferred player (ProjectFM player id). */
   player?: string | null
 }
@@ -40,6 +48,7 @@ export interface TacticRow {
   style: string | null
   mentality: string | null
   slots: TacticSlot[]
+  /** Team instructions: { team: option codes } (older tactics: words by phase). */
   instructions: Record<string, unknown>
   notes: string | null
   save_index: number | null
@@ -67,14 +76,21 @@ export interface SaveTactics {
     name: string
     style: string | null
     mentality: string | null
+    /** The save's 19 team instruction bytes (mentality is byte 2, the instructions 6–17). */
     instructionCodes?: number[]
     slots: {
       number: number
       position: PositionCode | null
       positionOop: PositionCode | null
-      rawPosition: number | null
-      ipRole?: SaveRole
-      oopRole?: SaveRole
+      /** Stored position numbers (with the side flags). */
+      mask?: number | null
+      maskOop?: number | null
+      /** Stored role numbers and player instruction bits (64-bit, as text). */
+      role?: string | null
+      roleOop?: string | null
+      pi?: string | null
+      piOop?: string | null
+      markOop?: number | null
     }[]
   }[]
   selection: { slot: number; substitute: boolean; uniqueId: number | null; name: string | null }[]

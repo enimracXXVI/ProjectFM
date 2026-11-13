@@ -87,4 +87,14 @@ describe('App', () => {
     renderAt('/nope')
     expect(await screen.findByRole('heading', { name: 'Page not found' })).toBeInTheDocument()
   })
+
+  it.each([
+    ['/settings/instructions', 'Team instructions', 'Tempo'],
+    ['/settings/player-instructions', 'Player instructions', 'Dribbling frequency'],
+    ['/settings/fm-codes', 'FM codes', 'Mentalities'],
+  ])('shows the %s settings', async (path, title, item) => {
+    renderAt(path)
+    expect(await screen.findByRole('heading', { level: 1, name: title })).toBeInTheDocument()
+    expect(screen.getAllByText(item).length).toBeGreaterThan(0)
+  })
 })

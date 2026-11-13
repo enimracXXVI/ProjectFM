@@ -8,6 +8,8 @@
  * Everything here can be changed in the app under Settings → Roles.
  */
 
+import { DEFAULT_ROLE_FM, type RoleFm } from '../tactics/fm'
+
 export type RolePhase = 'ip' | 'oop'
 
 export interface RoleDef {
@@ -21,9 +23,11 @@ export interface RoleDef {
   positions: string[]
   key: string[]
   preferred: string[]
+  /** FM's codes for the role: save number, where FM offers it, its player instructions. */
+  fm?: RoleFm
 }
 
-export const DEFAULT_ROLES: RoleDef[] = [
+const BASE_ROLES: RoleDef[] = [
   {
     id: 'bgk',
     name: 'Ball-Playing Goalkeeper',
@@ -1548,6 +1552,19 @@ export const DEFAULT_ROLES: RoleDef[] = [
     preferred: ['Marking', 'Off The Ball', 'Positioning'],
   },
 ]
+
+/** The default roles, each with FM's codes for it. */
+export const DEFAULT_ROLES: RoleDef[] = BASE_ROLES.map((r) => ({ ...r, fm: DEFAULT_ROLE_FM[r.id] }))
+
+/**
+ * The user's roles with FM's codes filled in where a role has none yet (roles saved before
+ * the codes existed, or new defaults).
+ */
+export function withFmCodes(roles: RoleDef[]): RoleDef[] {
+  return roles.map((r) =>
+    r.fm || !DEFAULT_ROLE_FM[r.id] ? r : { ...r, fm: DEFAULT_ROLE_FM[r.id] },
+  )
+}
 
 /** Short names confirmed on the user's FM27 tactic screen. */
 export const CONFIRMED_SHORT = new Set([

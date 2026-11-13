@@ -108,7 +108,7 @@ export function Check() {
       {checks.tactics.length > 0 && (
         <Section
           title="Tactics"
-          hint="Roles or instructions read from the save that the app does not recognise yet. Set them once on the Tactics page (from your FM tactic screen) and they are remembered."
+          hint="Role numbers in the save that no role in Settings > Roles has (a game update can change them). Open the tactic in FM, see which role it is, and enter the number as that role's save code in Settings > Roles."
         >
           {checks.tactics.map((t) => (
             <li
@@ -118,10 +118,7 @@ export function Check() {
               <Link to="/tactics" className="font-semibold underline">
                 {t.name}
               </Link>
-              {t.missingRoles > 0 && <span> · {t.missingRoles} positions without a role</span>}
-              {t.instructionsChanged && (
-                <span> · instructions not known yet: set them once on the Tactics page</span>
-              )}
+              <span> · unknown role numbers: {t.codes.join(', ')}</span>
             </li>
           ))}
         </Section>

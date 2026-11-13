@@ -22,7 +22,7 @@ import {
 export type StatsKind = 'overall' | 'league' | 'cup' | 'non_competitive'
 
 /** Version of public/fmsave/extract.py this app expects. */
-export const READER_VERSION = 13
+export const READER_VERSION = 14
 
 export interface SaveData {
   /** Version of the save reader that produced this (absent before version 3). */

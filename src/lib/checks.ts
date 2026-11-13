@@ -30,9 +30,8 @@ export interface UnknownRound {
 
 export interface TacticCheck {
   name: string
-  /** Positions whose role from the save is not recognised yet. */
-  missingRoles: number
-  instructionsChanged: boolean
+  /** Role numbers from the save that match no role in Settings > Roles. */
+  codes: string[]
 }
 
 export interface UnknownJob {
@@ -113,10 +112,12 @@ export function findChecks(
     .filter((t) => t.save_index !== null)
     .map((t) => ({
       name: t.name,
-      missingRoles: t.slots.filter((s) => (s.ipSig && !s.role) || (s.oopSig && !s.roleOop)).length,
-      instructionsChanged: !!(t.instructions as { changed?: boolean }).changed,
+      // Role numbers from the save that no role in Settings > Roles has
+      codes: [
+        ...new Set(t.slots.flatMap((s) => [s.unknownRole, s.unknownRoleOop]).filter(Boolean)),
+      ] as string[],
     }))
-    .filter((t) => t.missingRoles > 0 || t.instructionsChanged)
+    .filter((t) => t.codes.length > 0)
   const jobMap = new Map<number, string[]>()
   for (const s of staff)
     if (s.job_code != null && s.role === `Job ${s.job_code}`)

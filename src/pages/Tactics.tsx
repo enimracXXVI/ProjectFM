@@ -1,14 +1,13 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { clsx } from 'clsx'
-import { Lock, LockOpen, Plus, Redo2, Trash2, Undo2, Wand2 } from 'lucide-react'
+import { Download, Lock, LockOpen, Plus, Redo2, Trash2, Undo2, Wand2 } from 'lucide-react'
 import { useState } from 'react'
 import { TEXT, useUrlState } from '../lib/urlState'
 import { useConfirm } from '../components/confirm'
 import { DbUpdateNotice } from '../components/DbUpdateNotice'
 import { Button, ErrorText } from '../components/form'
 import { Card, PageHeader, Placeholder } from '../components/ui'
-import { deleteTactic, isMissingTable, rememberTactic, saveTactic } from '../data/api'
-import type { Instructions } from '../tactics/saveRoles'
+import { deleteTactic, isMissingTable, saveTactic } from '../data/api'
 import type { PlayerRow } from '../data/db'
 import { usePlayers, useTactics } from '../data/hooks'
 import { roleShort, type RoleDef } from '../data/roles'
@@ -25,6 +24,23 @@ import {
   pitchPlaces,
 } from '../tactics/positions'
 import type { PositionCode, TacticRow, TacticSlot } from '../tactics/types'
+import {
+  choose,
+  chosen,
+  conflictsIn,
+  defaultTeamCodes,
+  fmPositions,
+  playerChoices,
+  posOf,
+  roleIdOf,
+  rolesAt,
+  shapeOf,
+  slotSides,
+  sideOf,
+  teamCodes,
+  type FmPosition,
+} from '../tactics/fm'
+import { exportProblems, fileTitle, tacticFile } from '../tactics/fmf'
 import { byLastName, shortName } from '../lib/names'
 
 const field = 'min-h-11 rounded-lg border border-border bg-surface-2 px-3 text-base md:text-sm'
@@ -34,11 +50,14 @@ export function Tactics() {
   const { data: tactics, error, isPending } = useTactics(career.id)
   const [selected, setSelected] = useUrlState<string | null>('tactic', null)
   const qc = useQueryClient()
+  const config = useConfig()
   const create = useMutation({
     mutationFn: () =>
       saveTactic(career.id, null, {
         name: 'New tactic',
+        mentality: config.fmCodes.mentalities[3] ?? null,
         slots: FORMATIONS['4-3-3'].map((position) => ({ position })),
+        instructions: { team: defaultTeamCodes(config.teamInstructions) },
       }),
     onSuccess: (t) => {
       qc.invalidateQueries({ queryKey: ['tactics'] })
@@ -128,30 +147,33 @@ function TacticEditor({ tactic }: { tactic: TacticRow }) {
   const [phase, setPhase] = useUrlState<Phase>('phase', 'ip', TEXT as never)
   const dirty = JSON.stringify(form) !== JSON.stringify(tactic)
   const done = () => qc.invalidateQueries({ queryKey: ['tactics'] })
-  const instructions = (form.instructions ?? {}) as Instructions
-  const setInstructions = (patch: Partial<Instructions>) =>
-    setForm({
-      ...form,
-      instructions: { ...instructions, ...patch, changed: false } as Record<string, unknown>,
-    })
+  const team = teamCodes(form.instructions, config.teamInstructions)
+  const setTeam = (codes: number[]) =>
+    setForm({ ...form, instructions: { ...form.instructions, team: codes } })
   const save = useMutation({
-    mutationFn: async () => {
-      await saveTactic(career.id, tactic.id, {
+    mutationFn: () =>
+      saveTactic(career.id, tactic.id, {
         name: form.name,
         style: form.style,
         mentality: form.mentality,
         slots: form.slots,
-        instructions: form.instructions,
+        instructions: { team },
         notes: form.notes,
-      })
-      // Roles and instruction words set on a save tactic are learned for later imports
-      if (tactic.save_index !== null) await rememberTactic(form.slots, instructions)
-    },
-    onSuccess: () => {
-      done()
-      qc.invalidateQueries({ queryKey: ['settings'] })
-    },
+      }),
+    onSuccess: done,
   })
+  const problems = exportProblems({ ...form, instructions: { team } }, config)
+  const download = () => {
+    const bytes = tacticFile({ ...form, instructions: { team } }, config)
+    const url = URL.createObjectURL(
+      new Blob([bytes.buffer as ArrayBuffer], { type: 'application/octet-stream' }),
+    )
+    const a = document.createElement('a')
+    a.href = url
+    a.download = `${fileTitle(form.name)}.fmf`
+    a.click()
+    setTimeout(() => URL.revokeObjectURL(url), 1000)
+  }
   const remove = useMutation({ mutationFn: () => deleteTactic(tactic.id), onSuccess: done })
 
   const setSlot = (i: number, patch: Partial<TacticSlot>) =>
@@ -166,13 +188,19 @@ function TacticEditor({ tactic }: { tactic: TacticRow }) {
   const roleOf = (s: TacticSlot) => config.roles.find((r) => r.id === roleIdOf(s, phase)) ?? null
   const playerOf = (s: TacticSlot) => squad.find((p) => p.id === s.player) ?? null
   const positions = form.slots.map((s) => posOf(s, phase))
-  const places = pitchPlaces(positions)
+  const sides = slotSides(
+    positions,
+    form.slots.map((s) => sideOf(s, phase)),
+  )
+  const places = pitchPlaces(positions, sides)
+  const atFm = fmPositions(form.slots, phase, config.fmCodes)
+  const shape = shapeOf(form.slots, phase)
   const formation =
     Object.keys(FORMATIONS).find(
       (k) => JSON.stringify(FORMATIONS[k]) === JSON.stringify(positions),
     ) ?? ''
-  const rolesFor = (pos: PositionCode | null) =>
-    pos ? config.roles.filter((r) => r.positions.includes(POSITION_TEXT[pos])) : []
+  const rolesFor = (i: number) =>
+    rolesAt(config.roles, phase, atFm[i], shape, (p) => POSITION_TEXT[p])
   const used = new Set(form.slots.map((s) => s.player).filter(Boolean))
 
   return (
@@ -230,7 +258,7 @@ function TacticEditor({ tactic }: { tactic: TacticRow }) {
                 )}
               >
                 <span className="block text-[10px] text-muted">
-                  {positions[i] ?? '?'}
+                  {atFm[i]?.id ?? positions[i] ?? '?'}
                   {score !== null && (
                     <span className={clsx('ml-1 font-semibold', scoreTextColor(score))}>
                       {score}
@@ -274,7 +302,8 @@ function TacticEditor({ tactic }: { tactic: TacticRow }) {
           <SlotPanel
             slot={form.slots[active]}
             phase={phase}
-            roles={rolesFor(posOf(form.slots[active], phase)).filter((r) => r.phase === phase)}
+            roles={rolesFor(active)}
+            fmPosition={atFm[active]}
             squad={squad}
             used={used}
             onChange={(patch) => setSlot(active, patch)}
@@ -307,11 +336,19 @@ function TacticEditor({ tactic }: { tactic: TacticRow }) {
             </label>
             <label className="grid gap-1 text-sm">
               <span className="text-muted">Mentality</span>
-              <input
+              <select
                 value={form.mentality ?? ''}
-                onChange={(e) => setForm({ ...form, mentality: e.target.value })}
+                onChange={(e) => setForm({ ...form, mentality: e.target.value || null })}
                 className={field}
-              />
+              >
+                <option value="">Pick a mentality…</option>
+                {form.mentality && !config.fmCodes.mentalities.includes(form.mentality) && (
+                  <option value={form.mentality}>{form.mentality}</option>
+                )}
+                {config.fmCodes.mentalities.map((m) => (
+                  <option key={m}>{m}</option>
+                ))}
+              </select>
             </label>
           </div>
           {tactic.save_index === null && (
@@ -328,8 +365,8 @@ function TacticEditor({ tactic }: { tactic: TacticRow }) {
                     slots: FORMATIONS[e.target.value].map((position, i) => {
                       const old = form.slots[i] ?? { position: null }
                       return phase === 'ip'
-                        ? { ...old, position, role: null }
-                        : { ...old, positionOop: position, roleOop: null }
+                        ? { ...old, position, side: null, role: null, pi: [] }
+                        : { ...old, positionOop: position, sideOop: null, roleOop: null, piOop: [] }
                     }),
                   })
                 }
@@ -342,11 +379,7 @@ function TacticEditor({ tactic }: { tactic: TacticRow }) {
               </select>
             </label>
           )}
-          <InstructionsEditor
-            phase={phase}
-            instructions={instructions}
-            onChange={setInstructions}
-          />
+          <InstructionsEditor phase={phase} codes={team} onChange={setTeam} />
           <label className="grid gap-1 text-sm">
             <span className="text-muted">Notes</span>
             <textarea
@@ -358,10 +391,28 @@ function TacticEditor({ tactic }: { tactic: TacticRow }) {
           </label>
           {tactic.save_index !== null && (
             <p className="text-xs text-muted">
-              From your save: name, style, mentality and positions update on every import; roles,
-              preferred XI and notes are yours.
+              From your save: every import brings in its shape, roles and instructions as they are
+              in FM. Your preferred XI and notes stay.
             </p>
           )}
+          <div className="grid gap-1">
+            <Button variant="ghost" onClick={download} disabled={problems.length > 0}>
+              <Download className="size-4" aria-hidden /> Export to FM (.fmf)
+            </Button>
+            {problems.length > 0 ? (
+              <ul className="list-disc pl-5 text-xs text-amber-300">
+                {problems.slice(0, 6).map((p) => (
+                  <li key={p}>{p}</li>
+                ))}
+                {problems.length > 6 && <li>and {problems.length - 6} more</li>}
+              </ul>
+            ) : (
+              <p className="text-xs text-muted">
+                Save the file in FM's tactics folder, then in FM open Tactics and choose Load
+                Tactic. The players are picked in your save, not in the file.
+              </p>
+            )}
+          </div>
           <div className="flex flex-wrap items-center gap-2">
             <Button onClick={() => save.mutate()} disabled={!dirty || save.isPending}>
               {save.isPending ? 'Saving…' : 'Save'}
@@ -401,6 +452,7 @@ function SlotPanel({
   slot,
   phase,
   roles,
+  fmPosition,
   squad,
   used,
   onChange,
@@ -412,6 +464,7 @@ function SlotPanel({
   slot: TacticSlot
   phase: Phase
   roles: RoleDef[]
+  fmPosition: FmPosition | null
   squad: PlayerRow[]
   used: Set<string | null | undefined>
   onChange: (patch: Partial<TacticSlot>) => void
@@ -443,7 +496,9 @@ function SlotPanel({
             onChange={(e) => {
               const v = (e.target.value || null) as PositionCode | null
               onChange(
-                phase === 'ip' ? { position: v, role: null } : { positionOop: v, roleOop: null },
+                phase === 'ip'
+                  ? { position: v, side: null, role: null, pi: [] }
+                  : { positionOop: v, sideOop: null, roleOop: null, piOop: [], markOop: null },
               )
             }}
             className={field}
@@ -461,15 +516,22 @@ function SlotPanel({
           <select
             value={roleIdOf(slot, phase) ?? ''}
             onChange={(e) =>
+              // A new role starts with FM's defaults: no player instructions set
               onChange(
                 phase === 'ip'
-                  ? { role: e.target.value || null }
-                  : { roleOop: e.target.value || null },
+                  ? { role: e.target.value || null, pi: [] }
+                  : { roleOop: e.target.value || null, piOop: [], markOop: null },
               )
             }
             className={field}
           >
             <option value="">Pick a role…</option>
+            {roleIdOf(slot, phase) && !role && (
+              <option value={roleIdOf(slot, phase)!}>
+                {config.roles.find((r) => r.id === roleIdOf(slot, phase))?.name ?? '?'} (not offered
+                here)
+              </option>
+            )}
             {roles.map((r) => (
               <option key={r.id} value={r.id}>
                 {r.name}
@@ -478,6 +540,13 @@ function SlotPanel({
           </select>
         </label>
       </div>
+      <PlayerInstructions
+        slot={slot}
+        phase={phase}
+        role={role}
+        fmPosition={fmPosition}
+        onChange={onChange}
+      />
       <label className="grid gap-1 text-sm">
         <span className="text-muted">Swap player with</span>
         <select
@@ -540,98 +609,130 @@ function SlotPanel({
 
 type Phase = 'ip' | 'oop'
 
-const posOf = (s: TacticSlot, phase: Phase) =>
-  phase === 'ip' ? s.position : (s.positionOop ?? s.position)
-
-const roleIdOf = (s: TacticSlot, phase: Phase) => (phase === 'ip' ? s.role : s.roleOop)
-
-/** Team instructions for one phase, as label → value rows (FM's own words). */
-function InstructionsEditor({
+/** Player instructions FM offers for the slot's role at its position, one dropdown each. */
+function PlayerInstructions({
+  slot,
   phase,
-  instructions,
+  role,
+  fmPosition,
   onChange,
 }: {
+  slot: TacticSlot
   phase: Phase
-  instructions: Instructions
-  onChange: (patch: Partial<Instructions>) => void
+  role: RoleDef | null
+  fmPosition: FmPosition | null
+  onChange: (patch: Partial<TacticSlot>) => void
 }) {
-  const rows = (phase === 'ip' ? instructions.ip : instructions.oop) ?? []
-  const defs = useConfig().teamInstructions.filter((d) => d.phase === phase)
-  const set = (next: [string, string][]) => onChange(phase === 'ip' ? { ip: next } : { oop: next })
+  const config = useConfig()
+  const codes = (phase === 'ip' ? slot.pi : slot.piOop) ?? []
+  const defs = config.playerInstructions.filter((d) => d.phase === phase)
+  const set = (next: number[]) => onChange(phase === 'ip' ? { pi: next } : { piOop: next })
+  if (!role) return null
+  const rows = defs
+    .map((d) => ({ d, ...playerChoices(d, role, fmPosition) }))
+    .filter((r) => r.options.length > 1 || r.forced)
+  if (!rows.length)
+    return (
+      <p className="text-xs text-muted">
+        No player instructions for {role.name} here (Settings &gt; Roles sets them).
+      </p>
+    )
+  const markTarget = rows.some(({ d }) => {
+    const c = chosen(d, codes)
+    return c?.target === 'position' && c.code !== 0
+  })
   return (
     <section className="grid gap-2">
       <h3 className="text-sm text-muted">
-        Instructions {phase === 'ip' ? 'in possession' : 'out of possession'}
+        Player instructions {phase === 'ip' ? 'in possession' : 'out of possession'}
       </h3>
-      {instructions.changed && (
-        <p className="rounded-lg border border-amber-400/50 bg-amber-400/10 p-2 text-sm text-amber-200">
-          The app does not know these instructions yet (the save stores them only as numbers). Set
-          them as they are on your FM tactic screen and save: the app remembers them from then on.
-        </p>
-      )}
-      <ul className="grid gap-1">
-        {rows.map(([label, value], i) => {
-          const def = defs.find((d) => d.name === label)
-          const options = def?.options ?? []
-          // Names already used by other rows are not offered again
-          const free = defs.filter((d) => d.name === label || !rows.some(([l]) => l === d.name))
+      <ul className="grid gap-1 sm:grid-cols-2">
+        {rows.map(({ d, options, forced }) => {
+          const current = forced ? options[0] : chosen(d, codes)
           return (
-            <li key={i} className="grid grid-cols-[1fr_1fr_auto] items-center gap-2">
+            <li key={d.name} className="grid gap-0.5 text-xs">
+              <span className="text-muted">{d.name}</span>
               <select
-                aria-label="Instruction"
-                value={label}
-                onChange={(e) => {
-                  const next = defs.find((d) => d.name === e.target.value)
-                  set(
-                    rows.map((r, j) =>
-                      j === i ? [e.target.value, next?.options.includes(r[1]) ? r[1] : ''] : r,
-                    ),
-                  )
-                }}
-                className="min-h-10 min-w-0 rounded-lg border border-border bg-surface-2 px-2 text-sm"
+                value={current?.code ?? 0}
+                disabled={forced}
+                title={forced ? `${role.name} always does this` : undefined}
+                onChange={(e) => set(choose(d, codes, Number(e.target.value)))}
+                className="min-h-10 min-w-0 rounded-lg border border-border bg-surface-2 px-2 text-sm disabled:opacity-70"
               >
-                <option value="">Pick an instruction…</option>
-                {label && !def && <option value={label}>{label}</option>}
-                {free.map((d) => (
-                  <option key={d.name} value={d.name}>
-                    {d.name}
-                  </option>
-                ))}
-              </select>
-              <select
-                aria-label={`${label} setting`}
-                value={value}
-                disabled={!label}
-                onChange={(e) => set(rows.map((r, j) => (j === i ? [r[0], e.target.value] : r)))}
-                className="min-h-10 min-w-0 rounded-lg border border-border bg-surface-2 px-2 text-sm font-semibold disabled:opacity-50"
-              >
-                <option value="">Pick an option…</option>
-                {value && !options.includes(value) && <option value={value}>{value}</option>}
                 {options.map((o) => (
-                  <option key={o} value={o}>
-                    {o}
+                  <option key={o.code} value={o.code} disabled={o.target === 'player'}>
+                    {o.label}
+                    {o.target === 'player' ? ' (set in FM for a match)' : ''}
+                    {forced ? ' (role)' : ''}
                   </option>
                 ))}
               </select>
-              <button
-                type="button"
-                aria-label={`Remove ${label}`}
-                onClick={() => set(rows.filter((_, j) => j !== i))}
-                className="grid size-10 place-items-center rounded-lg text-muted hover:bg-surface-2 hover:text-red-400"
-              >
-                <Trash2 className="size-4" aria-hidden />
-              </button>
             </li>
           )
         })}
       </ul>
-      <button
-        type="button"
-        onClick={() => set([...rows, ['', '']])}
-        className="justify-self-start text-sm text-accent"
-      >
-        + Add instruction
-      </button>
+      {markTarget && phase === 'oop' && (
+        <label className="grid gap-1 text-sm">
+          <span className="text-muted">Opposition position to mark</span>
+          <select
+            value={slot.markOop ?? ''}
+            onChange={(e) => onChange({ markOop: e.target.value || null })}
+            className={field}
+          >
+            <option value="">Pick a position…</option>
+            {config.fmCodes.positions.map((p) => (
+              <option key={p.id} value={p.id}>
+                {p.id}
+              </option>
+            ))}
+          </select>
+        </label>
+      )}
+    </section>
+  )
+}
+
+/** Team instructions for one phase: every instruction FM has, with its options. */
+function InstructionsEditor({
+  phase,
+  codes,
+  onChange,
+}: {
+  phase: Phase
+  codes: number[]
+  onChange: (codes: number[]) => void
+}) {
+  const config = useConfig()
+  const defs = config.teamInstructions.filter((d) => d.phase === phase)
+  const conflicts = conflictsIn(codes, config.teamInstructions, config.fmCodes)
+  return (
+    <section className="grid gap-2">
+      <h3 className="text-sm text-muted">
+        Team instructions {phase === 'ip' ? 'in possession' : 'out of possession'}
+      </h3>
+      <ul className="grid gap-x-3 gap-y-1 sm:grid-cols-2">
+        {defs.map((d) => (
+          <li key={d.name} className="grid gap-0.5 text-xs">
+            <span className="text-muted">{d.name}</span>
+            <select
+              value={chosen(d, codes)?.code ?? 0}
+              onChange={(e) => onChange(choose(d, codes, Number(e.target.value)))}
+              className="min-h-10 min-w-0 rounded-lg border border-border bg-surface-2 px-2 text-sm font-semibold"
+            >
+              {d.options.map((o) => (
+                <option key={o.code} value={o.code}>
+                  {o.label}
+                </option>
+              ))}
+            </select>
+          </li>
+        ))}
+      </ul>
+      {conflicts.map((c) => (
+        <p key={c} className="text-xs text-amber-300">
+          FM does not allow {c} together.
+        </p>
+      ))}
     </section>
   )
 }
@@ -659,7 +760,7 @@ function SquadFit({
   redo: (() => void) | null
 }) {
   const config = useConfig()
-  const ctx = { roles: config.roles, weights: config.roleWeights }
+  const ctx = { roles: config.roles, weights: config.roleWeights, fmCodes: config.fmCodes }
   const { fits, team } = gradeTactic(slots, squad, ctx)
   const tips = suggestions(slots, squad, ctx)
   const cover = benchCover(slots, squad, ctx)

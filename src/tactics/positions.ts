@@ -1,3 +1,4 @@
+import type { Side } from './fm'
 import type { PositionCode } from './types'
 
 /** FM's position text, as roles use it. */
@@ -38,12 +39,18 @@ const PLACE: Record<PositionCode, { y: number; x: number }> = {
   ST: { y: 0.88, x: 0.5 },
 }
 
-/** Pitch coordinates (0–1) for each slot; central positions that repeat spread out. */
-export function pitchPlaces(positions: (PositionCode | null)[]): { x: number; y: number }[] {
+/**
+ * Pitch coordinates (0–1) for each slot; central positions that repeat spread out, by their
+ * FM side (left, centre, right) when known, else in slot order.
+ */
+export function pitchPlaces(
+  positions: (PositionCode | null)[],
+  sides: (Side | null)[] = [],
+): { x: number; y: number }[] {
   const counts = new Map<PositionCode, number>()
   for (const p of positions) if (p) counts.set(p, (counts.get(p) ?? 0) + 1)
   const seen = new Map<PositionCode, number>()
-  return positions.map((p) => {
+  return positions.map((p, k) => {
     if (!p) return { x: 0.5, y: 0.5 }
     const n = counts.get(p)!
     const i = seen.get(p) ?? 0
@@ -51,6 +58,11 @@ export function pitchPlaces(positions: (PositionCode | null)[]): { x: number; y:
     const base = PLACE[p]
     if (n === 1) return base
     const spread = n === 2 ? [0.36, 0.64] : n === 3 ? [0.25, 0.5, 0.75] : [0.2, 0.4, 0.6, 0.8]
+    const side = sides[k]
+    if (side && n <= 3) {
+      const x = side === 'L' ? spread[0] : side === 'R' ? spread[n - 1] : 0.5
+      return { x, y: base.y }
+    }
     return { x: spread[i] ?? base.x, y: base.y }
   })
 }
