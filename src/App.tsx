@@ -37,6 +37,7 @@ import { NamesSettings } from './pages/settings/Names'
 import { PersonalitySettings } from './pages/settings/Personality'
 import { InstructionsSettings } from './pages/settings/Instructions'
 import { DatabaseSettings } from './pages/settings/Database'
+import { ColoursSettings } from './pages/settings/Colours'
 import { StaffAttributesSettings } from './pages/settings/StaffAttributes'
 import { Explain } from './pages/Explain'
 import { Squad } from './pages/Squad'
@@ -101,6 +102,7 @@ function SignedIn() {
         <Route path="settings/personality" element={<PersonalitySettings />} />
         <Route path="settings/instructions" element={<InstructionsSettings />} />
         <Route path="settings/database" element={<DatabaseSettings />} />
+        <Route path="settings/colours" element={<ColoursSettings />} />
         <Route path="*" element={<NotFound />} />
       </Route>
     </Routes>

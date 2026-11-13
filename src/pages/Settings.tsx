@@ -43,6 +43,7 @@ export function SettingsPage() {
             {[
               ['/import', 'Import', 'Your FM save (.fm)'],
               ['/settings/database', 'Database', 'Every table and file, and what an import does'],
+              ['/settings/colours', 'Colours', 'Every colour of the app, with HEX and RGB codes'],
               [
                 '/check',
                 checks.total ? `Check in game (${checks.total})` : 'Check in game',

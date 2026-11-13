@@ -50,6 +50,7 @@ export default defineConfig({
   test: {
     environment: 'jsdom',
     setupFiles: ['./src/test/setup.ts'],
-    css: false,
+    // Stylesheets are not needed in tests, except the two the colour page reads as text
+    css: { include: [/index\.css/, /theme\.css/] },
   },
 })
