@@ -119,7 +119,9 @@ export function Check() {
                 {t.name}
               </Link>
               {t.missingRoles > 0 && <span> · {t.missingRoles} positions without a role</span>}
-              {t.instructionsChanged && <span> · instructions changed in FM</span>}
+              {t.instructionsChanged && (
+                <span> · instructions not known yet: set them once on the Tactics page</span>
+              )}
             </li>
           ))}
         </Section>

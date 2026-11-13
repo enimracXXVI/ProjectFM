@@ -42,7 +42,7 @@ export function NotesPanel({ limit, scope }: { limit?: number; scope?: NoteLink 
   const [category, setCategory] = useUrlState('notes', 'all', TEXT)
   const [query, setQuery] = useState('')
   const [draft, setDraft] = useState('')
-  const [draftCategory, setDraftCategory] = useState(noteCategories[0]?.id ?? '')
+  const [draftCategory, setDraftCategory] = useState('')
   const [editing, setEditing] = useState<string | null>(null)
   const [editText, setEditText] = useState('')
   const [editCategory, setEditCategory] = useState('')
@@ -74,13 +74,14 @@ export function NotesPanel({ limit, scope }: { limit?: number; scope?: NoteLink 
   const count = (id: string) => mine.filter((n) => n.category === id && !n.done).length
 
   const add = () => {
-    if (!draft.trim()) return
+    // A note needs text and a category
+    if (!draft.trim() || !draftCategory) return
     save.mutate(
       {
         id: null,
         patch: {
           body: draft.trim(),
-          category: draftCategory || null,
+          category: draftCategory,
           ...linkColumns(scope ?? parseLinkValue(draftLink)),
         },
       },
@@ -121,7 +122,9 @@ export function NotesPanel({ limit, scope }: { limit?: number; scope?: NoteLink 
           onChange={(e) => setDraftCategory(e.target.value)}
           className={field}
         >
-          <option value="">No category</option>
+          <option value="" disabled>
+            Select category…
+          </option>
           {noteCategories.map((c) => (
             <option key={c.id} value={c.id}>
               {c.name}
@@ -151,10 +154,13 @@ export function NotesPanel({ limit, scope }: { limit?: number; scope?: NoteLink 
           }}
           className={`${field} min-w-0 resize-y py-2`}
         />
-        <Button type="submit" disabled={!draft.trim() || save.isPending}>
+        <Button type="submit" disabled={!draft.trim() || !draftCategory || save.isPending}>
           Add
         </Button>
       </form>
+      {draft.trim() && !draftCategory && (
+        <p className="mt-1 text-xs text-amber-300">Select a category to add the note.</p>
+      )}
       <ErrorText
         error={save.error ?? remove.error ?? (error && !isMissingTable(error) ? error : null)}
       />
@@ -224,7 +230,9 @@ export function NotesPanel({ limit, scope }: { limit?: number; scope?: NoteLink 
                       onChange={(e) => setEditCategory(e.target.value)}
                       className={`${field} sm:w-56`}
                     >
-                      <option value="">No category</option>
+                      <option value="" disabled>
+                        Select category…
+                      </option>
                       {noteCategories.map((c) => (
                         <option key={c.id} value={c.id}>
                           {c.name}
@@ -248,13 +256,14 @@ export function NotesPanel({ limit, scope }: { limit?: number; scope?: NoteLink 
                     />
                     <div className="flex gap-2">
                       <Button
+                        disabled={!editCategory}
                         onClick={() =>
                           save.mutate(
                             {
                               id: n.id,
                               patch: {
                                 body: editText.trim() || n.body,
-                                category: editCategory || null,
+                                category: editCategory,
                                 ...(scope ? {} : linkColumns(parseLinkValue(editLink))),
                               },
                             },

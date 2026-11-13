@@ -481,8 +481,8 @@ function InstructionsEditor({
       </h3>
       {instructions.changed && (
         <p className="rounded-lg border border-amber-400/50 bg-amber-400/10 p-2 text-sm text-amber-200">
-          These instructions changed in FM since you last confirmed them. Check them against your
-          tactic screen and save.
+          The app does not know these instructions yet (the save stores them only as numbers). Set
+          them as they are on your FM tactic screen and save: the app remembers them from then on.
         </p>
       )}
       <ul className="grid gap-1">
