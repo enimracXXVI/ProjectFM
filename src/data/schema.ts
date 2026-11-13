@@ -95,6 +95,7 @@ export const TABLE_NOTES: Record<string, string> = {
   tactics:
     'Tactics read from the save (save_index) or made in the app, with roles and preferred XI.',
   match_log: 'Your notes on a match: tactic used and the opponent’s shape and style.',
+  notes: 'Your Dashboard notes, one set per career: text, category, pinned, done.',
   scout_targets: 'Not used by the app (left from an early version).',
   import_mappings: 'Not used by the app any more (was for HTML exports).',
 }

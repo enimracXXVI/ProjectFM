@@ -112,6 +112,11 @@ export function SettingsPage() {
                 'Personality ranges and overlap rules, foot strength words',
               ],
               [
+                '/settings/note-categories',
+                'Note categories',
+                'Categories for your Dashboard notes, with colours',
+              ],
+              [
                 '/settings/bottom-bar',
                 'Phone bottom bar',
                 'Which sections sit at the bottom on phones',

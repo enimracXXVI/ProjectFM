@@ -5,6 +5,7 @@ import { MemoryRouter } from 'react-router-dom'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import App from './App'
 import type { Career } from './data/db'
+import { ConfirmProvider } from './components/ConfirmDialog'
 import { CareerProvider } from './lib/career'
 
 const auth = vi.hoisted(() => ({ session: null as object | null, loading: false }))
@@ -16,6 +17,11 @@ vi.mock('./data/api', () => ({
   listPlayers: async () => [],
   listImports: async () => [],
   createCareer: vi.fn(),
+  isMissingTable: () => false,
+}))
+vi.mock('./data/notes', async (orig) => ({
+  ...(await orig<typeof import('./data/notes')>()),
+  listNotes: async () => [],
 }))
 
 const career = (id: string, club: string): Career => ({
@@ -40,7 +46,9 @@ function renderAt(path: string) {
     <QueryClientProvider client={qc}>
       <MemoryRouter initialEntries={[path]}>
         <CareerProvider>
-          <App />
+          <ConfirmProvider>
+            <App />
+          </ConfirmProvider>
         </CareerProvider>
       </MemoryRouter>
     </QueryClientProvider>,

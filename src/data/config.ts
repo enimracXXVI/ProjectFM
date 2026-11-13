@@ -24,6 +24,7 @@ import { DEFAULT_PERSONALITY_RULES, type PersonalityRule } from '../lib/personal
 import { DEFAULT_FOOT_MINS, DEFAULT_FOOT_WORDS } from '../import/dump'
 import { DEFAULT_JOB_GROUPS, DEFAULT_STAFF_SHORT, type StaffGroup } from './staffJobs'
 import { DEFAULT_INSTRUCTIONS, type InstructionDef } from '../tactics/instructionList'
+import { DEFAULT_NOTE_CATEGORIES, type NoteCategory } from './notes'
 import { DEFAULT_STATUSES, normalizeStatus, type StatusInfo } from './statusInfo'
 
 export type Layout = Record<Role, AttributeSection[][]>
@@ -69,6 +70,8 @@ export interface AppConfig {
   teamInstructions: InstructionDef[]
   /** Best XI: the match rating a player must beat to add to his score. */
   bestXiBaseline: number
+  /** Categories for Dashboard notes, in order. */
+  noteCategories: NoteCategory[]
 }
 
 export interface Learned {
@@ -118,6 +121,7 @@ export const DEFAULT_CONFIG: AppConfig = {
   footMins: DEFAULT_FOOT_MINS,
   teamInstructions: DEFAULT_INSTRUCTIONS,
   bestXiBaseline: 6,
+  noteCategories: DEFAULT_NOTE_CATEGORIES,
 }
 
 type Stored = Partial<{ [K in ConfigKey]: AppConfig[K] }>
@@ -159,6 +163,7 @@ export function mergeConfig(stored: Stored): AppConfig {
     footMins: stored.footMins ?? DEFAULT_CONFIG.footMins,
     teamInstructions: stored.teamInstructions ?? DEFAULT_CONFIG.teamInstructions,
     bestXiBaseline: stored.bestXiBaseline ?? DEFAULT_CONFIG.bestXiBaseline,
+    noteCategories: stored.noteCategories ?? DEFAULT_CONFIG.noteCategories,
   }
 }
 

@@ -2,12 +2,13 @@ import { Copy } from 'lucide-react'
 import { useState } from 'react'
 import sql0006 from '../../supabase/migrations/0006_tactics_and_match_log.sql?raw'
 import sql0007 from '../../supabase/migrations/0007_staff_details.sql?raw'
+import sql0008 from '../../supabase/migrations/0008_notes.sql?raw'
 
-const UPDATES = { '0006': sql0006, '0007': sql0007 }
+const UPDATES = { '0006': sql0006, '0007': sql0007, '0008': sql0008 }
 import { Button } from './form'
 import { Card } from './ui'
 
-/** Shown when the tactics / match log tables are not in Supabase yet. */
+/** Shown when a table the page needs is not in Supabase yet (with the SQL to add it). */
 export function DbUpdateNotice({ update = '0006' }: { update?: keyof typeof UPDATES }) {
   const sql = UPDATES[update]
   const [copied, setCopied] = useState(false)

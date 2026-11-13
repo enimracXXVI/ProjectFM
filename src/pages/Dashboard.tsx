@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom'
 import { Crest } from '../components/Crest'
+import { NotesPanel } from '../components/NotesPanel'
 import { SectionLinks } from '../components/SectionLinks'
 import { Placeholder, Stat } from '../components/ui'
 import { usePlayers } from '../data/hooks'
@@ -78,6 +79,9 @@ export function Dashboard() {
           </Placeholder>
         </div>
       )}
+      <div className="mt-6">
+        <NotesPanel limit={8} />
+      </div>
       <div className="mt-6 grid gap-3 lg:grid-cols-2">
         <Placeholder>Season timeline chart — coming soon</Placeholder>
         <Placeholder>Finances chart — coming soon</Placeholder>

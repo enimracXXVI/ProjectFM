@@ -38,6 +38,8 @@ import { PersonalitySettings } from './pages/settings/Personality'
 import { InstructionsSettings } from './pages/settings/Instructions'
 import { DatabaseSettings } from './pages/settings/Database'
 import { ColoursSettings } from './pages/settings/Colours'
+import { NoteCategoriesSettings } from './pages/settings/NoteCategories'
+import { Notes } from './pages/Notes'
 import { StaffAttributesSettings } from './pages/settings/StaffAttributes'
 import { Explain } from './pages/Explain'
 import { Squad } from './pages/Squad'
@@ -103,6 +105,8 @@ function SignedIn() {
         <Route path="settings/instructions" element={<InstructionsSettings />} />
         <Route path="settings/database" element={<DatabaseSettings />} />
         <Route path="settings/colours" element={<ColoursSettings />} />
+        <Route path="settings/note-categories" element={<NoteCategoriesSettings />} />
+        <Route path="notes" element={<Notes />} />
         <Route path="*" element={<NotFound />} />
       </Route>
     </Routes>

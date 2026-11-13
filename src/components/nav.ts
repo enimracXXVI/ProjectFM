@@ -6,6 +6,7 @@ import {
   ClipboardCheck,
   Lightbulb,
   LayoutDashboard,
+  NotebookPen,
   Scale,
   Settings,
   TrendingUp,
@@ -26,6 +27,7 @@ export interface NavItem {
 /** Every section (the phone bottom bar can hold any of them). */
 export const sections: NavItem[] = [
   { to: '/', label: 'Dashboard', icon: LayoutDashboard },
+  { to: '/notes', label: 'Notes', icon: NotebookPen },
   { to: '/squad', label: 'Squad', icon: Users },
   { to: '/tactics', label: 'Tactics', icon: PitchIcon },
   { to: '/development', label: 'Development', icon: TrendingUp },
@@ -44,7 +46,8 @@ export const sections: NavItem[] = [
 
 /**
  * The sidebar and the phone's More sections: Development and Compare open from the Squad
- * page; Import, Check in game and How it works from Settings.
+ * page; Notes from the Dashboard; Import, Check in game and How it works from Settings.
+ * All of them can still go in the phone's bottom bar.
  */
-const IN_PAGES = new Set(['/development', '/compare', '/import', '/check', '/explain'])
+const IN_PAGES = new Set(['/development', '/compare', '/notes', '/import', '/check', '/explain'])
 export const navItems: NavItem[] = sections.filter((s) => !IN_PAGES.has(s.to))
