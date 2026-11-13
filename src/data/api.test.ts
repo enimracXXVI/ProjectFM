@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from 'vitest'
 import type { ImportedPlayer } from '../import/types'
-import { mergePlayer } from './api'
+import { mergePlayer, planTidy } from './api'
 
 vi.mock('../lib/supabase', () => ({ supabase: {} }))
 
@@ -57,5 +57,29 @@ describe('mergePlayer', () => {
     })
     expect(merged.squad_number).toBeNull()
     expect(merged.extra).toEqual({ selection: 'S1' })
+  })
+})
+
+describe('development copy clean-up', () => {
+  it('drops copies identical to the previous one and stats-only copies, strips stats', () => {
+    const c = (id: string, pace: number, extra: Record<string, string> = { Apps: '3' }) => ({
+      id,
+      player_id: 'p',
+      age: 20,
+      attributes: { Pace: pace } as Record<string, unknown>,
+      extra,
+    })
+    const { drop, slim } = planTidy([
+      c('a', 10),
+      c('b', 10),
+      { ...c('s', 0), attributes: {} },
+      c('d', 11, { Apps: '5', positions: 'ST' }),
+      c('e', 11, { positions: 'ST' }),
+    ])
+    expect(drop).toEqual(['b', 's', 'e'])
+    expect(slim).toEqual([
+      { id: 'a', extra: {} },
+      { id: 'd', extra: { positions: 'ST' } },
+    ])
   })
 })

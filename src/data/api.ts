@@ -150,6 +150,86 @@ export async function mergeImportPairs(careerId: string): Promise<number> {
   return merged
 }
 
+/** Which copies the clean-up deletes, and which keep only their positions (see below). */
+export function planTidy(
+  all: {
+    id: string
+    player_id: string
+    age: number | null
+    attributes: Record<string, unknown>
+    extra: Record<string, string> | null
+  }[],
+) {
+  type Copy = (typeof all)[number]
+  const byPlayer = new Map<string, Copy[]>()
+  for (const c of all) byPlayer.set(c.player_id, [...(byPlayer.get(c.player_id) ?? []), c])
+  const drop: string[] = []
+  const slim: { id: string; extra: Record<string, string> }[] = []
+  for (const copies of byPlayer.values()) {
+    let kept: Copy | null = null
+    for (const c of copies) {
+      // Copies with no attributes held only stats: nothing for Development
+      const empty = !Object.keys(c.attributes ?? {}).length
+      const same =
+        kept &&
+        kept.age === c.age &&
+        (kept.extra?.positions ?? null) === (c.extra?.positions ?? null) &&
+        stableJson(kept.attributes) === stableJson(c.attributes)
+      if (empty || same) {
+        drop.push(c.id)
+        continue
+      }
+      kept = c
+      const extra: Record<string, string> = c.extra?.positions
+        ? { positions: c.extra.positions }
+        : {}
+      if (Object.keys(c.extra ?? {}).length !== Object.keys(extra).length)
+        slim.push({ id: c.id, extra })
+    }
+  }
+  return { drop, slim }
+}
+
+/**
+ * One-time clean-up of development copies made before copies were kept only on change:
+ * a copy identical to the player's previous one (attributes, age, positions) is deleted,
+ * and season stats are taken out of the copies that stay. Returns the copies removed.
+ */
+export async function tidyDevelopmentCopies(careerId: string): Promise<number> {
+  type Copy = {
+    id: string
+    player_id: string
+    age: number | null
+    attributes: Record<string, unknown>
+    extra: Record<string, string> | null
+    created_at: string
+  }
+  const all: Copy[] = []
+  for (let from = 0; ; from += 1000) {
+    const rows = check(
+      await supabase
+        .from('player_snapshots')
+        .select('id, player_id, age, attributes, extra, created_at')
+        .eq('career_id', careerId)
+        .order('created_at')
+        .range(from, from + 999),
+    ) as Copy[]
+    all.push(...rows)
+    if (rows.length < 1000) break
+  }
+  const { drop, slim } = planTidy(all)
+  for (let i = 0; i < drop.length; i += 200)
+    check(
+      await supabase
+        .from('player_snapshots')
+        .delete()
+        .in('id', drop.slice(i, i + 200)),
+    )
+  for (const x of slim)
+    check(await supabase.from('player_snapshots').update({ extra: x.extra }).eq('id', x.id))
+  return drop.length
+}
+
 export async function listImports(careerId: string): Promise<ImportRow[]> {
   return check(
     await supabase

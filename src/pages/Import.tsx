@@ -2,7 +2,7 @@ import { clsx } from 'clsx'
 import { FileUp } from 'lucide-react'
 import { useQueryClient } from '@tanstack/react-query'
 import { useEffect, useState, type DragEvent } from 'react'
-import { mergeImportPairs } from '../data/api'
+import { mergeImportPairs, tidyDevelopmentCopies } from '../data/api'
 import { ErrorText } from '../components/form'
 import { PageHeader } from '../components/ui'
 import { useImports, usePlayers } from '../data/hooks'
@@ -21,15 +21,29 @@ export function Import() {
   const { data: knownPlayers } = usePlayers(career.id)
   const qc = useQueryClient()
   // Older imports were logged twice: fold each pair into one line, once
+  // and tidy development copies made before they were kept only on change (once per career)
   const hasPairs = (imports.data ?? []).some((i) => i.file_name === 'FM save')
   useEffect(() => {
-    if (!hasPairs) return
-    mergeImportPairs(career.id)
-      .then((n) => {
-        if (n) qc.invalidateQueries()
-      })
-      .catch(() => {})
-  }, [hasPairs, career.id, qc])
+    if (!imports.data) return
+    const key = `projectfm.tidyCopies.${career.id}`
+    let tidied = false
+    try {
+      tidied = localStorage.getItem(key) === '1'
+    } catch {
+      // no storage: the clean-up simply runs again, it changes nothing the second time
+    }
+    if (!hasPairs && tidied) return
+    ;(async () => {
+      const merged = hasPairs ? await mergeImportPairs(career.id) : 0
+      const removed = tidied ? 0 : await tidyDevelopmentCopies(career.id)
+      try {
+        localStorage.setItem(key, '1')
+      } catch {
+        // see above
+      }
+      if (merged || removed) qc.invalidateQueries()
+    })().catch(() => {})
+  }, [imports.data, hasPairs, career.id, qc])
 
   const load = async (f: File | undefined) => {
     if (!f) return
