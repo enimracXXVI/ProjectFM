@@ -1,17 +1,14 @@
 # App icons
 
-Placeholders showing the repo name. Replace each file with your own design, **keeping the same file name and size**. No code changes needed.
+The ProjectFM logo. Replace a file with a new design of the same name and size; no code changes needed.
 
-| File                   | Size                 | Used for                                                                                                                                                               |
-| ---------------------- | -------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `favicon.svg`          | any (square, vector) | Browser tab icon (modern browsers)                                                                                                                                     |
-| `favicon-32.png`       | 32×32                | Browser tab icon (fallback)                                                                                                                                            |
-| `apple-touch-icon.png` | 180×180              | iPhone / iPad home screen. No transparency; iOS rounds corners itself.                                                                                                 |
-| `icon-192.png`         | 192×192              | Android home screen, app switcher                                                                                                                                      |
-| `icon-512.png`         | 512×512              | Install prompt, splash screen                                                                                                                                          |
-| `maskable-512.png`     | 512×512              | Android adaptive icon. Keep logo inside the central circle (~80% / 410px); edges may be cropped to circle, squircle, etc. Fill the full square with background colour. |
-
-`icon.svg` and `maskable.svg` are just the sources the placeholders were made from; they can be deleted once you have your own.
+| File                   | Size    | Used for                                                                                               |
+| ---------------------- | ------- | ------------------------------------------------------------------------------------------------------ |
+| `favicon-16.png`       | 16×16   | Browser tab icon                                                                                       |
+| `favicon-32.png`       | 32×32   | Browser tab icon (sharper screens)                                                                     |
+| `apple-touch-icon.png` | 180×180 | iPhone / iPad home screen. No transparency; iOS rounds corners itself. Made from the 512.              |
+| `icon-192.png`         | 192×192 | Android home screen, app switcher                                                                      |
+| `icon-512.png`         | 512×512 | Install prompt, splash screen                                                                          |
+| `maskable-512.png`     | 512×512 | Android adaptive icon: same as the 512, whose logo already sits inside the circle Android may crop to. |
 
 App name, colours and other install settings live in the `manifest` section of `vite.config.ts`.
-Preview how a maskable icon gets cropped: https://maskable.app
