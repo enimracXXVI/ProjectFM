@@ -67,7 +67,10 @@ export function readSchema(): SchemaTable[] {
       if (!t) continue
       for (const part of m[2].split(/,\s*\n?\s*add column/i)) {
         const c = column(
-          part.trim().replace(/^add column\s+/i, '').replace(/^if not exists\s+/i, ''),
+          part
+            .trim()
+            .replace(/^add column\s+/i, '')
+            .replace(/^if not exists\s+/i, ''),
           added,
         )
         if (c && !t.columns.some((x) => x.name === c.name)) t.columns.push(c)
