@@ -40,3 +40,26 @@ export function readSave(
     })
   })
 }
+
+/**
+ * Unpacks a Zstandard frame with the save reader's Python runtime (downloaded once, then kept
+ * on this device). Used for FM tactic files that FM compressed itself.
+ */
+export function unzstd(frame: Uint8Array): Promise<Uint8Array> {
+  return new Promise((resolve, reject) => {
+    const worker = new Worker(new URL('./save.worker.ts', import.meta.url), { type: 'module' })
+    worker.onmessage = (e: MessageEvent<{ ok?: boolean; bytes?: Uint8Array; error?: string }>) => {
+      worker.terminate()
+      if (e.data.ok && e.data.bytes) resolve(e.data.bytes)
+      else reject(new Error(e.data.error || 'Could not unpack the file.'))
+    }
+    worker.onerror = (e) => {
+      worker.terminate()
+      reject(new Error(e.message || 'Could not unpack the file.'))
+    }
+    worker.postMessage({
+      zstd: frame,
+      base: new URL(import.meta.env.BASE_URL, location.href).href,
+    })
+  })
+}

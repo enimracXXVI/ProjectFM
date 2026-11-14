@@ -918,6 +918,39 @@ export async function saveMatchLog(
   )
 }
 
+/**
+ * Names a role number the save stores (Check in game): the number goes on that role in
+ * Settings > Roles, and tactics that had it get the role straight away.
+ */
+export async function teachRole(
+  careerId: string,
+  stored: string,
+  phase: 'ip' | 'oop',
+  roleId: string,
+): Promise<void> {
+  const config = mergeConfig(await loadStoredConfig())
+  const code = (BigInt(stored) & BigInt(config.fmCodes.roleCodeMask)).toString()
+  await saveConfig(
+    'roles',
+    config.roles.map((r) => (r.id === roleId ? { ...r, fm: { ...r.fm, code } } : r)),
+  )
+  for (const t of await listTactics(careerId)) {
+    let changed = false
+    const slots = t.slots.map((s) => {
+      if (phase === 'ip' && s.unknownRole === stored) {
+        changed = true
+        return { ...s, role: roleId, unknownRole: null }
+      }
+      if (phase === 'oop' && s.unknownRoleOop === stored) {
+        changed = true
+        return { ...s, roleOop: roleId, unknownRoleOop: null }
+      }
+      return s
+    })
+    if (changed) await saveTactic(careerId, t.id, { slots })
+  }
+}
+
 /** Names an FM job code (Check in game): remembered, and written on every staff with it. */
 export async function teachJob(careerId: string, code: number, title: string): Promise<void> {
   const config = mergeConfig(await loadStoredConfig())

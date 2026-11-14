@@ -4,7 +4,7 @@ import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { Button, ErrorText } from '../components/form'
 import { Card, PageHeader } from '../components/ui'
-import { setPlayerPersonality, teachJob, teachWord } from '../data/api'
+import { setPlayerPersonality, teachJob, teachRole, teachWord } from '../data/api'
 import { JOB_TITLES } from '../data/staffJobs'
 import type { PlayerRow } from '../data/db'
 import { MORALE_WORDS } from '../import/dump'
@@ -108,19 +108,17 @@ export function Check() {
       {checks.tactics.length > 0 && (
         <Section
           title="Tactics"
-          hint="Role numbers in the save that no role in Settings > Roles has (a game update can change them). Open the tactic in FM, see which role it is, and enter the number as that role's save code in Settings > Roles."
+          hint="Roles the app does not recognise in your save (a game update can change how FM stores them). Open the tactic in FM, look at the position, and pick the role it shows: the app remembers it."
         >
-          {checks.tactics.map((t) => (
-            <li
-              key={t.name}
-              className="rounded-lg border border-amber-400/40 bg-surface p-3 text-sm"
-            >
-              <Link to="/tactics" className="font-semibold underline">
-                {t.name}
-              </Link>
-              <span> · unknown role numbers: {t.codes.join(', ')}</span>
-            </li>
-          ))}
+          {checks.tactics.flatMap((t) =>
+            t.codes.map((c) => (
+              <RoleRow
+                key={`${t.name}-${c.phase}-${c.code}-${c.position}`}
+                tactic={t.name}
+                {...c}
+              />
+            )),
+          )}
         </Section>
       )}
 
@@ -360,6 +358,60 @@ function JobRow({ code, names }: { code: number; names: string[] }) {
           ))}
         </select>
         <Button onClick={() => save.mutate()} disabled={!title || save.isPending}>
+          Save
+        </Button>
+        <ErrorText error={save.error} />
+      </div>
+    </li>
+  )
+}
+
+function RoleRow({
+  tactic,
+  code,
+  phase,
+  position,
+}: {
+  tactic: string
+  code: string
+  phase: 'ip' | 'oop'
+  position: string | null
+}) {
+  const career = useCurrentCareer()
+  const config = useConfig()
+  const qc = useQueryClient()
+  const [role, setRole] = useState('')
+  const save = useMutation({
+    mutationFn: () => teachRole(career.id, code, phase, role),
+    onSuccess: () => qc.invalidateQueries(),
+  })
+  const where = phase === 'ip' ? 'in possession' : 'out of possession'
+  return (
+    <li className="rounded-lg border border-amber-400/40 bg-surface p-3">
+      <p className="text-sm">
+        <Link to="/tactics" className="font-semibold underline">
+          {tactic}
+        </Link>{' '}
+        · {position ?? '?'} {where}
+      </p>
+      <div className="mt-2 flex flex-wrap items-center gap-2">
+        <select
+          aria-label={`Role at ${position ?? '?'} ${where}`}
+          value={role}
+          onChange={(e) => setRole(e.target.value)}
+          className={field}
+        >
+          <option value="">Pick the role FM shows…</option>
+          {config.roles
+            .filter((r) => r.phase === phase)
+            .sort((a, b) => a.name.localeCompare(b.name))
+            .map((r) => (
+              <option key={r.id} value={r.id}>
+                {r.name}
+              </option>
+            ))}
+        </select>
+        <Button onClick={() => save.mutate()} disabled={!role || save.isPending}>
           Save
         </Button>
         <ErrorText error={save.error} />

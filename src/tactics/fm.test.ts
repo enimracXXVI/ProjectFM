@@ -13,6 +13,7 @@ import {
   teamCodes,
 } from './fm'
 import { exportProblems, fileTitle, tacticFile } from './fmf'
+import { readFmf as readTacticFile } from './fmfRead'
 import { POSITION_TEXT } from './positions'
 import type { SaveTactics, TacticRow } from './types'
 
@@ -149,6 +150,30 @@ describe('FM tactic file', () => {
     expect(back.oop.map((s) => s.role)).toEqual(row.slots.map((s) => codeOf(s.roleOop)))
     const at = fmPositions(row.slots, 'ip', config.fmCodes)
     expect(back.ip.map((s) => s.mask)).toEqual(at.map((p) => p!.mask))
+  })
+
+  it('uploads back into the same tactic', async () => {
+    const back = await readTacticFile(tacticFile(row, config), async () => {
+      throw new Error('raw blocks need no unpacking')
+    })
+    const again = fromSave(back, config.roles, config.fmCodes)
+    expect(back.name).toBe(row.name)
+    expect(again.mentality).toBe('Balanced')
+    expect([...again.team!].sort((a, b) => a - b)).toEqual([...read.team!].sort((a, b) => a - b))
+    expect(again.slots.map((s) => [s.position, s.side, s.role, s.roleOop])).toEqual(
+      fmPositions(row.slots, 'ip', config.fmCodes).map((p, i) => [
+        p!.position,
+        p!.side,
+        row.slots[i].role,
+        row.slots[i].roleOop,
+      ]),
+    )
+  })
+
+  it('refuses files that are not FM tactics', async () => {
+    await expect(readTacticFile(new Uint8Array(100), async (b) => b)).rejects.toThrow(
+      'not an FM tactic file',
+    )
   })
 
   it('reports what FM would refuse', () => {

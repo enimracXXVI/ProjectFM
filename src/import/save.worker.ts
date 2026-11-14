@@ -11,7 +11,8 @@ interface PyodideLike {
     mkdirTree(path: string): void
     mount(type: unknown, opts: { files: File[] }, path: string): void
     unmount(path: string): void
-    writeFile(path: string, data: string): void
+    writeFile(path: string, data: string | Uint8Array): void
+    readFile(path: string): Uint8Array
     filesystems: { WORKERFS: { stream_ops: { read: (...a: unknown[]) => unknown } } }
     ErrnoError: new (code: number) => Error
   }
@@ -52,10 +53,27 @@ async function boot(base: string): Promise<PyodideLike> {
   return py
 }
 
-self.onmessage = async (e: MessageEvent<{ file: File; base: string; knownUids: number[] }>) => {
+self.onmessage = async (
+  e: MessageEvent<{ file: File; base: string; knownUids: number[]; zstd?: Uint8Array }>,
+) => {
   try {
     ready ??= boot(e.data.base)
     const py = await ready
+    // A Zstandard frame to unpack (FM tactic files), with the save reader's own Zstandard
+    if (e.data.zstd) {
+      py.FS.writeFile('/tmp/in.zst', e.data.zstd)
+      py.runPython(
+        [
+          'from fmsave._container import zstd',
+          "with open('/tmp/in.zst', 'rb') as f:",
+          '    data = zstd.ZstdDecompressor().decompress(f.read())',
+          "with open('/tmp/out', 'wb') as f:",
+          '    f.write(data)',
+        ].join('\n'),
+      )
+      self.postMessage({ ok: true, bytes: py.FS.readFile('/tmp/out') })
+      return
+    }
     self.postMessage({ stage: 'reading' })
     try {
       py.FS.unmount('/save')

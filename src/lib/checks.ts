@@ -30,8 +30,8 @@ export interface UnknownRound {
 
 export interface TacticCheck {
   name: string
-  /** Role numbers from the save that match no role in Settings > Roles. */
-  codes: string[]
+  /** Role numbers from the save that match no role in Settings > Roles, with where they are. */
+  codes: { code: string; phase: 'ip' | 'oop'; position: string | null }[]
 }
 
 export interface UnknownJob {
@@ -113,9 +113,20 @@ export function findChecks(
     .map((t) => ({
       name: t.name,
       // Role numbers from the save that no role in Settings > Roles has
-      codes: [
-        ...new Set(t.slots.flatMap((s) => [s.unknownRole, s.unknownRoleOop]).filter(Boolean)),
-      ] as string[],
+      codes: t.slots.flatMap((s) => [
+        ...(s.unknownRole
+          ? [{ code: s.unknownRole, phase: 'ip' as const, position: s.position }]
+          : []),
+        ...(s.unknownRoleOop
+          ? [
+              {
+                code: s.unknownRoleOop,
+                phase: 'oop' as const,
+                position: s.positionOop ?? s.position,
+              },
+            ]
+          : []),
+      ]),
     }))
     .filter((t) => t.codes.length > 0)
   const jobMap = new Map<number, string[]>()
@@ -137,7 +148,7 @@ export function findChecks(
       personality.length +
       competitions.length +
       rounds.length +
-      tactics.length +
+      tactics.reduce((n, t) => n + t.codes.length, 0) +
       jobs.length,
   }
 }

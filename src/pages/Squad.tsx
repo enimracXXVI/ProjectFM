@@ -292,7 +292,7 @@ export function Squad() {
           )}
 
           {/* Phones: cards */}
-          <ul className="grid gap-2 md:hidden">
+          <ul className="grid grid-cols-[minmax(0,1fr)] gap-2 md:hidden">
             {players.map((p) => (
               <li key={p.id}>
                 <Link
@@ -302,14 +302,29 @@ export function Squad() {
                     !p.in_squad && 'opacity-50',
                   )}
                 >
-                  <div className="flex items-center gap-2">
-                    <span className="w-6 text-right text-sm text-muted tabular-nums">
+                  <div className="@container flex items-center gap-2">
+                    <span className="w-6 shrink-0 text-right text-sm text-muted tabular-nums">
                       {p.squad_number ?? ''}
                     </span>
-                    <span className="font-semibold">{p.name}</span>
+                    <span className="min-w-0 truncate font-semibold">{p.name}</span>
                     <TeamBadge player={p} />
                     <StatusChip code={p.extra.status} />
-                    <span className="ml-auto text-sm text-muted">{p.age}</span>
+                    {/* CA/PA (when hidden values are shown) wins over age when space is short */}
+                    {config.showHidden && p.extra.CA != null && (
+                      <span className="ml-auto shrink-0 text-sm font-semibold tabular-nums">
+                        {String(p.extra.CA)}/{String(p.extra.PA ?? '–')}
+                      </span>
+                    )}
+                    <span
+                      className={clsx(
+                        'shrink-0 text-sm text-muted',
+                        config.showHidden && p.extra.CA != null
+                          ? 'hidden @[20rem]:inline'
+                          : 'ml-auto',
+                      )}
+                    >
+                      {p.age}
+                    </span>
                   </div>
                   <p className="mt-0.5 pl-8 text-xs text-muted">
                     {p.positions} · {p.nation}

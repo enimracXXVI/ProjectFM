@@ -344,7 +344,7 @@ export function World() {
       </Card>
 
       {/* Phones */}
-      <ul className="grid gap-2 md:hidden">
+      <ul className="grid grid-cols-[minmax(0,1fr)] gap-2 md:hidden">
         {shown.map(({ row, score }) => (
           <li key={row[0]}>
             <Link
