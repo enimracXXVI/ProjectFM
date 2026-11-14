@@ -163,8 +163,8 @@
     "wcb-ip": {
       "name": "Wide Centre-Back",
       "phase": "ip",
-      "key": null,
-      "description": null,
+      "key": 690528,
+      "description": "Alongside providing defensive protection to the team, the Wide Centre-Back is encouraged to provide width in possession and support to their wide attacking teammates ahead of them, often offering a recycling passing option from deep.",
       "movement": []
     },
     "fb-ip": {

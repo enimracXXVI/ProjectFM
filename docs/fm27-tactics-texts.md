@@ -140,7 +140,7 @@ Movement: Gets Further Forward
 
 ### Wide Centre-Back
 
-_No description of its own in the language file._
+Alongside providing defensive protection to the team, the Wide Centre-Back is encouraged to provide width in possession and support to their wide attacking teammates ahead of them, often offering a recycling passing option from deep.
 
 ### Full-Back
 
