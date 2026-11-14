@@ -13,6 +13,7 @@ import {
   teamCodes,
 } from './fm'
 import { exportProblems, fileTitle, tacticFile } from './fmf'
+import { briefingText, buildBriefing } from './briefing'
 import { readFmf as readTacticFile } from './fmfRead'
 import { POSITION_TEXT } from './positions'
 import type { SaveTactics, TacticRow } from './types'
@@ -257,3 +258,19 @@ function readFmf(file: Uint8Array) {
   }
   return { name, mentality, team, ip, oop: index.map((i) => stored[i]) }
 }
+
+describe('briefing', () => {
+  it('lists the changed team instructions, roles and forced player instructions', () => {
+    const b = buildBriefing(row, [], config)
+    expect(b.title).toBe('Counter-Attack High-Press · Balanced')
+    expect(b.team.ip).toContain('Tempo: Much higher')
+    expect(b.team.oop).toContain('Line of engagement: High press')
+    expect(b.team.oop).not.toContain('Line of engagement: Mid block')
+    expect(b.slots[0]).toMatchObject({
+      where: 'GK',
+      roles: 'Ball-Playing Goalkeeper / Sweeper Keeper',
+    })
+    expect(b.watch).toContain('GK: no player picked.')
+    expect(briefingText(b)).toContain('Team instructions in possession')
+  })
+})

@@ -24,6 +24,7 @@ import { usePlayers, useTactics } from '../data/hooks'
 import { roleShort, type RoleDef } from '../data/roles'
 import { scoreTextColor } from '../lib/attributes'
 import { useCurrentCareer } from '../lib/career'
+import { attributeLabel } from '../data/config'
 import { useConfig } from '../lib/config'
 import { roleScore } from '../lib/roleFit'
 import { benchCover, bestXi, gradeTactic, suggestions } from '../tactics/analysis'
@@ -53,6 +54,7 @@ import {
   type FmPosition,
 } from '../tactics/fm'
 import { exportProblems, fileTitle, tacticFile } from '../tactics/fmf'
+import { briefingText, buildBriefing } from '../tactics/briefing'
 import { readFmf } from '../tactics/fmfRead'
 import { unzstd } from '../import/readSave'
 import { byLastName, shortName } from '../lib/names'
@@ -289,7 +291,7 @@ function TacticEditor({ tactic }: { tactic: TacticRow }) {
     squad,
     fitCtx,
   ).team
-  const [open, setOpen] = useState({ team: false, fit: false })
+  const [open, setOpen] = useState({ team: false, brief: false, fit: false })
 
   return (
     <div className="grid gap-4 lg:grid-cols-[minmax(0,26rem)_1fr]">
@@ -532,6 +534,12 @@ function TacticEditor({ tactic }: { tactic: TacticRow }) {
         >
           <InstructionsEditor phase={phase} codes={team} onChange={setTeam} />
         </Section>
+        <BriefingSection
+          tactic={{ ...form, instructions: { team } }}
+          squad={squad}
+          open={open.brief}
+          onToggle={() => setOpen({ ...open, brief: !open.brief })}
+        />
         <SquadFit
           slots={form.slots}
           squad={squad}
@@ -551,6 +559,101 @@ function TacticEditor({ tactic }: { tactic: TacticRow }) {
         />
       </div>
     </div>
+  )
+}
+
+/** The tactic in words: changed instructions, each position's job and who does it. */
+function BriefingSection({
+  tactic,
+  squad,
+  open,
+  onToggle,
+}: {
+  tactic: TacticRow
+  squad: PlayerRow[]
+  open: boolean
+  onToggle: () => void
+}) {
+  const config = useConfig()
+  const [copied, setCopied] = useState(false)
+  const b = buildBriefing(tactic, squad, config)
+  const copy = async () => {
+    await navigator.clipboard.writeText(briefingText(b))
+    setCopied(true)
+    setTimeout(() => setCopied(false), 1500)
+  }
+  const list = (items: string[]) =>
+    items.length ? (
+      <ul className="grid gap-0.5 text-sm">
+        {items.map((x) => (
+          <li key={x}>{x}</li>
+        ))}
+      </ul>
+    ) : (
+      <p className="text-sm text-muted">All standard</p>
+    )
+  return (
+    <Section
+      title="Briefing"
+      open={open}
+      onToggle={onToggle}
+      aside={
+        <button type="button" onClick={copy} className="min-h-9 px-2 text-sm text-accent">
+          {copied ? 'Copied' : 'Copy'}
+        </button>
+      }
+    >
+      <p className="text-sm">
+        <span className="font-semibold">{b.title}</span>
+        <span className="block text-muted">{b.shape}</span>
+      </p>
+      {b.watch.length > 0 && (
+        <div className="rounded-lg border border-amber-400/40 bg-amber-400/10 p-2">
+          <p className="mb-1 text-xs font-semibold text-amber-200">Watch</p>
+          <ul className="grid gap-0.5 text-sm text-amber-100">
+            {b.watch.map((w) => (
+              <li key={w}>{w}</li>
+            ))}
+          </ul>
+        </div>
+      )}
+      <div className="grid gap-3 sm:grid-cols-2">
+        <div>
+          <p className="mb-1 text-xs text-muted">Team instructions in possession</p>
+          {list(b.team.ip)}
+        </div>
+        <div>
+          <p className="mb-1 text-xs text-muted">Team instructions out of possession</p>
+          {list(b.team.oop)}
+        </div>
+      </div>
+      <ul className="grid gap-2">
+        {b.slots.map((s, i) => (
+          <li key={i} className="rounded-lg bg-surface-2/60 p-2 text-sm">
+            <p className="flex items-baseline gap-2">
+              <span className="font-semibold">{s.where}</span>
+              <span className="ml-auto truncate">
+                {s.player ?? '–'}
+                {s.fit !== null && (
+                  <span className={clsx('ml-1 font-semibold', scoreTextColor(s.fit))}>{s.fit}</span>
+                )}
+              </span>
+            </p>
+            <p className="text-muted">{s.roles}</p>
+            {s.instructions.length > 0 && (
+              <p className="mt-0.5 text-xs text-muted">{s.instructions.join(' · ')}</p>
+            )}
+            {s.weakest.length > 0 && (
+              <p className="mt-0.5 text-xs">
+                <span className="text-muted">Weakest key attributes: </span>
+                {s.weakest.map(([k, v]) => `${attributeLabel(config, k)} ${v}`).join(', ')}
+              </p>
+            )}
+            <p className="mt-0.5 text-xs text-muted">Cover: {s.cover ?? 'none'}</p>
+          </li>
+        ))}
+      </ul>
+    </Section>
   )
 }
 
