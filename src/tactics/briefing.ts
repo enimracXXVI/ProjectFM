@@ -14,7 +14,7 @@ import type { TacticRow } from './types'
 
 type Config = Pick<
   AppConfig,
-  'roles' | 'roleWeights' | 'fmCodes' | 'teamInstructions' | 'playerInstructions'
+  'roles' | 'roleWeights' | 'fmCodes' | 'teamInstructions' | 'playerInstructions' | 'briefingLowFit'
 >
 
 export interface BriefingSlot {
@@ -36,11 +36,9 @@ export interface Briefing {
   /** Team instructions not on their standard option, by phase. */
   team: { ip: string[]; oop: string[] }
   slots: BriefingSlot[]
-  /** Points to watch: low fits, players out of position, positions without cover. */
+  /** Points to watch: no player, fits under Settings' threshold, positions without cover. */
   watch: string[]
 }
-
-const LOW_FIT = 55
 
 export function buildBriefing(t: TacticRow, squad: PlayerRow[], config: Config): Briefing {
   const ctx: FitContext = { roles: config.roles, weights: config.roleWeights }
@@ -87,7 +85,8 @@ export function buildBriefing(t: TacticRow, squad: PlayerRow[], config: Config):
       : []
     const name = player ? shortName(player) : null
     if (!player) watch.push(`${a}: no player picked.`)
-    else if (fit !== null && fit < LOW_FIT) watch.push(`${a}: ${name} fits the roles at ${fit}.`)
+    else if (fit !== null && fit < config.briefingLowFit)
+      watch.push(`${a}: ${name} fits the roles at ${fit}.`)
     if (!cover[i]) watch.push(`${a}: nobody else in the squad plays this position.`)
     return {
       where: a === b ? a : `${a} → ${b}`,

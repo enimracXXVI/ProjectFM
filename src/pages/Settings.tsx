@@ -84,6 +84,7 @@ export function SettingsPage() {
                 'Roles',
                 'Roles, positions, attributes, FM codes and instructions',
               ],
+              ['/settings/tactics', 'Tactics', 'What the tactic briefing flags'],
               [
                 '/settings/instructions',
                 'Team instructions',

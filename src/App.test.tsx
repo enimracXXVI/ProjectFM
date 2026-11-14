@@ -92,6 +92,7 @@ describe('App', () => {
     ['/settings/instructions', 'Team instructions', 'Tempo'],
     ['/settings/player-instructions', 'Player instructions', 'Dribbling frequency'],
     ['/settings/fm-codes', 'FM codes', 'Mentalities'],
+    ['/settings/tactics', 'Tactics', 'Briefing'],
   ])('shows the %s settings', async (path, title, item) => {
     renderAt(path)
     expect(await screen.findByRole('heading', { level: 1, name: title })).toBeInTheDocument()

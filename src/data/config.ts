@@ -81,6 +81,8 @@ export interface AppConfig {
   fmCodes: FmCodes
   /** Best XI: the match rating a player must beat to add to his score. */
   bestXiBaseline: number
+  /** Tactic briefing: a player's fit for his roles below this is flagged (0–100). */
+  briefingLowFit: number
   /** Categories for Dashboard notes, in order. */
   noteCategories: NoteCategory[]
 }
@@ -130,6 +132,7 @@ export const DEFAULT_CONFIG: AppConfig = {
   playerInstructions: DEFAULT_PLAYER_INSTRUCTIONS,
   fmCodes: DEFAULT_FM_CODES,
   bestXiBaseline: 6,
+  briefingLowFit: 55,
   noteCategories: DEFAULT_NOTE_CATEGORIES,
 }
 
@@ -179,6 +182,7 @@ export function mergeConfig(stored: Stored): AppConfig {
       : DEFAULT_CONFIG.playerInstructions,
     fmCodes: { ...DEFAULT_CONFIG.fmCodes, ...stored.fmCodes },
     bestXiBaseline: stored.bestXiBaseline ?? DEFAULT_CONFIG.bestXiBaseline,
+    briefingLowFit: stored.briefingLowFit ?? DEFAULT_CONFIG.briefingLowFit,
     noteCategories: stored.noteCategories ?? DEFAULT_CONFIG.noteCategories,
   }
 }
