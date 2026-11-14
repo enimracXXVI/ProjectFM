@@ -18,13 +18,18 @@ const LIMIT = 4 * 1024 * 1024
 export type Unzstd = (frame: Uint8Array) => Promise<Uint8Array>
 
 const hexOf = (b: Uint8Array) => [...b].map((x) => x.toString(16).padStart(2, '0')).join('')
-const bad = (why: string) => new Error(`This is not an FM tactic file this app can read (${why}).`)
+export const bad = (why: string) => new Error(`This is not an FM file this app can read (${why}).`)
 
 /** The tactic in a .fmf, in the save's shape. */
 export async function readFmf(
   file: Uint8Array,
   unzstd: Unzstd,
 ): Promise<SaveTactics['tactics'][number]> {
+  return parseTac(await readFmfMember(file, '.tac', unzstd))
+}
+
+/** The unpacked content of an .fmf's member with this extension (.tac tactic, .tsc schedule). */
+export async function readFmfMember(file: Uint8Array, ext: string, unzstd: Unzstd) {
   if (file.length <= HEADER || file.length > LIMIT) throw bad('size')
   const kind = hexOf(file.subarray(0, 9))
   if (kind !== ARCHIVE && kind !== ENCRYPTED) throw bad('not an .fmf')
@@ -37,14 +42,12 @@ export async function readFmf(
   )
     throw bad('no directory')
   const dir = await unframe(file.subarray(dirAt + 9), unzstd)
-  const member = tacMember(dir, file, dirAt)
-  let packed = member
-  if (kind === ENCRYPTED) packed = await decrypt(member)
-  return parseTac(await unframe(packed, unzstd))
+  const member = findMember(dir, file, dirAt, ext)
+  return unframe(kind === ENCRYPTED ? await decrypt(member) : member, unzstd)
 }
 
-/** Finds the tactic (.tac) member through the directory. */
-function tacMember(dir: Uint8Array, file: Uint8Array, dirAt: number): Uint8Array {
+/** Finds a member (by extension) through the directory. */
+function findMember(dir: Uint8Array, file: Uint8Array, dirAt: number, want: string): Uint8Array {
   const d = new DataView(dir.buffer, dir.byteOffset, dir.byteLength)
   let at = 0
   const u32 = () => {
@@ -73,14 +76,14 @@ function tacMember(dir: Uint8Array, file: Uint8Array, dirAt: number): Uint8Array
       at += 40
       const start = HEADER + offset
       if (!stored || start + stored > dirAt) throw bad('directory')
-      if (ext === '.tac') found = file.subarray(start, start + stored)
+      if (ext === want) found = file.subarray(start, start + stored)
     }
     const children = u32()
     if (children > 16) throw bad('directory')
     for (let i = 0; i < children; i++) folder(depth + 1)
   }
   folder(0)
-  if (!found) throw bad('no tactic inside')
+  if (!found) throw bad(want === '.tac' ? 'no tactic inside' : 'no schedule inside')
   return found
 }
 

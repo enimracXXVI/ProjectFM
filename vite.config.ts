@@ -38,6 +38,20 @@ export default defineConfig({
             purpose: 'maskable',
           },
         ],
+        // Long-press the app icon to jump straight to these sections
+        shortcuts: [
+          ['Squad', 'squad'],
+          ['Tactics', 'tactics'],
+          ['World', 'world'],
+          ['Competitions', 'competitions'],
+        ].map(([name, path]) => ({
+          name,
+          url: `${base}${path}`,
+          icons: [
+            { src: `icons/shortcuts/${path}-96.png`, sizes: '96x96', type: 'image/png' },
+            { src: `icons/shortcuts/${path}-192.png`, sizes: '192x192', type: 'image/png' },
+          ],
+        })),
       },
       workbox: {
         globPatterns: ['**/*.{js,css,html,svg,png,woff2}'],

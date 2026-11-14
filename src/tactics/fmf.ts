@@ -272,7 +272,7 @@ export function frame(value: Uint8Array): Uint8Array {
 }
 
 /** Little-endian byte writer. */
-class Writer {
+export class Writer {
   private parts: Uint8Array[] = []
   bytes(b: Uint8Array) {
     this.parts.push(b)
@@ -300,7 +300,7 @@ class Writer {
   }
 }
 
-function concat(...parts: Uint8Array[]) {
+export function concat(...parts: Uint8Array[]) {
   const out = new Uint8Array(parts.reduce((n, p) => n + p.length, 0))
   let at = 0
   for (const p of parts) {
@@ -310,6 +310,6 @@ function concat(...parts: Uint8Array[]) {
   return out
 }
 
-function hex(t: string) {
+export function hex(t: string) {
   return Uint8Array.from(t.match(/../g)!, (h) => parseInt(h, 16))
 }

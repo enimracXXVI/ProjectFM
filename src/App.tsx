@@ -36,6 +36,8 @@ import { BottomBarSettings } from './pages/settings/BottomBar'
 import { NamesSettings } from './pages/settings/Names'
 import { PersonalitySettings } from './pages/settings/Personality'
 import { FmCodesSettings } from './pages/settings/FmCodes'
+import { TrainingSessionsSettings } from './pages/settings/TrainingSessions'
+import { Training } from './pages/Training'
 import { RoleWarningsSettings, TacticsSettings } from './pages/settings/TacticsSettings'
 import { InstructionsSettings, PlayerInstructionsSettings } from './pages/settings/Instructions'
 import { DatabaseSettings } from './pages/settings/Database'
@@ -87,6 +89,7 @@ function SignedIn() {
         <Route path="check" element={<Check />} />
         <Route path="competitions" element={<Competitions />} />
         <Route path="tactics" element={<Tactics />} />
+        <Route path="training" element={<Training />} />
         <Route path="best-xi" element={<BestXI />} />
         <Route path="competitions/:dbId" element={<Competition />} />
         <Route path="competitions/:dbId/match/:key" element={<Match />} />
@@ -108,6 +111,7 @@ function SignedIn() {
         <Route path="settings/player-instructions" element={<PlayerInstructionsSettings />} />
         <Route path="settings/fm-codes" element={<FmCodesSettings />} />
         <Route path="settings/tactics" element={<TacticsSettings />} />
+        <Route path="settings/training-sessions" element={<TrainingSessionsSettings />} />
         <Route path="settings/role-warnings" element={<RoleWarningsSettings />} />
         <Route path="settings/database" element={<DatabaseSettings />} />
         <Route path="settings/colours" element={<ColoursSettings />} />

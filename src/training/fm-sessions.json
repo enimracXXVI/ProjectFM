@@ -1,0 +1,940 @@
+[
+  {
+    "code": 0,
+    "name": "Passing Style",
+    "category": "Tactical Understanding",
+    "about": "Work on the tempo and directness of our passing as part of our tactical setup.",
+    "fm": true,
+    "attributes": {}
+  },
+  {
+    "code": 1,
+    "name": "Build Up",
+    "category": "Tactical Understanding",
+    "about": "Work on how we look to bypass the opposition's press as part of our tactical setup.",
+    "fm": true,
+    "attributes": {}
+  },
+  {
+    "code": 2,
+    "name": "Chance Creation",
+    "category": "Tactical Understanding",
+    "about": "Work on how and with what level of urgency we look to create chances as part of our tactical setup.",
+    "fm": true,
+    "attributes": {}
+  },
+  {
+    "code": 3,
+    "name": "In Possession Shape",
+    "category": "Tactical Understanding",
+    "about": "Work on the positions and roles we are asking the players to take up when in possession as part of our tactical setup.",
+    "fm": true,
+    "attributes": {}
+  },
+  {
+    "code": 4,
+    "name": "Line of Engagement",
+    "category": "Tactical Understanding",
+    "about": "Work on where and when we engage the opponent defensively as part of our tactical setup.",
+    "fm": true,
+    "attributes": {}
+  },
+  {
+    "code": 5,
+    "name": "Pressing Intensity",
+    "category": "Tactical Understanding",
+    "about": "Work on the intensity and style of our press as part of our tactical setup.",
+    "fm": true,
+    "attributes": {}
+  },
+  {
+    "code": 6,
+    "name": "Pressing Trap",
+    "category": "Tactical Understanding",
+    "about": "Work on where we set our pressing traps as part of our tactical setup.",
+    "fm": true,
+    "attributes": {}
+  },
+  {
+    "code": 7,
+    "name": "Out Of Possession Shape",
+    "category": "Tactical Understanding",
+    "about": "Work on the positions and roles we are asking the players to take up when out of possession as part of our tactical setup.",
+    "fm": true,
+    "attributes": {}
+  },
+  {
+    "code": 100,
+    "name": "Press Avoidance",
+    "category": "Match Preparation",
+    "about": "Reinforce how the players organise themselves behind the ball when in possession according to our tactics ahead of the next match.",
+    "fm": true,
+    "attributes": {}
+  },
+  {
+    "code": 101,
+    "name": "Ball Progression",
+    "category": "Match Preparation",
+    "about": "Reinforce in-possession decision making according to our tactics ahead of the next match.",
+    "fm": true,
+    "attributes": {}
+  },
+  {
+    "code": 102,
+    "name": "Final Third",
+    "category": "Match Preparation",
+    "about": "Reinforce anticipating each other's movements ahead of the ball when in possession according to our tactics ahead of the next match.",
+    "fm": true,
+    "attributes": {}
+  },
+  {
+    "code": 103,
+    "name": "Defensive Block",
+    "category": "Match Preparation",
+    "about": "Reinforce the players' collective concentration on setting our out of possession block according to our tactics ahead of the next match.",
+    "fm": true,
+    "attributes": {}
+  },
+  {
+    "code": 104,
+    "name": "Defensive Positioning",
+    "category": "Match Preparation",
+    "about": "Reinforce the players' individual positioning when out of possession according to our tactics ahead of the next match.",
+    "fm": true,
+    "attributes": {}
+  },
+  {
+    "code": 105,
+    "name": "Defensive Engagement",
+    "category": "Match Preparation",
+    "about": "Reinforce how the players engage with the opposition when out of possession according to our tactics ahead of the next match.",
+    "fm": true,
+    "attributes": {}
+  },
+  {
+    "code": 106,
+    "name": "Corners",
+    "category": "Match Preparation",
+    "about": "Focuses on optimising our offensive and defensive setup at corners according to our tactics ahead of the next match.",
+    "fm": true,
+    "attributes": {}
+  },
+  {
+    "code": 107,
+    "name": "Free Kicks",
+    "category": "Match Preparation",
+    "about": "Focuses on optimising our offensive and defensive setup at free kicks according to our tactics ahead of the next match.",
+    "fm": true,
+    "attributes": {}
+  },
+  {
+    "code": 108,
+    "name": "Penalties",
+    "category": "Match Preparation",
+    "about": "Focuses on attempting to mitigate the pressure associated with taking and facing penalties ahead of the next match.",
+    "fm": true,
+    "attributes": {}
+  },
+  {
+    "code": 200,
+    "name": "Individual Development",
+    "category": "Footballing Development",
+    "about": "An opportunity in the schedule for individual work to take place.",
+    "fm": true,
+    "attributes": {}
+  },
+  {
+    "code": 201,
+    "name": "Attacking Ball Work",
+    "category": "Footballing Development",
+    "about": "",
+    "fm": true,
+    "attributes": {
+      "attacking": [
+        "Dribbling",
+        "Finishing",
+        "Heading",
+        "Long Shots",
+        "Technique",
+        "Aggression",
+        "Anticipation",
+        "Composure",
+        "Decisions",
+        "Flair",
+        "Off The Ball",
+        "Teamwork"
+      ],
+      "midfield": [
+        "Finishing",
+        "Long Shots",
+        "Anticipation",
+        "Flair",
+        "Off The Ball",
+        "Dribbling",
+        "Composure"
+      ],
+      "defensive": ["Finishing", "Long Shots", "Anticipation", "Flair", "Off The Ball"],
+      "goalkeeping": ["Technique", "Decisions", "Flair", "Vision"]
+    }
+  },
+  {
+    "code": 202,
+    "name": "Defensive Ball Work",
+    "category": "Footballing Development",
+    "about": "",
+    "fm": true,
+    "attributes": {
+      "attacking": ["Marking", "Tackling", "Bravery", "Concentration", "Positioning"],
+      "midfield": ["Marking", "Tackling", "Aggression", "Bravery", "Concentration", "Positioning"],
+      "defensive": [
+        "Heading",
+        "Marking",
+        "Tackling",
+        "Technique",
+        "Aggression",
+        "Bravery",
+        "Concentration",
+        "Decisions",
+        "Positioning",
+        "Teamwork"
+      ],
+      "goalkeeping": ["Anticipation", "Bravery", "Composure", "Concentration", "Positioning"]
+    }
+  },
+  {
+    "code": 203,
+    "name": "Possession Ball Work",
+    "category": "Footballing Development",
+    "about": "A team session with the ball focusing on broad possession orientated skills.",
+    "fm": true,
+    "attributes": {
+      "attacking": ["First Touch", "Crossing", "Passing", "Vision"],
+      "midfield": [
+        "Crossing",
+        "Dribbling",
+        "First Touch",
+        "Heading",
+        "Passing",
+        "Technique",
+        "Composure",
+        "Decisions",
+        "Vision",
+        "Teamwork"
+      ],
+      "defensive": ["First Touch", "Crossing", "Passing", "Vision", "Dribbling"],
+      "goalkeeping": ["First Touch", "Passing", "Vision", "Teamwork"]
+    }
+  },
+  {
+    "code": 220,
+    "name": "Attacking - Balanced",
+    "category": "Footballing Development",
+    "about": "A broad session focused on a balanced range of attacking orientated skills.",
+    "fm": false,
+    "attributes": {
+      "attacking": [
+        "Crossing",
+        "Dribbling",
+        "Finishing",
+        "First Touch",
+        "Heading",
+        "Long Shots",
+        "Passing",
+        "Technique",
+        "Composure",
+        "Flair",
+        "Off The Ball",
+        "Vision"
+      ],
+      "midfield": [
+        "Crossing",
+        "Dribbling",
+        "First Touch",
+        "Heading",
+        "Long Shots",
+        "Passing",
+        "Technique",
+        "Composure",
+        "Off The Ball",
+        "Vision"
+      ],
+      "defensive": [
+        "Crossing",
+        "Dribbling",
+        "First Touch",
+        "Heading",
+        "Long Shots",
+        "Passing",
+        "Off The Ball",
+        "Vision"
+      ],
+      "goalkeeping": ["Position/Role"]
+    }
+  },
+  {
+    "code": 221,
+    "name": "Attacking - Patient",
+    "category": "Footballing Development",
+    "about": "A specific session focused on skills associated with a patient attacking approach.",
+    "fm": false,
+    "attributes": {
+      "attacking": [
+        "Finishing",
+        "First Touch",
+        "Passing",
+        "Technique",
+        "Composure",
+        "Decisions",
+        "Flair",
+        "Off The Ball",
+        "Vision",
+        "Teamwork"
+      ],
+      "midfield": [
+        "Finishing",
+        "First Touch",
+        "Passing",
+        "Technique",
+        "Composure",
+        "Decisions",
+        "Off The Ball",
+        "Vision",
+        "Teamwork"
+      ],
+      "defensive": [
+        "First Touch",
+        "Passing",
+        "Technique",
+        "Composure",
+        "Decisions",
+        "Off The Ball",
+        "Vision",
+        "Teamwork"
+      ],
+      "goalkeeping": ["Position/Role"]
+    }
+  },
+  {
+    "code": 222,
+    "name": "Attacking - Direct",
+    "category": "Footballing Development",
+    "about": "A specific session focused on skills associated with a direct attacking approach.",
+    "fm": false,
+    "attributes": {
+      "attacking": [
+        "Dribbling",
+        "Finishing",
+        "First Touch",
+        "Heading",
+        "Long Shots",
+        "Passing",
+        "Technique",
+        "Anticipation",
+        "Flair",
+        "Off The Ball",
+        "Vision"
+      ],
+      "midfield": [
+        "Dribbling",
+        "Finishing",
+        "First Touch",
+        "Long Shots",
+        "Passing",
+        "Technique",
+        "Anticipation",
+        "Off The Ball",
+        "Vision"
+      ],
+      "defensive": [
+        "Dribbling",
+        "First Touch",
+        "Long Shots",
+        "Passing",
+        "Technique",
+        "Anticipation",
+        "Off The Ball",
+        "Vision"
+      ],
+      "goalkeeping": ["Position/Role"]
+    }
+  },
+  {
+    "code": 223,
+    "name": "Attacking - Wings",
+    "category": "Footballing Development",
+    "about": "A specific session focused on skills associated with a wide attacking approach.",
+    "fm": false,
+    "attributes": {
+      "attacking": [
+        "Crossing",
+        "Dribbling",
+        "Finishing",
+        "Heading",
+        "Technique",
+        "Anticipation",
+        "Flair",
+        "Off The Ball"
+      ],
+      "midfield": [
+        "Crossing",
+        "Dribbling",
+        "Heading",
+        "Technique",
+        "Anticipation",
+        "Flair",
+        "Off The Ball"
+      ],
+      "defensive": ["Crossing", "Dribbling", "Technique", "Anticipation", "Off The Ball"],
+      "goalkeeping": ["Position/Role"]
+    }
+  },
+  {
+    "code": 224,
+    "name": "Defending - Balanced",
+    "category": "Footballing Development",
+    "about": "A broad session focused on a balanced range of defensive orientated skills.",
+    "fm": false,
+    "attributes": {
+      "attacking": ["Heading", "Marking", "Tackling", "Aggression", "Concentration", "Positioning"],
+      "midfield": [
+        "Heading",
+        "Marking",
+        "Tackling",
+        "Aggression",
+        "Concentration",
+        "Decisions",
+        "Positioning"
+      ],
+      "defensive": [
+        "Heading",
+        "Marking",
+        "Tackling",
+        "Technique",
+        "Aggression",
+        "Anticipation",
+        "Concentration",
+        "Decisions",
+        "Positioning"
+      ],
+      "goalkeeping": ["Position/Role"]
+    }
+  },
+  {
+    "code": 225,
+    "name": "Defending - Engaged",
+    "category": "Footballing Development",
+    "about": "A specific session focused on skills associated with a front-foot defensive approach.",
+    "fm": false,
+    "attributes": {
+      "attacking": ["Tackling", "Aggression", "Bravery"],
+      "midfield": ["Tackling", "Aggression", "Bravery", "Decisions"],
+      "defensive": ["Tackling", "Aggression", "Bravery", "Decisions", "Positioning"],
+      "goalkeeping": ["Position/Role"]
+    }
+  },
+  {
+    "code": 226,
+    "name": "Defending - Disengaged",
+    "category": "Footballing Development",
+    "about": "A specific session focused on skills associated with a structured defensive approach.",
+    "fm": false,
+    "attributes": {
+      "attacking": ["Marking", "Positioning", "Teamwork"],
+      "midfield": ["Marking", "Anticipation", "Positioning", "Teamwork"],
+      "defensive": ["Marking", "Anticipation", "Concentration", "Positioning", "Teamwork"],
+      "goalkeeping": ["Position/Role"]
+    }
+  },
+  {
+    "code": 227,
+    "name": "Defending - Wide",
+    "category": "Footballing Development",
+    "about": "A specific session focused on skills associated with defending the wide areas.",
+    "fm": false,
+    "attributes": {
+      "attacking": ["Marking", "Decisions", "Positioning"],
+      "midfield": ["Marking", "Anticipation", "Decisions", "Positioning"],
+      "defensive": ["Heading", "Marking", "Anticipation", "Decisions", "Positioning"],
+      "goalkeeping": ["Position/Role"]
+    }
+  },
+  {
+    "code": 228,
+    "name": "Theory - Attacking Shadow Play",
+    "category": "Footballing Development",
+    "about": "A specific session focused on developing the intellectual side of attacking.",
+    "fm": false,
+    "attributes": {
+      "attacking": ["Anticipation", "Composure", "Decisions", "Off The Ball", "Teamwork"],
+      "midfield": ["Anticipation", "Composure", "Decisions", "Off The Ball", "Teamwork"],
+      "defensive": ["Anticipation", "Composure", "Decisions", "Off The Ball", "Teamwork"],
+      "goalkeeping": ["Position/Role"]
+    }
+  },
+  {
+    "code": 229,
+    "name": "Theory - Defensive Shadow Play",
+    "category": "Footballing Development",
+    "about": "A specific session focused on developing the intellectual side of defending.",
+    "fm": false,
+    "attributes": {
+      "attacking": ["Anticipation", "Composure", "Decisions", "Positioning", "Teamwork"],
+      "midfield": ["Anticipation", "Composure", "Decisions", "Positioning", "Teamwork"],
+      "defensive": ["Anticipation", "Composure", "Decisions", "Positioning", "Teamwork"],
+      "goalkeeping": ["Position/Role"]
+    }
+  },
+  {
+    "code": 230,
+    "name": "Technical - Chance Creation",
+    "category": "Footballing Development",
+    "about": "A specific session focused on the technical skills associated with creating chances.",
+    "fm": false,
+    "attributes": {
+      "attacking": [
+        "Crossing",
+        "Passing",
+        "Technique",
+        "Decisions",
+        "Flair",
+        "Off The Ball",
+        "Vision"
+      ],
+      "midfield": [
+        "Crossing",
+        "Passing",
+        "Technique",
+        "Decisions",
+        "Flair",
+        "Off The Ball",
+        "Vision"
+      ],
+      "defensive": [
+        "Crossing",
+        "Passing",
+        "Technique",
+        "Decisions",
+        "Flair",
+        "Off The Ball",
+        "Vision"
+      ],
+      "goalkeeping": ["Position/Role"]
+    }
+  },
+  {
+    "code": 231,
+    "name": "Technical - Chance Conversion",
+    "category": "Footballing Development",
+    "about": "A specific session focused on the technical skills associated with converting chances.",
+    "fm": false,
+    "attributes": {
+      "attacking": ["Finishing", "Heading", "Long Shots", "Technique", "Anticipation", "Composure"],
+      "midfield": ["Finishing", "Heading", "Long Shots", "Technique", "Anticipation", "Composure"],
+      "defensive": ["Finishing", "Heading", "Long Shots", "Technique", "Anticipation", "Composure"],
+      "goalkeeping": ["Position/Role"]
+    }
+  },
+  {
+    "code": 232,
+    "name": "Technical - Ball Retention",
+    "category": "Footballing Development",
+    "about": "A specific session focused on the technical skills associated with retaining the ball.",
+    "fm": false,
+    "attributes": {
+      "attacking": ["First Touch", "Passing", "Anticipation", "Composure", "Decisions", "Teamwork"],
+      "midfield": ["First Touch", "Passing", "Anticipation", "Composure", "Decisions", "Teamwork"],
+      "defensive": ["First Touch", "Passing", "Anticipation", "Composure", "Decisions", "Teamwork"],
+      "goalkeeping": ["Position/Role"]
+    }
+  },
+  {
+    "code": 233,
+    "name": "Technical - Ground Defence",
+    "category": "Footballing Development",
+    "about": "A specific session focused on the technical skills associated with defending when the ball is on the floor.",
+    "fm": false,
+    "attributes": {
+      "attacking": ["Marking", "Tackling", "Technique", "Concentration", "Positioning"],
+      "midfield": ["Marking", "Tackling", "Technique", "Concentration", "Positioning"],
+      "defensive": ["Marking", "Tackling", "Technique", "Concentration", "Positioning"],
+      "goalkeeping": ["Position/Role"]
+    }
+  },
+  {
+    "code": 234,
+    "name": "Technical - Aerial Defence",
+    "category": "Footballing Development",
+    "about": "A specific session focused on the technical skills associated with defending when the ball is in the air.",
+    "fm": false,
+    "attributes": {
+      "attacking": ["Heading", "Marking", "Technique", "Bravery", "Positioning"],
+      "midfield": ["Heading", "Marking", "Technique", "Bravery", "Positioning"],
+      "defensive": ["Heading", "Marking", "Technique", "Bravery", "Positioning"],
+      "goalkeeping": ["Position/Role"]
+    }
+  },
+  {
+    "code": 235,
+    "name": "Transition - Restrict",
+    "category": "Footballing Development",
+    "about": "A specific session focused on the transitional skills associated with restricting the opposition.",
+    "fm": false,
+    "attributes": {
+      "attacking": ["Marking", "Concentration", "Positioning", "Teamwork", "Work Rate"],
+      "midfield": ["Marking", "Concentration", "Positioning", "Teamwork", "Work Rate"],
+      "defensive": ["Marking", "Concentration", "Positioning", "Teamwork", "Work Rate"],
+      "goalkeeping": ["Position/Role"]
+    }
+  },
+  {
+    "code": 236,
+    "name": "Transition - Press",
+    "category": "Footballing Development",
+    "about": "A specific session focused on the transitional skills associated with pressing the opposition.",
+    "fm": false,
+    "attributes": {
+      "attacking": [
+        "Tackling",
+        "Aggression",
+        "Anticipation",
+        "Positioning",
+        "Teamwork",
+        "Work Rate"
+      ],
+      "midfield": [
+        "Tackling",
+        "Aggression",
+        "Anticipation",
+        "Positioning",
+        "Teamwork",
+        "Work Rate"
+      ],
+      "defensive": [
+        "Tackling",
+        "Aggression",
+        "Anticipation",
+        "Positioning",
+        "Teamwork",
+        "Work Rate"
+      ],
+      "goalkeeping": ["Position/Role"]
+    }
+  },
+  {
+    "code": 237,
+    "name": "Transition - Progress",
+    "category": "Footballing Development",
+    "about": "A specific session focused on the transitional skills associated with progressing from defence to attack.",
+    "fm": false,
+    "attributes": {
+      "attacking": ["First Touch", "Dribbling", "Passing", "Decisions", "Teamwork", "Work Rate"],
+      "midfield": ["First Touch", "Dribbling", "Passing", "Decisions", "Teamwork", "Work Rate"],
+      "defensive": ["First Touch", "Dribbling", "Passing", "Decisions", "Teamwork", "Work Rate"],
+      "goalkeeping": ["Position/Role"]
+    }
+  },
+  {
+    "code": 238,
+    "name": "GK - Balanced",
+    "category": "Footballing Development",
+    "about": "A broad session focused on a balanced range of goalkeeping orientated skills.",
+    "fm": false,
+    "attributes": {
+      "attacking": ["Position/Role"],
+      "midfield": ["Position/Role"],
+      "defensive": ["Position/Role"],
+      "goalkeeping": [
+        "Aerial Reach",
+        "Handling",
+        "One On Ones",
+        "Reflexes",
+        "Rushing Out (Tendency)",
+        "Anticipation",
+        "Concentration",
+        "Decisions",
+        "Positioning",
+        "Agility",
+        "Balance"
+      ]
+    }
+  },
+  {
+    "code": 239,
+    "name": "GK - Shot Stopping",
+    "category": "Footballing Development",
+    "about": "A specific session focused on the goalkeeping skills associated with shot stopping.",
+    "fm": false,
+    "attributes": {
+      "attacking": ["Position/Role"],
+      "midfield": ["Position/Role"],
+      "defensive": ["Position/Role"],
+      "goalkeeping": ["Reflexes", "Anticipation", "Positioning", "Agility"]
+    }
+  },
+  {
+    "code": 240,
+    "name": "GK - Handling",
+    "category": "Footballing Development",
+    "about": "A specific session focused on the goalkeeping skills associated with handling the ball.",
+    "fm": false,
+    "attributes": {
+      "attacking": ["Position/Role"],
+      "midfield": ["Position/Role"],
+      "defensive": ["Position/Role"],
+      "goalkeeping": ["Aerial Reach", "Handling", "Concentration", "Balance"]
+    }
+  },
+  {
+    "code": 241,
+    "name": "GK - One On Ones",
+    "category": "Footballing Development",
+    "about": "A specific session focused on the goalkeeping skills associated with facing one-on-ones.",
+    "fm": false,
+    "attributes": {
+      "attacking": ["Position/Role"],
+      "midfield": ["Position/Role"],
+      "defensive": ["Position/Role"],
+      "goalkeeping": [
+        "One On Ones",
+        "Rushing Out (Tendency)",
+        "Anticipation",
+        "Decisions",
+        "Acceleration"
+      ]
+    }
+  },
+  {
+    "code": 242,
+    "name": "GK - Distribution",
+    "category": "Footballing Development",
+    "about": "A specific session focused on the goalkeeping skills associated with distributing the ball.",
+    "fm": false,
+    "attributes": {
+      "attacking": ["Position/Role"],
+      "midfield": ["Position/Role"],
+      "defensive": ["Position/Role"],
+      "goalkeeping": ["First Touch", "Kicking", "Passing", "Throwing", "Composure", "Vision"]
+    }
+  },
+  {
+    "code": 243,
+    "name": "Set Pieces - Delivery",
+    "category": "Footballing Development",
+    "about": "A specific session focused on the technical skills associated with delivering the ball from set pieces.",
+    "fm": false,
+    "attributes": {
+      "attacking": ["Crossing", "Free Kick Taking", "Corners", "Long Throws", "Technique"],
+      "midfield": ["Crossing", "Free Kick Taking", "Corners", "Long Throws", "Technique"],
+      "defensive": ["Crossing", "Free Kick Taking", "Corners", "Long Throws", "Technique"],
+      "goalkeeping": [
+        "Command Of Area",
+        "Handling",
+        "Anticipation",
+        "Concentration",
+        "Decisions",
+        "Positioning"
+      ]
+    }
+  },
+  {
+    "code": 244,
+    "name": "Set Pieces - Penalties",
+    "category": "Footballing Development",
+    "about": "A specific session focused on the skills associated with converting penalty kicks.",
+    "fm": false,
+    "attributes": {
+      "attacking": ["Penalty Taking", "Composure"],
+      "midfield": ["Penalty Taking", "Composure"],
+      "defensive": ["Penalty Taking", "Composure"],
+      "goalkeeping": ["Penalty Taking", "Reflexes", "Composure"]
+    }
+  },
+  {
+    "code": 300,
+    "name": "Rest",
+    "category": "Physical & Recovery",
+    "about": "Allow the players a session off from training to rest.",
+    "fm": true,
+    "attributes": {}
+  },
+  {
+    "code": 301,
+    "name": "Recovery",
+    "category": "Physical & Recovery",
+    "about": "A session focused on in-house recovery with the medical and sports science teams.",
+    "fm": true,
+    "attributes": {}
+  },
+  {
+    "code": 302,
+    "name": "Light Conditioning",
+    "category": "Physical & Recovery",
+    "about": "Gentle physical work focused on delaying the onset of late-season fatigue. Best suited for early season.",
+    "fm": true,
+    "attributes": {}
+  },
+  {
+    "code": 303,
+    "name": "Conditioning",
+    "category": "Physical & Recovery",
+    "about": "Physical work focused on improving and maintaining aerobic and anaerobic abilities. Best suited for quieter periods during the season.",
+    "fm": true,
+    "attributes": {
+      "attacking": [
+        "Acceleration",
+        "Agility",
+        "Balance",
+        "Jumping Reach",
+        "Pace",
+        "Stamina",
+        "Strength",
+        "Work Rate"
+      ],
+      "midfield": [
+        "Acceleration",
+        "Agility",
+        "Balance",
+        "Jumping Reach",
+        "Pace",
+        "Stamina",
+        "Strength",
+        "Work Rate"
+      ],
+      "defensive": [
+        "Acceleration",
+        "Agility",
+        "Balance",
+        "Jumping Reach",
+        "Pace",
+        "Stamina",
+        "Strength",
+        "Work Rate"
+      ],
+      "goalkeeping": [
+        "Acceleration",
+        "Agility",
+        "Balance",
+        "Jumping Reach",
+        "Pace",
+        "Stamina",
+        "Strength",
+        "Work Rate",
+        "Aerial Reach"
+      ]
+    }
+  },
+  {
+    "code": 304,
+    "name": "Heavy Conditioning",
+    "category": "Physical & Recovery",
+    "about": "Intense physical work focused on building robust long term fitness and improving aerobic and anaerobic abilities. Best suited for pre-season or extended breaks from matches.",
+    "fm": true,
+    "attributes": {
+      "attacking": [
+        "Acceleration",
+        "Agility",
+        "Balance",
+        "Jumping Reach",
+        "Pace",
+        "Stamina",
+        "Strength",
+        "Work Rate"
+      ],
+      "midfield": [
+        "Acceleration",
+        "Agility",
+        "Balance",
+        "Jumping Reach",
+        "Pace",
+        "Stamina",
+        "Strength",
+        "Work Rate"
+      ],
+      "defensive": [
+        "Acceleration",
+        "Agility",
+        "Balance",
+        "Jumping Reach",
+        "Pace",
+        "Stamina",
+        "Strength",
+        "Work Rate"
+      ],
+      "goalkeeping": [
+        "Acceleration",
+        "Agility",
+        "Balance",
+        "Jumping Reach",
+        "Pace",
+        "Stamina",
+        "Strength",
+        "Work Rate",
+        "Aerial Reach"
+      ]
+    }
+  },
+  {
+    "code": 305,
+    "name": "Rest (IM)",
+    "category": "Physical & Recovery",
+    "about": "Allow the players a session off from training to rest.",
+    "fm": false,
+    "attributes": {}
+  },
+  {
+    "code": 306,
+    "name": "Recovery (IM)",
+    "category": "Physical & Recovery",
+    "about": "A session focused on in-house recovery with the medical and sports science teams.",
+    "fm": false,
+    "attributes": {}
+  },
+  {
+    "code": 307,
+    "name": "Light Conditioning (IM)",
+    "category": "Physical & Recovery",
+    "about": "Gentle physical work focused on delaying the onset of late-season fatigue. Best suited for early season international breaks or before international tournaments provided the players have had a break following the end of domestic duties.",
+    "fm": false,
+    "attributes": {}
+  },
+  {
+    "code": 400,
+    "name": "Team Bonding",
+    "category": "Extra-Curricular",
+    "about": "Time dedicated to building off-pitch relationships and strong ties as a team.",
+    "fm": true,
+    "attributes": {}
+  },
+  {
+    "code": 401,
+    "name": "Community Outreach",
+    "category": "Extra-Curricular",
+    "about": "An opportunity to give back to the fans via charitable endeavours in the local community.",
+    "fm": true,
+    "attributes": {}
+  },
+  {
+    "code": 402,
+    "name": "Travel",
+    "category": "Extra-Curricular",
+    "about": "Journeying to or from an away match as a team.",
+    "fm": false,
+    "attributes": {}
+  },
+  {
+    "code": 500,
+    "name": "Match",
+    "category": "Match",
+    "about": "",
+    "fm": false,
+    "attributes": {}
+  },
+  {
+    "code": 501,
+    "name": "Not Available",
+    "category": "Physical & Recovery",
+    "about": "",
+    "fm": false,
+    "attributes": {}
+  }
+]

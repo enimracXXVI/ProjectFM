@@ -174,7 +174,7 @@ describe('FM tactic file', () => {
 
   it('refuses files that are not FM tactics', async () => {
     await expect(readTacticFile(new Uint8Array(100), async (b) => b)).rejects.toThrow(
-      'not an FM tactic file',
+      'not an FM file',
     )
   })
 

@@ -86,6 +86,11 @@ export function SettingsPage() {
               ],
               ['/settings/tactics', 'Tactics', 'What the tactic briefing flags'],
               [
+                '/settings/training-sessions',
+                'Training sessions',
+                "FM's sessions, codes and descriptions for schedules",
+              ],
+              [
                 '/settings/role-warnings',
                 'Role warnings',
                 "FM's warnings about role combinations, with their limits",

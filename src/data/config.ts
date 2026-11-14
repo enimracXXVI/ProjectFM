@@ -33,6 +33,11 @@ import {
   type FmInstruction,
 } from '../tactics/fm'
 import { DEFAULT_ROLE_WARNINGS, type RoleWarning } from '../tactics/warnings'
+import {
+  DEFAULT_TRAINING_SESSIONS,
+  type TrainingSchedule,
+  type TrainingSession,
+} from '../training/schedule'
 import { DEFAULT_NOTE_CATEGORIES, type NoteCategory } from './notes'
 import { DEFAULT_STATUSES, normalizeStatus, type StatusInfo } from './statusInfo'
 
@@ -87,6 +92,10 @@ export interface AppConfig {
   briefingLowFit: number
   /** FM's role-combination warnings the briefing checks (text, on/off, limits). */
   roleWarnings: RoleWarning[]
+  /** FM's training sessions: names, codes, descriptions, whether FM schedules accept them. */
+  trainingSessions: TrainingSession[]
+  /** Your weekly training schedules (shared by all careers). */
+  trainingSchedules: TrainingSchedule[]
   /** Categories for Dashboard notes, in order. */
   noteCategories: NoteCategory[]
 }
@@ -138,6 +147,8 @@ export const DEFAULT_CONFIG: AppConfig = {
   bestXiBaseline: 6,
   briefingLowFit: 55,
   roleWarnings: DEFAULT_ROLE_WARNINGS,
+  trainingSessions: DEFAULT_TRAINING_SESSIONS,
+  trainingSchedules: [],
   noteCategories: DEFAULT_NOTE_CATEGORIES,
 }
 
@@ -188,6 +199,8 @@ export function mergeConfig(stored: Stored): AppConfig {
     fmCodes: { ...DEFAULT_CONFIG.fmCodes, ...stored.fmCodes },
     bestXiBaseline: stored.bestXiBaseline ?? DEFAULT_CONFIG.bestXiBaseline,
     briefingLowFit: stored.briefingLowFit ?? DEFAULT_CONFIG.briefingLowFit,
+    trainingSessions: stored.trainingSessions ?? DEFAULT_CONFIG.trainingSessions,
+    trainingSchedules: stored.trainingSchedules ?? DEFAULT_CONFIG.trainingSchedules,
     // Saved warnings first; warnings added later appear with their defaults
     roleWarnings: [
       ...(stored.roleWarnings ?? []),
