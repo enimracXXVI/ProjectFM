@@ -357,12 +357,12 @@ export function Squad() {
           {/* Tablet / desktop: table */}
           <div
             className={clsx(
-              'overflow-x-auto rounded-xl border border-border md:block',
+              'max-h-[calc(100dvh-9rem)] overflow-auto rounded-xl border border-border md:block',
               layout === 'table' ? 'block' : 'hidden',
             )}
           >
             <table className="w-full text-sm">
-              <thead className="bg-surface-2 text-left text-xs tracking-wide text-muted uppercase">
+              <thead className="sticky top-0 z-[2] bg-surface-2 text-left text-xs tracking-wide text-muted uppercase">
                 {view === 'attributes' && (
                   <tr className="border-b border-border">
                     <th className="sticky left-0 z-[1] bg-surface-2 shadow-[inset_-1px_0_0_var(--color-border)]" />

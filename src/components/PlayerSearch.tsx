@@ -1,38 +1,43 @@
 import { clsx } from 'clsx'
 import { Search } from 'lucide-react'
 import { useId, useState } from 'react'
-
-/** Lower case without accents, so "dragusin" finds "Drăgușin". */
-const fold = (t: string) => t.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase()
+import { fold, type SearchItem } from '../lib/search'
 
 /**
- * Type part of a name and pick from the matches (tap or Enter). Matches any word of the name,
- * ignoring accents and case.
+ * Type part of a name and pick from the matches (tap or Enter), ignoring accents and case.
+ * With nothing typed, tapping the box lists `initial` (e.g. your whole squad).
  */
-export function PlayerSearch<T extends { id: string; name: string }>({
-  players,
+export function PlayerSearch<T extends SearchItem>({
+  items,
+  initial,
   onPick,
   placeholder = 'Add player: type a name',
-  detail,
+  limit = 12,
 }: {
-  players: T[]
+  items: T[]
+  initial?: T[]
   onPick: (p: T) => void
   placeholder?: string
-  /** Small text after the name (e.g. positions). */
-  detail?: (p: T) => string | null
+  limit?: number
 }) {
   const [q, setQ] = useState('')
+  const [open, setOpen] = useState(false)
   const [at, setAt] = useState(0)
   const list = useId()
   const query = fold(q.trim())
-  const matches = query ? players.filter((p) => fold(p.name).includes(query)).slice(0, 8) : []
+  const matches = query
+    ? items.filter((p) => (p.key ?? fold(p.name)).includes(query)).slice(0, limit)
+    : open
+      ? (initial ?? [])
+      : []
   const pick = (p: T) => {
     onPick(p)
     setQ('')
     setAt(0)
+    setOpen(false)
   }
   return (
-    <div className="relative w-full sm:w-72">
+    <div className="relative w-full sm:w-80">
       <Search
         className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted"
         aria-hidden
@@ -45,6 +50,9 @@ export function PlayerSearch<T extends { id: string; name: string }>({
         aria-label={placeholder}
         placeholder={placeholder}
         value={q}
+        onFocus={() => setOpen(true)}
+        onClick={() => setOpen(true)}
+        onBlur={() => setOpen(false)}
         onChange={(e) => {
           setQ(e.target.value)
           setAt(0)
@@ -52,11 +60,11 @@ export function PlayerSearch<T extends { id: string; name: string }>({
         onKeyDown={(e) => {
           if (e.key === 'ArrowDown') setAt((a) => Math.min(a + 1, matches.length - 1))
           else if (e.key === 'ArrowUp') setAt((a) => Math.max(a - 1, 0))
-          else if (e.key === 'Enter' && matches[at]) {
-            e.preventDefault()
-            pick(matches[at])
-          } else if (e.key === 'Escape') setQ('')
-          else return
+          else if (e.key === 'Enter' && matches[at]) pick(matches[at])
+          else if (e.key === 'Escape') {
+            setQ('')
+            setOpen(false)
+          } else return
           e.preventDefault()
         }}
         className="min-h-11 w-full rounded-lg border border-border bg-surface pr-3 pl-9 text-base md:text-sm"
@@ -65,10 +73,15 @@ export function PlayerSearch<T extends { id: string; name: string }>({
         <ul
           id={list}
           role="listbox"
-          className="absolute inset-x-0 top-full z-20 mt-1 max-h-72 overflow-y-auto rounded-lg border border-border bg-surface p-1 shadow-lg"
+          className="absolute inset-x-0 top-full z-20 mt-1 max-h-80 overflow-y-auto rounded-lg border border-border bg-surface p-1 shadow-lg"
         >
           {matches.map((p, i) => (
             <li key={p.id} role="option" aria-selected={i === at}>
+              {p.group && p.group !== matches[i - 1]?.group && (
+                <p className="px-2 pt-2 pb-1 text-[11px] font-semibold tracking-wide text-muted uppercase">
+                  {p.group}
+                </p>
+              )}
               <button
                 type="button"
                 // Picked before the input loses focus
@@ -80,7 +93,9 @@ export function PlayerSearch<T extends { id: string; name: string }>({
                 )}
               >
                 <span className="min-w-0 flex-1 truncate">{p.name}</span>
-                {detail?.(p) && <span className="text-xs text-muted">{detail(p)}</span>}
+                {p.detail && (
+                  <span className="max-w-[50%] truncate text-xs text-muted">{p.detail}</span>
+                )}
               </button>
             </li>
           ))}

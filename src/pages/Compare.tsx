@@ -4,6 +4,9 @@ import { useMemo } from 'react'
 import { useUrlState } from '../lib/urlState'
 import { Link, useSearchParams } from 'react-router-dom'
 import { PlayerSearch } from '../components/PlayerSearch'
+import { searchItems } from '../lib/search'
+import { rowToPlayer, type WorldFile } from '../world/world'
+import { useWorld } from '../world/hooks'
 import { Radar } from '../components/Radar'
 import { PageHeader, Placeholder } from '../components/ui'
 import { isGoalkeeper } from '../data/attributeInfo'
@@ -37,7 +40,15 @@ export function Compare() {
   const [params, setParams] = useSearchParams()
   const ids = (params.get('ids') ?? '').split(',').filter(Boolean).slice(0, MAX_PLAYERS)
   const byId = useMemo(() => new Map((data ?? []).map((p) => [p.id, p])), [data])
-  const players = ids.map((id) => byId.get(id)).filter((p): p is PlayerRow => !!p)
+  // Anyone in the world database can be compared too (ids "w<FM id>")
+  const world = useWorld(career.id).data?.file
+  const worldRows = useMemo(() => new Map((world?.rows ?? []).map((r) => [`w${r[0]}`, r])), [world])
+  const players = ids
+    .map((id) => {
+      const row = world && id.startsWith('w') ? worldRows.get(id) : undefined
+      return row ? fromWorld(world!, row) : byId.get(id)
+    })
+    .filter((p): p is PlayerRow => !!p)
 
   const setIds = (next: string[]) => {
     saveCompareIds(next)
@@ -76,7 +87,30 @@ export function Compare() {
     return vals.length ? vals.reduce((s, v) => s + v, 0) / vals.length : null
   }
 
-  const available = (data ?? []).filter((p) => p.in_squad && !ids.includes(p.id)).sort(byLastName)
+  const squad = useMemo(
+    () =>
+      searchItems(
+        (data ?? [])
+          .filter((p) => p.in_squad)
+          .sort(byLastName)
+          .map((p) => ({ id: p.id, name: p.name, detail: p.positions, group: 'Your squad' })),
+      ),
+    [data],
+  )
+  const others = useMemo(() => {
+    const mine = new Set((data ?? []).map((p) => p.fm_uid))
+    return searchItems(
+      (world?.rows ?? [])
+        .filter((r) => !mine.has(r[0]))
+        .map((r) => ({
+          id: `w${r[0]}`,
+          name: r[1],
+          detail: [r[5] ?? 'Free agent', r[7]].filter(Boolean).join(' · '),
+          group: 'World',
+        })),
+    )
+  }, [world, data])
+  const pickable = [...squad, ...others].filter((p) => !ids.includes(p.id))
 
   const rows = buildRows(players, sections, role, config)
 
@@ -91,7 +125,14 @@ export function Compare() {
             className="inline-flex min-h-11 items-center gap-2 rounded-full border border-border bg-surface pr-1 pl-3 text-sm"
           >
             <span className="size-2.5 rounded-full" style={{ backgroundColor: s.color }} />
-            <Link to={`/squad/${s.player.id}`} className="font-medium hover:text-accent">
+            <Link
+              to={
+                s.player.id.startsWith('w')
+                  ? `/world/${s.player.id.slice(1)}`
+                  : `/squad/${s.player.id}`
+              }
+              className="font-medium hover:text-accent"
+            >
               {s.name}
             </Link>
             <button
@@ -106,9 +147,10 @@ export function Compare() {
         ))}
         {ids.length < MAX_PLAYERS && (
           <PlayerSearch
-            players={available}
+            items={pickable}
+            initial={squad.filter((p) => !ids.includes(p.id))}
             onPick={(p) => setIds([...ids, p.id])}
-            detail={(p) => p.positions}
+            placeholder={world ? 'Add player: your squad or anyone' : 'Add player: type a name'}
           />
         )}
       </div>
@@ -226,6 +268,8 @@ function buildRows(
     ),
   )
   row('Nation', textCells(players.map((p) => p.nation)))
+  if (players.some((p) => p.extra.Club))
+    row('Club', textCells(players.map((p) => p.extra.Club ?? 'Your squad')))
   row(
     'Height (cm)',
     numCells(
@@ -450,4 +494,34 @@ function CompareRows({ rows, series }: { rows: Row[]; series: Series[] }) {
       </div>
     </>
   )
+}
+
+/** A world database player in the squad's shape, for the comparison. */
+function fromWorld(file: WorldFile, row: WorldFile['rows'][number]): PlayerRow {
+  const w = rowToPlayer(file, row)
+  const extra: Record<string, string> = Object.fromEntries(
+    Object.entries(w.hidden).map(([k, v]) => [k, String(v)]),
+  )
+  if (w.ca != null) extra.CA = String(w.ca)
+  if (w.pa != null) extra.PA = String(w.pa)
+  extra.Club = w.club ?? 'Free agent'
+  return {
+    id: `w${w.id}`,
+    career_id: '',
+    fm_uid: w.id,
+    name: w.name,
+    positions: w.positions,
+    squad_number: null,
+    age: w.age,
+    nation: w.nation,
+    second_nation: w.secondNation,
+    height_cm: w.height,
+    left_foot: null,
+    right_foot: null,
+    personality: w.personality,
+    attributes: w.attributes,
+    extra,
+    in_squad: false,
+    updated_at: '',
+  }
 }

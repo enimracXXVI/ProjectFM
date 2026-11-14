@@ -211,9 +211,9 @@ function StaffTable({
       <h2 className="mb-2 font-semibold">
         {rows.length} {label}
       </h2>
-      <div className="overflow-x-auto rounded-xl border border-border">
+      <div className="max-h-[calc(100dvh-9rem)] overflow-auto rounded-xl border border-border">
         <table className="w-full text-sm">
-          <thead className="bg-surface-2 text-left text-xs text-muted">
+          <thead className="sticky top-0 z-[2] bg-surface-2 text-left text-xs text-muted">
             <tr>
               {head('name', 'Name', 'Name', 'sticky left-0 z-[1] bg-surface-2 pl-3')}
               {head('job', 'Job', 'Job')}

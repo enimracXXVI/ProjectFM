@@ -41,6 +41,8 @@ export function World() {
   const { data, isPending, error } = useWorld(career.id)
 
   const [name, setName] = useUrlState('q', '', TEXT)
+  // Phones: cards, or the table (scrolls both ways, header and names stay in place)
+  const [layout, setLayout] = useUrlState<'cards' | 'table'>('layout', 'cards', TEXT as never)
   const [positions, setPositions] = useUrlState<string[]>('pos', [])
   const [ageMin, setAgeMin] = useUrlState('ageMin', '', TEXT)
   const [ageMax, setAgeMax] = useUrlState('ageMax', '', TEXT)
@@ -344,7 +346,37 @@ export function World() {
       </Card>
 
       {/* Phones */}
-      <ul className="grid grid-cols-[minmax(0,1fr)] gap-2 md:hidden">
+      <div
+        className="mb-3 flex w-fit rounded-lg border border-border p-0.5 md:hidden"
+        role="group"
+        aria-label="Layout"
+      >
+        {(
+          [
+            ['cards', 'Cards'],
+            ['table', 'Table'],
+          ] as const
+        ).map(([v, label]) => (
+          <button
+            key={v}
+            type="button"
+            aria-pressed={layout === v}
+            onClick={() => setLayout(v)}
+            className={clsx(
+              'min-h-10 rounded-md px-3 text-sm',
+              layout === v ? 'bg-surface-2 text-text' : 'text-muted',
+            )}
+          >
+            {label}
+          </button>
+        ))}
+      </div>
+      <ul
+        className={clsx(
+          'grid grid-cols-[minmax(0,1fr)] gap-2 md:hidden',
+          layout === 'table' && 'hidden',
+        )}
+      >
         {shown.map(({ row, score }) => (
           <li key={row[0]}>
             <Link
@@ -366,15 +398,20 @@ export function World() {
       </ul>
 
       {/* Tablet / desktop */}
-      <div className="hidden overflow-x-auto rounded-xl border border-border md:block">
+      <div
+        className={clsx(
+          'max-h-[calc(100dvh-9rem)] overflow-auto rounded-xl border border-border md:block',
+          layout === 'table' ? 'block' : 'hidden',
+        )}
+      >
         <table className="w-full text-sm">
-          <thead className="bg-surface-2 text-left text-xs tracking-wide text-muted">
+          <thead className="sticky top-0 z-[2] bg-surface-2 text-left text-xs tracking-wide text-muted">
             <tr>
               <SortTh
                 label={'Player'}
                 icon={sortIcon('name')}
                 onClick={() => toggleSort('name')}
-                className="px-4"
+                className="sticky left-0 z-[1] bg-surface-2 px-4 shadow-[inset_-1px_0_0_var(--color-border)]"
               />
               {role && (
                 <SortTh
@@ -402,8 +439,8 @@ export function World() {
           </thead>
           <tbody className="divide-y divide-border bg-surface tabular-nums">
             {shown.map(({ row, score }) => (
-              <tr key={row[0]} className="hover:bg-surface-2">
-                <td className="px-4 py-2 whitespace-nowrap">
+              <tr key={row[0]} className="group hover:bg-surface-2">
+                <td className="sticky left-0 z-[1] bg-surface px-4 py-2 whitespace-nowrap shadow-[inset_-1px_0_0_var(--color-border)] group-hover:bg-surface-2">
                   <Link to={`/world/${row[0]}`} className="font-medium hover:text-accent">
                     {row[1]}
                   </Link>
