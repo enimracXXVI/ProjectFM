@@ -144,6 +144,10 @@ export const DEFAULT_PLAYER_INSTRUCTIONS: FmInstruction[] = withTexts(
 export function fillAbout(list: FmInstruction[], defaults: FmInstruction[]): FmInstruction[] {
   return list.map((d) => {
     const def = defaults.find((x) => x.name === d.name && x.phase === d.phase)
+    // Time wasting was first listed as Standard / Sometimes / Often; FM's options are
+    // Less Often / Standard / More Often (seen in game)
+    if (def && d.name === 'Time wasting' && d.options.some((o) => o.label === 'Sometimes'))
+      return def
     return {
       ...d,
       options: d.options.map((o) =>

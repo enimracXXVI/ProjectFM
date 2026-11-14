@@ -875,7 +875,7 @@
   },
   {
     "code": 305,
-    "name": "Rest (IM)",
+    "name": "Rest (national team)",
     "category": "Physical & Recovery",
     "about": "Allow the players a session off from training to rest.",
     "fm": false,
@@ -883,7 +883,7 @@
   },
   {
     "code": 306,
-    "name": "Recovery (IM)",
+    "name": "Recovery (national team)",
     "category": "Physical & Recovery",
     "about": "A session focused on in-house recovery with the medical and sports science teams.",
     "fm": false,
@@ -891,7 +891,7 @@
   },
   {
     "code": 307,
-    "name": "Light Conditioning (IM)",
+    "name": "Light Conditioning (national team)",
     "category": "Physical & Recovery",
     "about": "Gentle physical work focused on delaying the onset of late-season fatigue. Best suited for early season international breaks or before international tournaments provided the players have had a break following the end of domestic duties.",
     "fm": false,

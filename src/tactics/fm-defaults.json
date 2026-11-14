@@ -281,15 +281,15 @@
       "name": "Time wasting",
       "options": [
         {
+          "label": "Less often",
+          "code": 79
+        },
+        {
           "label": "Standard",
           "code": 0
         },
         {
-          "label": "Sometimes",
-          "code": 79
-        },
-        {
-          "label": "Often",
+          "label": "More often",
           "code": 78
         }
       ],
@@ -1048,7 +1048,7 @@
     },
     {
       "phase": "ip",
-      "name": "Attack box \u2013 side",
+      "name": "Attack box – side",
       "options": [
         {
           "label": "Centre",
@@ -1078,7 +1078,7 @@
     },
     {
       "phase": "ip",
-      "name": "Attack box \u2013 depth",
+      "name": "Attack box – depth",
       "options": [
         {
           "label": "Attack defensive line",

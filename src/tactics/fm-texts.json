@@ -584,6 +584,18 @@
       }
     },
     "Time wasting": {
+      "Less often": {
+        "short": ["Maximise in-play time.", "Minimal time wasting."],
+        "text": "Players will be asked to avoid time wasting as much as possible, with the aim of maximising the amount of time the ball is in play.",
+        "pros": [
+          "More in-play time to take advantage of.",
+          "Reduces recovery time for other team between plays."
+        ],
+        "cons": [
+          "More opportunities for other team to build their own attacks.",
+          "Less opportunities to disrupt the other team flow."
+        ]
+      },
       "Standard": {
         "short": ["According to the current mentality.", "Time waste where appropriate."],
         "text": "You are not providing the team with any specific instruction on how to time waste, instead allowing them to do so when they deem it appropriate for the current match situation.",
@@ -596,7 +608,7 @@
           "Doesn’t maintain pressure as consistently as a less time wasting approach."
         ]
       },
-      "Often": {
+      "More often": {
         "short": ["Minimise in-play time.", "Time waste as much as possible."],
         "text": "Players will be encouraged to time waste as much as possible, looking to reduce the amount of time the ball is in play and to delay the opposition team at every opportunity.",
         "pros": [
