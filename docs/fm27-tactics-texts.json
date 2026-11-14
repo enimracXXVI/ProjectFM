@@ -1,0 +1,640 @@
+{
+  "mentalities": {
+    "Very Defensive": {
+      "short": ["Take as few risks as possible.", "Play with minimal urgency."],
+      "long": "This mentality is intended for situations where the team needs to shut up shop, usually reserved for desperate situations during the final minutes of a match. In possession, the team will take as few risks as possible with the ball, playing with an extremely low level of tempo and urgency with the sole aim of preventing the opposition team from scoring a goal. Out of possession, team will play a much deeper defensive line in order to absorb pressure.",
+      "pros": [
+        "Useful in situations where you desperately need to stop the other team from scoring.",
+        "Avoids dangerous turnovers as much as possible."
+      ],
+      "cons": [
+        "Allows the other team to pile on pressure and commit numbers forward.",
+        "Very little chance to create goalscoring opportunities of your own."
+      ]
+    },
+    "Defensive": {
+      "short": ["Take much fewer risks.", "Play with much less urgency."],
+      "long": "This mentality is best employed for matches where the opposition are heavy favourites to win, or in situations where the team need to start taking less risks in order to help see out the game. In possession, the team will take many fewer risks with the ball, playing with a much lower level of tempo and urgency in order to frustrate the opposition and deny them of any dangerous counter-attacking opportunities. Out of possession, team will play a deeper defensive line in order to absorb pressure.",
+      "pros": [
+        "Useful for when you want to minimise the amount of chances conceded.",
+        "Looks to avoid giving the ball away in dangerous positions."
+      ],
+      "cons": [
+        "Allows the other team to dictate play.",
+        "Less commitment to counter-attacking opportunities."
+      ]
+    },
+    "Cautious": {
+      "short": ["Take fewer risks.", "Play with a bit less urgency."],
+      "long": "This mentality is a good starting strategy for matches in which you believe the opposition are the stronger team, but you still feel you can break with some regularity. In possession, the team will take slightly fewer risks with the ball, playing with a slightly lower level of tempo and urgency. However they will still commit numbers to counter-attacking opportunities when they arise. Out of possession, team will play a slightly deeper defensive line in order to absorb pressure.",
+      "pros": [
+        "Useful for when you’re wary of the other team’s attacking threat.",
+        "Takes fewer risks with the ball."
+      ],
+      "cons": [
+        "Relies more on counter-attacks to create chances.",
+        "May struggle to unlock tight defences without taking more risks."
+      ]
+    },
+    "Balanced": {
+      "short": ["Balanced level of risk.", "Balanced level of urgency."],
+      "long": "This mentality is an ideal starting strategy for matches against similar-strength opponents, or situations where you want a careful balance between risk and reward. In possession, the team will play with a balanced level of tempo and urgency, not trying to force the issue but also still looking to create attacking opportunities where possible. Out of possession, the team will play a balanced defensive line depth.",
+      "pros": ["Provides a balance between risk and reward.", "A flexible starting strategy."],
+      "cons": [
+        "Doesn’t force the issue as much as higher mentalities.",
+        "Takes more risks than lower mentalities."
+      ]
+    },
+    "Positive": {
+      "short": ["Take some more risks.", "Play with a bit more urgency."],
+      "long": "This mentality is best employed for matches in which you believe you are the stronger team but are wary of your opponent’s counter-attacking threat. In possession, the team will play with a slightly higher level of tempo and urgency in an attempt to unsettle the opposition defence, but in a measured way which still attempts to maintain control of the match. Out of possession, the team will play a slightly higher defensive line in order to support the press.",
+      "pros": [
+        "Useful for when you want the team to take control of the match.",
+        "Looks to exert sustained pressure."
+      ],
+      "cons": [
+        "Leaves the team a bit more vulnerable to counter-attacks.",
+        "Less effective against stronger teams."
+      ]
+    },
+    "Attacking": {
+      "short": ["Take many more risks.", "Play with much more urgency."],
+      "long": "This mentality is best employed for matches where the team are heavy favourites to win, or in situations where the team need to start taking more risks in order to find a goal. In possession, the team will play with a higher level of tempo and urgency in an attempt to create goalscoring opportunities, taking many more risks to try and unlock the opposition defence. Out of possession, the team will play a higher defensive line in order to support the press.",
+      "pros": [
+        "Useful for when you want to play with more tempo and urgency.",
+        "Takes risks to create more goalscoring opportunities."
+      ],
+      "cons": [
+        "More vulnerable to counter-attacks.",
+        "Higher tempo and risk-taking can lead to more turnovers."
+      ]
+    },
+    "Very Attacking": {
+      "short": ["Take as many risks as possible.", "Play with extreme urgency."],
+      "long": "This mentality is intended for situations where the team needs to go for broke to try and score a goal, usually reserved for desperate situations during the final minutes of a match. In possession, the team will play with an extremely high level of tempo and urgency in an attempt to create goalscoring opportunities, taking as many risks as possible to try and unlock the opposition defence rather than recycling possession. Out of possession, the team will play a much higher defensive line in order to support the press.",
+      "pros": [
+        "Useful in situations where you desperately need to find a goal.",
+        "Tests the defence as much as possible."
+      ],
+      "cons": [
+        "Leaves the team very vulnerable to counter-attacks.",
+        "Gives the ball away very often, through trying to force chances."
+      ]
+    }
+  },
+  "roles": {
+    "bgk": {
+      "name": "Ball-Playing Goalkeeper",
+      "phase": "ip",
+      "key": 690523,
+      "description": "The Ball-Playing Goalkeeper looks to play an active role in their team's build-up play, often moving out of their goal to be in a position to receive the ball. Requiring a high level of technical ability with the ball at their feet, the Ball-Playing Goalkeeper looks to act as an additional outfield player at times in order to help their team play through an opposition press.",
+      "movement": []
+    },
+    "gk-ip": {
+      "name": "Goalkeeper",
+      "phase": "ip",
+      "key": 690521,
+      "description": "The Goalkeeper can distribute the ball in different ways depending on the team's playing strategy.  They look to provide a measured balance between staying in goal and moving out of their goal in an attempt to receive the ball.",
+      "movement": []
+    },
+    "ngk": {
+      "name": "No-Nonsense Goalkeeper",
+      "phase": "ip",
+      "key": 690522,
+      "description": "The No-Nonsense Goalkeeper adopts a cautious approach, preferring to stay nearer to their goal and taking as few risks as possible with the ball at their feet when put under pressure.",
+      "movement": []
+    },
+    "gk-oop": {
+      "name": "Goalkeeper",
+      "phase": "oop",
+      "key": 690561,
+      "description": "The goalkeeper role focuses on protecting their goal and making saves from shots and crosses. They are the last line of defence and are relied upon to help the team keep clean sheets.",
+      "movement": []
+    },
+    "lhk": {
+      "name": "Line-Holding Goalkeeper",
+      "phase": "oop",
+      "key": 690560,
+      "description": "The Line Keeper is a Goalkeeper who primarily looks to stay within the confines of their own box, leaving the job of defending higher up the pitch to their teammates.",
+      "movement": []
+    },
+    "sk": {
+      "name": "Sweeper Keeper",
+      "phase": "oop",
+      "key": 690562,
+      "description": "The Sweeper Keeper is a proactive Goalkeeper, regularly looking to come off their line in an attempt to intercept opposition passes or to engage opposition strikers early.",
+      "movement": ["Comes Off Line"]
+    },
+    "acb": {
+      "name": "Advanced Centre-Back",
+      "phase": "ip",
+      "key": 704959,
+      "description": "The first job of the Advanced Centre-Back is to provide protection to the team, being in a position where they can be ready to react to attacking threats when the ball is turned over. However the Advanced Centre-Back is also a specialist role, acting as a central defender during deep build-up before then moving forward into a defensive midfield position as their team progresses play up the pitch. Because of this, the role requires exceptional technical and mental skills that you'd typically expect of a midfield player. Elsewhere in defence, it's important to ensure the team has sufficient coverage at centre-back, typically through the use of an Inverted Full-Back.",
+      "movement": []
+    },
+    "bcb": {
+      "name": "Ball-Playing Centre-Back",
+      "phase": "ip",
+      "key": 690524,
+      "description": "The two principal tasks of the Ball-Playing Centre-Back are to provide protection to the team whilst also playing line-breaking passes and through balls from deep to progress the ball up the pitch. Defensively, they look to be in a position where they can be ready to react quickly to attacking threats if their team loses the ball. Offensively, they also look to carry the ball forward when they have the opportunity to do so.",
+      "movement": []
+    },
+    "cb-ip": {
+      "name": "Centre-Back",
+      "phase": "ip",
+      "key": 690525,
+      "description": "The main job of the Centre-Back is to provide protection to the team, being in a position where they can be ready to react to attacking threats when the ball is turned over. However, especially for more aggressive tactics, they must also possess the composure to be able to help the team maintain possession and lay off simple passes to more creative players.",
+      "movement": []
+    },
+    "ncb": {
+      "name": "No-Nonsense Centre-Back",
+      "phase": "ip",
+      "key": 690526,
+      "description": "The No-Nonsense Centre-Back is focused on being the last outfield protection a team has, being in a position to be ready to defend at any moment, while also looking to minimize the amount of risks they take with the ball at their feet. When put under pressure, they will try their best to avoid giving the ball away in a dangerous position, being more willing to clear their lines or play a safer pass.",
+      "movement": []
+    },
+    "ocb": {
+      "name": "Overlapping Centre-Back",
+      "phase": "ip",
+      "key": 690529,
+      "description": "The Overlapping Centre-Back combines the responsibilities of a Centre-Back and a Winger, looking to provide protection to the team during early phases of attack, while also getting into crossing positions by making overlapping runs in the final third of the pitch. Because of their attacking role, it's important to ensure there's sufficient defensive coverage elsewhere in the team to cover for them.",
+      "movement": ["Gets Further Forward"]
+    },
+    "wcb-ip": {
+      "name": "Wide Centre-Back",
+      "phase": "ip",
+      "key": null,
+      "description": null,
+      "movement": []
+    },
+    "fb-ip": {
+      "name": "Full-Back",
+      "phase": "ip",
+      "key": 690530,
+      "description": "The Full-Back is a key player in modern football, having to supplement their traditional defensive duties with overlapping runs down the wing to support forward play and help attacks overload the final third. Although primarily a defensive player, they must be prepared to get forward at times when the team needs extra width.",
+      "movement": []
+    },
+    "ifb": {
+      "name": "Inside Full-Back",
+      "phase": "ip",
+      "key": 690531,
+      "description": "The Inside Full-Back is a player whose specialist role involves moving inside to become an extra central defender during the attack. Often used by teams to provide additional protection against counter-attacks, the Inside Full-Back will initially position as a traditional Full-Back would during early build-up, before tucking inside to act as an additional Centre-Back as their team progresses play up the pitch.",
+      "movement": ["Moves Inside to CB"]
+    },
+    "iwb": {
+      "name": "Inside Wing-Back",
+      "phase": "ip",
+      "key": 690532,
+      "description": "Looking to move into central areas of the pitch as their team progresses with the ball, the Inside Wing-Back supports central passing networks, as well as providing vital protection against central counter-attacks when the ball is turned over. Because of these central movements, the Inside Wing-Back will rarely be looking to make overlapping attacking runs or playing crosses in from near the byline. Instead, they look to behave more closely to a defensive midfielder.",
+      "movement": ["Moves Inside to DM"]
+    },
+    "pwb-ip": {
+      "name": "Playmaking Wing-Back",
+      "phase": "ip",
+      "key": 690533,
+      "description": "Similarly to the Inverted Wing-Back, the Playmaking Wing-Back will try to move into central areas of the pitch to support central passing networks whilst offering vital protection against central counter-attacks. However, the Playmaking Wing-Back is also expected to act as a central hub of the team's passing play, playing progressive passes, through balls, and dangerous crosses into the box. The role has much more empthasis on the player getting time on the ball and creating chances, which means they require a very high level of technical ability in order to be effective in it.",
+      "movement": ["Moves Inside to DM"]
+    },
+    "wb-ip": {
+      "name": "Wing-Back",
+      "phase": "ip",
+      "key": 690534,
+      "description": "The Wing-Back combines the responsibilities of a Full-Back and a Winger, providing width to the team throughout the attack. During deep build-up, the Wing-Back looks to position alongside the defence to offer a passing option. However, as play progresses up the pitch, they are expected to get forward to join the attack, often making supporting runs in the final third.",
+      "movement": ["Gets Further Forward"]
+    },
+    "awb": {
+      "name": "Advanced Wing-Back",
+      "phase": "ip",
+      "key": 690535,
+      "description": "With more aggressive positioning than a traditional Wing-Back, the Advanced Wing-Back looks to play high and wide as much as possible. As their team are building play from deep, the Advanced Wing-Back doesn't drop back alongside their defenders; instead, they maintain a higher position up the pitch more akin to how a wide midfielder would. As play progresses up the pitch, they are expected to get forward to join the attack, often making supporting runs in the final third.",
+      "movement": ["Gets Further Forward"]
+    },
+    "cb-oop": {
+      "name": "Centre-Back",
+      "phase": "oop",
+      "key": 690563,
+      "description": "The main job of the Centre-Back is to stop the opposing attackers from playing and to clear the ball from danger when required.",
+      "movement": []
+    },
+    "ccb": {
+      "name": "Covering Centre-Back",
+      "phase": "oop",
+      "key": 690510,
+      "description": "As a Cover, the Centre-Back is asked to adopt a more cautious approach, holding their line and waiting to react to the opposition attacker's movements.",
+      "movement": []
+    },
+    "cwd": {
+      "name": "Covering Wide Centre-Back",
+      "phase": "oop",
+      "key": 690511,
+      "description": "As a Cover, the Wide Centre-Back is asked to adopt a more cautious approach, holding their line and waiting to react to the opposition attacker's movements.",
+      "movement": []
+    },
+    "scb": {
+      "name": "Stopping Centre-Back",
+      "phase": "oop",
+      "key": 721788,
+      "description": "As a Stopper, the Centre-Back is asked to be more willing to step out from their position in order to hassle and engage opposition attackers, in an attempt to cut out attacks at source.",
+      "movement": ["Steps Out"]
+    },
+    "swd": {
+      "name": "Stopping Wide Centre-Back",
+      "phase": "oop",
+      "key": 690512,
+      "description": "As a Stopper, the Wide Centre-Back is asked to be more willing to step out from their position in order to hassle and engage opposition attackers, in an attempt to cut out attacks at source.",
+      "movement": ["Steps Out"]
+    },
+    "wcb-oop": {
+      "name": "Wide Centre-Back",
+      "phase": "oop",
+      "key": 690513,
+      "description": "The main job of the Wide Centre-Back is to stop opposing attackers from creating chances and scoring goals. Operating on the side of a middle 3, they're expected to cover for their Wing-Back as they push forward, often defending wider channels than a traditional central defender.",
+      "movement": []
+    },
+    "fb-oop": {
+      "name": "Full-Back",
+      "phase": "oop",
+      "key": 690514,
+      "description": "The main job of a Full-Back is to defend the wide areas as part of the team's backline.",
+      "movement": []
+    },
+    "hfb": {
+      "name": "Holding Full-Back",
+      "phase": "oop",
+      "key": 690515,
+      "description": "As a Holder, the Full-Back is asked to hold a deeper position while their team is defending higher up the pitch, in order to provide additional protection against direct attacks. As the team are pressing the opposition during the early phases of their attack, the player looks to remain in their position more, allowing their teammates to play more aggressively knowing there's protection behind them.",
+      "movement": []
+    },
+    "pfb": {
+      "name": "Pressing Full-Back",
+      "phase": "oop",
+      "key": 690516,
+      "description": "As a Presser, the Full-Back is asked to actively engage opposition wide players high up the pitch to support the team's press. The player will often take up a higher starting position during early phases of the opposition attack in order to be in a better position to engage players ahead of them. Because of this higher positioning, it's important to ensure that there's enough defensive cover behind them from their teammates.",
+      "movement": ["Steps Out"]
+    },
+    "hwb": {
+      "name": "Holding Wing-Back",
+      "phase": "oop",
+      "key": 690517,
+      "description": "As a Holder, the Wing-Back is asked to hold a deeper position while their team is defending higher up the pitch, in order to provide additional protection against direct attacks. As the team are pressing the opposition during the early phases of their attack, the player looks to form part of the backline more, allowing their teammates to play more aggressively knowing there's protection behind them.",
+      "movement": []
+    },
+    "pwb-oop": {
+      "name": "Pressing Wing-Back",
+      "phase": "oop",
+      "key": 690519,
+      "description": "As a Presser, the Wing-Back is asked to aggressively engage opposition wide players high up the pitch to support the team's press. The player will often take up a higher starting position during early phases of the opposition attack in order to be in a better position to engage players ahead of them. Because of this higher positioning, it's important to ensure that there's enough defensive cover behind them from their teammates.",
+      "movement": ["Steps Out"]
+    },
+    "wb-oop": {
+      "name": "Wing-Back",
+      "phase": "oop",
+      "key": 690518,
+      "description": "The Wing-Back is expected to defend the wide areas for their team. Compared to traditional full-backs, they tend to have more license to step out of the defensive line to engage opposition wide attackers, knowing that there's a Wide Centre-Back behind them to provide covering support.",
+      "movement": []
+    },
+    "bbm": {
+      "name": "Box-To-Box Midfielder",
+      "phase": "ip",
+      "key": 690538,
+      "description": "The non-stop dynamism of the Box-to-Box Midfielder enables them to contribute greatly to both attacking play during the build-up and in the final third. During build-up, they are positioned as a traditional defensive midfield player, offering passing options to help progress the play forward. During the latter phases of attack, they surge towards the final third in order to operate more like an attacking midfielder, arriving into the box to get on the end of crosses and pullbacks, as well as providing a threat from the edge of the box. Because of the amount ground they are asked to cover on the pitch, the role requires very high work rate and energy levels.",
+      "movement": ["Moves Up to AMC"]
+    },
+    "bbp": {
+      "name": "Box-To-Box Playmaker",
+      "phase": "ip",
+      "key": 690539,
+      "description": "The Box-to-Box Playmaker is the heartbeat of their team, looking to be a creative outlet from both deep and advanced areas of the pitch. When their team are building from the back, the Box-to-Box Playmaker will drop deep and look to be the creative link between defence and attack, much like a Deep-Lying Playmaker. However, as play progresses up the pitch, the Box-to-Box Playmaker will move up to an attacking midfield position and look to be the creative spark in the final third, similar to how an Advanced Playmaker would. Because of the all-action nature of the role, the Box-to-Box Playmaker requires higher stamina levels than other playmaker roles in order to be able to cover the full length of the pitch.",
+      "movement": ["Moves Up to AMC"]
+    },
+    "dlp": {
+      "name": "Deep-Lying Playmaker",
+      "phase": "ip",
+      "key": 690540,
+      "description": "Operating in the space between the defence and the midfield, the Deep-Lying Playmaker aims to initiate attacking moves via pinpoint passes to players positioned higher up the pitch. Although primarily a creative player, the Deep-Lying Playmaker also has to be competent in the art of defence as they will often be one of the team's deepest midfield players when the ball is turned over in attack.",
+      "movement": []
+    },
+    "dm-ip": {
+      "name": "Defensive Midfielder",
+      "phase": "ip",
+      "key": 690536,
+      "description": "The Defensive Midfielder's main responsibility is to position themselves in front of the team's defence and help protect them from counter-attacking threats. In possession, the Defensive Midfielder aims to be the team's link between defence and attack, playing simple passes to help retain possession and to progress the play.",
+      "movement": []
+    },
+    "hb": {
+      "name": "Half Back",
+      "phase": "ip",
+      "key": 690537,
+      "description": "A defensive midfielder who looks to drop into their team's defensive line as they progress the ball up the pitch, the Half-Back acts as an additional central defender. They are typically used by teams with two central defenders in their in-possession formation so as to ensure that they have three players at the back in the event that the opposition starts a counter-attack. This can also make the team more press-resistant, particularly against teams that press with a front two. When used centrally, the Half Back will drop between their team's central defenders. However, when used in side defensive midfield positions, the Half Back will drop to one side of their central defenders as either a RCB or LCB.",
+      "movement": ["Moves Back to CB"]
+    },
+    "ap": {
+      "name": "Advanced Playmaker",
+      "phase": "ip",
+      "key": 690216,
+      "description": "The Advanced Playmaker is a creative role which looks to operate high up the pitch between the opposition's midfield and defence, looking to receive passes in pockets of space as much as possible. The Advanced Playmaker's job is primarily to create opportunities for their teammates to score, playing killer passes in the final third as much as possible.",
+      "movement": ["Finds Space Between Lines"]
+    },
+    "am-ip": {
+      "name": "Attacking Midfielder",
+      "phase": "ip",
+      "key": 690544,
+      "description": "An offensive role which looks to operate between the opposition defensive and midfield line, the Attacking Midfielder looks to receive passes in pockets of space as much as possible. Requiring excellent passing, dribbling and shooting abilities, their role is to constantly look to fashion chances for themselves and others in the final third.",
+      "movement": ["Finds Space Between Lines"]
+    },
+    "cm-ip": {
+      "name": "Central Midfielder",
+      "phase": "ip",
+      "key": 690541,
+      "description": "Responsible for providing an industrious and versatile link between the defence and the attack, the Central Midfielder is expected to perform a variety of tasks across the centre of the pitch. The role requires the tactical awareness and technical ability to support both defensive and attacking play as needed.",
+      "movement": []
+    },
+    "chm": {
+      "name": "Channel Midfielder",
+      "phase": "ip",
+      "key": 690549,
+      "description": "The Channel Midfielder looks to make supporting runs into wide areas, often linking up with their team's wide attackers. Players in the role are encouraged to make attacking runs into the channels behind the opposition defence, looking to get into a dangerous crossing position and providing underlaps for their wide teammates.",
+      "movement": ["Runs Into Channels"]
+    },
+    "mpm": {
+      "name": "Midfield Playmaker",
+      "phase": "ip",
+      "key": 690542,
+      "description": "The Midfield Playmaker operates as a creative link between defence and attack, looking to play progressive passes and killer balls to attacking teammates to initiate attacks for their team. During earlier phases of attack, the Midfield Playmaker is positioned in central midfield, making themselves available to receive progressive passes from their defenders and defensive midfielders. They then try to push up into an attacking midfield position as their team enters the final third.",
+      "movement": []
+    },
+    "wcm-ip": {
+      "name": "Wide Central Midfielder",
+      "phase": "ip",
+      "key": 690543,
+      "description": "Typically utilised at the side of a midfield duo or trio, the Wide Central Midfielder's responsiblities lie in providing an industrious and versatile link between the defence and the attack. As they operate wider than traditional central midfield players, they make themselves a better option for diagonal passes or switches from the opposing flank in order to progress the play around the opposition press.",
+      "movement": ["Drifts Wide"]
+    },
+    "iw": {
+      "name": "Inside Winger",
+      "phase": "ip",
+      "key": 690546,
+      "description": "Frequently aiming to drift inside into the half-spaces as their team attacks, the Inside Winger looks to receive the ball in more central areas of the pitch, while also creating space out wide for overlapping teammates. The role is usually combined with an attacking full-back or wing-back that looks to hug the sideline so that both players have their own space to operate in. Not only does the Inside Winger look to combine with an overlapping teammate, but they also look to provide dangerous passes and crosses themselves from closer to the box than a traditional winger.",
+      "movement": ["Moves Inside"]
+    },
+    "pw": {
+      "name": "Playmaking Winger",
+      "phase": "ip",
+      "key": 690547,
+      "description": "The Playmaking Winger will act as the team's primary source of creativity, starting from a wide position during their team's build-up phase before later drifting inside to find space from which to play killer balls and create chances. Coming in from the wing allows the Playmaking Winger to escape congested central midfield areas, and can result in them finding open pockets of space in the half-spaces as they move inside.",
+      "movement": ["Moves Inside"]
+    },
+    "wm": {
+      "name": "Wide Midfielder",
+      "phase": "ip",
+      "key": 690545,
+      "description": "A wide player who tends to support the attack from deeper than a typical attacking wide player, the Wide Midfielder prefers to play dangerous passes and crosses from deep instead of trying to beat an opposition full-back, trusting their technical ability more than their dribbling and pace.",
+      "movement": []
+    },
+    "w-ip": {
+      "name": "Winger",
+      "phase": "ip",
+      "key": 690548,
+      "description": "Providing width throughout the attack, the Winger stretches the opposition defence by attacking from close to the sidelines. The role aims to provide support to their team's forwards, playing dangerous passes and crosses in the final third to create chances for their teammates. Due to their wide positioning, the Winger is often found in one-on-one situations against the opposition full-back, which allows them to make effective use of their dribbling skills.",
+      "movement": ["Gets Further Forward"]
+    },
+    "dm-oop": {
+      "name": "Defensive Midfielder",
+      "phase": "oop",
+      "key": 690493,
+      "description": "The Defensive Midfielder's main responsibility out of possession is position themselves in front of the team's defence and help protect them from attacking threats.",
+      "movement": []
+    },
+    "ddm": {
+      "name": "Dropping Defensive Midfielder",
+      "phase": "oop",
+      "key": 690494,
+      "description": "As a Dropper, the Defensive Midfielder will look to move back into the defensive line as their team are pinned back into their own defensive third, acting as an additional Centre-Back. During the earlier phases of the opposition attack, the player will act as a more traditional Defensive Midfielder.",
+      "movement": ["Moves Back to CB"]
+    },
+    "pdm": {
+      "name": "Pressing Defensive Midfielder",
+      "phase": "oop",
+      "key": 690497,
+      "description": "As a Presser, the Defensive Midfielder is tasked with stepping forward from their position to support the team's press high up the pitch. The player will often take up a higher starting position during early phases of the opposition attack in order to be in a better position to engage players ahead of them. Because of this higher positioning, it's important to ensure that there's enough defensive cover behind them from their teammates.",
+      "movement": ["Steps Out"]
+    },
+    "sdm": {
+      "name": "Screening Defensive Midfielder",
+      "phase": "oop",
+      "key": 690495,
+      "description": "As a Screener, the Defensive Midfielder's main responsibility is to defend the space in front of their central defenders. They are less likely to leave their position to press the opposition, instead looking to protect their zone and block passing lanes.",
+      "movement": []
+    },
+    "wdm": {
+      "name": "Wide Covering Defensive Midfielder",
+      "phase": "oop",
+      "key": 690496,
+      "description": "As a Wide Cover, the Defensive Midfielder is asked to provide defensive support in wide areas, moving across from their typical position to help their team defend against wide threats. This means that when the opposition attack the flanks on their side, instead of protecting central areas more like a traditional Defensive Midfielder, the player will look to shift across and support their Full-Back, often doubling up on the opposition's wide attacking threats.",
+      "movement": ["Covers Flank"]
+    },
+    "cm-oop": {
+      "name": "Central Midfielder",
+      "phase": "oop",
+      "key": 690499,
+      "description": "The Central Midfielder looks to provide protection in the middle of the pitch, often looking to provide a balance between supporting the press and screening passes through the middle.",
+      "movement": []
+    },
+    "pcm": {
+      "name": "Pressing Central Midfielder",
+      "phase": "oop",
+      "key": 690501,
+      "description": "As a Presser, the Central Midfielder is encouraged to step forward more often from their position to support the team's press higher up the pitch. The player will often take up a higher starting position during early phases of the opposition attack in order to be in a better position to engage players ahead of them. Because of this higher positioning, it's important to ensure that there's enough defensive cover behind them from their teammates.",
+      "movement": ["Steps Out"]
+    },
+    "scm": {
+      "name": "Screening Central Midfielder",
+      "phase": "oop",
+      "key": 690498,
+      "description": "As a Screener, the Central Midfielder tries not to be drawn out from their position too much, instead focusing on blocking passing lanes through the middle of the pitch.",
+      "movement": []
+    },
+    "wcm-oop": {
+      "name": "Wide Covering Central Midfielder",
+      "phase": "oop",
+      "key": 690500,
+      "description": "As a Wide Cover, the Central Midfielder is asked to provide defensive support in wide areas, moving across from their typical position to help their team defend against wide threats. This means that when the opposition attack the flanks on their side, instead of protecting central areas more like a traditional Central Midfielder, the player will look to shift across and support their Full-Back, often doubling up on the opposition's wide attacking threats.",
+      "movement": ["Covers Flank"]
+    },
+    "twm": {
+      "name": "Tracking Wide Midfielder",
+      "phase": "oop",
+      "key": 690502,
+      "description": "As a Tracker, the Wide Midfielder is instructed to track back defensively as the opposition advance into their own defensive third in order to support the defenders behind them, at times even dropping into the backline as an additional defender. The player is expected to actively support the team defensively against wide attacking threats.",
+      "movement": ["Tracks Back"]
+    },
+    "wmf": {
+      "name": "Wide Midfielder",
+      "phase": "oop",
+      "key": 690503,
+      "description": "The Wide Midfielder provides a balance between defensive protection against wide attacking threats, and being in a position to spring a counter in case of a turnover.",
+      "movement": []
+    },
+    "owm": {
+      "name": "Wide Outlet Wide Midfielder",
+      "phase": "oop",
+      "key": 690504,
+      "description": "As a Wide Outlet, the Wide Midfielder is asked to avoid tracking back to help out the Full-Back behind them as much, instead looking to hold their position more in order to be in a dangerous position for a counter-attack when the ball turns over. Because they don't do as much defensive work, it's often important to ensure that the team aren't exposed on their flank e.g. by asking nearby midfielders to play a wide covering role to cover for them.",
+      "movement": []
+    },
+    "fr": {
+      "name": "Free Role",
+      "phase": "ip",
+      "key": 690550,
+      "description": "A player with a Free Role is given full creative license, allowing them to roam from their position to create attacking opportunities for their team whilst also being encouraged to take more risks with the ball in an effort to both create and score goals. Because of the freedom they're allowed, the Free Role is less likely to follow the team's explicit instructions and may break the team's structure at times. However, their unpredictability and creativity can help to unlock defences for their team.",
+      "movement": []
+    },
+    "ss": {
+      "name": "Second Striker",
+      "phase": "ip",
+      "key": 690551,
+      "description": "The Second Striker operates as one of the team's main goalscoring threats. In early phases of attack, the Second Striker positions themselves between the opposition midfield and defence in pockets of space. However, as play progresses up the pitch, they aggressively push up into the forward line in order to get into goalscoring positions as the ball moves into the final third. As the name implies, the Second Striker is most commonly utilised in formations with a lone forward.",
+      "movement": ["Moves Up to ST"]
+    },
+    "if": {
+      "name": "Inside Forward",
+      "phase": "ip",
+      "key": 690552,
+      "description": "The Inside Forward is a wide role that aims to frequently drift inside into the half-spaces as their team attacks to help open up space for overlapping full-backs, as well as being in position to receive the ball in more central areas of the pitch. As with the Wide Forward, the Inside Forward is also primarily an offensive role in the final third. focused on attacking the opposition's penalty box and making dangerous runs behind their defence in order to get into goalscoring positions. The role works best when combined with an attacking full-back or wing-back that looks to hug the sideline.",
+      "movement": ["Goal Threat"]
+    },
+    "wfd": {
+      "name": "Wide Forward",
+      "phase": "ip",
+      "key": 690553,
+      "description": "As with the Winger, the Wide Forward is expected to provide width throughout the attack so as to stretch the opposition defence and attack from near the sidelines. Where they differ is that the Wide Forward is primarily an offensive role in the final third, focused on attacking the opposition's penalty box and making dangerous runs behind their defence in order to get into goalscoring positions.",
+      "movement": ["Goal Threat"]
+    },
+    "cfd-ip": {
+      "name": "Centre Forward",
+      "phase": "ip",
+      "key": 690554,
+      "description": "The Centre Forward, also typically known as the classic 'Number 9', is expected to lead the line and look to spearhead attacking moves. Their primary duty is to be the focal point of attacking moves, being required to both score and create goals for their team.",
+      "movement": []
+    },
+    "chf": {
+      "name": "Channel Forward",
+      "phase": "ip",
+      "key": 690555,
+      "description": "A high-energy role, the Channel Forward looks to constantly be a thorn in opposition defenders' sides, regularly making supporting runs into the channels for their team.  When their team are attacking, the Channel Forward looks to be a constant runner for their team, offering an outlet for direct balls down the channels or ones played in behind, using their pace and tenacity to test the opposition defence.",
+      "movement": []
+    },
+    "dlf": {
+      "name": "Deep-Lying Forward",
+      "phase": "ip",
+      "key": 690556,
+      "description": "With the main function of the Deep-Lying Forward being to link the attack to the midfield, they seek to drop between the lines to receive passes from deep before supplying linking passes of their own to teammates in a number of ways: moving the ball back to midfield support, spreading it wide to the flanks, or, if they have time to turn, playing in their strike partner.",
+      "movement": ["Drop Off Into Space"]
+    },
+    "f9": {
+      "name": "False Nine",
+      "phase": "ip",
+      "key": 690557,
+      "description": "An unconventional centre forward, the False Nine regularly drops between the lines of the opposition's defence and midfield, looking to act similarly to an Advanced Playmaker for their team. The purpose of this is that it creates a tactical problem for opposing central defenders who can either choose to follow them (leaving space in behind) or leave them to have time and space to dribble or pick out a pass. Because of these movements it's often important to pair a False Nine with teammates who regularly look to make runs into goalscoring positions, such as a Second Striker, Inside Forward or Wide Forward.",
+      "movement": ["Moves Back To AMC"]
+    },
+    "p": {
+      "name": "Poacher",
+      "phase": "ip",
+      "key": 690558,
+      "description": "The Poacher sits on the shoulder of the last defender, looking to break the defensive line and run onto through balls from midfield. Requiring excellent off the ball movement to be effective in the role, the Poacher is expected to be the team's main source of goals. Their focus on scoring goals is so extreme that they rarely offer much help in constructing moves or linking play, instead remaining in central areas, sniffing out opportunities in and around the box.",
+      "movement": []
+    },
+    "tf": {
+      "name": "Target Forward",
+      "phase": "ip",
+      "key": 690559,
+      "description": "Heavily utilising their physicality and height to disrupt the opposition's defence and create goalscoring opportunities for their team, the Target Forward is typically the team's attacking outlet during the build-up phase, and are often the target of longer passes and clearances that they knock down, flick on, or lay off to their surrounding teammates. In the final third, they look to get on to the end of crosses into the box, using their aerial prowess to be a goalscoring threat.",
+      "movement": []
+    },
+    "am-oop": {
+      "name": "Attacking Midfielder",
+      "phase": "oop",
+      "key": 690506,
+      "description": "The Attacking Midfielder looks to defend central areas of the pitch, often being tasked with preventing access to the opposition's midfield pivots.",
+      "movement": []
+    },
+    "oam": {
+      "name": "Central Outlet Attacking Midfielder",
+      "phase": "oop",
+      "key": 690507,
+      "description": "As a Central Outlet, the Attacking Midfielder is asked to avoid tracking back to help out the defenders behind them as much, instead looking to hold their position more in order to be in a dangerous position for a counter-attack when the ball turns over. Because they don't do as much defensive work, it's often important to ensure that the team have enough defensive cover in central areas behind them to account for this.",
+      "movement": []
+    },
+    "sam": {
+      "name": "Splitting Outlet Attacking Midfielder",
+      "phase": "oop",
+      "key": 690508,
+      "description": "As a Splitting Outlet, the Attacking Midfielder is asked to avoid tracking back to help out the defenders behind them as much, instead looking to hold a higher position more in order to be in a dangerous position for a counter-attack when the ball turns over. As the opposition progresses play, the player also looks to drift out into the channels. This allows them to start counter-attacks from wide, usually with the aim to exploit the space often not found in more central areas of the pitch.",
+      "movement": ["Moves Out Wide"]
+    },
+    "tam": {
+      "name": "Tracking Attacking Midfielder",
+      "phase": "oop",
+      "key": 690505,
+      "description": "As a Tracker, the Attacking Midfielder is instructed to track back defensively as the opposition advance into their own defensive third in order to support the defenders behind them, dropping back into a deeper defensive position. The player is expected to actively support the team defensively against central attacking threats.",
+      "movement": ["Tracks Back"]
+    },
+    "iow": {
+      "name": "Inside Outlet Winger",
+      "phase": "oop",
+      "key": 721787,
+      "description": "As an Inside Outlet, the Winger is asked to avoid tracking back to help out the Full-Back behind them as much, instead looking to hold their position more in order to be in a dangerous position for a counter-attack when the ball turns over. As the opposition progresses play, the Inside Outlet also looks to drift into central areas. This allows them to start counter-attacks from the half-spaces, usually with the aim to receive direct passes between the lines.",
+      "movement": ["Moves Inside"]
+    },
+    "tw": {
+      "name": "Tracking Winger",
+      "phase": "oop",
+      "key": 690509,
+      "description": "As a Tracker, the Winger is instructed to track back defensively as the opposition advance into their own defensive third in order to support the defenders behind them, at times even dropping into the backline as an additional defender. The player is expected to actively support the team defensively against wide attacking threats.",
+      "movement": ["Tracks Back"]
+    },
+    "wow": {
+      "name": "Wide Outlet Winger",
+      "phase": "oop",
+      "key": 688024,
+      "description": "As a Wide Outlet, the Winger is asked to avoid tracking back to help out the Full-Back behind them as much, instead looking to hold their position more in order to be in a dangerous position for a counter-attack when the ball turns over. Because they don't do as much defensive work, it's often important to ensure that the team aren't exposed on their flank e.g. by asking nearby midfielders to play a Wide Cover role to cover for them.",
+      "movement": []
+    },
+    "w-oop": {
+      "name": "Winger",
+      "phase": "oop",
+      "key": 690492,
+      "description": "The Winger primarily looks to defend the wide areas of the pitch, looking to find a balance between supporting the press higher up the pitch, and tracking back when necessarily to support the wide defender behind them.",
+      "movement": []
+    },
+    "ocf": {
+      "name": "Central Outlet Centre Forward",
+      "phase": "oop",
+      "key": 690488,
+      "description": "As a Central Outlet, the Centre Forward is asked to avoid tracking back to help out the midfielders behind them as much, instead looking to hold their position more in order to be in a dangerous position for a counter-attack when the ball turns over. Because they don't do as much defensive work, it's often important to ensure that the team have enough defensive cover in central areas behind them to account for this.",
+      "movement": []
+    },
+    "cfd-oop": {
+      "name": "Centre Forward",
+      "phase": "oop",
+      "key": 690489,
+      "description": "The Centre Forward sets the tone for their team's defensive strategy, often starting the press, or screening passes through the middle of the pitch.",
+      "movement": []
+    },
+    "scf": {
+      "name": "Splitting Outlet Centre Forward",
+      "phase": "oop",
+      "key": 690487,
+      "description": "As a Splitting Outlet, the Centre Forward is asked to avoid tracking back to help out the midfielders behind them as much, instead looking to hold a higher position more in order to be in a dangerous position for a counter-attack when the ball turns over. As the opposition progresses play, the Splitting Outlet also looks to drift out into the channels. This allows them to start counter-attacks from wide, usually with the aim to exploit the space often not found in more central areas of the pitch.",
+      "movement": ["Moves Out Wide"]
+    },
+    "tcf": {
+      "name": "Tracking Centre Forward",
+      "phase": "oop",
+      "key": 690490,
+      "description": "As a Tracker, the Centre Forward is instructed to track back defensively as the opposition advance into their own defensive third in order to support the midfielders behind them, dropping back into a deeper defensive position. The player is expected to actively support the team defensively against central attacking threats.",
+      "movement": ["Tracks Back"]
+    }
+  }
+}
