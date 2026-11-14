@@ -1,5 +1,6 @@
 import { ChevronDown, ChevronUp, Plus, Trash2 } from 'lucide-react'
 import { useState } from 'react'
+import { FmAboutEditor } from '../../components/FmAboutEditor'
 import { SettingsSection } from '../../components/SettingsSection'
 import { SettingsShell } from '../../components/SettingsShell'
 import { useConfig } from '../../lib/config'
@@ -35,6 +36,7 @@ export function FmCodesSettings() {
     set({ mentalities: n })
   }
   const [pair, setPair] = useState(['', ''])
+  const [newTag, setNewTag] = useState('')
 
   return (
     <SettingsShell
@@ -122,6 +124,74 @@ export function FmCodesSettings() {
           >
             <Plus className="size-4" aria-hidden /> Add mentality
           </button>
+        </SettingsSection>
+
+        <SettingsSection id="fm-codes/mentality-texts" title="Mentality texts">
+          <p className="mb-2 text-xs text-muted">
+            FM&apos;s explanation of each mentality, shown on the Tactics page.
+          </p>
+          <div className="grid gap-3">
+            {form.mentalities.filter(Boolean).map((m) => (
+              <div key={m} className="grid gap-1">
+                <p className="text-sm font-semibold">{m}</p>
+                <FmAboutEditor
+                  about={form.mentalityTexts[m]}
+                  onChange={(about) =>
+                    set({ mentalityTexts: { ...form.mentalityTexts, [m]: about } })
+                  }
+                />
+              </div>
+            ))}
+          </div>
+        </SettingsSection>
+
+        <SettingsSection
+          id="fm-codes/role-tags"
+          title="Role tags"
+          aside={`${Object.keys(form.roleTags).length}`}
+        >
+          <p className="mb-2 text-xs text-muted">
+            What each role tag means (shown when you tap a tag on the Tactics page). Which tags a
+            role has is set in Settings &gt; Roles.
+          </p>
+          <ul className="grid gap-2">
+            {Object.entries(form.roleTags).map(([tag, text]) => (
+              <li key={tag} className="grid gap-1">
+                <span className="text-sm font-semibold">{tag}</span>
+                <textarea
+                  aria-label={`What ${tag} means`}
+                  value={text}
+                  rows={2}
+                  onChange={(e) => set({ roleTags: { ...form.roleTags, [tag]: e.target.value } })}
+                  className={`${input} py-2`}
+                />
+              </li>
+            ))}
+          </ul>
+          <form
+            className="mt-2 flex gap-1"
+            onSubmit={(e) => {
+              e.preventDefault()
+              const tag = newTag.trim()
+              if (!tag || form.roleTags[tag] !== undefined) return
+              set({ roleTags: { ...form.roleTags, [tag]: '' } })
+              setNewTag('')
+            }}
+          >
+            <input
+              aria-label="New tag"
+              placeholder="Add a tag, e.g. Holds Position"
+              value={newTag}
+              onChange={(e) => setNewTag(e.target.value)}
+              className={input}
+            />
+            <button
+              type="submit"
+              className="min-h-11 shrink-0 rounded-lg border border-border px-3 text-sm font-semibold text-accent"
+            >
+              Add
+            </button>
+          </form>
         </SettingsSection>
 
         <SettingsSection

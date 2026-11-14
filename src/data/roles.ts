@@ -8,7 +8,7 @@
  * Everything here can be changed in the app under Settings → Roles.
  */
 
-import { DEFAULT_ROLE_FM, type RoleFm } from '../tactics/fm'
+import { DEFAULT_ROLE_FM, FM_TEXTS, type RoleFm } from '../tactics/fm'
 
 export type RolePhase = 'ip' | 'oop'
 
@@ -25,6 +25,10 @@ export interface RoleDef {
   preferred: string[]
   /** FM's codes for the role: save number, where FM offers it, its player instructions. */
   fm?: RoleFm
+  /** FM's description of the role. */
+  about?: string
+  /** FM's tags for the role (Holds Position, Stays Wide…). */
+  tags?: string[]
 }
 
 const BASE_ROLES: RoleDef[] = [
@@ -1554,7 +1558,11 @@ const BASE_ROLES: RoleDef[] = [
 ]
 
 /** The default roles, each with FM's codes for it. */
-export const DEFAULT_ROLES: RoleDef[] = BASE_ROLES.map((r) => ({ ...r, fm: DEFAULT_ROLE_FM[r.id] }))
+export const DEFAULT_ROLES: RoleDef[] = BASE_ROLES.map((r) => ({
+  ...r,
+  fm: DEFAULT_ROLE_FM[r.id],
+  ...FM_TEXTS.roles[r.id],
+}))
 
 /**
  * The user's roles with FM's codes filled in where a role has none yet (roles saved before

@@ -14,6 +14,7 @@ import {
 } from './fm'
 import { exportProblems, fileTitle, tacticFile } from './fmf'
 import { briefingText, buildBriefing } from './briefing'
+import { roleWarnings } from './warnings'
 import { readFmf as readTacticFile } from './fmfRead'
 import { POSITION_TEXT } from './positions'
 import type { SaveTactics, TacticRow } from './types'
@@ -272,5 +273,41 @@ describe('briefing', () => {
     })
     expect(b.watch).toContain('GK: no player picked.')
     expect(briefingText(b)).toContain('Team instructions in possession')
+  })
+})
+
+describe('FM texts and warnings', () => {
+  it('carries FM’s own texts for mentalities, roles and instructions', () => {
+    expect(config.fmCodes.mentalityTexts.Cautious.pros).toContain(
+      'Useful for when you’re wary of the other team’s attacking threat.',
+    )
+    const wcb = config.roles.find((r) => r.id === 'wcb-ip')!
+    expect(wcb.about).toMatch(/^Alongside providing defensive protection/)
+    const loe = config.teamInstructions.find((d) => d.name === 'Line of engagement')!
+    expect(loe.options.find((o) => o.label === 'High press')?.about?.short).toContain(
+      'Begin engaging opposition during their build-up phase.',
+    )
+    expect(config.fmCodes.roleTags['Stays Wide']).toMatch(/hold a wide position/)
+  })
+
+  it('raises FM’s warnings only when the rule applies', () => {
+    const check = (slots: TacticRow['slots']) =>
+      roleWarnings(slots, config.roles, config.roleWarnings, config.fmCodes)
+    expect(check(row.slots)).toEqual([])
+    // The only DM asked to press
+    const pressing = row.slots.map((s) => (s.roleOop === 'dm-oop' ? { ...s, roleOop: 'pdm' } : s))
+    const warned = check(pressing)
+    expect(warned).toHaveLength(2)
+    expect(warned[0]).toMatch(/^We have too many pressing roles/)
+    expect(warned[1]).toMatch(/^Asking our only defensive midfielder to press/)
+    // A Half Back with a back three in possession
+    const three = row.slots.map((s, i) =>
+      i === 1
+        ? { ...s, position: 'DC' as const, side: null }
+        : s.role === 'dlp'
+          ? { ...s, role: 'hb' }
+          : s,
+    )
+    expect(check(three).join(' ')).toMatch(/^The Half Back role looks to drop in/)
   })
 })

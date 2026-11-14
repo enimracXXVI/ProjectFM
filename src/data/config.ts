@@ -27,10 +27,12 @@ import {
   DEFAULT_FM_CODES,
   DEFAULT_PLAYER_INSTRUCTIONS,
   DEFAULT_TEAM_INSTRUCTIONS,
+  fillAbout,
   isInstructionList,
   type FmCodes,
   type FmInstruction,
 } from '../tactics/fm'
+import { DEFAULT_ROLE_WARNINGS, type RoleWarning } from '../tactics/warnings'
 import { DEFAULT_NOTE_CATEGORIES, type NoteCategory } from './notes'
 import { DEFAULT_STATUSES, normalizeStatus, type StatusInfo } from './statusInfo'
 
@@ -83,6 +85,8 @@ export interface AppConfig {
   bestXiBaseline: number
   /** Tactic briefing: a player's fit for his roles below this is flagged (0–100). */
   briefingLowFit: number
+  /** FM's role-combination warnings the briefing checks (text, on/off, limits). */
+  roleWarnings: RoleWarning[]
   /** Categories for Dashboard notes, in order. */
   noteCategories: NoteCategory[]
 }
@@ -133,6 +137,7 @@ export const DEFAULT_CONFIG: AppConfig = {
   fmCodes: DEFAULT_FM_CODES,
   bestXiBaseline: 6,
   briefingLowFit: 55,
+  roleWarnings: DEFAULT_ROLE_WARNINGS,
   noteCategories: DEFAULT_NOTE_CATEGORIES,
 }
 
@@ -175,14 +180,21 @@ export function mergeConfig(stored: Stored): AppConfig {
     footMins: stored.footMins ?? DEFAULT_CONFIG.footMins,
     // Lists saved before instructions had codes are replaced by FM's full list
     teamInstructions: isInstructionList(stored.teamInstructions)
-      ? stored.teamInstructions
+      ? fillAbout(stored.teamInstructions, DEFAULT_CONFIG.teamInstructions)
       : DEFAULT_CONFIG.teamInstructions,
     playerInstructions: isInstructionList(stored.playerInstructions)
-      ? stored.playerInstructions
+      ? fillAbout(stored.playerInstructions, DEFAULT_CONFIG.playerInstructions)
       : DEFAULT_CONFIG.playerInstructions,
     fmCodes: { ...DEFAULT_CONFIG.fmCodes, ...stored.fmCodes },
     bestXiBaseline: stored.bestXiBaseline ?? DEFAULT_CONFIG.bestXiBaseline,
     briefingLowFit: stored.briefingLowFit ?? DEFAULT_CONFIG.briefingLowFit,
+    // Saved warnings first; warnings added later appear with their defaults
+    roleWarnings: [
+      ...(stored.roleWarnings ?? []),
+      ...DEFAULT_CONFIG.roleWarnings.filter(
+        (w) => !stored.roleWarnings?.some((x) => x.id === w.id),
+      ),
+    ],
     noteCategories: stored.noteCategories ?? DEFAULT_CONFIG.noteCategories,
   }
 }

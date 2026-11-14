@@ -86,6 +86,11 @@ export function SettingsPage() {
               ],
               ['/settings/tactics', 'Tactics', 'What the tactic briefing flags'],
               [
+                '/settings/role-warnings',
+                'Role warnings',
+                "FM's warnings about role combinations, with their limits",
+              ],
+              [
                 '/settings/instructions',
                 'Team instructions',
                 'Every instruction, its options and the codes FM stores',

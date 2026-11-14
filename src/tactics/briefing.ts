@@ -11,10 +11,17 @@ import { benchCover, slotScore, type FitContext } from './analysis'
 import { chosen, fmPositions, playerChoices, posOf, roleIdOf, teamCodes } from './fm'
 import { formationLabel } from './positions'
 import type { TacticRow } from './types'
+import { roleWarnings } from './warnings'
 
 type Config = Pick<
   AppConfig,
-  'roles' | 'roleWeights' | 'fmCodes' | 'teamInstructions' | 'playerInstructions' | 'briefingLowFit'
+  | 'roles'
+  | 'roleWeights'
+  | 'fmCodes'
+  | 'teamInstructions'
+  | 'playerInstructions'
+  | 'briefingLowFit'
+  | 'roleWarnings'
 >
 
 export interface BriefingSlot {
@@ -99,6 +106,8 @@ export function buildBriefing(t: TacticRow, squad: PlayerRow[], config: Config):
     }
   })
 
+  // FM's own warnings about the role combination
+  watch.unshift(...roleWarnings(t.slots, config.roles, config.roleWarnings, config.fmCodes))
   return {
     title: [t.name, t.mentality].filter(Boolean).join(' · '),
     shape: `${formationLabel(t.slots.map((s) => posOf(s, 'ip')))} in possession, ${formationLabel(t.slots.map((s) => posOf(s, 'oop')))} out of possession`,

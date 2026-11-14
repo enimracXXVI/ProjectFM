@@ -1,0 +1,1870 @@
+{
+  "mentalities": {
+    "Very Defensive": {
+      "short": ["Take as few risks as possible.", "Play with minimal urgency."],
+      "text": "This mentality is intended for situations where the team needs to shut up shop, usually reserved for desperate situations during the final minutes of a match. In possession, the team will take as few risks as possible with the ball, playing with an extremely low level of tempo and urgency with the sole aim of preventing the opposition team from scoring a goal. Out of possession, team will play a much deeper defensive line in order to absorb pressure.",
+      "pros": [
+        "Useful in situations where you desperately need to stop the other team from scoring.",
+        "Avoids dangerous turnovers as much as possible."
+      ],
+      "cons": [
+        "Allows the other team to pile on pressure and commit numbers forward.",
+        "Very little chance to create goalscoring opportunities of your own."
+      ]
+    },
+    "Defensive": {
+      "short": ["Take much fewer risks.", "Play with much less urgency."],
+      "text": "This mentality is best employed for matches where the opposition are heavy favourites to win, or in situations where the team need to start taking less risks in order to help see out the game. In possession, the team will take many fewer risks with the ball, playing with a much lower level of tempo and urgency in order to frustrate the opposition and deny them of any dangerous counter-attacking opportunities. Out of possession, team will play a deeper defensive line in order to absorb pressure.",
+      "pros": [
+        "Useful for when you want to minimise the amount of chances conceded.",
+        "Looks to avoid giving the ball away in dangerous positions."
+      ],
+      "cons": [
+        "Allows the other team to dictate play.",
+        "Less commitment to counter-attacking opportunities."
+      ]
+    },
+    "Cautious": {
+      "short": ["Take fewer risks.", "Play with a bit less urgency."],
+      "text": "This mentality is a good starting strategy for matches in which you believe the opposition are the stronger team, but you still feel you can break with some regularity. In possession, the team will take slightly fewer risks with the ball, playing with a slightly lower level of tempo and urgency. However they will still commit numbers to counter-attacking opportunities when they arise. Out of possession, team will play a slightly deeper defensive line in order to absorb pressure.",
+      "pros": [
+        "Useful for when you’re wary of the other team’s attacking threat.",
+        "Takes fewer risks with the ball."
+      ],
+      "cons": [
+        "Relies more on counter-attacks to create chances.",
+        "May struggle to unlock tight defences without taking more risks."
+      ]
+    },
+    "Balanced": {
+      "short": ["Balanced level of risk.", "Balanced level of urgency."],
+      "text": "This mentality is an ideal starting strategy for matches against similar-strength opponents, or situations where you want a careful balance between risk and reward. In possession, the team will play with a balanced level of tempo and urgency, not trying to force the issue but also still looking to create attacking opportunities where possible. Out of possession, the team will play a balanced defensive line depth.",
+      "pros": ["Provides a balance between risk and reward.", "A flexible starting strategy."],
+      "cons": [
+        "Doesn’t force the issue as much as higher mentalities.",
+        "Takes more risks than lower mentalities."
+      ]
+    },
+    "Positive": {
+      "short": ["Take some more risks.", "Play with a bit more urgency."],
+      "text": "This mentality is best employed for matches in which you believe you are the stronger team but are wary of your opponent’s counter-attacking threat. In possession, the team will play with a slightly higher level of tempo and urgency in an attempt to unsettle the opposition defence, but in a measured way which still attempts to maintain control of the match. Out of possession, the team will play a slightly higher defensive line in order to support the press.",
+      "pros": [
+        "Useful for when you want the team to take control of the match.",
+        "Looks to exert sustained pressure."
+      ],
+      "cons": [
+        "Leaves the team a bit more vulnerable to counter-attacks.",
+        "Less effective against stronger teams."
+      ]
+    },
+    "Attacking": {
+      "short": ["Take many more risks.", "Play with much more urgency."],
+      "text": "This mentality is best employed for matches where the team are heavy favourites to win, or in situations where the team need to start taking more risks in order to find a goal. In possession, the team will play with a higher level of tempo and urgency in an attempt to create goalscoring opportunities, taking many more risks to try and unlock the opposition defence. Out of possession, the team will play a higher defensive line in order to support the press.",
+      "pros": [
+        "Useful for when you want to play with more tempo and urgency.",
+        "Takes risks to create more goalscoring opportunities."
+      ],
+      "cons": [
+        "More vulnerable to counter-attacks.",
+        "Higher tempo and risk-taking can lead to more turnovers."
+      ]
+    },
+    "Very Attacking": {
+      "short": ["Take as many risks as possible.", "Play with extreme urgency."],
+      "text": "This mentality is intended for situations where the team needs to go for broke to try and score a goal, usually reserved for desperate situations during the final minutes of a match. In possession, the team will play with an extremely high level of tempo and urgency in an attempt to create goalscoring opportunities, taking as many risks as possible to try and unlock the opposition defence rather than recycling possession. Out of possession, the team will play a much higher defensive line in order to support the press.",
+      "pros": [
+        "Useful in situations where you desperately need to find a goal.",
+        "Tests the defence as much as possible."
+      ],
+      "cons": [
+        "Leaves the team very vulnerable to counter-attacks.",
+        "Gives the ball away very often, through trying to force chances."
+      ]
+    }
+  },
+  "roles": {
+    "bgk": {
+      "about": "The Ball-Playing Goalkeeper looks to play an active role in their team's build-up play, often moving out of their goal to be in a position to receive the ball. Requiring a high level of technical ability with the ball at their feet, the Ball-Playing Goalkeeper looks to act as an additional outfield player at times in order to help their team play through an opposition press."
+    },
+    "gk-ip": {
+      "about": "The Goalkeeper can distribute the ball in different ways depending on the team's playing strategy.  They look to provide a measured balance between staying in goal and moving out of their goal in an attempt to receive the ball."
+    },
+    "ngk": {
+      "about": "The No-Nonsense Goalkeeper adopts a cautious approach, preferring to stay nearer to their goal and taking as few risks as possible with the ball at their feet when put under pressure."
+    },
+    "gk-oop": {
+      "about": "The goalkeeper role focuses on protecting their goal and making saves from shots and crosses. They are the last line of defence and are relied upon to help the team keep clean sheets."
+    },
+    "lhk": {
+      "about": "The Line Keeper is a Goalkeeper who primarily looks to stay within the confines of their own box, leaving the job of defending higher up the pitch to their teammates."
+    },
+    "sk": {
+      "about": "The Sweeper Keeper is a proactive Goalkeeper, regularly looking to come off their line in an attempt to intercept opposition passes or to engage opposition strikers early.",
+      "tags": ["Comes Off Line"]
+    },
+    "acb": {
+      "about": "The first job of the Advanced Centre-Back is to provide protection to the team, being in a position where they can be ready to react to attacking threats when the ball is turned over. However the Advanced Centre-Back is also a specialist role, acting as a central defender during deep build-up before then moving forward into a defensive midfield position as their team progresses play up the pitch. Because of this, the role requires exceptional technical and mental skills that you'd typically expect of a midfield player. Elsewhere in defence, it's important to ensure the team has sufficient coverage at centre-back, typically through the use of an Inverted Full-Back."
+    },
+    "bcb": {
+      "about": "The two principal tasks of the Ball-Playing Centre-Back are to provide protection to the team whilst also playing line-breaking passes and through balls from deep to progress the ball up the pitch. Defensively, they look to be in a position where they can be ready to react quickly to attacking threats if their team loses the ball. Offensively, they also look to carry the ball forward when they have the opportunity to do so."
+    },
+    "cb-ip": {
+      "about": "The main job of the Centre-Back is to provide protection to the team, being in a position where they can be ready to react to attacking threats when the ball is turned over. However, especially for more aggressive tactics, they must also possess the composure to be able to help the team maintain possession and lay off simple passes to more creative players."
+    },
+    "ncb": {
+      "about": "The No-Nonsense Centre-Back is focused on being the last outfield protection a team has, being in a position to be ready to defend at any moment, while also looking to minimize the amount of risks they take with the ball at their feet. When put under pressure, they will try their best to avoid giving the ball away in a dangerous position, being more willing to clear their lines or play a safer pass."
+    },
+    "ocb": {
+      "about": "The Overlapping Centre-Back combines the responsibilities of a Centre-Back and a Winger, looking to provide protection to the team during early phases of attack, while also getting into crossing positions by making overlapping runs in the final third of the pitch. Because of their attacking role, it's important to ensure there's sufficient defensive coverage elsewhere in the team to cover for them.",
+      "tags": ["Gets Further Forward"]
+    },
+    "wcb-ip": {
+      "about": "Alongside providing defensive protection to the team, the Wide Centre-Back is encouraged to provide width in possession and support to their wide attacking teammates ahead of them, often offering a recycling passing option from deep."
+    },
+    "fb-ip": {
+      "about": "The Full-Back is a key player in modern football, having to supplement their traditional defensive duties with overlapping runs down the wing to support forward play and help attacks overload the final third. Although primarily a defensive player, they must be prepared to get forward at times when the team needs extra width."
+    },
+    "ifb": {
+      "about": "The Inside Full-Back is a player whose specialist role involves moving inside to become an extra central defender during the attack. Often used by teams to provide additional protection against counter-attacks, the Inside Full-Back will initially position as a traditional Full-Back would during early build-up, before tucking inside to act as an additional Centre-Back as their team progresses play up the pitch.",
+      "tags": ["Moves Inside to CB"]
+    },
+    "iwb": {
+      "about": "Looking to move into central areas of the pitch as their team progresses with the ball, the Inside Wing-Back supports central passing networks, as well as providing vital protection against central counter-attacks when the ball is turned over. Because of these central movements, the Inside Wing-Back will rarely be looking to make overlapping attacking runs or playing crosses in from near the byline. Instead, they look to behave more closely to a defensive midfielder.",
+      "tags": ["Moves Inside to DM"]
+    },
+    "pwb-ip": {
+      "about": "Similarly to the Inverted Wing-Back, the Playmaking Wing-Back will try to move into central areas of the pitch to support central passing networks whilst offering vital protection against central counter-attacks. However, the Playmaking Wing-Back is also expected to act as a central hub of the team's passing play, playing progressive passes, through balls, and dangerous crosses into the box. The role has much more empthasis on the player getting time on the ball and creating chances, which means they require a very high level of technical ability in order to be effective in it.",
+      "tags": ["Moves Inside to DM"]
+    },
+    "wb-ip": {
+      "about": "The Wing-Back combines the responsibilities of a Full-Back and a Winger, providing width to the team throughout the attack. During deep build-up, the Wing-Back looks to position alongside the defence to offer a passing option. However, as play progresses up the pitch, they are expected to get forward to join the attack, often making supporting runs in the final third.",
+      "tags": ["Gets Further Forward"]
+    },
+    "awb": {
+      "about": "With more aggressive positioning than a traditional Wing-Back, the Advanced Wing-Back looks to play high and wide as much as possible. As their team are building play from deep, the Advanced Wing-Back doesn't drop back alongside their defenders; instead, they maintain a higher position up the pitch more akin to how a wide midfielder would. As play progresses up the pitch, they are expected to get forward to join the attack, often making supporting runs in the final third.",
+      "tags": ["Gets Further Forward"]
+    },
+    "cb-oop": {
+      "about": "The main job of the Centre-Back is to stop the opposing attackers from playing and to clear the ball from danger when required."
+    },
+    "ccb": {
+      "about": "As a Cover, the Centre-Back is asked to adopt a more cautious approach, holding their line and waiting to react to the opposition attacker's movements."
+    },
+    "cwd": {
+      "about": "As a Cover, the Wide Centre-Back is asked to adopt a more cautious approach, holding their line and waiting to react to the opposition attacker's movements."
+    },
+    "scb": {
+      "about": "As a Stopper, the Centre-Back is asked to be more willing to step out from their position in order to hassle and engage opposition attackers, in an attempt to cut out attacks at source.",
+      "tags": ["Steps Out"]
+    },
+    "swd": {
+      "about": "As a Stopper, the Wide Centre-Back is asked to be more willing to step out from their position in order to hassle and engage opposition attackers, in an attempt to cut out attacks at source.",
+      "tags": ["Steps Out"]
+    },
+    "wcb-oop": {
+      "about": "The main job of the Wide Centre-Back is to stop opposing attackers from creating chances and scoring goals. Operating on the side of a middle 3, they're expected to cover for their Wing-Back as they push forward, often defending wider channels than a traditional central defender."
+    },
+    "fb-oop": {
+      "about": "The main job of a Full-Back is to defend the wide areas as part of the team's backline."
+    },
+    "hfb": {
+      "about": "As a Holder, the Full-Back is asked to hold a deeper position while their team is defending higher up the pitch, in order to provide additional protection against direct attacks. As the team are pressing the opposition during the early phases of their attack, the player looks to remain in their position more, allowing their teammates to play more aggressively knowing there's protection behind them."
+    },
+    "pfb": {
+      "about": "As a Presser, the Full-Back is asked to actively engage opposition wide players high up the pitch to support the team's press. The player will often take up a higher starting position during early phases of the opposition attack in order to be in a better position to engage players ahead of them. Because of this higher positioning, it's important to ensure that there's enough defensive cover behind them from their teammates.",
+      "tags": ["Steps Out"]
+    },
+    "hwb": {
+      "about": "As a Holder, the Wing-Back is asked to hold a deeper position while their team is defending higher up the pitch, in order to provide additional protection against direct attacks. As the team are pressing the opposition during the early phases of their attack, the player looks to form part of the backline more, allowing their teammates to play more aggressively knowing there's protection behind them."
+    },
+    "pwb-oop": {
+      "about": "As a Presser, the Wing-Back is asked to aggressively engage opposition wide players high up the pitch to support the team's press. The player will often take up a higher starting position during early phases of the opposition attack in order to be in a better position to engage players ahead of them. Because of this higher positioning, it's important to ensure that there's enough defensive cover behind them from their teammates.",
+      "tags": ["Steps Out"]
+    },
+    "wb-oop": {
+      "about": "The Wing-Back is expected to defend the wide areas for their team. Compared to traditional full-backs, they tend to have more license to step out of the defensive line to engage opposition wide attackers, knowing that there's a Wide Centre-Back behind them to provide covering support."
+    },
+    "bbm": {
+      "about": "The non-stop dynamism of the Box-to-Box Midfielder enables them to contribute greatly to both attacking play during the build-up and in the final third. During build-up, they are positioned as a traditional defensive midfield player, offering passing options to help progress the play forward. During the latter phases of attack, they surge towards the final third in order to operate more like an attacking midfielder, arriving into the box to get on the end of crosses and pullbacks, as well as providing a threat from the edge of the box. Because of the amount ground they are asked to cover on the pitch, the role requires very high work rate and energy levels.",
+      "tags": ["Moves Up to AMC"]
+    },
+    "bbp": {
+      "about": "The Box-to-Box Playmaker is the heartbeat of their team, looking to be a creative outlet from both deep and advanced areas of the pitch. When their team are building from the back, the Box-to-Box Playmaker will drop deep and look to be the creative link between defence and attack, much like a Deep-Lying Playmaker. However, as play progresses up the pitch, the Box-to-Box Playmaker will move up to an attacking midfield position and look to be the creative spark in the final third, similar to how an Advanced Playmaker would. Because of the all-action nature of the role, the Box-to-Box Playmaker requires higher stamina levels than other playmaker roles in order to be able to cover the full length of the pitch.",
+      "tags": ["Moves Up to AMC"]
+    },
+    "dlp": {
+      "about": "Operating in the space between the defence and the midfield, the Deep-Lying Playmaker aims to initiate attacking moves via pinpoint passes to players positioned higher up the pitch. Although primarily a creative player, the Deep-Lying Playmaker also has to be competent in the art of defence as they will often be one of the team's deepest midfield players when the ball is turned over in attack."
+    },
+    "dm-ip": {
+      "about": "The Defensive Midfielder's main responsibility is to position themselves in front of the team's defence and help protect them from counter-attacking threats. In possession, the Defensive Midfielder aims to be the team's link between defence and attack, playing simple passes to help retain possession and to progress the play."
+    },
+    "hb": {
+      "about": "A defensive midfielder who looks to drop into their team's defensive line as they progress the ball up the pitch, the Half-Back acts as an additional central defender. They are typically used by teams with two central defenders in their in-possession formation so as to ensure that they have three players at the back in the event that the opposition starts a counter-attack. This can also make the team more press-resistant, particularly against teams that press with a front two. When used centrally, the Half Back will drop between their team's central defenders. However, when used in side defensive midfield positions, the Half Back will drop to one side of their central defenders as either a RCB or LCB.",
+      "tags": ["Moves Back to CB"]
+    },
+    "ap": {
+      "about": "The Advanced Playmaker is a creative role which looks to operate high up the pitch between the opposition's midfield and defence, looking to receive passes in pockets of space as much as possible. The Advanced Playmaker's job is primarily to create opportunities for their teammates to score, playing killer passes in the final third as much as possible.",
+      "tags": ["Finds Space Between Lines"]
+    },
+    "am-ip": {
+      "about": "An offensive role which looks to operate between the opposition defensive and midfield line, the Attacking Midfielder looks to receive passes in pockets of space as much as possible. Requiring excellent passing, dribbling and shooting abilities, their role is to constantly look to fashion chances for themselves and others in the final third.",
+      "tags": ["Finds Space Between Lines"]
+    },
+    "cm-ip": {
+      "about": "Responsible for providing an industrious and versatile link between the defence and the attack, the Central Midfielder is expected to perform a variety of tasks across the centre of the pitch. The role requires the tactical awareness and technical ability to support both defensive and attacking play as needed."
+    },
+    "chm": {
+      "about": "The Channel Midfielder looks to make supporting runs into wide areas, often linking up with their team's wide attackers. Players in the role are encouraged to make attacking runs into the channels behind the opposition defence, looking to get into a dangerous crossing position and providing underlaps for their wide teammates.",
+      "tags": ["Runs Into Channels"]
+    },
+    "mpm": {
+      "about": "The Midfield Playmaker operates as a creative link between defence and attack, looking to play progressive passes and killer balls to attacking teammates to initiate attacks for their team. During earlier phases of attack, the Midfield Playmaker is positioned in central midfield, making themselves available to receive progressive passes from their defenders and defensive midfielders. They then try to push up into an attacking midfield position as their team enters the final third."
+    },
+    "wcm-ip": {
+      "about": "Typically utilised at the side of a midfield duo or trio, the Wide Central Midfielder's responsiblities lie in providing an industrious and versatile link between the defence and the attack. As they operate wider than traditional central midfield players, they make themselves a better option for diagonal passes or switches from the opposing flank in order to progress the play around the opposition press.",
+      "tags": ["Drifts Wide"]
+    },
+    "iw": {
+      "about": "Frequently aiming to drift inside into the half-spaces as their team attacks, the Inside Winger looks to receive the ball in more central areas of the pitch, while also creating space out wide for overlapping teammates. The role is usually combined with an attacking full-back or wing-back that looks to hug the sideline so that both players have their own space to operate in. Not only does the Inside Winger look to combine with an overlapping teammate, but they also look to provide dangerous passes and crosses themselves from closer to the box than a traditional winger.",
+      "tags": ["Moves Inside"]
+    },
+    "pw": {
+      "about": "The Playmaking Winger will act as the team's primary source of creativity, starting from a wide position during their team's build-up phase before later drifting inside to find space from which to play killer balls and create chances. Coming in from the wing allows the Playmaking Winger to escape congested central midfield areas, and can result in them finding open pockets of space in the half-spaces as they move inside.",
+      "tags": ["Moves Inside"]
+    },
+    "wm": {
+      "about": "A wide player who tends to support the attack from deeper than a typical attacking wide player, the Wide Midfielder prefers to play dangerous passes and crosses from deep instead of trying to beat an opposition full-back, trusting their technical ability more than their dribbling and pace."
+    },
+    "w-ip": {
+      "about": "Providing width throughout the attack, the Winger stretches the opposition defence by attacking from close to the sidelines. The role aims to provide support to their team's forwards, playing dangerous passes and crosses in the final third to create chances for their teammates. Due to their wide positioning, the Winger is often found in one-on-one situations against the opposition full-back, which allows them to make effective use of their dribbling skills.",
+      "tags": ["Gets Further Forward"]
+    },
+    "dm-oop": {
+      "about": "The Defensive Midfielder's main responsibility out of possession is position themselves in front of the team's defence and help protect them from attacking threats."
+    },
+    "ddm": {
+      "about": "As a Dropper, the Defensive Midfielder will look to move back into the defensive line as their team are pinned back into their own defensive third, acting as an additional Centre-Back. During the earlier phases of the opposition attack, the player will act as a more traditional Defensive Midfielder.",
+      "tags": ["Moves Back to CB"]
+    },
+    "pdm": {
+      "about": "As a Presser, the Defensive Midfielder is tasked with stepping forward from their position to support the team's press high up the pitch. The player will often take up a higher starting position during early phases of the opposition attack in order to be in a better position to engage players ahead of them. Because of this higher positioning, it's important to ensure that there's enough defensive cover behind them from their teammates.",
+      "tags": ["Steps Out"]
+    },
+    "sdm": {
+      "about": "As a Screener, the Defensive Midfielder's main responsibility is to defend the space in front of their central defenders. They are less likely to leave their position to press the opposition, instead looking to protect their zone and block passing lanes."
+    },
+    "wdm": {
+      "about": "As a Wide Cover, the Defensive Midfielder is asked to provide defensive support in wide areas, moving across from their typical position to help their team defend against wide threats. This means that when the opposition attack the flanks on their side, instead of protecting central areas more like a traditional Defensive Midfielder, the player will look to shift across and support their Full-Back, often doubling up on the opposition's wide attacking threats.",
+      "tags": ["Covers Flank"]
+    },
+    "cm-oop": {
+      "about": "The Central Midfielder looks to provide protection in the middle of the pitch, often looking to provide a balance between supporting the press and screening passes through the middle."
+    },
+    "pcm": {
+      "about": "As a Presser, the Central Midfielder is encouraged to step forward more often from their position to support the team's press higher up the pitch. The player will often take up a higher starting position during early phases of the opposition attack in order to be in a better position to engage players ahead of them. Because of this higher positioning, it's important to ensure that there's enough defensive cover behind them from their teammates.",
+      "tags": ["Steps Out"]
+    },
+    "scm": {
+      "about": "As a Screener, the Central Midfielder tries not to be drawn out from their position too much, instead focusing on blocking passing lanes through the middle of the pitch."
+    },
+    "wcm-oop": {
+      "about": "As a Wide Cover, the Central Midfielder is asked to provide defensive support in wide areas, moving across from their typical position to help their team defend against wide threats. This means that when the opposition attack the flanks on their side, instead of protecting central areas more like a traditional Central Midfielder, the player will look to shift across and support their Full-Back, often doubling up on the opposition's wide attacking threats.",
+      "tags": ["Covers Flank"]
+    },
+    "twm": {
+      "about": "As a Tracker, the Wide Midfielder is instructed to track back defensively as the opposition advance into their own defensive third in order to support the defenders behind them, at times even dropping into the backline as an additional defender. The player is expected to actively support the team defensively against wide attacking threats.",
+      "tags": ["Tracks Back"]
+    },
+    "wmf": {
+      "about": "The Wide Midfielder provides a balance between defensive protection against wide attacking threats, and being in a position to spring a counter in case of a turnover."
+    },
+    "owm": {
+      "about": "As a Wide Outlet, the Wide Midfielder is asked to avoid tracking back to help out the Full-Back behind them as much, instead looking to hold their position more in order to be in a dangerous position for a counter-attack when the ball turns over. Because they don't do as much defensive work, it's often important to ensure that the team aren't exposed on their flank e.g. by asking nearby midfielders to play a wide covering role to cover for them."
+    },
+    "fr": {
+      "about": "A player with a Free Role is given full creative license, allowing them to roam from their position to create attacking opportunities for their team whilst also being encouraged to take more risks with the ball in an effort to both create and score goals. Because of the freedom they're allowed, the Free Role is less likely to follow the team's explicit instructions and may break the team's structure at times. However, their unpredictability and creativity can help to unlock defences for their team."
+    },
+    "ss": {
+      "about": "The Second Striker operates as one of the team's main goalscoring threats. In early phases of attack, the Second Striker positions themselves between the opposition midfield and defence in pockets of space. However, as play progresses up the pitch, they aggressively push up into the forward line in order to get into goalscoring positions as the ball moves into the final third. As the name implies, the Second Striker is most commonly utilised in formations with a lone forward.",
+      "tags": ["Moves Up to ST"]
+    },
+    "if": {
+      "about": "The Inside Forward is a wide role that aims to frequently drift inside into the half-spaces as their team attacks to help open up space for overlapping full-backs, as well as being in position to receive the ball in more central areas of the pitch. As with the Wide Forward, the Inside Forward is also primarily an offensive role in the final third. focused on attacking the opposition's penalty box and making dangerous runs behind their defence in order to get into goalscoring positions. The role works best when combined with an attacking full-back or wing-back that looks to hug the sideline.",
+      "tags": ["Goal Threat"]
+    },
+    "wfd": {
+      "about": "As with the Winger, the Wide Forward is expected to provide width throughout the attack so as to stretch the opposition defence and attack from near the sidelines. Where they differ is that the Wide Forward is primarily an offensive role in the final third, focused on attacking the opposition's penalty box and making dangerous runs behind their defence in order to get into goalscoring positions.",
+      "tags": ["Goal Threat"]
+    },
+    "cfd-ip": {
+      "about": "The Centre Forward, also typically known as the classic 'Number 9', is expected to lead the line and look to spearhead attacking moves. Their primary duty is to be the focal point of attacking moves, being required to both score and create goals for their team."
+    },
+    "chf": {
+      "about": "A high-energy role, the Channel Forward looks to constantly be a thorn in opposition defenders' sides, regularly making supporting runs into the channels for their team.  When their team are attacking, the Channel Forward looks to be a constant runner for their team, offering an outlet for direct balls down the channels or ones played in behind, using their pace and tenacity to test the opposition defence."
+    },
+    "dlf": {
+      "about": "With the main function of the Deep-Lying Forward being to link the attack to the midfield, they seek to drop between the lines to receive passes from deep before supplying linking passes of their own to teammates in a number of ways: moving the ball back to midfield support, spreading it wide to the flanks, or, if they have time to turn, playing in their strike partner.",
+      "tags": ["Drop Off Into Space"]
+    },
+    "f9": {
+      "about": "An unconventional centre forward, the False Nine regularly drops between the lines of the opposition's defence and midfield, looking to act similarly to an Advanced Playmaker for their team. The purpose of this is that it creates a tactical problem for opposing central defenders who can either choose to follow them (leaving space in behind) or leave them to have time and space to dribble or pick out a pass. Because of these movements it's often important to pair a False Nine with teammates who regularly look to make runs into goalscoring positions, such as a Second Striker, Inside Forward or Wide Forward.",
+      "tags": ["Moves Back To AMC"]
+    },
+    "p": {
+      "about": "The Poacher sits on the shoulder of the last defender, looking to break the defensive line and run onto through balls from midfield. Requiring excellent off the ball movement to be effective in the role, the Poacher is expected to be the team's main source of goals. Their focus on scoring goals is so extreme that they rarely offer much help in constructing moves or linking play, instead remaining in central areas, sniffing out opportunities in and around the box."
+    },
+    "tf": {
+      "about": "Heavily utilising their physicality and height to disrupt the opposition's defence and create goalscoring opportunities for their team, the Target Forward is typically the team's attacking outlet during the build-up phase, and are often the target of longer passes and clearances that they knock down, flick on, or lay off to their surrounding teammates. In the final third, they look to get on to the end of crosses into the box, using their aerial prowess to be a goalscoring threat."
+    },
+    "am-oop": {
+      "about": "The Attacking Midfielder looks to defend central areas of the pitch, often being tasked with preventing access to the opposition's midfield pivots."
+    },
+    "oam": {
+      "about": "As a Central Outlet, the Attacking Midfielder is asked to avoid tracking back to help out the defenders behind them as much, instead looking to hold their position more in order to be in a dangerous position for a counter-attack when the ball turns over. Because they don't do as much defensive work, it's often important to ensure that the team have enough defensive cover in central areas behind them to account for this."
+    },
+    "sam": {
+      "about": "As a Splitting Outlet, the Attacking Midfielder is asked to avoid tracking back to help out the defenders behind them as much, instead looking to hold a higher position more in order to be in a dangerous position for a counter-attack when the ball turns over. As the opposition progresses play, the player also looks to drift out into the channels. This allows them to start counter-attacks from wide, usually with the aim to exploit the space often not found in more central areas of the pitch.",
+      "tags": ["Moves Out Wide"]
+    },
+    "tam": {
+      "about": "As a Tracker, the Attacking Midfielder is instructed to track back defensively as the opposition advance into their own defensive third in order to support the defenders behind them, dropping back into a deeper defensive position. The player is expected to actively support the team defensively against central attacking threats.",
+      "tags": ["Tracks Back"]
+    },
+    "iow": {
+      "about": "As an Inside Outlet, the Winger is asked to avoid tracking back to help out the Full-Back behind them as much, instead looking to hold their position more in order to be in a dangerous position for a counter-attack when the ball turns over. As the opposition progresses play, the Inside Outlet also looks to drift into central areas. This allows them to start counter-attacks from the half-spaces, usually with the aim to receive direct passes between the lines.",
+      "tags": ["Moves Inside"]
+    },
+    "tw": {
+      "about": "As a Tracker, the Winger is instructed to track back defensively as the opposition advance into their own defensive third in order to support the defenders behind them, at times even dropping into the backline as an additional defender. The player is expected to actively support the team defensively against wide attacking threats.",
+      "tags": ["Tracks Back"]
+    },
+    "wow": {
+      "about": "As a Wide Outlet, the Winger is asked to avoid tracking back to help out the Full-Back behind them as much, instead looking to hold their position more in order to be in a dangerous position for a counter-attack when the ball turns over. Because they don't do as much defensive work, it's often important to ensure that the team aren't exposed on their flank e.g. by asking nearby midfielders to play a Wide Cover role to cover for them."
+    },
+    "w-oop": {
+      "about": "The Winger primarily looks to defend the wide areas of the pitch, looking to find a balance between supporting the press higher up the pitch, and tracking back when necessarily to support the wide defender behind them."
+    },
+    "ocf": {
+      "about": "As a Central Outlet, the Centre Forward is asked to avoid tracking back to help out the midfielders behind them as much, instead looking to hold their position more in order to be in a dangerous position for a counter-attack when the ball turns over. Because they don't do as much defensive work, it's often important to ensure that the team have enough defensive cover in central areas behind them to account for this."
+    },
+    "cfd-oop": {
+      "about": "The Centre Forward sets the tone for their team's defensive strategy, often starting the press, or screening passes through the middle of the pitch."
+    },
+    "scf": {
+      "about": "As a Splitting Outlet, the Centre Forward is asked to avoid tracking back to help out the midfielders behind them as much, instead looking to hold a higher position more in order to be in a dangerous position for a counter-attack when the ball turns over. As the opposition progresses play, the Splitting Outlet also looks to drift out into the channels. This allows them to start counter-attacks from wide, usually with the aim to exploit the space often not found in more central areas of the pitch.",
+      "tags": ["Moves Out Wide"]
+    },
+    "tcf": {
+      "about": "As a Tracker, the Centre Forward is instructed to track back defensively as the opposition advance into their own defensive third in order to support the midfielders behind them, dropping back into a deeper defensive position. The player is expected to actively support the team defensively against central attacking threats.",
+      "tags": ["Tracks Back"]
+    }
+  },
+  "tags": {
+    "Covers Flanks": "Player with a more central starting position will be asked to be willing to help provide defensive support to their wider team-mates.",
+    "Proactive": "Goalkeeper is encouraged to sense danger before it occurs and look to cut out opposition attacks before they develop.",
+    "Comes Off Line": "Goalkeeper is encouraged to come further away from their goalline to challenge onrushing attacking situations.",
+    "Steps Out": "Player is asked to be willing to step up from their position to try to engage their marker early and force a change of possession.",
+    "Assertive": "Player is encouraged to be aggressive and proactive in trying to win the ball back.",
+    "Moves Up": "Player is encouraged to be aggressive and proactive in trying to win the ball back.",
+    "Reactive": "Goalkeeper is encouraged to watch and react to play rather than try to predict what might happen.",
+    "Stays On Line": "Goalkeeper is encouraged to stay closer to their goalline and not seek to intervene in play higher up the pitch.",
+    "Moves Back to CB": "Player will start in their defensive midfield position during build-up, before dropping back into central defence when play progresses further up the pitch.",
+    "Cautious": "Player is asked to avoid reckless pressing or tackling, instead protecting spaces more and staying goal-side of their marker.",
+    "Drifts Wide": "Player is asked to find pockets of space in wide areas from their more central starting position.",
+    "Plays On Last Line": "Player will position themselves against the opposition defensive line in an effort to stretch the play and keep defenders busy.",
+    "Moves Up to DM": "Player will start in their centre-back position during build-up, before moving up to a defensive midfield position when play progresses further up the pitch.",
+    "Moves Inside to DM": "Player will start in their wide defensive position during build-up, before moving inside to a defensive midfield position when play progresses further up the pitch.",
+    "Moves Inside to CB": "Player will be positioned as a full-back during build-up, before moving inside to a wide centre-back role when play progresses further up the pitch.",
+    "Moves Inside": "Player will start in their wide position during build-up, before moving inside to adopt a more central position when play progresses further up the pitch.",
+    "Careful": "Player is asked to take fewer risks with the ball.",
+    "Links Play": "Player will look to position themselves in a way that allows them to link play between different positions or phases of attacking build-up.",
+    "Runs Into Channels": "Player will look to make runs into the space between the opposition central and wide defenders to challenge their marking responsibilities.",
+    "Creative Threat": "Player is expected to create goalscoring opportunities for their teammates.",
+    "Moves Up to AMC": "Player will start in their midfield position during build-up, before moving forward into an attacking midfield position when play progresses further up the pitch.",
+    "Holds Position": "Player will look to stay in their assigned areas of the pitch rather than find reason or have license to roam further away.",
+    "Goal Threat": "Player is expected to get into the penalty area and look to score goals.",
+    "Stays Wide": "Player is asked to hold a wide position within the team’s structure when they don’t have the ball.",
+    "Gets Further Forward": "Player is asked to make runs into attacking positions more often.",
+    "Expressive": "Players is encouraged to show their personality and creativity.",
+    "Finds Space Between Lines": "Player is encouraged to find pockets of space between the opposition’s defensive and midfield lines, to evade markers and help the team play forward passes."
+  },
+  "team": {
+    "Passing directness": {
+      "Much shorter passes": {
+        "short": ["Strongly emphasise shorter passes.", "Retain the ball."],
+        "text": "Places a stronger emphasis on your team to play short passes whenever possible, with the aim to retain possession of the ball for longer periods of time.",
+        "pros": [
+          "Much higher share of possession.",
+          "Opposition spend long periods of time without the ball."
+        ],
+        "cons": [
+          "Gives opposition much more time to regroup.",
+          "Requires a high level of technical precision to create chances."
+        ]
+      },
+      "Shorter passes": {
+        "short": ["Encourage shorter passes."],
+        "text": "Encourages your team to play shorter passes in an attempt to build attacks more patiently.",
+        "pros": ["Turns over possession less often.", "Higher share of possession."],
+        "cons": [
+          "Gives opposition more time to regroup.",
+          "Requires team with good technical ability."
+        ]
+      },
+      "Standard": {
+        "short": ["A balance of short and long passes."],
+        "text": "Your team will play a passing game which is considered typical of a team on your current Mentality level.",
+        "pros": [
+          "A flexible passing strategy.",
+          "Provides a balance between playing direct or short."
+        ],
+        "cons": [
+          "Doesn’t control possession as much as shorter passing styles.",
+          "Doesn’t build attacks as quickly as more direct passing styles."
+        ]
+      },
+      "More direct passes": {
+        "short": ["Encourage longer passes."],
+        "text": "Encourages your team to play longer passes in an attempt to get the ball from back to front more quickly.",
+        "pros": [
+          "Gets the ball into attacking areas quicker.",
+          "Lower risk of dangerous turnovers."
+        ],
+        "cons": ["Lower share of possession.", "Requires strong physical qualities."]
+      },
+      "Much more direct passes": {
+        "short": ["Strongly emphasise longer passes."],
+        "pros": [
+          "Gets the ball into attacking areas much quicker.",
+          "Much lower risk of dangerous turnovers."
+        ],
+        "cons": ["Much lower share of possession.", "Requires exceptional physical qualities."]
+      }
+    },
+    "Tempo": {
+      "Much lower": {
+        "pros": [
+          "Much more control of the ball.",
+          "Much less likely to be rushed into a bad pass."
+        ],
+        "cons": [
+          "Gives other team much more time to regroup.",
+          "Much higher chance of dwelling too long on the ball."
+        ]
+      },
+      "Lower": {
+        "pros": ["More control of the ball.", "Less likely to be rushed into a bad pass."],
+        "cons": [
+          "Gives other team more time to regroup.",
+          "Higher chance of dwelling too long on the ball."
+        ]
+      },
+      "Standard": {
+        "pros": ["A flexible speed of play.", "Provides a balanced level of urgency."],
+        "cons": [
+          "Doesn’t control the ball as much as lower tempos.",
+          "Doesn’t build attacks as quickly as higher tempos."
+        ]
+      },
+      "Higher": {
+        "pros": [
+          "Gives other team less time to regroup.",
+          "Lower chance of dwelling too long on the ball."
+        ],
+        "cons": ["Less control of the ball.", "More likely to be rushed into a bad pass."]
+      },
+      "Much higher": {
+        "pros": [
+          "Gives other team much less time to regroup.",
+          "Much lower chance of dwelling too long on the ball."
+        ],
+        "cons": ["Much less control of the ball.", "Much more likely to be rushed into a bad pass."]
+      }
+    },
+    "Attacking width": {
+      "Much narrower": {
+        "short": ["Create much closer passing connections.", "Overload central areas."],
+        "text": "Instruct the team to play much closer together when attacking, congesting the play to a smaller area of the pitch and working in much more intricate confines.",
+        "pros": [
+          "Provides many more short passing options.",
+          "much better position to counter-press."
+        ],
+        "cons": ["Play is much more congested.", "Much harder to switch the play."]
+      },
+      "Narrower": {
+        "short": ["Create closer passing connections."],
+        "text": "Instruct the team to play closer together when attacking, congesting the play to a smaller area of the pitch.",
+        "pros": ["Provides more short passing options.", "better position to counter-press."],
+        "cons": ["Play is more congested.", "Harder to switch the play."]
+      },
+      "Standard": {
+        "short": ["According to current Mentality.", "A balanced width."],
+        "text": "Your team will attack with a width which is considered typical for a team on your current Mentality level.",
+        "pros": [
+          "A flexible attacking width.",
+          "Provides a balance between stretching the play and controlling the middle."
+        ],
+        "cons": [
+          "Doesn’t control the middle as much as narrower widths.",
+          "Doesn’t stretch the opposition as much as wider widths."
+        ]
+      },
+      "Wider": {
+        "short": ["Create distance between players.", "Stretch the play."],
+        "text": "Encourage to take up a wider position during attacks in an attempt to stretch the play more.",
+        "pros": ["Stretches the other team's defence.", "Easier to switch the play."],
+        "cons": ["Provides less short passing options.", "Team in worse position to counter-press."]
+      },
+      "Much wider": {
+        "short": ["Maximise distance between players.", "Use full width of the pitch."],
+        "text": "Instruct the team to look to stretch the opposition as much as possible and use the full extremes of the pitch to their advantage.",
+        "pros": [
+          "Stretches the other team's defence even more.",
+          "Much easier to switch the play."
+        ],
+        "cons": [
+          "Provides many less short passing options.",
+          "Team in much worse position to counter-press."
+        ]
+      }
+    },
+    "Attacking transition": {
+      "Hold shape": {
+        "short": ["Prioritise ball retention."],
+        "pros": [
+          "Better chance of retaining the ball after a turnover.",
+          "Maintains the team’s attacking structure."
+        ],
+        "cons": [
+          "Allows other team time to regroup defensively.",
+          "Lower tempo to your team’s attack."
+        ]
+      },
+      "Standard": {
+        "short": ["According to the current Mentality.", "A balanced approach."],
+        "text": "The team will counter-attack with a frequency typical of a team playing on your current mentality.",
+        "pros": [
+          "A flexible approach to attacking transitions.",
+          "Provides a balance between countering and maintaining structure."
+        ],
+        "cons": [
+          "Doesn’t take advantage of turnovers as much as countering strategies.",
+          "Doesn’t maintain control of the ball as well as approaches that hold shape more."
+        ]
+      },
+      "Counter-attack": {
+        "short": ["Catch the opposition out of position.", "Attempt counter-attacks more often."],
+        "pros": ["Creates more chances from turnovers.", "Higher tempo to your attack."],
+        "cons": ["Higher chance of giving the ball away.", "Less structure to attacks."]
+      }
+    },
+    "Creative freedom": {
+      "Be more disciplined": {
+        "short": ["Stick to the tactics.", "Less creative freedom."],
+        "text": "Be More Disciplined will ask players to play as part of a robust and focused tactical shape in order to make the team a stronger collective group. It may come at the expense of some individual expression.",
+        "pros": ["Team maintains shape better.", "Team follow your tactics more."],
+        "cons": ["Attacks are more predictable.", "May restrict creativity."]
+      },
+      "Balanced": {
+        "short": ["No strong preference.", "A balanced level of freedom."],
+        "text": "Your team will play with a level of creative freedom considered typical of a team with your current Mentality.",
+        "pros": [
+          "A flexible level of freedom.",
+          "Provides a balance between structure and creativity."
+        ],
+        "cons": [
+          "Attacks are more predictable than in more expressive setups.",
+          "Team structure isn’t maintained as well as in more disciplined setups."
+        ]
+      },
+      "Be more expressive": {
+        "short": ["Roam from position.", "More creative freedom."],
+        "pros": ["Attacks are more unpredictable.", "Creativity could thrive."],
+        "cons": ["Team is less structured.", "Team won’t follow your tactics as much."]
+      }
+    },
+    "Time wasting": {
+      "Standard": {
+        "short": ["According to the current mentality.", "Time waste where appropriate."],
+        "text": "You are not providing the team with any specific instruction on how to time waste, instead allowing them to do so when they deem it appropriate for the current match situation.",
+        "pros": [
+          "Winds down the clock when the team needs it.",
+          "A flexible approach to game management."
+        ],
+        "cons": [
+          "Doesn’t stall the game as much a more extreme time wasting approach.",
+          "Doesn’t maintain pressure as consistently as a less time wasting approach."
+        ]
+      },
+      "Often": {
+        "short": ["Minimise in-play time.", "Time waste as much as possible."],
+        "text": "Players will be encouraged to time waste as much as possible, looking to reduce the amount of time the ball is in play and to delay the opposition team at every opportunity.",
+        "pros": [
+          "Regularly interrupts opposition momentum.",
+          "Reduces the time the opposition have to play football."
+        ],
+        "cons": [
+          "Reduces our team’s own time to try to score goals.",
+          "Risk of disciplinary action from the referee."
+        ]
+      }
+    },
+    "Play for set pieces": {
+      "Keep ball in play": {
+        "short": ["Create chances in open play.", "Keep the attack going."],
+        "text": "The team will attempt to keep the attack going where possible, looking to create chances in open play by avoid unnecessary stoppages.",
+        "pros": ["More opportunities to create open-play chances.", "Less stoppages in play."],
+        "cons": [
+          "More reliant on ability to create open-play chances.",
+          "Less attacking set pieces."
+        ]
+      },
+      "Play for set pieces": {
+        "short": ["Try to win free kicks.", "Let ball run out for corners."],
+        "text": "Encourage the team to attempt to win corners, free kicks and throw-ins so as to allow the team to bring players forward for dead-ball situations, attempting to command control of the match in that way.",
+        "pros": ["Opportunities to get aerial threats forward.", "More attacking set pieces."],
+        "cons": ["Less opportunities to create open-play chances.", "More stoppages in play."]
+      }
+    },
+    "Patience": {
+      "Hit early crosses": {
+        "short": ["Create high volume of chances.", "Get the ball into the box."],
+        "text": "Instructs the team to play crosses into the box as much as possible, looking to test the opposition defence with high regularity.",
+        "pros": [
+          "Likely to create a higher volume of chances.",
+          "Forces the opposition to defend balls into their box more often."
+        ],
+        "cons": [
+          "Chances team creates are likely to be of a lower quality on average.",
+          "Harder to build sustained pressure."
+        ]
+      },
+      "Standard": {
+        "short": ["No strong preference.", "A balanced crossing strategy."],
+        "text": "The team will look for a balance between playing early crosses into the box and trying work a better opportunity depending on your current mentality.",
+        "pros": [
+          "Variety in approach makes attacks more unpredictable.",
+          "A flexible final-third strategy."
+        ],
+        "cons": ["Loses the benefits of specialising in a single approach."]
+      },
+      "Work ball into box": {
+        "short": ["Create high quality chances.", "Be patient in the final third."],
+        "text": "Instructs the team to work hard for their opening, remaining patient and not forcing the issue, instead retaining and recycling the ball until they’re able to create a high-quality opportunity.",
+        "pros": [
+          "Chances team creates are likely to be of a higher quality.",
+          "Keeps the opposition pinned back."
+        ],
+        "cons": [
+          "Likely to create a lower volume of chances.",
+          "Requires high level of technical quality to carve out chances."
+        ]
+      }
+    },
+    "Shots from distance": {
+      "Discourage": {
+        "short": ["Wait for a higher quality chance.", "Have patience."],
+        "text": "Encourage to wait for a more clear-cut opportunity instead of shooting from lower-percentage positions.",
+        "pros": [
+          "Opportunity to create higher-quality chances.",
+          "Easier to build sustained pressure."
+        ],
+        "cons": [
+          "Allows other team to sit deeper.",
+          "Reliant on team being able to create chances inside the box."
+        ]
+      },
+      "Standard": {
+        "short": ["No strong preference.", "A balanced shooting strategy."],
+        "text": "The team will look for a balance between shooting from distance and working a better opportunity.",
+        "pros": [
+          "Allows team to judge the situation independently.",
+          "A flexible shooting strategy."
+        ],
+        "cons": [
+          "Doesn’t sustain pressure as well as when shooting less often.",
+          "Doesn’t test the goalkeeper as much as when shooting more often."
+        ]
+      },
+      "Encourage": {
+        "short": ["Test the opposition goalkeeper.", "Shoot on sight."],
+        "text": "Encourage the team to shoot when the opportunity arises instead of waiting for a more clear-cut opening.",
+        "pros": [
+          "Can punish teams that defend deep.",
+          "May be effective in adverse weather conditions."
+        ],
+        "cons": [
+          "Sometimes a pass would create a better opportunity to score.",
+          "Harder to build sustained pressure."
+        ]
+      }
+    },
+    "Crossing style": {
+      "Mixed crosses": {
+        "short": ["No strong preference.", "A balanced crossing strategy."],
+        "text": "The team are not instructed to favour a specific type of cross. Instead, the team will decide for themselves which is the best cross for the situation, or based on their own preferences.",
+        "pros": [
+          "Allows players to judge the situation for themselves.",
+          "A flexible crossing strategy."
+        ],
+        "cons": ["Loses the benefits of specialising in a specific approach."]
+      },
+      "Floated crosses": {
+        "short": ["Use team’s aerial advantage.", "Add elevation to crosses."],
+        "text": "Encourage the team to play high crosses with backspin into the box. This means that the ball will hang in the air for longer, which should allow the team’s taller aerial threats to have a better chance of winning the header.",
+        "pros": [
+          "Harder for opponents to get distance on clearances.",
+          "Plays to the strengths of taller aerial threats."
+        ],
+        "cons": [
+          "Less pace on the cross means less power on the resulting header.",
+          "Opposition goalkeeper has more time to come out and claim the cross."
+        ]
+      },
+      "Whipped crosses": {
+        "short": ["Hit crosses with pace and spin.", "Cause chaos in the box."],
+        "text": "Encourage the team to play crosses with a lot of pace and spin into the box. Whipped crosses can be harder and more unpredictable for the opposition defenders to react to.",
+        "pros": ["Easier to generate power on headers.", "Less time to react to the cross."],
+        "cons": [
+          "Shots can be more inaccurate due to the pace of the ball.",
+          "Whipped crosses are more difficult to perform accurately."
+        ]
+      },
+      "Low crosses": {
+        "short": ["Play the ball to feet.", "Hit crosses along the ground."],
+        "text": "Encourage the team to play crosses along the ground. Crosses will be aimed to a teammate’s feet in an attempt to create a higher quality shooting opportunity than you would typically get from a header.",
+        "pros": [
+          "Plays to the strengths of attackers with good off the ball movement.",
+          "Creates higher quality shooting opportunities."
+        ],
+        "cons": [
+          "Crosses have a higher chance of being intercepted.",
+          "Resulting shots have a higher chance of being blocked."
+        ]
+      }
+    },
+    "Dribbling": {
+      "Discourage": {
+        "short": ["Focus on passing combinations.", "Dribble less often."],
+        "text": "Instructs the team to avoid trying to take on their man with the ball too much, instead relying more on passing combinations to open up defences.",
+        "pros": ["Maintains attacking structure.", "Retains possession better."],
+        "cons": [
+          "Attacks are more predictable.",
+          "Reliant on passing to break down opposition defences."
+        ]
+      },
+      "Standard": {
+        "short": ["No strong preference.", "A balanced level of dribbling."],
+        "text": "The team will look for a balance between taking on opposition defenders and playing passing combinations.",
+        "pros": [
+          "Attacks are more unpredictable.",
+          "Finds a balance between dribbling and passing combinations."
+        ],
+        "cons": [
+          "Doesn’t retain the ball as much as a team that dribbles less.",
+          "Doesn’t break the opposition structure as much as when dribbling more."
+        ]
+      },
+      "Encourage": {
+        "short": ["Run at the defence.", "Dribble more often."],
+        "text": "Encourages the team to try to take on opposition players with the ball more often.",
+        "pros": ["Breaks opposition defensive structure if successful.", "Draws fouls."],
+        "cons": [
+          "Gives the ball away more often.",
+          "Requires players with exceptional 1v1 ability."
+        ]
+      }
+    },
+    "Overlap": {
+      "Balanced": {
+        "text": "Places no extra emphasis on the team to make more overlapping runs.",
+        "pros": ["Allows the team to find their own attacking solutions."],
+        "cons": ["Loses the benefits of emphasising a specific approach."]
+      },
+      "Overlap left": {
+        "text": "Instructs players on the left flank to hold on to the ball, looking for a teammate to make a supporting run beyond them from a wider position.",
+        "pros": ["Doubles up on the opposition fullback, creating a 2v1 situation."],
+        "cons": ["Run is often made from outside of the ball-carrier’s field of view."]
+      },
+      "Overlap right": {
+        "text": "Instructs players on the right flank to hold on to the ball, looking for a teammate to make a supporting run beyond them from a wider position.",
+        "pros": ["Doubles up on the opposition fullback, creating a 2v1 situation."],
+        "cons": ["Run is often made from outside of the ball-carrier’s field of view."]
+      },
+      "Overlap both flanks": {
+        "text": "Instructs players on both flanks to hold on to the ball, looking for a teammate to make a supporting run beyond them from a wider position.",
+        "pros": ["Doubles up on the opposition fullback, creating a 2v1 situation."],
+        "cons": ["Run is often made from outside of the ball-carrier’s field of view."]
+      }
+    },
+    "Underlap": {
+      "Balanced": {
+        "text": "Places no extra emphasis on the team to make more underlapping runs.",
+        "pros": ["Allows the team to find their own attacking solutions."],
+        "cons": ["Loses the benefits of emphasising a specific approach."]
+      },
+      "Underlap left": {
+        "text": "Instructs players on the left flank to hold on to the ball, looking for a teammate to make a supporting run beyond them from a more central area.",
+        "pros": ["Underlapping run is made behind the opposition fullback’s field of view."],
+        "cons": ["Pass into underlapping player can be difficult to execute."]
+      },
+      "Underlap right": {
+        "text": "Instructs players on the right flank to hold on to the ball, looking for a teammate to make a supporting run beyond them from a more central area.",
+        "pros": ["Underlapping run is made behind the opposition fullback’s field of view."],
+        "cons": ["Pass into underlapping player can be difficult to execute."]
+      },
+      "Underlap both flanks": {
+        "text": "Instructs players on both flanks to hold on to the ball, looking for a teammate to make a supporting run beyond them from a more central area.",
+        "pros": ["Underlapping run is made behind the opposition fullback’s field of view."],
+        "cons": ["Pass into underlapping player can be difficult to execute."]
+      }
+    },
+    "Progress through": {
+      "Balanced": {
+        "short": ["No strong preference.", "A balanced progression strategy."],
+        "text": "The team are not instructed to focus progression down a particular area of the pitch. Instead the players are encouraged to find their own solutions based on the situation.",
+        "pros": [
+          "Attacks are more unpredictable.",
+          "Allows players to judge the situation for themselves."
+        ],
+        "cons": ["A focus area may do more to exploit an opposition weakness."]
+      },
+      "Centre": {
+        "short": ["Players in middle position higher.", "Progress play through middle."],
+        "text": "Encourages the team to try and progress play through the middle when possible. Players in central areas are given a bit more attacking responsibility, and their teammates are encouraged to play more passes into them.",
+        "pros": [
+          "Puts more pressure on opposition defensive midfielders.",
+          "Feeds ball into attacking players in central areas more often."
+        ],
+        "cons": [
+          "Attacks are more predictable.",
+          "Less effective if opposition defensive midfielders play well."
+        ]
+      },
+      "Left flank": {
+        "short": ["Players on left flank position higher.", "Progress play through left flank."],
+        "text": "Encourages the team to try and progress play through the left side of the pitch when possible. Players on the left flank are given a bit more attacking responsibility, and their teammates are encouraged to play more passes into them.",
+        "pros": [
+          "Puts more pressure on opposition on that side.",
+          "Feeds ball into attacking players on left flank more often."
+        ],
+        "cons": [
+          "Attacks are more predictable.",
+          "Less effective if opposition defenders on this side play well."
+        ]
+      },
+      "Right flank": {
+        "short": ["Players on right flank position higher.", "Progress play through right flank."],
+        "text": "Encourages the team to try and progress play through the right side of the pitch when possible. Players on the right flank are given a bit more attacking responsibility, and their teammates are encouraged to play more passes into them.",
+        "pros": [
+          "Puts more pressure on opposition on that side.",
+          "Feeds ball into attacking players on right flank more often."
+        ],
+        "cons": [
+          "Attacks are more predictable.",
+          "Less effective if opposition defenders on this side play well."
+        ]
+      },
+      "Both flanks": {
+        "short": ["Players on both flanks position higher.", "Progress play through both flanks."],
+        "text": "Encourages the team to try and progress play through either flank when possible. Players on both flanks are given a bit more attacking responsibility, and their teammates are encouraged to play more passes into them.",
+        "pros": [
+          "Puts more pressure on opposition wide defenders.",
+          "Feeds ball into attacking players on both flanks more often."
+        ],
+        "cons": [
+          "Attacks are more predictable.",
+          "Less effective if opposition wide defenders play well."
+        ]
+      }
+    },
+    "Pass reception": {
+      "Pass to feet": {
+        "short": ["Play less through balls.", "Offer for passes to feet."],
+        "text": "Encourages the team to play passes towards the current position of their teammate, rather than into the space in front of them.",
+        "pros": [
+          "Better ball retention.",
+          "Gets the most out of players with exceptional technique and composure."
+        ],
+        "cons": [
+          "Allows opposition to squeeze the space more.",
+          "More reliant on intricate passing patterns to create chances."
+        ]
+      },
+      "Standard": {
+        "short": ["A balanced passing strategy.", "No strong preference."],
+        "text": "The team will look for a balance between playing through balls and passes to feet, depending on the situation.",
+        "pros": ["A flexible passing strategy.", "Passing variety keeps defenders guessing."],
+        "cons": ["Loses the benefits of specialising in a single approach."]
+      },
+      "Pass into space": {
+        "short": ["Play more through balls.", "Make runs into space."],
+        "text": "Encourages the team to play passes into open spaces in front of teammates for them to run onto.",
+        "pros": [
+          "Successful passes are more dangerous.",
+          "Gets the most out of players with exceptional speed and movement."
+        ],
+        "cons": ["More likely to give the ball away.", "Passes are harder to execute."]
+      }
+    },
+    "Build-up strategy": {
+      "Play through the press": {
+        "short": ["Stay composed under pressure.", "Take more risks."],
+        "text": "When the opposition engage your team in a press, encourage the team to stay composed and play through it whenever possible. The team will take more risks during build-up and be more reluctant to clear the ball, in an attempt to create chances in the transition after beating the press.",
+        "pros": ["Better ball retention.", "Creates transitional attacks when successful."],
+        "cons": ["Requires strong technical ability.", "Risk of dangerous turnovers."]
+      },
+      "Standard": {
+        "short": ["No strong preference.", "A balanced level of risk."],
+        "text": "The team will look to find a balance between playing through the press and clearing the ball when under significant pressure. The team will adopt a flexible strategy, dependent on the amount of pressure the opposition are putting them under.",
+        "pros": [
+          "Provides a balance between safety and risk-taking when under pressure.",
+          "A flexible approach to build-up play."
+        ],
+        "cons": [
+          "Higher risk of dangerous turnovers than when bypassing the press.",
+          "Doesn’t retain the ball as well as playing through the press."
+        ]
+      },
+      "Bypass the press": {
+        "short": ["Play direct passes when pressured.", "Take fewer risks during build-up."],
+        "text": "When the opposition engage your team in a press, encourage the team to play more direct passes and clearances over the press in order to exploit the space left behind. This also means the team takes less risks during build-up, looking to avoid cheap turnovers near your own goal.",
+        "pros": [
+          "Exploits space left behind the opposition press.",
+          "Less risk of dangerous turnovers."
+        ],
+        "cons": [
+          "Requires physically-gifted players to play direct passes to.",
+          "Worse ball retention."
+        ]
+      }
+    },
+    "Goal kicks": {
+      "Shorter passes": {
+        "short": ["Pass the ball to a nearby teammate.", "Build attack from deep."],
+        "text": "Instruct the team to play short from goal kicks, passing the ball to a nearby teammate with the aim of building an attack from back to front.",
+        "pros": ["Baits the opposition press.", "Better ball retention."],
+        "cons": ["Allows opposition to squeeze the space.", "Turnovers are more dangerous."]
+      },
+      "Mixed": {
+        "short": [
+          "A mix of short and long goal kicks.",
+          "Based on your team’s passing directness."
+        ],
+        "text": "Instruct the team to play a mix of short and long goal kicks, in order to keep the opposition unsettled. The balance between how many are played short or long is biased based on your team’s passing directness.",
+        "pros": ["Tries multiple avenues of attack.", "Keeps the other team guessing."],
+        "cons": ["Loses benefits of specialising in a single approach."]
+      },
+      "Long passing": {
+        "short": ["Play direct passes into attacking teammates."],
+        "pros": ["Gets the ball up the pitch quickly."],
+        "cons": ["Requires physically gifted attacking-players to contest for ball."]
+      }
+    },
+    "GK distribution speed": {
+      "Slow pace down": {
+        "short": ["Wait for team to get into position.", "Hold on to the ball."],
+        "text": "Asks the goalkeeper to hold onto the ball for as long as possible while they have the ball in hand, in order to relieve pressure on the team.",
+        "pros": ["Allows teammates time to get forward.", "Relieves pressure."],
+        "cons": [
+          "Less chance of counter-attacking opportunities.",
+          "Allows opposition time to regroup."
+        ]
+      },
+      "Balanced": {
+        "text": "The goalkeeper will look to provide a balance between quick and slow distribution of the ball depending on the situation.",
+        "pros": ["A flexible approach to distribution."]
+      },
+      "Distribute quickly": {
+        "short": ["Look to spring counter-attacks.", "Release the ball quickly."],
+        "text": "Asks the goalkeeper to distribute the ball to a teammate as quickly as possible when they have the ball in hand, with the aim of springing counter-attacking opportunities.",
+        "pros": [
+          "Gives the opposition less time to regroup.",
+          "Higher chance of starting counter-attacks."
+        ],
+        "cons": ["Lower chance of retaining the ball.", "Gives teammates less time to get forward."]
+      }
+    },
+    "Goalkeeper distribution": {
+      "Balanced": {
+        "short": ["No specific instruction."]
+      },
+      "Centre-back": {
+        "short": ["Play ball to centre-backs."],
+        "text": "Asks the goalkeeper to distribute the ball to one of your team’s centre-backs whenever possible.",
+        "pros": ["Safest passing option.", "Start from a central position."],
+        "cons": ["Turnovers are more dangerous."]
+      },
+      "Full-back": {
+        "short": ["Play ball to full-backs."],
+        "text": "Asks the goalkeeper to distribute the ball to one of your team’s full-backs whenever possible.",
+        "pros": ["Plays around a narrow press.", "Turnovers are less dangerous."],
+        "cons": [
+          "Difficult pass for the goalkeeper.",
+          "Full-back can be trapped against the sideline."
+        ]
+      },
+      "Flanks": {
+        "short": ["Play ball to flanks."],
+        "text": "Asks the goalkeeper to distribute the ball towards a teammate in a wide area whenever possible.",
+        "pros": [
+          "Plays around a narrow press.",
+          "Take advantage of smaller opposition full-backs."
+        ],
+        "cons": ["Overhit passes run out of play."]
+      },
+      "Playmaker": {
+        "short": ["Play ball to playmaker."],
+        "text": "Asks the goalkeeper to distribute the ball towards your team’s playmaker whenever possible.",
+        "pros": ["Allows playmaker to dictate play.", "Baits the opposition press."],
+        "cons": ["Playmaker is usually closely marked.", "Turnovers are more dangerous."]
+      },
+      "Target forward": {
+        "short": ["Play ball to target forward."],
+        "pros": ["Gets the ball forward quickly.", "Turnovers are far less dangerous."],
+        "cons": [
+          "Less chance of retaining the ball.",
+          "Less effective against aerially dominant centre-backs."
+        ]
+      },
+      "Bypass the defensive line": {
+        "short": ["Play ball behind opposition defence."],
+        "text": "Asks the goalkeeper to distribute the ball over the opposition defence whenever possible for their attacking teammates to run on to.",
+        "pros": ["Exploit opposition’s high defensive line.", "Turnovers are far less dangerous."],
+        "cons": [
+          "Less chance of retaining the ball.",
+          "Overhit passes likely to run on to opposition goalkeeper."
+        ]
+      }
+    },
+    "GK on attacking set pieces": {},
+    "Line of engagement": {
+      "Low block": {
+        "short": ["Begin engaging opposition during their final third phase."],
+        "text": "Instruct the team to only begin engaging the opposition in a press as they progress the ball into your defensive third. The team will prioritise blocking spaces and denying passes into the opposition’s attacking players during earlier phases of the opposition attack, rather than actively engaging them in a press.",
+        "pros": [
+          "Counter-attacks start further from the opposition goal.",
+          "Compacts the space in the final third."
+        ],
+        "cons": ["Allows other team to control possession more."]
+      },
+      "Mid block": {
+        "short": ["Begin engaging opposition during their progression phase."],
+        "text": "Instruct the team to begin engaging the opposition in a press as they try to progress the ball into their midfield line, allowing their defenders time on the ball but screening the options in front of them.",
+        "pros": [
+          "A versatile approach capable of quickly transitioning into a high press or low block.",
+          "Compacts the space in midfield."
+        ],
+        "cons": ["Less likely to force high turnovers.", "Allows other defence time on the ball."]
+      },
+      "High press": {
+        "short": ["Begin engaging opposition during their build-up phase."],
+        "text": "Instruct the team to be willing to engage the opposition in a press all over the pitch, looking to win the ball back as high as possible.",
+        "pros": [
+          "Can force other team to play direct passes or clearances.",
+          "Wins the ball in better counter-attacking positions."
+        ],
+        "cons": [
+          "Can leave team more vulnerable to direct passes that go over the press.",
+          "Can lead to dangerous transitional attacks when press is beaten."
+        ]
+      }
+    },
+    "Defensive line height": {
+      "Much lower": {
+        "short": [
+          "Provides much more protection for the GK.",
+          "Leave much less space behind the defence."
+        ],
+        "text": "The team will play a much deeper defensive line, looking to provide much more protection for the spaces behind the defence.",
+        "pros": ["Provides much greater protection against through balls."],
+        "cons": [
+          "Creates much more space in front of the defence.",
+          "Leaves much more space on the edge of the box."
+        ]
+      },
+      "Lower": {
+        "short": ["Leave less space behind the defence.", "Deeper defensive line."],
+        "text": "The team will play a deeper defensive line, looking to provide more protection for the spaces behind the defence.",
+        "pros": [
+          "Provides more protection for GK.",
+          "Provides greater protection against through balls."
+        ],
+        "cons": [
+          "Leaves more space on the edge of the box.",
+          "Creates more space in front of the defence."
+        ]
+      },
+      "Standard": {
+        "short": ["According to the current mentality.", "Balanced defensive line height."],
+        "text": "The team will play with a defensive line height which is considered typical of a team on your current Mentality level.",
+        "pros": [
+          "Provides a balance between protecting spaces in front and behind of the defence.",
+          "A flexible defensive line height."
+        ],
+        "cons": [
+          "Doesn’t compact the space in front of the defence as much as higher lines.",
+          "Doesn’t protect against through balls as much as deeper lines."
+        ]
+      },
+      "Higher": {
+        "short": ["Higher chance of playing offside.", "Reduce the space in front of the defence."],
+        "text": "The team will play a higher defensive line, looking to reduce the space the opposition have to play between the lines of your defence and midfield.",
+        "pros": ["Reduces the space between the lines."],
+        "cons": [
+          "Much more reliance on GK to intercept passes.",
+          "Much more vulnerable to direct through balls."
+        ]
+      },
+      "Much higher": {
+        "short": ["Compact the space in front of the defence.", "Much higher defensive line."],
+        "text": "The team will play a much higher defensive line, looking to compact the space the opposition have to play between the lines of your defence and midfield.",
+        "pros": [
+          "More vulnerable to direct through balls.",
+          "Much higher chance of playing offside."
+        ],
+        "cons": ["More reliance on GK to intercept passes."]
+      }
+    },
+    "Defensive line behaviour": {
+      "Step up more": {
+        "text": "Step Up More will ask the defenders to press typically higher up the pitch in an effort to compact the midfield space ahead of them and give the opposition less room and unchallenged time on the ball. It can however be more susceptible to having long balls played in behind them.",
+        "pros": ["Compacts the space the other team have to play in."],
+        "cons": ["More vulnerable to a well-timed pass in behind."]
+      },
+      "Balanced": {
+        "short": ["No specific instruction."],
+        "text": "Leaves the defence to decide whether to step up and drop off based on the situation.",
+        "pros": ["Allows the defence to make the best decision for themselves."],
+        "cons": ["Loses the benefits of specialising in a specific approach."]
+      },
+      "Drop off more": {
+        "short": ["Be wary of the ball in behind."],
+        "text": "Drop Off More will ask the defenders to adopt a safety-first approach by typically defending closer to their own goal when there is an opposition attacking threat. It reduces the vulnerability of giving up space in behind but it does concede more territory and invite more pressure.",
+        "pros": ["Less vulnerable to balls in behind."],
+        "cons": ["Concedes more space."]
+      }
+    },
+    "Trigger press": {
+      "Much less often": {
+        "short": ["Be much more passive.", "Stay in shape much more."],
+        "text": "Instruct the team to engage in a press only when necessary, instead looking to retain defensive structure as much as possible.",
+        "pros": [
+          "Much harder for opposition to draw players out of position.",
+          "Maintains defensive shape much more."
+        ],
+        "cons": [
+          "Much less likely to force other team to make mistakes.",
+          "Allows opposition much more time on the ball."
+        ]
+      },
+      "Less often": {
+        "short": ["Be more passive.", "Stay in shape more."],
+        "text": "Instruct the team to engage in a press less often, staying in shape more until a better pressing opportunity arises.",
+        "pros": [
+          "Harder for opposition to draw players out of position.",
+          "Maintains defensive shape more."
+        ],
+        "cons": [
+          "Less likely to force other team to make mistakes.",
+          "Allows other team more time on the ball."
+        ]
+      },
+      "Standard": {
+        "short": ["According to the current Mentality.", "Balanced pressing strategy."],
+        "text": "The team will press with a regularity which is considered typical of a team on your current Mentality level.",
+        "pros": [
+          "Provides a balance between applying pressure and maintaining shape.",
+          "A flexible pressing strategy."
+        ],
+        "cons": [
+          "Allows the other team more time on the ball than when pressing more often.",
+          "Doesn’t retain shape as well as when pressing less often."
+        ]
+      },
+      "More often": {
+        "short": ["Be more proactive.", "Engage more."],
+        "text": "Instruct the team to engage in a press more often, actively looking to force the other team into mistakes in order to win the ball back.",
+        "pros": [
+          "Gives other team less time on the ball.",
+          "Forces other team into more mistakes."
+        ],
+        "cons": [
+          "Team has to work harder off the ball.",
+          "Defence can be drawn out of position more."
+        ]
+      },
+      "Much more often": {
+        "short": ["Be much more proactive.", "Engage the opponent much more."],
+        "text": "Instruct the team to engage in a press whenever possible, taking every opportunity to trigger a press in order to put constant pressure.",
+        "pros": [
+          "Gives other team much less time on the ball.",
+          "Forces other team into more mistakes."
+        ],
+        "cons": [
+          "Team has to work much harder off the ball.",
+          "Defence can be drawn out of position much more."
+        ]
+      }
+    },
+    "Defensive transition": {
+      "Regroup": {
+        "short": ["Fall back into shape as soon as possession is lost."],
+        "text": "The team will look to fall back into defensive shape as soon as possible in the immediate moments after possession is lost. Players near the ball-carrier will look to slow them down, in order to give their teammates more time to recover their position.",
+        "pros": ["Protects against counter-attack.", "Recover to defensive shape quicker."],
+        "cons": [
+          "Allows other team to recover the ball under less pressure.",
+          "Less chance of winning the ball back quickly."
+        ]
+      },
+      "Standard": {
+        "short": ["According to the current Mentality.", "Balanced transition strategy."],
+        "text": "The team will be flexible in the transition, counter-pressing or regrouping depending on the situation.",
+        "pros": [
+          "Provides a balance between counter-pressure and defensive recovery.",
+          "A flexible transition strategy."
+        ],
+        "cons": ["Loses benefits of specialising in a single approach."]
+      },
+      "Counter-press": {
+        "short": ["Win the ball back quickly.", "Disrupt as soon as possession is lost."],
+        "text": "The team will look to disrupt and press where possible in the immediate moments after possession is lost. Players near the ball will look to engage the ball-carrier and their nearby passing options in an attempt to win the ball back as quickly as possible.",
+        "pros": [
+          "Keeps pressure on the opposition.",
+          "Chance of regaining the ball back very quickly."
+        ],
+        "cons": [
+          "Requires enough nearby players when ball is lost.",
+          "Defence is exposed if press is beaten."
+        ]
+      }
+    },
+    "Tackling": {
+      "Stay on feet": {
+        "short": ["Jockey the opponent.", "Hold your ground."],
+        "text": "Encourages your players to stand their ground more when their mark receives the ball, instead looking to stay goal side and shield them away from danger.",
+        "pros": [
+          "Defenders don’t get drawn out of position as much.",
+          "Lower risk of giving away free kicks."
+        ],
+        "cons": [
+          "Allows the opposition more time on the ball.",
+          "Less chance of stopping attacks at source."
+        ]
+      },
+      "Standard": {
+        "short": ["Leave it up to the players.", "Balanced tackling strategy."],
+        "text": "Provides no specific direction to the team on how they should be engaging or tackling their mark, instead leaving it to them to decide based on their preferences and the situation.",
+        "pros": ["Allows players to decide best approach.", "A flexible tackling strategy."],
+        "cons": ["Loses benefits of specialising in a single approach."]
+      },
+      "Get stuck in": {
+        "short": ["Put in tackles.", "Engage your mark."],
+        "text": "Encourages your players to be aggressive and engage their mark as much as possible, using their physicality and putting in tackles in order to win the ball back.",
+        "pros": [
+          "Proactive defending can stop an opposition attack earlier.",
+          "Can unsettle the opposition players."
+        ],
+        "cons": [
+          "Higher risk of giving away free kicks.",
+          "Defenders can more easily be drawn out of position."
+        ]
+      }
+    },
+    "Prevent short GK distribution": {
+      "No": {
+        "short": ["Let their goalkeeper have the ball.", "Revert to line of engagement."],
+        "text": "Instructs the team to allow the opposition goalkeeper to play the ball short. The team will wait for the goalkeeper to release the ball before committing to a defensive strategy.",
+        "pros": ["Less vulnerable to direct balls."],
+        "cons": ["Allows opposition to build from the back easier."]
+      },
+      "Yes": {
+        "short": ["Disrupt the opposition build-up.", "Force them to go long."],
+        "text": "Instructs your forwards to press the opposition defence to try to prevent their goalkeeper restarting play from the back. This should force the goalkeeper to play long or take big risks to distribute short.",
+        "pros": ["Makes it harder for opposition GK to play short."]
+      }
+    },
+    "Pressing trap": {
+      "Trap inside": {
+        "short": ["Win the ball in central areas.", "Deny access to wide areas."],
+        "text": "Ask the team to set a pressing trap designed to bait the opposition into playing passes to central areas before triggering a press, forcing turnovers in advantageous positions. Your players will mark opposition wide players more closely, pressing from angles which look to force the opposition to try and play through the middle.",
+        "pros": [
+          "Counter-attacks start from a central position.",
+          "Effective against teams lacking technical ability in central midfield."
+        ],
+        "cons": [
+          "Defensive shape is more spread out, which creates more gaps.",
+          "Central attacks are more dangerous if oppositon beat the press."
+        ]
+      },
+      "Standard": {
+        "short": ["A balanced pressing strategy."],
+        "text": "The team will adopt a flexible pressing strategy, looking to find a balance between protecting central and wide areas of the pitch. The team will be open to triggering a press in wide or central areas, depending on the situation.",
+        "pros": [
+          "Could benefit more from specialising in a targeted approach.",
+          "Defends wide and central areas evenly."
+        ]
+      },
+      "Trap outside": {
+        "short": ["Deny access to central areas.", "Win the ball in wide areas."],
+        "text": "Trap Outside asks the team to set a pressing trap designed to funnel the ball into wide areas, where the opposition have fewer options with the ball, and are more likely to concede possession.",
+        "pros": ["Compact team shape provides less space for opposition in central areas."],
+        "cons": ["More vulnerable to switch passes.", "Counter-attacks start further from goal."]
+      }
+    },
+    "Cross engagement": {
+      "Stop crosses": {
+        "short": ["Stop the cross at source.", "Engage wide players."],
+        "text": "Stop Crosses asks the team to seek to avoid defending crosses into the penalty area, instead forcing the opposition to find another way to attack.",
+        "pros": [
+          "Reduces the amount of crosses coming into your box.",
+          "Gives opposition wide players less time and space on the ball."
+        ],
+        "cons": [
+          "Leaves more spaces in central areas for the opposition to exploit.",
+          "Easier for defenders to be dragged from position."
+        ]
+      },
+      "Standard": {
+        "short": ["A balanced defensive strategy."],
+        "text": "The team will adopt a flexible defensive strategy, looking to find a balance between protecting central areas and denying crossing opportunities.",
+        "pros": [
+          "A flexible defensive strategy.",
+          "Provides a balance between central and wide protection."
+        ],
+        "cons": ["Allows more crosses into the box than when looking to stop the cross."]
+      },
+      "Invite crosses": {
+        "short": [
+          "Makes it harder for the opposition to find space in central areas.",
+          "Allow the cross to come in."
+        ],
+        "text": "Invite Crosses asks the team to allow crosses in an effort to defend in situations they would be confident of being successful in, perhaps against opponents with smaller forwards or those who prefer to play in more central areas.",
+        "pros": ["Effective when your team has an aerial advantage inside the box."],
+        "cons": [
+          "Opposition wide players have more time and space on the ball.",
+          "Allows more crosses to be played into the box."
+        ]
+      }
+    }
+  },
+  "player": {
+    "Attacking width": {
+      "Stay wider": {
+        "short": ["Position closer to the sidelines."],
+        "pros": ["Becomes a better option for switch passes.", "Stretches the opposition defence."],
+        "cons": [
+          "Provides less support in central areas.",
+          "Can become more isolated from the rest of the team."
+        ]
+      },
+      "Sit narrower": {
+        "short": ["Position closer to the centre."],
+        "pros": ["Provides more support in central areas.", "Create closer passing connections."],
+        "cons": [
+          "Becomes a worse option for switch passes.",
+          "Central areas can become more congested."
+        ]
+      },
+      "Move into channels": {
+        "short": ["Make runs between opposition CB and FB."],
+        "pros": ["Provides more support in wide areas.", "Penetrates the opposition defence."],
+        "cons": ["Receives ball less to feet.", "Channel runs can be tiring."]
+      },
+      "Standard": {
+        "short": ["No specific instruction."],
+        "text": "The player’s attacking width will be driven by their In Possession role and the team playing strategy. No specific instruction will be given to the player.",
+        "pros": ["Player will follow the team-wide strategy."],
+        "cons": ["Could benefit more from a tailored strategy."]
+      }
+    },
+    "Dribbling direction": {
+      "Run wide with ball": {
+        "short": ["Dribble towards the flanks."],
+        "text": "Ask the player to dribble into wide areas with the ball when possible, in an attempt to stretch the opposition.",
+        "pros": ["Running into open spaces.", "Stretches the opposition defence."],
+        "cons": [
+          "Easier to get pinned against the sidelines.",
+          "Moving further away from teammates in central areas."
+        ]
+      },
+      "Cut inside with ball": {
+        "short": ["Dribble towards central areas."],
+        "text": "Ask the player to dribble into central areas when they receive the ball, driving inside their opponent and towards goal.",
+        "pros": ["Moving closer towards teammates in central areas.", "Most direct route to goal."],
+        "cons": [
+          "Doesn’t get behind the opposition defence as much.",
+          "Moving into a more congested area of the pitch."
+        ]
+      },
+      "Standard": {
+        "short": ["No specific instruction."],
+        "text": "The player’s dribbling direction will be driven by their footedness and personal preference. No specific instruction will be given to the player.",
+        "pros": ["Player will be free to decide their preferred approach."],
+        "cons": ["Could benefit more from a tailored strategy."]
+      }
+    },
+    "Dribbling frequency": {
+      "Dribble more": {
+        "short": ["Take on your marker."],
+        "text": "Encourage to be more individualistic on the ball and seek to make gains by dribbling past opponents, rather than looking for passing combinations.",
+        "pros": [
+          "Makes the most of players with exceptional dribbling ability.",
+          "Breaks opposition defensive structure if successful."
+        ],
+        "cons": ["Risk of running into blind alleys.", "Risks turning over the ball more often."]
+      },
+      "Dribble less": {
+        "short": ["Look for a passing combination."],
+        "text": "Looks to link up with passing combinations to beat their marker, rather than trying to dribble past them.",
+        "pros": [
+          "Feeds the ball into nearby teammates more often.",
+          "Retains the ball more consistently."
+        ],
+        "cons": [
+          "Could reduce the impact of talented dribblers.",
+          "More reliant on passing combinations to beat the defence."
+        ]
+      },
+      "Standard": {
+        "short": ["No specific instruction."],
+        "text": "The player’s dribbling frequency will be driven by their role, the team’s playing strategy and their own personal preference.",
+        "pros": ["Player will be free to decide their preferred approach."],
+        "cons": ["Could benefit more from a tailored strategy."]
+      }
+    },
+    "Forward runs": {
+      "Make more runs": {
+        "short": ["More attacking runs in to space."],
+        "text": "Encourages the player to make more forward runs into space in an attempt to overload the opposition defence.",
+        "pros": [
+          "Provides more passing options ahead of the ball.",
+          "Penetrates the opposition defence."
+        ],
+        "cons": [
+          "Provides less protection against counter-attacks.",
+          "Can be harder to build sustained control and pressure."
+        ]
+      },
+      "Standard": {
+        "short": ["No specific instruction."],
+        "text": "The number of forward runs made will be driven by the role and personal preference.",
+        "pros": ["Provides a balance between forward runs and holding position."],
+        "cons": ["Could benefit more from a tailored strategy."]
+      },
+      "Hold position": {
+        "short": ["Stick to position more."],
+        "text": "Discourages the player from making as many forward runs into space, instead sticking more to their expected position.",
+        "pros": [
+          "Provides better structure and control to the attack.",
+          "Provides better protection against counter-attacks."
+        ],
+        "cons": [
+          "Doesn’t penetrate lines of defence as much.",
+          "Relies more on having runners around them."
+        ]
+      }
+    },
+    "Freedom of movement": {
+      "Roam from position": {
+        "short": ["Freedom to roam into spaces."],
+        "text": "Gives the player the freedom to leave their designated position within the team’s attacking structure to instead find pockets of space in which they feel they can be more effective.",
+        "pros": [
+          "Risk of having less control of the match.",
+          "Makes the player more unpredictable with their movement."
+        ],
+        "cons": ["Player will deviate from the team’s attacking structure more often."]
+      },
+      "Follow tactical shape": {
+        "short": ["Stick to your tactical role."],
+        "text": "Instructs the player to remain largely in their assigned position within the team’s attacking structure and rarely deviate from it.",
+        "pros": [
+          "Helps to provide stability to the attack.",
+          "Player will follow their tactical role more closely."
+        ],
+        "cons": ["Less creative freedom.", "Player’s positioning may be more predictable."]
+      }
+    },
+    "Hold up ball": {
+      "Yes": {
+        "short": ["Links up play.", "Don’t play with back to goal. Don’t slow down the play."],
+        "text": "Asks the player to play with their back to goal and take a moment or two longer with the ball than they perhaps would ordinarily, allowing time for teammates to get forward in support.",
+        "pros": ["Creates time for runners to join the attack."],
+        "cons": [
+          "Slows down play.",
+          "Defenders can apply pressure from behind, making the first touch difficult."
+        ]
+      },
+      "No": {
+        "short": ["Plays at a higher tempo."],
+        "text": "The player is not asked to play with their back to goal and hold up the ball, instead looking to receive the ball in whichever way feels natural to them.",
+        "pros": ["Defenders have less time to apply pressure."],
+        "cons": [
+          "Less time for teammates to make supporting runs.",
+          "Doesn’t protect the ball as much."
+        ]
+      }
+    },
+    "Shooting": {
+      "Shoot more often": {
+        "text": "Encourages the player to attempt a greater number of shots when posed with a potential opportunity, rather than looking for a pass.",
+        "pros": [
+          "Can be effective during adverse weather conditions.",
+          "Chance to get cheap goals."
+        ],
+        "cons": [
+          "Sometimes a better chance could have been created with an extra pass.",
+          "Shots are taken from lower quality positions."
+        ]
+      },
+      "Shoot less often": {
+        "short": ["Wait for a better opportunity."],
+        "text": "Asks to retain possession and remain patient, only shooting when they are presented with a clear-cut goalscoring opportunity.",
+        "pros": [
+          "Sustains pressure on the opposition.",
+          "Chance of creating a higher quality chance later on in the attack."
+        ],
+        "cons": [
+          "Takes less advantage of players with good long shot ability.",
+          "Relies on team being able to create higher quality chances."
+        ]
+      },
+      "Standard": {
+        "short": [
+          "Tendency to shoot will be driven by the playing style and personal preferences."
+        ],
+        "pros": [
+          "Provides a balance between shooting from difficult positions and playing an extra pass."
+        ],
+        "cons": ["Could benefit from a more tailored strategy."]
+      }
+    },
+    "Passing strategy": {
+      "Shorter passing": {
+        "short": ["Play shorter passes more often than the rest of the team."],
+        "text": "Asks to play shorter passes than the rest of the team, looking to keep things simple when they have the ball.",
+        "pros": ["Retains the ball better."],
+        "cons": [
+          "Player may slow down the tempo of the team.",
+          "Doesn’t use the player’s full range of passing as much."
+        ]
+      },
+      "More direct passing": {
+        "short": ["Play longer passes more often than the rest of the team."],
+        "text": "Asks to play longer passes than the rest of the team in an attempt to get the ball from back to front more quickly.",
+        "pros": [
+          "Gets ball into attacking areas quicker.",
+          "Allows the player to use their full range of passing more often."
+        ],
+        "cons": [
+          "Passes can be more difficult to execute.",
+          "Risks giving the ball away more often."
+        ]
+      },
+      "Standard": {
+        "short": [
+          "Follow the team passing strategy.",
+          "Follow the team’s overall passing strategy more."
+        ],
+        "text": "Passing directness will be driven by the team’s passing strategy, the role and personal preferences.",
+        "cons": ["Could benefit from a more tailored strategy."]
+      }
+    },
+    "Passing risk": {
+      "Take more risks": {
+        "short": ["Look for killer passes."],
+        "text": "Encourages the player to play more low-percentage passes and through balls in the hope that one or two of them will unlock the opposition defence in a potentially decisive manner.",
+        "pros": [
+          "Player may be able to unlock the opposition defence more often.",
+          "Takes advantage of player’s vision and passing ability."
+        ],
+        "cons": ["Less patience in attack.", "Higher chance of giving the ball away."]
+      },
+      "Take fewer risks": {
+        "short": ["Keep things simple."],
+        "text": "Asks to retain possession first and foremost, playing a sensible and patient passing game without unnecessarily conceding possession.",
+        "pros": [
+          "Better chance of retaining the ball.",
+          "Feeds the ball into more creative teammates."
+        ],
+        "cons": [
+          "Less chance of player progressing the ball.",
+          "Player is less likely to create chances."
+        ]
+      },
+      "Standard": {
+        "text": "The player’s passing risk will be driven by the team’s passing strategy, their role and their own personal preferences.",
+        "pros": ["Provides a balance between passing safety and risk."],
+        "cons": ["Could benefit from a more tailored strategy."]
+      }
+    },
+    "Crossing strategy": {
+      "Aim for far post": {
+        "short": [
+          "Defence has more time to react to the cross.",
+          "Aim for the opposite side of the box."
+        ],
+        "text": "Asks to deliver crosses towards the far post when possible.",
+        "pros": ["Far post tends to have less defensive coverage."]
+      },
+      "Aim for centre": {
+        "short": ["Aim for the middle of the box."],
+        "text": "Asks to deliver crosses towards the middle of the box when possible.",
+        "pros": ["Largest margin for error."],
+        "cons": ["Easier for goalkeeper to claim the ball."]
+      },
+      "Aim for near post": {
+        "short": ["Aim for the near side of the box."],
+        "text": "Asks to deliver crosses towards the near post when possible.",
+        "cons": [
+          "Chance of not beating the first defender.",
+          "Reliant on target forward being able to win their duels."
+        ]
+      },
+      "Aim for target forward": {
+        "short": ["Aim for the team’s target forward."],
+        "text": "Asks the player to deliver their crosses towards the team’s target forward, if there is one.",
+        "pros": ["Crosses towards the team’s best aerial threat."],
+        "cons": ["Reliant on target forward being able to win their duels."]
+      },
+      "Standard": {
+        "text": "Free to choose the best area to cross the ball into based on the situation.",
+        "pros": ["Free to choose the best type of cross."],
+        "cons": ["Could benefit from a more tailored strategy."]
+      }
+    },
+    "Cross from": {
+      "Cross from deep": {
+        "text": "Asks to cross the ball into the box as soon as they get the opportunity to do so, rather than try to work the ball into a better area beforehand.",
+        "pros": ["Gets crosses into the box more often."],
+        "cons": ["Crosses are made from lower quality positions."]
+      },
+      "Cross from byline": {
+        "short": ["Cross from dangerous positions."],
+        "text": "Asks to get the ball as high up the pitch as possible in wide areas before attempting to cross the ball into the penalty area.",
+        "pros": ["Crosses are made from higher quality positions."],
+        "cons": ["Gets crosses into the box less often."]
+      },
+      "Standard": {
+        "short": ["Crossing frequency will be driven by playing style and personal preference."],
+        "pros": ["Follow the team’s overall crossing strategy more."],
+        "cons": ["Could benefit from a more tailored strategy."]
+      }
+    },
+    "Trigger press": {
+      "More often": {
+        "text": "Asks the player to be more proactive when it comes to pressing, looking to engage the opponent more often when an opportunity presents itself.",
+        "pros": [
+          "Higher chance of forcing opposition errors.",
+          "Puts more pressure on the opposition ball-carrier."
+        ],
+        "cons": [
+          "Increases the amount of running the player has to do.",
+          "Easier to be dragged out of position."
+        ]
+      },
+      "Less often": {
+        "short": ["Protect the spaces more."],
+        "text": "Asks to be more patient when it comes to pressing, waiting more for the right opportunity to engage with the opponent.",
+        "pros": ["Conserves more energy.", "Harder to be dragged out of position."],
+        "cons": [
+          "Less chance of forcing opposition errors.",
+          "Puts less pressure on the opposition ball-carrier."
+        ]
+      },
+      "Standard": {
+        "short": ["Follow the team’s pressing strategy."],
+        "text": "Player will follow the team’s overall pressing strategy more.",
+        "cons": ["Could benefit from a more tailored strategy."]
+      }
+    },
+    "Marking": {
+      "Mark tighter": {
+        "short": ["Give your mark less space."],
+        "text": "Ask the player to stick particularly tight to their mark in defensive situations in order to limit the space they have to attack the ball.",
+        "pros": [
+          "Puts more pressure on the opposition.",
+          "Allows the player to use their physicality more."
+        ],
+        "cons": [
+          "Easier to get drawn out of position.",
+          "Could get turned by faster and more agile opponents."
+        ]
+      },
+      "Standard": {
+        "short": ["No specific instruction."],
+        "text": "The player’s marking distances will be driven by the team’s defensive strategy, their role and their own preferences.",
+        "pros": [
+          "Allows the player to decide their best approach.",
+          "A balanced marking strategy."
+        ],
+        "cons": [
+          "Doesn’t make as much use of the player’s physicality.",
+          "May allow the opposition more space."
+        ]
+      }
+    },
+    "Tackling": {
+      "Tackle harder": {
+        "short": ["Engage your mark."],
+        "text": "Encourages the player to be aggressive and engage their mark as much as possible, using their physicality and putting in tackles in order to win the ball back.",
+        "pros": ["Proactive defending can stop an attack earlier.", "Can unsettle the opposition."],
+        "cons": [
+          "Higher risk of giving away free kicks.",
+          "Player can more easily be drawn out of position."
+        ]
+      },
+      "Ease off tackles": {
+        "short": ["Stand your ground."],
+        "text": "Encourages the player to stand their ground more when their mark receives the ball, instead looking to stay goal side and shield them away from danger.",
+        "pros": [
+          "Lower risk of giving away free kicks.",
+          "Player doesn’t get drawn out of position as much."
+        ],
+        "cons": [
+          "Less chance of stopping attacks at source.",
+          "Allows the opposition more time on the ball."
+        ]
+      },
+      "Standard": {
+        "short": ["No specific instruction."],
+        "text": "The player’s tackling and engagement will be driven by the team’s defensive strategy, their role and their own preferences.",
+        "pros": [
+          "Follows the team’s tackling strategy.",
+          "Allows the player to decide their best approach."
+        ],
+        "cons": ["Could benefit from a more tailored strategy."]
+      }
+    },
+    "Marking target": {
+      "Mark specific player": {
+        "short": [
+          "Allows you to target the opposition's key creative threat.",
+          "Mark a selected opposition player."
+        ],
+        "text": "Asks to closely follow a specific opposition player around the pitch, in an effort to mark them out of the game. This instruction only applies to open play situations, so does not affect how the player marks during set pieces.",
+        "pros": ["Ensures that the chosen player is always being marked."],
+        "cons": [
+          "Could be vulnerable if mark interchanges positions with their teammates.",
+          "Player can easily be dragged away from their position."
+        ]
+      },
+      "Mark specific position": {
+        "short": ["Mark a selected opposition position."],
+        "text": "Asks to closely follow any opposition player playing in the selected position, in an effort to mark them out of the game. This instruction only applies to open play situations, so does not affect how the player marks during set pieces.",
+        "pros": [
+          "Allows you to target a key position in the opposition’s attacking system.",
+          "Ensures that the chosen position is always being marked."
+        ],
+        "cons": [
+          "Could be vulnerable against teams with fluid attacking systems where defined positions are less clear.",
+          "Player can easily be dragged away from their position."
+        ]
+      },
+      "Standard": {
+        "short": ["No specific instruction."],
+        "text": "The player will mark in a way that best suits the team’s overall defensive strategy.",
+        "pros": [
+          "Allows the player to decide the best player to mark based on the situation.",
+          "Fits in to the team’s overall marking structure."
+        ],
+        "cons": ["Could benefit from a more tailored strategy."]
+      }
+    },
+    "Attack box – side": {
+      "Centre": {
+        "short": ["Attack the middle of the penalty area."],
+        "text": "Instruct the player to look to attack middle of the box when the ball is in a wide attacking position.",
+        "pros": ["Best shooting position.", "In position to react to rebounds or loose balls."],
+        "cons": [
+          "Higher chance of goalkeeper claiming a cross aimed at this area.",
+          "Middle of the box is often more congested."
+        ]
+      },
+      "Left": {
+        "short": ["Attack the left side of the penalty area."],
+        "text": "Encourage the player to look to attack the left side of the penalty area where possible."
+      },
+      "Right": {
+        "short": ["Attack the right side of the penalty area."],
+        "text": "Encourage the player to look to attack the right side of the penalty area where possible.",
+        "pros": [
+          "Allow others to attack the middle of the box.",
+          "Harder for goalkeeper to intercept crosses aimed there."
+        ],
+        "cons": ["Chance is from a tighter angle."]
+      },
+      "Near post": {
+        "short": ["Attack the side of the box that is closer to the ball."],
+        "text": "Instruct the player to look to attack towards the near side of the box when the ball is in a wide attacking position.",
+        "pros": [
+          "Less opportunity for defenders to intervene.",
+          "Draw defenders away for teammates to have space to take advantage of."
+        ],
+        "cons": ["Chance will often be from a tight angle.", "Timing of run is critical."]
+      },
+      "Far post": {
+        "short": ["Attack the side of the box that is further from the ball."],
+        "text": "Instruct the player to look to attack towards the far side of the box when the ball is in a wide attacking position.",
+        "pros": [
+          "Exploits the blind side of defenders.",
+          "Goalkeeper is unlikely to be able to claim a cross aimed at the far post."
+        ],
+        "cons": [
+          "More chance for defenders to intervene.",
+          "Relies on a physical advantage against the opposition’s far-side defender."
+        ]
+      },
+      "Standard": {
+        "pros": ["Player moves into areas they feel best suits them based on the situation."],
+        "cons": ["Could benefit more from a tailored strategy."]
+      }
+    },
+    "Attack box – depth": {
+      "Attack defensive line": {
+        "short": ["Position against the defensive line."],
+        "text": "Instruct the player to try to engage the defensive line with their movements inside the box.",
+        "pros": [
+          "Well-timed runs can lead to excellent scoring opportunities.",
+          "Opens up space for teammates behind them to exploit."
+        ],
+        "cons": [
+          "Have to contest more with opposition defenders.",
+          "Role is more physically demanding."
+        ]
+      },
+      "Arrive from deep": {
+        "short": ["Position in space in front of the defensive line."],
+        "text": "Instruct the player to try and exploit the space in front of the opposition defensive line.",
+        "pros": [
+          "Creates separation from defenders.",
+          "In position to receive pull-backs from teammates."
+        ],
+        "cons": [
+          "Positions themselves further away from goal.",
+          "Can be nullified if opposition midfielders track their run."
+        ]
+      },
+      "Standard": {
+        "short": ["No specific instruction."],
+        "text": "The player’s attacking movement inside the box will be driven by their role and their own personal preference.",
+        "pros": ["Player moves into areas they feel best suits them based on the situation."],
+        "cons": ["Could benefit more from a tailored strategy."]
+      }
+    }
+  },
+  "warnings": {
+    "696119": "The {role} role looks to drop in to a centre-back position as we attack, but we already have three centre-backs in our formation so there's no space to drop in to.",
+    "696121": "The team should not use {a role} when there is an attacking midfielder positioned further ahead as this role looks to move forward into an attacking midfield position, which is already occupied.",
+    "696124": "Two inverting wide roles should not be used on the same side of the pitch.",
+    "696126": "We could benefit from using a combination of Stopping and Covering roles in central defence.",
+    "696127": "The team has too many players in outlet roles, which could leave us short defensively.",
+    "696128": "The team has too many players in Screening or Holding roles, which will impact our ability to press the ball higher up the pitch because we'll be short on numbers.",
+    "696129": "We have too many pressing roles in the team, which leaves us short on numbers at the back. By over-committing to the press, we risk being exposed by direct passes.",
+    "696131": "The team has too many players in dropper roles for the current setup. If too many players drop into the back line when defending, we risk leaving ourselves short of protection ahead of the back line.",
+    "696132": "We would recommend only having one tracker role in the current setup. By having too many, we risk leaving ourselves short on numbers ahead of the back line offering protection.",
+    "696133": "We would recommend only having one wide covering midfielder in the current setup. By having too many, we risk leaving central areas of the pitch too exposed defensively.",
+    "707738": "Asking our only defensive midfielder to press is a risky strategy as it'll leave a big gap in midfield for the opposition to exploit.",
+    "707739": "Asking our only defensive midfielder to drop into the back line is a risky strategy as it'll leave too much space ahead of the defensive line for the opposition to play in."
+  }
+}

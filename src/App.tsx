@@ -36,7 +36,7 @@ import { BottomBarSettings } from './pages/settings/BottomBar'
 import { NamesSettings } from './pages/settings/Names'
 import { PersonalitySettings } from './pages/settings/Personality'
 import { FmCodesSettings } from './pages/settings/FmCodes'
-import { TacticsSettings } from './pages/settings/TacticsSettings'
+import { RoleWarningsSettings, TacticsSettings } from './pages/settings/TacticsSettings'
 import { InstructionsSettings, PlayerInstructionsSettings } from './pages/settings/Instructions'
 import { DatabaseSettings } from './pages/settings/Database'
 import { ColoursSettings } from './pages/settings/Colours'
@@ -108,6 +108,7 @@ function SignedIn() {
         <Route path="settings/player-instructions" element={<PlayerInstructionsSettings />} />
         <Route path="settings/fm-codes" element={<FmCodesSettings />} />
         <Route path="settings/tactics" element={<TacticsSettings />} />
+        <Route path="settings/role-warnings" element={<RoleWarningsSettings />} />
         <Route path="settings/database" element={<DatabaseSettings />} />
         <Route path="settings/colours" element={<ColoursSettings />} />
         <Route path="settings/note-categories" element={<NoteCategoriesSettings />} />

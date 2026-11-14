@@ -254,6 +254,28 @@ export function RolesSettings() {
                     </div>
                   </div>
 
+                  <label className="grid gap-1 text-xs text-muted">
+                    FM&apos;s description of the role
+                    <textarea
+                      value={r.about ?? ''}
+                      rows={3}
+                      onChange={(e) => update(r.id, { about: e.target.value })}
+                      className={`${input} py-2`}
+                    />
+                  </label>
+                  <label className="grid gap-1 text-xs text-muted">
+                    Tags, separated by commas (their meaning is in Settings &gt; FM codes)
+                    <input
+                      value={(r.tags ?? []).join(', ')}
+                      onChange={(e) =>
+                        update(r.id, {
+                          tags: e.target.value.split(',').map((t) => t.trimStart()),
+                        })
+                      }
+                      className={input}
+                    />
+                  </label>
+
                   <RoleFmEditor role={r} onChange={(fm) => update(r.id, { fm })} />
 
                   <div>

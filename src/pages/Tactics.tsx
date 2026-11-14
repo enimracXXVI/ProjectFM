@@ -25,6 +25,7 @@ import { roleShort, type RoleDef } from '../data/roles'
 import { scoreTextColor } from '../lib/attributes'
 import { useCurrentCareer } from '../lib/career'
 import { attributeLabel } from '../data/config'
+import { FmAboutLine } from '../components/FmAboutBox'
 import { useConfig } from '../lib/config'
 import { roleScore } from '../lib/roleFit'
 import { benchCover, bestXi, gradeTactic, suggestions } from '../tactics/analysis'
@@ -428,6 +429,7 @@ function TacticEditor({ tactic }: { tactic: TacticRow }) {
             </select>
           </label>
         </div>
+        {form.mentality && <FmAboutLine about={config.fmCodes.mentalityTexts[form.mentality]} />}
         <label className="grid gap-1 text-sm">
           <span className="text-muted">
             Formation {phase === 'ip' ? 'in possession' : 'out of possession'}
@@ -657,6 +659,51 @@ function BriefingSection({
   )
 }
 
+/** FM's description of the role and its tags (tap a tag for what it means). */
+function RoleAbout({ role }: { role: RoleDef }) {
+  const config = useConfig()
+  const [tag, setTag] = useState<string | null>(null)
+  const [open, setOpen] = useState(false)
+  return (
+    <div className="grid gap-1.5 text-xs">
+      {!!role.tags?.length && (
+        <div className="flex flex-wrap gap-1">
+          {role.tags
+            .map((t) => t.trim())
+            .filter(Boolean)
+            .map((t) => (
+              <button
+                key={t}
+                type="button"
+                aria-pressed={tag === t}
+                onClick={() => setTag(tag === t ? null : t)}
+                className={clsx(
+                  'min-h-7 rounded-full border px-2.5',
+                  tag === t ? 'border-accent text-accent' : 'border-border text-muted',
+                )}
+              >
+                {t}
+              </button>
+            ))}
+        </div>
+      )}
+      {tag && config.fmCodes.roleTags[tag] && (
+        <p className="rounded-lg bg-surface-2/60 p-2 text-muted">{config.fmCodes.roleTags[tag]}</p>
+      )}
+      {role.about && (
+        <button
+          type="button"
+          aria-expanded={open}
+          onClick={() => setOpen(!open)}
+          className={clsx('text-left text-muted hover:text-text', !open && 'line-clamp-2')}
+        >
+          {role.about}
+        </button>
+      )}
+    </div>
+  )
+}
+
 /** A score in a corner of the pitch. */
 function PitchScore({
   label,
@@ -828,6 +875,7 @@ function SlotPanel({
           </select>
         </label>
       </div>
+      {role && (role.about || role.tags?.length) && <RoleAbout role={role} />}
       <PlayerInstructions
         slot={slot}
         phase={phase}
@@ -938,7 +986,7 @@ function PlayerInstructions({
         {rows.map(({ d, options, forced }) => {
           const current = forced ? options[0] : chosen(d, codes)
           return (
-            <li key={d.name} className="grid gap-0.5 text-xs">
+            <li key={d.name} className="grid content-start gap-0.5 text-xs">
               <span className="truncate text-muted">{d.name}</span>
               <select
                 value={current?.code ?? 0}
@@ -955,6 +1003,7 @@ function PlayerInstructions({
                   </option>
                 ))}
               </select>
+              <FmAboutLine about={current?.about} />
             </li>
           )
         })}
@@ -997,7 +1046,7 @@ function InstructionsEditor({
     <section className="grid gap-2">
       <ul className="grid grid-cols-2 gap-x-2 gap-y-1">
         {defs.map((d) => (
-          <li key={d.name} className="grid gap-0.5 text-xs">
+          <li key={d.name} className="grid content-start gap-0.5 text-xs">
             <span className="truncate text-muted">{d.name}</span>
             <select
               value={chosen(d, codes)?.code ?? 0}
@@ -1010,6 +1059,7 @@ function InstructionsEditor({
                 </option>
               ))}
             </select>
+            <FmAboutLine about={chosen(d, codes)?.about} />
           </li>
         ))}
       </ul>

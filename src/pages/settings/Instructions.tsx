@@ -1,5 +1,6 @@
 import { clsx } from 'clsx'
-import { ChevronDown, ChevronUp, Plus, Trash2 } from 'lucide-react'
+import { ChevronDown, ChevronUp, FileText, Plus, Trash2 } from 'lucide-react'
+import { FmAboutEditor } from '../../components/FmAboutEditor'
 import { useState } from 'react'
 import { SettingsSection } from '../../components/SettingsSection'
 import { SettingsShell } from '../../components/SettingsShell'
@@ -57,6 +58,8 @@ function InstructionList({
     setForm(stored)
   }
   const [open, setOpen] = useState<number | null>(null)
+  // Option whose FM text is being edited ("instruction-option")
+  const [text, setText] = useState<string | null>(null)
   const team = configKey === 'teamInstructions'
   const update = (i: number, patch: Partial<FmInstruction>) =>
     setForm(form.map((d, j) => (j === i ? { ...d, ...patch } : d)))
@@ -182,60 +185,81 @@ function InstructionList({
                           </p>
                           <ul className="grid gap-1">
                             {d.options.map((o, k) => (
-                              <li key={k} className="flex items-center gap-1">
-                                {team && (
+                              <li key={k} className="grid gap-1">
+                                <div className="flex items-center gap-1">
+                                  {team && (
+                                    <input
+                                      type="radio"
+                                      aria-label={`New tactics start with ${o.label}`}
+                                      name={`default-${i}`}
+                                      checked={(d.default ?? 0) === o.code}
+                                      onChange={() => update(i, { default: o.code })}
+                                      className="size-5 shrink-0"
+                                    />
+                                  )}
                                   <input
-                                    type="radio"
-                                    aria-label={`New tactics start with ${o.label}`}
-                                    name={`default-${i}`}
-                                    checked={(d.default ?? 0) === o.code}
-                                    onChange={() => update(i, { default: o.code })}
-                                    className="size-5 shrink-0"
+                                    aria-label="Option"
+                                    value={o.label}
+                                    onChange={(e) => setOption(i, k, { label: e.target.value })}
+                                    className={input}
+                                  />
+                                  <input
+                                    aria-label={`Code of ${o.label}`}
+                                    type="number"
+                                    min={0}
+                                    max={team ? 95 : 63}
+                                    value={o.code}
+                                    onChange={(e) =>
+                                      setOption(i, k, { code: Math.max(0, Number(e.target.value)) })
+                                    }
+                                    className={`${input} w-20 shrink-0 tabular-nums`}
+                                  />
+                                  {!team && (
+                                    <select
+                                      aria-label={`Target of ${o.label}`}
+                                      value={o.target ?? ''}
+                                      onChange={(e) =>
+                                        setOption(i, k, {
+                                          target: (e.target.value ||
+                                            undefined) as FmOption['target'],
+                                        })
+                                      }
+                                      className={`${input} w-32 shrink-0`}
+                                    >
+                                      <option value="">No target</option>
+                                      <option value="position">A position</option>
+                                      <option value="player">A player</option>
+                                    </select>
+                                  )}
+                                  <button
+                                    type="button"
+                                    className={iconBtn}
+                                    aria-label={`Remove ${o.label}`}
+                                    onClick={() =>
+                                      update(i, { options: d.options.filter((_, n) => n !== k) })
+                                    }
+                                  >
+                                    <Trash2 className="size-4" aria-hidden />
+                                  </button>
+                                  <button
+                                    type="button"
+                                    className={iconBtn}
+                                    aria-label={`FM's text for ${o.label}`}
+                                    aria-expanded={text === `${i}-${k}`}
+                                    title="FM's text for this option"
+                                    onClick={() =>
+                                      setText(text === `${i}-${k}` ? null : `${i}-${k}`)
+                                    }
+                                  >
+                                    <FileText className="size-4" aria-hidden />
+                                  </button>
+                                </div>
+                                {text === `${i}-${k}` && (
+                                  <FmAboutEditor
+                                    about={o.about}
+                                    onChange={(about) => setOption(i, k, { about })}
                                   />
                                 )}
-                                <input
-                                  aria-label="Option"
-                                  value={o.label}
-                                  onChange={(e) => setOption(i, k, { label: e.target.value })}
-                                  className={input}
-                                />
-                                <input
-                                  aria-label={`Code of ${o.label}`}
-                                  type="number"
-                                  min={0}
-                                  max={team ? 95 : 63}
-                                  value={o.code}
-                                  onChange={(e) =>
-                                    setOption(i, k, { code: Math.max(0, Number(e.target.value)) })
-                                  }
-                                  className={`${input} w-20 shrink-0 tabular-nums`}
-                                />
-                                {!team && (
-                                  <select
-                                    aria-label={`Target of ${o.label}`}
-                                    value={o.target ?? ''}
-                                    onChange={(e) =>
-                                      setOption(i, k, {
-                                        target: (e.target.value || undefined) as FmOption['target'],
-                                      })
-                                    }
-                                    className={`${input} w-32 shrink-0`}
-                                  >
-                                    <option value="">No target</option>
-                                    <option value="position">A position</option>
-                                    <option value="player">A player</option>
-                                  </select>
-                                )}
-                                <button
-                                  type="button"
-                                  className={iconBtn}
-                                  aria-label={`Remove ${o.label}`}
-                                  onClick={() =>
-                                    update(i, { options: d.options.filter((_, n) => n !== k) })
-                                  }
-                                >
-                                  <Trash2 className="size-4" aria-hidden />
-                                </button>
                               </li>
                             ))}
                           </ul>

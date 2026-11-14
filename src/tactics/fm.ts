@@ -7,10 +7,19 @@
  * the defaults are FM27's, from the user's own FM Tactic Generator (fm-defaults.json).
  */
 import defaults from './fm-defaults.json'
+import texts from './fm-texts.json'
 import type { RoleDef, RolePhase } from '../data/roles'
 import type { PositionCode, SaveTactics, TacticSlot } from './types'
 
 export type Side = 'L' | 'C' | 'R'
+
+/** FM's own explanation of a choice: short lines, a description, pros and cons. */
+export interface FmAbout {
+  short?: string[]
+  text?: string
+  pros?: string[]
+  cons?: string[]
+}
 
 /** One option of an instruction and the code FM stores for it (0 = nothing set). */
 export interface FmOption {
@@ -18,6 +27,8 @@ export interface FmOption {
   code: number
   /** The option needs a target: an opposition position (set here) or a player (set in FM). */
   target?: 'position' | 'player'
+  /** FM's explanation of the option. */
+  about?: FmAbout
 }
 
 /** A team or player instruction and its options, in FM's order. */
@@ -64,6 +75,10 @@ export interface FmCodes {
   roleCodeMask: string
   /** Team instruction codes FM does not allow together. */
   conflicts: [number, number][]
+  /** FM's explanation of each mentality, by name. */
+  mentalityTexts: Record<string, FmAbout>
+  /** What each role tag means (Holds Position, Stays Wide…). */
+  roleTags: Record<string, string>
 }
 
 type Defaults = {
@@ -76,6 +91,24 @@ type Defaults = {
   roles: Record<string, RoleFm>
 }
 const D = defaults as unknown as Defaults
+
+/** FM27's own texts (from the game's English language file), matched to the app's data. */
+type Texts = {
+  mentalities: Record<string, FmAbout>
+  roles: Record<string, { about?: string; tags?: string[] }>
+  tags: Record<string, string>
+  team: Record<string, Record<string, FmAbout>>
+  player: Record<string, Record<string, FmAbout>>
+  warnings: Record<string, string>
+}
+export const FM_TEXTS = texts as unknown as Texts
+
+/** Instructions with FM's explanation on each option (matched by instruction name and option). */
+const withTexts = (list: FmInstruction[], about: Texts['team']) =>
+  list.map((d) => ({
+    ...d,
+    options: d.options.map((o) => ({ ...o, about: about[d.name]?.[o.label] ?? o.about })),
+  }))
 
 export const DEFAULT_FM_CODES: FmCodes = {
   game: D.game,
@@ -92,9 +125,33 @@ export const DEFAULT_FM_CODES: FmCodes = {
     [27, 28],
     [27, 30],
   ],
+  mentalityTexts: FM_TEXTS.mentalities,
+  roleTags: FM_TEXTS.tags,
 }
-export const DEFAULT_TEAM_INSTRUCTIONS: FmInstruction[] = D.teamInstructions
-export const DEFAULT_PLAYER_INSTRUCTIONS: FmInstruction[] = D.playerInstructions
+export const DEFAULT_TEAM_INSTRUCTIONS: FmInstruction[] = withTexts(
+  D.teamInstructions,
+  FM_TEXTS.team,
+)
+export const DEFAULT_PLAYER_INSTRUCTIONS: FmInstruction[] = withTexts(
+  D.playerInstructions,
+  FM_TEXTS.player,
+)
+
+/**
+ * A saved instruction list with FM's explanations filled in where an option has none
+ * (lists saved before the texts existed): matched by instruction name and option code.
+ */
+export function fillAbout(list: FmInstruction[], defaults: FmInstruction[]): FmInstruction[] {
+  return list.map((d) => {
+    const def = defaults.find((x) => x.name === d.name && x.phase === d.phase)
+    return {
+      ...d,
+      options: d.options.map((o) =>
+        o.about ? o : { ...o, about: def?.options.find((x) => x.code === o.code)?.about },
+      ),
+    }
+  })
+}
 export const DEFAULT_ROLE_FM: Record<string, RoleFm> = D.roles
 
 /** Is this a list of instructions in the current shape (options with codes)? */
