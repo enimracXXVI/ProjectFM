@@ -57,7 +57,8 @@ import { readFmf } from '../tactics/fmfRead'
 import { unzstd } from '../import/readSave'
 import { byLastName, shortName } from '../lib/names'
 
-const field = 'min-h-11 rounded-lg border border-border bg-surface-2 px-3 text-base md:text-sm'
+const field =
+  'min-h-11 w-full min-w-0 rounded-lg border border-border bg-surface-2 px-3 text-base md:text-sm'
 
 export function Tactics() {
   const career = useCurrentCareer()
@@ -252,10 +253,29 @@ function TacticEditor({ tactic }: { tactic: TacticRow }) {
   const places = pitchPlaces(positions, sides)
   const atFm = fmPositions(form.slots, phase, config.fmCodes)
   const shape = shapeOf(form.slots, phase)
+  // Same positions in any slot order
+  const shapeKey = (list: (PositionCode | null)[]) => [...list].map(String).sort().join()
   const formation =
-    Object.keys(FORMATIONS).find(
-      (k) => JSON.stringify(FORMATIONS[k]) === JSON.stringify(positions),
-    ) ?? ''
+    Object.keys(FORMATIONS).find((k) => shapeKey(FORMATIONS[k]) === shapeKey(positions)) ?? ''
+  /**
+   * A new formation for this phase: slots whose position the new shape still has keep it
+   * (with role, instructions and player); the others take the remaining positions.
+   */
+  const applyFormation = (name: string) => {
+    const left = [...FORMATIONS[name]]
+    const next: (PositionCode | null)[] = form.slots.map((s) => {
+      const k = left.indexOf(posOf(s, phase) as PositionCode)
+      return k >= 0 ? left.splice(k, 1)[0] : null
+    })
+    const slots = form.slots.map((old, i) => {
+      if (next[i]) return old
+      const position = left.shift() ?? null
+      return phase === 'ip'
+        ? { ...old, position, side: null, role: null, pi: [] }
+        : { ...old, positionOop: position, sideOop: null, roleOop: null, piOop: [], markOop: null }
+    })
+    setForm({ ...form, slots })
+  }
   const rolesFor = (i: number) =>
     rolesAt(config.roles, phase, atFm[i], shape, (p) => POSITION_TEXT[p])
   const used = new Set(form.slots.map((s) => s.player).filter(Boolean))
@@ -406,34 +426,21 @@ function TacticEditor({ tactic }: { tactic: TacticRow }) {
             </select>
           </label>
         </div>
-        {tactic.save_index === null && (
-          <label className="grid gap-1 text-sm">
-            <span className="text-muted">
-              Formation {phase === 'ip' ? 'in possession' : 'out of possession'}
-            </span>
-            <select
-              value={formation}
-              onChange={(e) =>
-                e.target.value &&
-                setForm({
-                  ...form,
-                  slots: FORMATIONS[e.target.value].map((position, i) => {
-                    const old = form.slots[i] ?? { position: null }
-                    return phase === 'ip'
-                      ? { ...old, position, side: null, role: null, pi: [] }
-                      : { ...old, positionOop: position, sideOop: null, roleOop: null, piOop: [] }
-                  }),
-                })
-              }
-              className={field}
-            >
-              <option value="">{formation ? 'Custom' : 'Pick a formation…'}</option>
-              {Object.keys(FORMATIONS).map((f) => (
-                <option key={f}>{f}</option>
-              ))}
-            </select>
-          </label>
-        )}
+        <label className="grid gap-1 text-sm">
+          <span className="text-muted">
+            Formation {phase === 'ip' ? 'in possession' : 'out of possession'}
+          </span>
+          <select
+            value={formation}
+            onChange={(e) => e.target.value && applyFormation(e.target.value)}
+            className={field}
+          >
+            <option value="">{formation ? 'Custom' : 'Pick a formation…'}</option>
+            {Object.keys(FORMATIONS).map((f) => (
+              <option key={f}>{f}</option>
+            ))}
+          </select>
+        </label>
         <label className="grid gap-1 text-sm">
           <span className="text-muted">Notes</span>
           <textarea

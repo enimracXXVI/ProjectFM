@@ -1,7 +1,7 @@
 import { clsx } from 'clsx'
 import { PanelLeftClose, PanelLeftOpen } from 'lucide-react'
-import { useEffect, useState } from 'react'
-import { NavLink, Outlet } from 'react-router-dom'
+import { useEffect, useRef, useState } from 'react'
+import { NavLink, Outlet, useLocation } from 'react-router-dom'
 import { useConfig } from '../lib/config'
 import { useChecks } from '../lib/useChecks'
 import { navItems, sections } from './nav'
@@ -20,6 +20,12 @@ function readCollapsed(): boolean {
 
 export function Layout() {
   const [collapsed, setCollapsed] = useState(readCollapsed)
+  // The page scrolls inside <main>: a new page (not a filter change) starts at the top
+  const mainRef = useRef<HTMLElement>(null)
+  const { pathname } = useLocation()
+  useEffect(() => {
+    mainRef.current?.scrollTo(0, 0)
+  }, [pathname])
   const checks = useChecks()
   const { mobileBar } = useConfig()
   const barItems = mobileBar
@@ -122,7 +128,11 @@ export function Layout() {
 
       <div className="flex min-w-0 flex-1 flex-col">
         <TopBar />
-        <main className="flex-1 overflow-y-auto px-4 py-4 pb-24 md:px-8 md:py-6 md:pb-8">
+        {/* Never wider than the screen; a new page starts at the top */}
+        <main
+          ref={mainRef}
+          className="flex-1 overflow-x-clip overflow-y-auto px-4 py-4 pb-24 md:px-8 md:py-6 md:pb-8"
+        >
           <Outlet />
         </main>
       </div>

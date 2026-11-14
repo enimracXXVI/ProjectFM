@@ -69,6 +69,8 @@ export function Squad() {
     ]
   }, [isPast, live, past])
   const [view, setView] = useUrlState<View>('view', 'profile', TEXT as never)
+  // Phones: cards, or the full table (scrolls sideways, names stay in place)
+  const [layout, setLayout] = useUrlState<'cards' | 'table'>('layout', 'cards', TEXT as never)
   const [role, setRole] = useUrlState<Role>('role', 'outfield', TEXT as never)
   const [filter, setFilter] = useUrlState('q', '', TEXT)
   const [team, setTeam] = useUrlState<'all' | Team>('team', 'all', TEXT as never)
@@ -211,7 +213,20 @@ export function Squad() {
               onChange={(e) => setFilter(e.target.value)}
               className="min-h-11 flex-1 rounded-lg border border-border bg-surface px-3 text-base md:max-w-xs md:text-sm"
             />
-            <div className="hidden gap-2 md:flex">
+            <div className="md:hidden">
+              <Segmented
+                label="Layout"
+                value={layout}
+                onChange={setLayout}
+                options={[
+                  ['cards', 'Cards'],
+                  ['table', 'Table'],
+                ]}
+              />
+            </div>
+            <div
+              className={clsx('flex-wrap gap-2 md:flex', layout === 'table' ? 'flex' : 'hidden')}
+            >
               <Segmented
                 label="Columns"
                 value={view}
@@ -292,7 +307,12 @@ export function Squad() {
           )}
 
           {/* Phones: cards */}
-          <ul className="grid grid-cols-[minmax(0,1fr)] gap-2 md:hidden">
+          <ul
+            className={clsx(
+              'grid grid-cols-[minmax(0,1fr)] gap-2 md:hidden',
+              layout === 'table' && 'hidden',
+            )}
+          >
             {players.map((p) => (
               <li key={p.id}>
                 <Link
@@ -311,7 +331,7 @@ export function Squad() {
                     <StatusChip code={p.extra.status} />
                     {/* CA/PA (when hidden values are shown) wins over age when space is short */}
                     {config.showHidden && p.extra.CA != null && (
-                      <span className="ml-auto shrink-0 text-sm font-semibold tabular-nums">
+                      <span className="ml-auto shrink-0 text-sm text-muted tabular-nums">
                         {String(p.extra.CA)}/{String(p.extra.PA ?? '–')}
                       </span>
                     )}
@@ -335,7 +355,12 @@ export function Squad() {
           </ul>
 
           {/* Tablet / desktop: table */}
-          <div className="hidden overflow-x-auto rounded-xl border border-border md:block">
+          <div
+            className={clsx(
+              'overflow-x-auto rounded-xl border border-border md:block',
+              layout === 'table' ? 'block' : 'hidden',
+            )}
+          >
             <table className="w-full text-sm">
               <thead className="bg-surface-2 text-left text-xs tracking-wide text-muted uppercase">
                 {view === 'attributes' && (
@@ -561,7 +586,11 @@ function Segmented<T extends string>({
   options: [T, string][]
 }) {
   return (
-    <div className="flex rounded-lg border border-border p-0.5" role="group" aria-label={label}>
+    <div
+      className="flex max-w-full overflow-x-auto rounded-lg border border-border p-0.5"
+      role="group"
+      aria-label={label}
+    >
       {options.map(([v, text]) => (
         <button
           key={v}

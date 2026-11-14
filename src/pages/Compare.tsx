@@ -3,6 +3,7 @@ import { X } from 'lucide-react'
 import { useMemo } from 'react'
 import { useUrlState } from '../lib/urlState'
 import { Link, useSearchParams } from 'react-router-dom'
+import { PlayerSearch } from '../components/PlayerSearch'
 import { Radar } from '../components/Radar'
 import { PageHeader, Placeholder } from '../components/ui'
 import { isGoalkeeper } from '../data/attributeInfo'
@@ -104,19 +105,11 @@ export function Compare() {
           </span>
         ))}
         {ids.length < MAX_PLAYERS && (
-          <select
-            value=""
-            aria-label="Add player to comparison"
-            onChange={(e) => e.target.value && setIds([...ids, e.target.value])}
-            className="min-h-11 rounded-lg border border-border bg-surface px-3 text-base md:text-sm"
-          >
-            <option value="">Add player…</option>
-            {available.map((p) => (
-              <option key={p.id} value={p.id}>
-                {p.name}
-              </option>
-            ))}
-          </select>
+          <PlayerSearch
+            players={available}
+            onPick={(p) => setIds([...ids, p.id])}
+            detail={(p) => p.positions}
+          />
         )}
       </div>
 

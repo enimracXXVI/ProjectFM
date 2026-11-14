@@ -111,7 +111,7 @@ export function Staff() {
           ]}
         />
       )}
-      <div className="grid gap-6">
+      <div className="grid grid-cols-[minmax(0,1fr)] gap-6">
         {groups.map(([g, label, rows]) =>
           rows.length ? (
             <StaffTable
