@@ -24,7 +24,7 @@ export function Layout() {
   const mainRef = useRef<HTMLElement>(null)
   const { pathname } = useLocation()
   useEffect(() => {
-    mainRef.current?.scrollTo(0, 0)
+    if (mainRef.current) mainRef.current.scrollTop = 0
   }, [pathname])
   const checks = useChecks()
   const { mobileBar } = useConfig()
