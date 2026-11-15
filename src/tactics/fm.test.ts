@@ -319,8 +319,12 @@ describe('FM’s own tactic files', () => {
     ['standard', 'Standard'],
     ['more', 'More often'],
   ])('reads Time wasting %s', async (file, label) => {
-    const { readFileSync } = await import('node:fs')
-    const { zstdDecompressSync } = await import('node:zlib')
+    // Node's own modules (tests run in Node; the app's types do not include Node)
+    const node = (name: string) => import(/* @vite-ignore */ `node:${name}`)
+    const { readFileSync } = (await node('fs')) as { readFileSync: (p: string) => Uint8Array }
+    const { zstdDecompressSync } = (await node('zlib')) as {
+      zstdDecompressSync: (b: Uint8Array) => Uint8Array
+    }
     const bytes = new Uint8Array(readFileSync(`src/tactics/fixtures/time-wasting-${file}.fmf`))
     const t = await readTacticFile(bytes, async (f) => new Uint8Array(zstdDecompressSync(f)))
     const team = fromSave(t, config.roles, config.fmCodes).team!
