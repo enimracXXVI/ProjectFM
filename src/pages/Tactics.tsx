@@ -1224,8 +1224,8 @@ function InstructionsEditor({
       {phase === 'ip' && hidden.length > 0 && (
         <p className="flex flex-wrap items-center gap-x-2 text-xs text-muted">
           <span>
-            Also carries FM settings no instruction screen shows (set by FM&apos;s styles; FM keeps
-            them when it saves):{' '}
+            Also carries codes no FM27 instruction screen shows (FM&apos;s styles set them and FM
+            keeps them when it saves; FM27&apos;s own option table has no option for most):{' '}
             {hidden
               .map((c) => {
                 const name = (config.fmCodes.hiddenTeamCodes ?? DEFAULT_FM_CODES.hiddenTeamCodes)?.[

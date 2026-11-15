@@ -132,17 +132,22 @@ export const DEFAULT_FM_CODES: FmCodes = {
   roleCodeMask: D.roleCodeMask,
   // From the user's own FM27 tactic and schedule files
   fileVersion: 'f8186c05',
-  // FM27's screen code still names a goalkeeper release instruction with these four options
-  // (GKDistributionMethod in global-metadata.dat) and FM's complexity table lists them; codes
-  // 31–34 are the four free codes before GK distribution target. Order as older FMs listed them.
+  // FM27's engine keeps a table of the option for each code (game_plugin.dll): 31–34, 64, 74
+  // and 75 hold its empty option, so FM27 has no option for them. 31–34 most likely were the
+  // goalkeeper release instruction of older FMs (still named GKDistributionMethod in FM27's
+  // screen code); 41 holds an option the screens do not list (GKDistributionTargetSpecificTeammate
+  // is the only unlisted goalkeeper target named in FM27's screen code).
   hiddenTeamCodes: {
-    '31': 'GK distribution method: Roll it out (?)',
-    '32': 'GK distribution method: Throw it long (?)',
-    '33': 'GK distribution method: Short kicks (?)',
-    '34': 'GK distribution method: Long kicks (?)',
-    '74': 'Unknown hidden setting (?)',
-    '75': 'Unknown hidden setting (?)',
+    '31': 'No FM27 option (once GK distribution method: Roll it out?)',
+    '32': 'No FM27 option (once GK distribution method: Throw it long?)',
+    '33': 'No FM27 option (once GK distribution method: Short kicks?)',
+    '34': 'No FM27 option (once GK distribution method: Long kicks?)',
+    '41': 'GK distribution: Specific teammate (?)',
+    '64': 'No FM27 option',
+    '74': 'No FM27 option (older instruction, name unknown)',
+    '75': 'No FM27 option (older instruction, name unknown)',
   },
+
   // Overlap and underlap on the same flank (from the user's FM Tactic Generator)
   conflicts: [
     [25, 28],
