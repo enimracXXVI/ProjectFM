@@ -10,6 +10,9 @@ import type { FmInstruction, FmOption } from '../../tactics/fm'
 
 const input =
   'min-h-11 w-full min-w-0 rounded-lg border border-border bg-surface-2 px-3 text-base md:text-sm'
+// The same box without a width, for boxes that set their own
+const box =
+  'min-h-11 min-w-0 rounded-lg border border-border bg-surface-2 px-3 text-base md:text-sm'
 const iconBtn =
   'grid size-10 shrink-0 place-items-center rounded-lg text-muted hover:bg-surface-2 hover:text-text disabled:opacity-30'
 
@@ -201,7 +204,7 @@ function InstructionList({
                                     aria-label="Option"
                                     value={o.label}
                                     onChange={(e) => setOption(i, k, { label: e.target.value })}
-                                    className={input}
+                                    className={`${box} flex-1`}
                                   />
                                   <input
                                     aria-label={`Code of ${o.label}`}
@@ -212,7 +215,7 @@ function InstructionList({
                                     onChange={(e) =>
                                       setOption(i, k, { code: Math.max(0, Number(e.target.value)) })
                                     }
-                                    className={`${input} w-20 shrink-0 tabular-nums`}
+                                    className={`${box} w-16 shrink-0 px-1 text-center tabular-nums`}
                                   />
                                   {!team && (
                                     <select
@@ -224,7 +227,7 @@ function InstructionList({
                                             undefined) as FmOption['target'],
                                         })
                                       }
-                                      className={`${input} w-32 shrink-0`}
+                                      className={`${box} w-32 shrink-0 px-2`}
                                     >
                                       <option value="">No target</option>
                                       <option value="position">A position</option>

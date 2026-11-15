@@ -73,6 +73,7 @@ export function TrainingSessionsSettings() {
                       <span className="min-w-0 flex-1 truncate text-sm font-semibold">
                         {s.name || 'New session'}
                       </span>
+                      {s.hidden && <span className="text-xs text-muted">hidden</span>}
                       <span className="text-xs text-muted tabular-nums">{s.code}</span>
                     </button>
                     {open === i && (
@@ -134,6 +135,14 @@ export function TrainingSessionsSettings() {
                             onChange={(e) => update(i, { fm: e.target.checked })}
                           />
                           FM schedule files accept this session
+                        </label>
+                        <label className="flex min-h-9 items-center gap-2 text-sm">
+                          <input
+                            type="checkbox"
+                            checked={!s.hidden}
+                            onChange={(e) => update(i, { hidden: !e.target.checked })}
+                          />
+                          Show in the schedule dropdowns
                         </label>
                       </div>
                     )}

@@ -19,6 +19,8 @@ export interface TrainingSession {
   about: string
   /** FM accepts it in a weekly schedule file. */
   fm: boolean
+  /** Kept in the list but not offered in the schedule dropdowns (youth, national team…). */
+  hidden?: boolean
   /** Attributes the session works on, by unit (attacking, midfield, defensive, goalkeeping). */
   attributes?: Record<string, string[]>
 }

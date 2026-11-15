@@ -12,6 +12,17 @@
 }
 
 @layer base {
+  /* Number boxes without the up/down arrows (they look out of place, above all in Firefox) */
+  input[type='number'] {
+    appearance: textfield;
+    -moz-appearance: textfield;
+  }
+  input[type='number']::-webkit-inner-spin-button,
+  input[type='number']::-webkit-outer-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+  }
+
   html,
   body,
   #root {

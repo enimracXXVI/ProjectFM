@@ -269,7 +269,8 @@
         "Vision"
       ],
       "goalkeeping": ["Position/Role"]
-    }
+    },
+    "hidden": true
   },
   {
     "code": 221,
@@ -312,7 +313,8 @@
         "Teamwork"
       ],
       "goalkeeping": ["Position/Role"]
-    }
+    },
+    "hidden": true
   },
   {
     "code": 222,
@@ -356,7 +358,8 @@
         "Vision"
       ],
       "goalkeeping": ["Position/Role"]
-    }
+    },
+    "hidden": true
   },
   {
     "code": 223,
@@ -386,7 +389,8 @@
       ],
       "defensive": ["Crossing", "Dribbling", "Technique", "Anticipation", "Off The Ball"],
       "goalkeeping": ["Position/Role"]
-    }
+    },
+    "hidden": true
   },
   {
     "code": 224,
@@ -417,7 +421,8 @@
         "Positioning"
       ],
       "goalkeeping": ["Position/Role"]
-    }
+    },
+    "hidden": true
   },
   {
     "code": 225,
@@ -430,7 +435,8 @@
       "midfield": ["Tackling", "Aggression", "Bravery", "Decisions"],
       "defensive": ["Tackling", "Aggression", "Bravery", "Decisions", "Positioning"],
       "goalkeeping": ["Position/Role"]
-    }
+    },
+    "hidden": true
   },
   {
     "code": 226,
@@ -443,7 +449,8 @@
       "midfield": ["Marking", "Anticipation", "Positioning", "Teamwork"],
       "defensive": ["Marking", "Anticipation", "Concentration", "Positioning", "Teamwork"],
       "goalkeeping": ["Position/Role"]
-    }
+    },
+    "hidden": true
   },
   {
     "code": 227,
@@ -456,7 +463,8 @@
       "midfield": ["Marking", "Anticipation", "Decisions", "Positioning"],
       "defensive": ["Heading", "Marking", "Anticipation", "Decisions", "Positioning"],
       "goalkeeping": ["Position/Role"]
-    }
+    },
+    "hidden": true
   },
   {
     "code": 228,
@@ -469,7 +477,8 @@
       "midfield": ["Anticipation", "Composure", "Decisions", "Off The Ball", "Teamwork"],
       "defensive": ["Anticipation", "Composure", "Decisions", "Off The Ball", "Teamwork"],
       "goalkeeping": ["Position/Role"]
-    }
+    },
+    "hidden": true
   },
   {
     "code": 229,
@@ -482,7 +491,8 @@
       "midfield": ["Anticipation", "Composure", "Decisions", "Positioning", "Teamwork"],
       "defensive": ["Anticipation", "Composure", "Decisions", "Positioning", "Teamwork"],
       "goalkeeping": ["Position/Role"]
-    }
+    },
+    "hidden": true
   },
   {
     "code": 230,
@@ -519,7 +529,8 @@
         "Vision"
       ],
       "goalkeeping": ["Position/Role"]
-    }
+    },
+    "hidden": true
   },
   {
     "code": 231,
@@ -532,7 +543,8 @@
       "midfield": ["Finishing", "Heading", "Long Shots", "Technique", "Anticipation", "Composure"],
       "defensive": ["Finishing", "Heading", "Long Shots", "Technique", "Anticipation", "Composure"],
       "goalkeeping": ["Position/Role"]
-    }
+    },
+    "hidden": true
   },
   {
     "code": 232,
@@ -545,7 +557,8 @@
       "midfield": ["First Touch", "Passing", "Anticipation", "Composure", "Decisions", "Teamwork"],
       "defensive": ["First Touch", "Passing", "Anticipation", "Composure", "Decisions", "Teamwork"],
       "goalkeeping": ["Position/Role"]
-    }
+    },
+    "hidden": true
   },
   {
     "code": 233,
@@ -558,7 +571,8 @@
       "midfield": ["Marking", "Tackling", "Technique", "Concentration", "Positioning"],
       "defensive": ["Marking", "Tackling", "Technique", "Concentration", "Positioning"],
       "goalkeeping": ["Position/Role"]
-    }
+    },
+    "hidden": true
   },
   {
     "code": 234,
@@ -571,7 +585,8 @@
       "midfield": ["Heading", "Marking", "Technique", "Bravery", "Positioning"],
       "defensive": ["Heading", "Marking", "Technique", "Bravery", "Positioning"],
       "goalkeeping": ["Position/Role"]
-    }
+    },
+    "hidden": true
   },
   {
     "code": 235,
@@ -584,7 +599,8 @@
       "midfield": ["Marking", "Concentration", "Positioning", "Teamwork", "Work Rate"],
       "defensive": ["Marking", "Concentration", "Positioning", "Teamwork", "Work Rate"],
       "goalkeeping": ["Position/Role"]
-    }
+    },
+    "hidden": true
   },
   {
     "code": 236,
@@ -618,7 +634,8 @@
         "Work Rate"
       ],
       "goalkeeping": ["Position/Role"]
-    }
+    },
+    "hidden": true
   },
   {
     "code": 237,
@@ -631,7 +648,8 @@
       "midfield": ["First Touch", "Dribbling", "Passing", "Decisions", "Teamwork", "Work Rate"],
       "defensive": ["First Touch", "Dribbling", "Passing", "Decisions", "Teamwork", "Work Rate"],
       "goalkeeping": ["Position/Role"]
-    }
+    },
+    "hidden": true
   },
   {
     "code": 238,
@@ -656,7 +674,8 @@
         "Agility",
         "Balance"
       ]
-    }
+    },
+    "hidden": true
   },
   {
     "code": 239,
@@ -669,7 +688,8 @@
       "midfield": ["Position/Role"],
       "defensive": ["Position/Role"],
       "goalkeeping": ["Reflexes", "Anticipation", "Positioning", "Agility"]
-    }
+    },
+    "hidden": true
   },
   {
     "code": 240,
@@ -682,7 +702,8 @@
       "midfield": ["Position/Role"],
       "defensive": ["Position/Role"],
       "goalkeeping": ["Aerial Reach", "Handling", "Concentration", "Balance"]
-    }
+    },
+    "hidden": true
   },
   {
     "code": 241,
@@ -701,7 +722,8 @@
         "Decisions",
         "Acceleration"
       ]
-    }
+    },
+    "hidden": true
   },
   {
     "code": 242,
@@ -714,7 +736,8 @@
       "midfield": ["Position/Role"],
       "defensive": ["Position/Role"],
       "goalkeeping": ["First Touch", "Kicking", "Passing", "Throwing", "Composure", "Vision"]
-    }
+    },
+    "hidden": true
   },
   {
     "code": 243,
@@ -734,7 +757,8 @@
         "Decisions",
         "Positioning"
       ]
-    }
+    },
+    "hidden": true
   },
   {
     "code": 244,
@@ -747,7 +771,8 @@
       "midfield": ["Penalty Taking", "Composure"],
       "defensive": ["Penalty Taking", "Composure"],
       "goalkeeping": ["Penalty Taking", "Reflexes", "Composure"]
-    }
+    },
+    "hidden": true
   },
   {
     "code": 300,
@@ -879,7 +904,8 @@
     "category": "Physical & Recovery",
     "about": "Allow the players a session off from training to rest.",
     "fm": false,
-    "attributes": {}
+    "attributes": {},
+    "hidden": true
   },
   {
     "code": 306,
@@ -887,7 +913,8 @@
     "category": "Physical & Recovery",
     "about": "A session focused on in-house recovery with the medical and sports science teams.",
     "fm": false,
-    "attributes": {}
+    "attributes": {},
+    "hidden": true
   },
   {
     "code": 307,
@@ -895,7 +922,8 @@
     "category": "Physical & Recovery",
     "about": "Gentle physical work focused on delaying the onset of late-season fatigue. Best suited for early season international breaks or before international tournaments provided the players have had a break following the end of domestic duties.",
     "fm": false,
-    "attributes": {}
+    "attributes": {},
+    "hidden": true
   },
   {
     "code": 400,
@@ -919,7 +947,8 @@
     "category": "Extra-Curricular",
     "about": "Journeying to or from an away match as a team.",
     "fm": false,
-    "attributes": {}
+    "attributes": {},
+    "hidden": true
   },
   {
     "code": 500,
@@ -927,7 +956,8 @@
     "category": "Match",
     "about": "",
     "fm": false,
-    "attributes": {}
+    "attributes": {},
+    "hidden": true
   },
   {
     "code": 501,
@@ -935,6 +965,7 @@
     "category": "Physical & Recovery",
     "about": "",
     "fm": false,
-    "attributes": {}
+    "attributes": {},
+    "hidden": true
   }
 ]

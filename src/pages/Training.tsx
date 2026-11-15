@@ -191,7 +191,9 @@ function ScheduleEditor({
                       {categories.map((c) => (
                         <optgroup key={c} label={c}>
                           {sessions
-                            .filter((x) => x.category === c)
+                            .filter(
+                              (x) => x.category === c && (!x.hidden || x.code === form.sessions[i]),
+                            )
                             .map((x) => (
                               <option key={x.code} value={x.code}>
                                 {x.name}

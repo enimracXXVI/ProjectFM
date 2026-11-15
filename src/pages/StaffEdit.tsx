@@ -269,7 +269,7 @@ function StaffForm({ existing }: { existing: StaffRow | null }) {
                     aria-label="Knowledge"
                     value={k.level}
                     onChange={(e) => setKnowledge(i, { level: e.target.value })}
-                    className={`${input} w-36`}
+                    className="min-h-11 w-36 shrink-0 rounded-lg border border-border bg-surface-2 px-3 text-base md:text-sm"
                   >
                     {!config.knowledgeLevels.includes(k.level) && <option>{k.level}</option>}
                     {config.knowledgeLevels.map((l) => (

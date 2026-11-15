@@ -391,7 +391,7 @@ function RoleFmEditor({ role, onChange }: { role: RoleDef; onChange: (fm: RoleFm
                       where: where.map((x, j) => (j === i ? { ...x, pos: e.target.value } : x)),
                     })
                   }
-                  className={`${input} w-28`}
+                  className="min-h-11 w-28 shrink-0 rounded-lg border border-border bg-surface-2 px-2 text-base md:text-sm"
                 >
                   {config.fmCodes.positions.map((p) => (
                     <option key={p.id}>{p.id}</option>
