@@ -14,7 +14,7 @@ describe('training schedules', () => {
     s.sessions[4] = 106 // Tuesday: Corners
     s.sessions[20] = 401 // Sunday: Community Outreach
     expect(scheduleProblems(s, DEFAULT_TRAINING_SESSIONS)).toEqual([])
-    const back = await readScheduleFile(scheduleFile(s), async () => {
+    const back = await readScheduleFile(scheduleFile(s, 'f8186c05'), async () => {
       throw new Error('raw blocks need no unpacking')
     })
     expect(back).toEqual(s.sessions)
@@ -75,5 +75,13 @@ describe('training focuses', () => {
     const known = new Set([...Object.keys(ATTRIBUTE_INFO), 'Rushing Out (Tendency)'])
     for (const f of DEFAULT_TRAINING_FOCUSES)
       for (const a of f.attributes) expect(known.has(a), `${f.name}: ${a}`).toBe(true)
+  })
+})
+
+describe('FM file version', () => {
+  it('stamps exported schedules with the game version FM27 writes', () => {
+    const file = scheduleFile(blankSchedule('Week'), 'f8186c05')
+    const hexed = [...file].map((b) => b.toString(16).padStart(2, '0')).join('')
+    expect(hexed).toContain('0200010002f8186c05010010')
   })
 })

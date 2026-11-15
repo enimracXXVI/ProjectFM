@@ -284,6 +284,25 @@ export function FmCodesSettings() {
           </label>
         </SettingsSection>
 
+        <SettingsSection id="fm-codes/file-version" title="Game version in files">
+          <label className="grid gap-1 text-sm">
+            <span className="text-muted">
+              The 4 bytes (hex) FM writes into its own tactic and schedule files to say which game
+              made them. Exported files carry these; FM ignores files with another game&apos;s
+              version. FM27: f8186c05.
+            </span>
+            <input
+              value={form.fileVersion}
+              maxLength={8}
+              spellCheck={false}
+              onChange={(e) =>
+                set({ fileVersion: e.target.value.replace(/[^0-9a-f]/gi, '').toLowerCase() })
+              }
+              className={`${input} font-mono`}
+            />
+          </label>
+        </SettingsSection>
+
         <SettingsSection
           id="fm-codes/conflicts"
           title="Team instructions FM does not allow together"

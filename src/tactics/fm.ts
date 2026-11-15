@@ -79,6 +79,11 @@ export interface FmCodes {
   mentalityTexts: Record<string, FmAbout>
   /** What each role tag means (Holds Position, Stays Wide…). */
   roleTags: Record<string, string>
+  /**
+   * The game version FM writes into its tactic and schedule files (4 bytes, hex, as in the
+   * file). FM ignores files that carry another game's version.
+   */
+  fileVersion: string
 }
 
 type Defaults = {
@@ -115,6 +120,8 @@ export const DEFAULT_FM_CODES: FmCodes = {
   mentalities: D.mentalities,
   positions: D.positions,
   roleCodeMask: D.roleCodeMask,
+  // From the user's own FM27 tactic and schedule files
+  fileVersion: 'f8186c05',
   // Overlap and underlap on the same flank (from the user's FM Tactic Generator)
   conflicts: [
     [25, 28],

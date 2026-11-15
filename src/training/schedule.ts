@@ -8,7 +8,7 @@
  * Zstandard frame. Day 1 is Monday.
  */
 import sessions from './fm-sessions.json'
-import { concat, frame, hex, Writer } from '../tactics/fmf'
+import { concat, fileStamp, frame, hex, Writer } from '../tactics/fmf'
 import { bad, readFmfMember, type Unzstd } from '../tactics/fmfRead'
 
 export interface TrainingSession {
@@ -57,7 +57,7 @@ export function scheduleProblems(s: TrainingSchedule, list: TrainingSession[]): 
 }
 
 /** A schedule as an FM weekly schedule file (.fmf). */
-export function scheduleFile(s: TrainingSchedule, now = new Date()): Uint8Array {
+export function scheduleFile(s: TrainingSchedule, version: string, now = new Date()): Uint8Array {
   const title = s.name.trim() || 'Schedule'
   const describe = 'Weekly training schedule - Made with ProjectFM'
   const c = new Writer()
@@ -83,8 +83,7 @@ export function scheduleFile(s: TrainingSchedule, now = new Date()): Uint8Array 
   det.u64(0xffffffffffffffffn)
   det.u64(0xffffffffffffffffn)
   det.text('ProjectFM')
-  det.bytes(hex('020001000207c31b03010010'))
-  det.bytes(crypto.getRandomValues(new Uint8Array(10)))
+  det.bytes(fileStamp(version))
   const details = det.done()
   const preview = Uint8Array.of(1, 0, 0, 0, 0, 0, 0, 0, 0, 0)
   const scheduleFrame = frame(content)

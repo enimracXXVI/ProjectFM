@@ -58,7 +58,7 @@ export function tacticFile(t: TacticRow, config: Config, now = new Date()): Uint
   const title = fileTitle(t.name)
   const describe = `${t.mentality} mentality. ${formationLabel(t.slots.map((s) => posOf(s, 'ip')))} in possession, ${formationLabel(t.slots.map((s) => posOf(s, 'oop')))} out of possession. Made with ProjectFM.`
   const content = concat(hex('03016361742e2200'), plan(title))
-  return archive(title, describe, content, now)
+  return archive(title, describe, content, now, config.fmCodes.fileVersion)
 }
 
 /** A safe tactic name for FM and for the file name. */
@@ -200,7 +200,19 @@ function instructions(w: Writer, s: PhaseSlot | null) {
   w.u32(s?.mark ?? 0)
 }
 
-function archive(title: string, description: string, content: Uint8Array, now: Date) {
+/** The details member's closing bytes: FM's file version, then an id for the file. */
+export function fileStamp(version: string): Uint8Array {
+  const v = /^[0-9a-f]{8}$/i.test(version.trim()) ? version.trim() : 'f8186c05'
+  return concat(hex(`0200010002${v}010010`), crypto.getRandomValues(new Uint8Array(10)))
+}
+
+function archive(
+  title: string,
+  description: string,
+  content: Uint8Array,
+  now: Date,
+  version: string,
+) {
   const d = new Writer()
   d.bytes(hex('03016d6f612e0400'))
   d.text('TACTICS_TYPE_HANDLER')
@@ -210,8 +222,7 @@ function archive(title: string, description: string, content: Uint8Array, now: D
   d.u64(0xffffffffffffffffn)
   d.u64(0xffffffffffffffffn)
   d.text('ProjectFM')
-  d.bytes(hex('020001000281490d03010010'))
-  d.bytes(crypto.getRandomValues(new Uint8Array(10)))
+  d.bytes(fileStamp(version))
   const details = d.done()
   const tacticFrame = frame(content)
   const detailsFrame = frame(details)

@@ -107,6 +107,7 @@ export function Training() {
           key={current.id + JSON.stringify(current)}
           schedule={current}
           sessions={config.trainingSessions}
+          fileVersion={config.fmCodes.fileVersion}
           onSave={(s) => save.mutateAsync(schedules.map((x) => (x.id === s.id ? s : x)))}
           onCopy={(s) => add({ ...s, id: crypto.randomUUID(), name: `${s.name} (copy)` })}
           onDelete={async (s) => {
@@ -166,12 +167,14 @@ function Focuses({ focuses }: { focuses: TrainingFocus[] }) {
 function ScheduleEditor({
   schedule,
   sessions,
+  fileVersion,
   onSave,
   onCopy,
   onDelete,
 }: {
   schedule: TrainingSchedule
   sessions: TrainingSession[]
+  fileVersion: string
   onSave: (s: TrainingSchedule) => Promise<unknown>
   onCopy: (s: TrainingSchedule) => void
   onDelete: (s: TrainingSchedule) => Promise<unknown>
@@ -187,7 +190,7 @@ function ScheduleEditor({
   const setSlot = (i: number, code: number) =>
     setForm({ ...form, sessions: form.sessions.map((c, j) => (j === i ? code : c)) })
   const download = () => {
-    const bytes = scheduleFile(form)
+    const bytes = scheduleFile(form, fileVersion)
     const url = URL.createObjectURL(new Blob([bytes.buffer as ArrayBuffer]))
     const a = document.createElement('a')
     a.href = url
