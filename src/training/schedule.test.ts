@@ -44,6 +44,31 @@ describe('training focuses', () => {
     expect(quick?.attributes.sort()).toEqual(['Acceleration', 'Pace'])
     expect(focusesFor('Pace', DEFAULT_TRAINING_FOCUSES).map((f) => f.name)).toEqual(['Quickness'])
   })
+  it("offers FM's lists: outfield and goalkeeper", async () => {
+    const { DEFAULT_TRAINING_FOCUSES, focusesForPlayer, withWho } = await import('./focus')
+    const out = focusesForPlayer('D (C), DM', DEFAULT_TRAINING_FOCUSES).map((f) => f.name)
+    expect(out.slice(0, 6)).toEqual([
+      'Quickness',
+      'Agility and Balance',
+      'Resistance',
+      'Endurance',
+      'Chance Conversion',
+      'Chance Creation',
+    ])
+    expect(out.at(-1)).toBe('Long Throws')
+    expect(out).not.toContain('GK Handling')
+    const gk = focusesForPlayer('GK', DEFAULT_TRAINING_FOCUSES).map((f) => f.name)
+    expect(gk).toHaveLength(12)
+    expect(gk[4]).toBe('GK Shot Stopping')
+    // Lists saved with the old group field get FM's who
+    const old = [{ code: 30, name: 'GK Handling', category: 'Goalkeeping', attributes: [] }]
+    expect(withWho(old as never)[0]).toEqual({
+      code: 30,
+      name: 'GK Handling',
+      who: 'goalkeeper',
+      attributes: [],
+    })
+  })
   it('names only attributes the app knows', async () => {
     const { DEFAULT_TRAINING_FOCUSES } = await import('./focus')
     const { ATTRIBUTE_INFO } = await import('../data/attributeInfo')

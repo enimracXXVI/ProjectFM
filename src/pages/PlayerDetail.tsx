@@ -1,11 +1,13 @@
 import { NotesPanel } from '../components/NotesPanel'
 import { clsx } from 'clsx'
-import { ArrowLeft, Scale } from 'lucide-react'
+import { ArrowLeft, Dumbbell, Scale } from 'lucide-react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import { PositionRatings } from '../components/PositionRatings'
 import { RoleFitPanel } from '../components/RoleFitPanel'
 import { StatusChip } from '../components/StatusChip'
 import { TeamSelect } from '../components/TeamSelect'
+import { FocusSelect } from '../components/FocusSelect'
+import { FOCUS_KEY } from '../training/focus'
 import { Placeholder } from '../components/ui'
 import { usePlayer, useSnapshots } from '../data/hooks'
 import { Tooltip } from '../components/Tooltip'
@@ -37,6 +39,7 @@ export function PlayerDetail() {
   if (isPending) return <p className="text-sm text-muted">Loading…</p>
   if (error || !p) return <Placeholder>{error?.message ?? 'Player not found'}</Placeholder>
 
+  const focus = config.trainingFocuses.find((f) => f.name === p.extra[FOCUS_KEY]) ?? null
   // Compare with the previous import to show development
   const latest = snapshots?.at(-1) ?? null
   const previous = snapshots && snapshots.length > 1 ? snapshots[snapshots.length - 2] : null
@@ -86,10 +89,22 @@ export function PlayerDetail() {
         </div>
       </div>
 
-      <label className="mb-4 flex items-center gap-2 text-sm">
-        <span className="text-muted">Team</span>
-        <TeamSelect player={p} />
-      </label>
+      <div className="mb-4 flex flex-wrap items-center gap-x-4 gap-y-2">
+        <label className="flex items-center gap-2 text-sm">
+          <span className="text-muted">Team</span>
+          <TeamSelect player={p} />
+        </label>
+        <label className="flex min-w-0 items-center gap-2 text-sm">
+          <span className="text-muted">Training focus</span>
+          <FocusSelect player={p} />
+        </label>
+        {focus && focus.attributes.length > 0 && (
+          <span className="flex items-center gap-1 text-xs text-accent">
+            <Dumbbell className="size-3.5" aria-hidden />
+            {focus.attributes.map((a) => attributeLabel(config, a)).join(', ')}
+          </span>
+        )}
+      </div>
 
       <dl className="mb-5 grid grid-cols-2 gap-2 text-sm sm:grid-cols-4">
         <Info label="Height" value={p.height_cm ? `${p.height_cm} cm` : null} />
@@ -166,17 +181,29 @@ export function PlayerDetail() {
                     const now = attrNumber(p.attributes[n])
                     const before = previous ? attrNumber(previous.attributes[n]) : null
                     const diff = now !== null && before !== null ? now - before : 0
+                    const trained = focus?.attributes.includes(n)
                     return (
                       <li
                         key={n}
-                        className="flex min-h-9 items-center justify-between gap-2 px-3 odd:bg-surface even:bg-surface/40"
+                        className={clsx(
+                          'flex min-h-9 items-center justify-between gap-2 px-3',
+                          trained
+                            ? 'bg-accent/15 shadow-[inset_3px_0_0_var(--color-accent)]'
+                            : 'odd:bg-surface even:bg-surface/40',
+                        )}
                       >
                         <Tooltip
                           title={attributeLabel(config, n)}
                           text={config.attributes[n]?.description || attributeLabel(config, n)}
                         >
-                          <span tabIndex={0} className="cursor-help">
+                          <span tabIndex={0} className="flex cursor-help items-center gap-1">
                             {attributeLabel(config, n)}
+                            {trained && (
+                              <Dumbbell
+                                className="size-3.5 text-accent"
+                                aria-label={`Trained by ${focus?.name}`}
+                              />
+                            )}
                           </span>
                         </Tooltip>
                         <span className="flex items-center gap-2 tabular-nums">

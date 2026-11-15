@@ -38,7 +38,7 @@ import {
   type TrainingSchedule,
   type TrainingSession,
 } from '../training/schedule'
-import { DEFAULT_TRAINING_FOCUSES, type TrainingFocus } from '../training/focus'
+import { DEFAULT_TRAINING_FOCUSES, type TrainingFocus, withWho } from '../training/focus'
 import { DEFAULT_NOTE_CATEGORIES, type NoteCategory } from './notes'
 import { DEFAULT_STATUSES, normalizeStatus, type StatusInfo } from './statusInfo'
 
@@ -204,7 +204,9 @@ export function mergeConfig(stored: Stored): AppConfig {
     bestXiBaseline: stored.bestXiBaseline ?? DEFAULT_CONFIG.bestXiBaseline,
     briefingLowFit: stored.briefingLowFit ?? DEFAULT_CONFIG.briefingLowFit,
     trainingSessions: stored.trainingSessions ?? DEFAULT_CONFIG.trainingSessions,
-    trainingFocuses: stored.trainingFocuses ?? DEFAULT_CONFIG.trainingFocuses,
+    trainingFocuses: stored.trainingFocuses
+      ? withWho(stored.trainingFocuses)
+      : DEFAULT_CONFIG.trainingFocuses,
     trainingSchedules: stored.trainingSchedules ?? DEFAULT_CONFIG.trainingSchedules,
     // Saved warnings first; warnings added later appear with their defaults
     roleWarnings: [

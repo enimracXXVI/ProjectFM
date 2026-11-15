@@ -24,6 +24,7 @@ import {
 import type { Career, ImportRow, PlayerRow, ScoutingNetwork, SnapshotRow, StaffRow } from './db'
 import type { MatchLogRow, SaveTactics, TacticRow, TacticSlot } from '../tactics/types'
 import { fromSave } from '../tactics/fm'
+import { FOCUS_KEY } from '../training/focus'
 
 function check<T>(res: { data: T | null; error: { message: string } | null }): T {
   if (res.error) throw new Error(res.error.message)
@@ -627,6 +628,14 @@ export async function setPlayerTeam(player: PlayerRow, team: Team): Promise<void
   const extra = { ...player.extra }
   if (team === 'first') delete extra.team
   else extra.team = team
+  check(await supabase.from('players').update({ extra }).eq('id', player.id))
+}
+
+/** Sets a player's individual training focus by name (kept in extra, untouched by imports). */
+export async function setPlayerFocus(player: PlayerRow, focus: string | null): Promise<void> {
+  const extra = { ...player.extra }
+  if (focus) extra[FOCUS_KEY] = focus
+  else delete extra[FOCUS_KEY]
   check(await supabase.from('players').update({ extra }).eq('id', player.id))
 }
 
