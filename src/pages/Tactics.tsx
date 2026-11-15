@@ -53,6 +53,8 @@ import {
   sideOf,
   teamCodes,
   type FmPosition,
+  FM_GRID,
+  moveSlot,
 } from '../tactics/fm'
 import { exportProblems, fileTitle, tacticFile } from '../tactics/fmf'
 import { briefingText, buildBriefing } from '../tactics/briefing'
@@ -60,6 +62,14 @@ import { readFmf } from '../tactics/fmfRead'
 import { unzstd } from '../import/readSave'
 import { useLearnFileVersion } from '../lib/fileVersion'
 import { byLastName, shortName } from '../lib/names'
+
+/** Pitch coordinates (0–1, own goal at 0) of an FM position on FM's grid. */
+function gridPlace(id: string | undefined) {
+  const g = id ? FM_GRID[id] : undefined
+  if (!g) return null
+  const rows = [0.07, 0.22, 0.38, 0.54, 0.7, 0.87]
+  return { x: 0.1 + g.col * 0.2, y: rows[g.row] }
+}
 
 const field =
   'min-h-11 w-full min-w-0 rounded-lg border border-border bg-surface-2 px-3 text-base md:text-sm'
@@ -289,6 +299,22 @@ function TacticEditor({ tactic }: { tactic: TacticRow }) {
     })
     setForm({ ...form, slots })
   }
+  /** Moves a slot to a free FM position in this phase (FM's drag on the pitch). */
+  const move = (i: number, to: FmPosition) => {
+    if (i === 0) return
+    setForm({
+      ...form,
+      slots: moveSlot(
+        form.slots,
+        i,
+        to,
+        phase,
+        config.fmCodes,
+        config.roles,
+        (p) => POSITION_TEXT[p],
+      ),
+    })
+  }
   const rolesFor = (i: number) =>
     rolesAt(config.roles, phase, atFm[i], shape, (p) => POSITION_TEXT[p])
   const used = new Set(form.slots.map((s) => s.player).filter(Boolean))
@@ -357,17 +383,48 @@ function TacticEditor({ tactic }: { tactic: TacticRow }) {
           <div className="absolute inset-x-[20%] top-0 h-[12%] border-x border-b border-emerald-800/50" />
           <div className="absolute inset-x-[20%] bottom-0 h-[12%] border-x border-t border-emerald-800/50" />
           <div className="absolute inset-x-0 top-1/2 border-t border-emerald-800/50" />
+          {/* FM's free spots: drop a player here, or tap one after picking a player */}
+          {config.fmCodes.positions
+            .filter((f) => FM_GRID[f.id] && f.id !== 'GK' && !atFm.some((a) => a?.id === f.id))
+            .map((f) => {
+              const { x, y } = gridPlace(f.id)!
+              const can = dragFrom !== null ? dragFrom !== 0 : active !== null && active !== 0
+              return (
+                <button
+                  key={f.id}
+                  type="button"
+                  aria-label={`Move to ${f.id}`}
+                  disabled={!can}
+                  onDragOver={(e) => dragFrom !== null && dragFrom !== 0 && e.preventDefault()}
+                  onDrop={() => {
+                    if (dragFrom !== null) move(dragFrom, f)
+                    setDragFrom(null)
+                  }}
+                  onClick={() => active !== null && move(active, f)}
+                  style={{ left: `${x * 100}%`, top: `${(1 - y) * 100}%` }}
+                  className={clsx(
+                    'absolute grid h-[7%] w-[17%] -translate-x-1/2 -translate-y-1/2 place-items-center rounded-lg border border-dashed text-xs transition-opacity',
+                    can
+                      ? 'border-emerald-400/70 text-emerald-300 hover:bg-emerald-400/15'
+                      : 'border-emerald-800/50 text-transparent opacity-40',
+                  )}
+                >
+                  {f.id}
+                </button>
+              )
+            })}
           {form.slots.map((s, i) => {
             const p = playerOf(s)
             const role = roleOf(s)
             const score = p && role ? roleScore(p.attributes, role, config.roleWeights) : null
-            const { x, y } = places[i]
+            const { x, y } = gridPlace(atFm[i]?.id) ?? places[i]
             return (
               <button
                 key={i}
                 type="button"
                 draggable
                 onDragStart={() => setDragFrom(i)}
+                onDragEnd={() => setDragFrom(null)}
                 onDragOver={(e) => e.preventDefault()}
                 onDrop={() => {
                   if (dragFrom !== null) swap(dragFrom, i)
@@ -376,7 +433,7 @@ function TacticEditor({ tactic }: { tactic: TacticRow }) {
                 onClick={() => setActive(active === i ? null : i)}
                 style={{ left: `${x * 100}%`, top: `${(1 - y) * 100}%` }}
                 className={clsx(
-                  'absolute w-[22%] -translate-x-1/2 -translate-y-1/2 rounded-lg border bg-surface/95 px-1 py-1 text-center leading-tight shadow',
+                  'absolute z-[1] w-[19%] -translate-x-1/2 -translate-y-1/2 rounded-lg border bg-surface/95 px-1 py-1 text-center leading-tight shadow',
                   active === i ? 'border-accent ring-2 ring-accent/50' : 'border-border',
                   !positions[i] && 'border-amber-400',
                 )}
@@ -403,7 +460,8 @@ function TacticEditor({ tactic }: { tactic: TacticRow }) {
         </div>
         <p className="text-center text-xs text-muted">
           {phase === 'ip' ? 'In possession' : 'Out of possession'}:{' '}
-          {formation || formationLabel(positions)} · tap a position to set it, drag to swap
+          {formation || formationLabel(positions)} · drag a player to a free spot to move him (or
+          tap him, then the spot); drag onto another player to swap
         </p>
         <label className="grid gap-1 text-sm">
           <span className="text-muted">Name</span>

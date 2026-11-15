@@ -261,6 +261,76 @@ export function rolesAt(
   })
 }
 
+/**
+ * FM's tactic grid: where each FM position sits (row 0 = goalkeeper … 5 = strikers; column
+ * 0 = left … 4 = right), as on FM's pitch.
+ */
+export const FM_GRID: Record<string, { row: number; col: number }> = {
+  GK: { row: 0, col: 2 },
+  DL: { row: 1, col: 0 },
+  DCL: { row: 1, col: 1 },
+  DC: { row: 1, col: 2 },
+  DCR: { row: 1, col: 3 },
+  DR: { row: 1, col: 4 },
+  WBL: { row: 2, col: 0 },
+  DML: { row: 2, col: 1 },
+  DMC: { row: 2, col: 2 },
+  DMR: { row: 2, col: 3 },
+  WBR: { row: 2, col: 4 },
+  ML: { row: 3, col: 0 },
+  MCL: { row: 3, col: 1 },
+  MC: { row: 3, col: 2 },
+  MCR: { row: 3, col: 3 },
+  MR: { row: 3, col: 4 },
+  AML: { row: 4, col: 0 },
+  AMCL: { row: 4, col: 1 },
+  AMC: { row: 4, col: 2 },
+  AMCR: { row: 4, col: 3 },
+  AMR: { row: 4, col: 4 },
+  STL: { row: 5, col: 1 },
+  ST: { row: 5, col: 2 },
+  STR: { row: 5, col: 3 },
+}
+
+/**
+ * Moves a slot to another FM position in one phase, as dragging a player on FM's pitch does.
+ * Every slot keeps the exact FM position it had (sides are written out), the moved slot keeps
+ * its player, and its role and instructions only when FM offers that role at the new place.
+ */
+export function moveSlot(
+  slots: TacticSlot[],
+  i: number,
+  target: FmPosition,
+  phase: RolePhase,
+  codes: FmCodes,
+  roles: RoleDef[],
+  text: (p: PositionCode) => string,
+): TacticSlot[] {
+  const at = fmPositions(slots, phase, codes)
+  if (at.some((p, k) => k !== i && p?.id === target.id)) return slots
+  const next = slots.map((s, k) => {
+    const place = k === i ? target : at[k]
+    const position = (place?.position ?? posOf(s, phase)) as PositionCode | null
+    const side = place ? (place.side ?? null) : (sideOf(s, phase) ?? null)
+    // Moving in possession leaves the out-of-possession shape where it was
+    const oop =
+      phase === 'ip' && s.positionOop === undefined
+        ? { positionOop: s.position, sideOop: s.sideOop ?? s.side ?? null }
+        : {}
+    return phase === 'ip'
+      ? { ...s, ...oop, position, side }
+      : { ...s, positionOop: position, sideOop: side }
+  })
+  const shape = shapeOf(next, phase)
+  const role = roleIdOf(next[i], phase)
+  if (role && !rolesAt(roles, phase, target, shape, text).some((r) => r.id === role))
+    next[i] =
+      phase === 'ip'
+        ? { ...next[i], role: null, pi: [] }
+        : { ...next[i], roleOop: null, piOop: [], markOop: null }
+  return next
+}
+
 /** The option of an instruction that a set of codes selects (else its unset option). */
 export function chosen(def: FmInstruction, codes: number[] | undefined): FmOption | null {
   return (

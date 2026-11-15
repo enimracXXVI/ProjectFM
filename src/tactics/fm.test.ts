@@ -332,3 +332,37 @@ describe('FM’s own tactic files', () => {
     expect(chosen(def, team)?.label).toBe(label)
   })
 })
+
+describe('free positions on the pitch', () => {
+  it('moves players anywhere FM allows, keeping the other phase', async () => {
+    const { moveSlot, fmPositions } = await import('./fm')
+    const { FORMATIONS } = await import('./positions')
+    const text = (p: keyof typeof POSITION_TEXT) => POSITION_TEXT[p]
+    const codes = config.fmCodes
+    const at = (id: string) => codes.positions.find((p) => p.id === id)!
+    let slots: TacticRow['slots'] = FORMATIONS['4-3-3'].map((position) => ({ position }))
+    const before = fmPositions(slots, 'ip', codes).map((p) => p?.id)
+    // Every defender goes forward, as in the user's FM tactic with no defenders
+    const forward = ['WBL', 'DML', 'DMR', 'WBR']
+    const defenders = before.flatMap((id, i) => (id && /^D[LCR]/.test(id) ? [i] : []))
+    expect(defenders).toHaveLength(4)
+    defenders.forEach((i, k) => {
+      slots = moveSlot(slots, i, at(forward[k]), 'ip', codes, config.roles, text)
+    })
+    const ip = fmPositions(slots, 'ip', codes).map((p) => p?.id)
+    expect(ip.filter((id) => id && /^D[LCR]/.test(id))).toHaveLength(0)
+    expect(new Set(ip).size).toBe(11)
+    // Out of possession is still the 4-3-3
+    expect(fmPositions(slots, 'oop', codes).map((p) => p?.id)).toEqual(before)
+    // A taken spot is refused
+    expect(moveSlot(slots, 1, at(ip[2]!), 'ip', codes, config.roles, text)).toBe(slots)
+    // A lone centre-back keeps his side, as on FM's pitch (no re-centring)
+    let two: TacticRow['slots'] = FORMATIONS['4-3-3'].map((position) => ({ position }))
+    const start = fmPositions(two, 'oop', codes).map((p) => p?.id)
+    const dcs = start.flatMap((id, i) => (id?.startsWith('DC') ? [i] : []))
+    expect(dcs).toHaveLength(2)
+    two = moveSlot(two, dcs[0], at('WBL'), 'oop', codes, config.roles, text)
+    expect(fmPositions(two, 'oop', codes)[dcs[0]]?.id).toBe('WBL')
+    expect(fmPositions(two, 'oop', codes)[dcs[1]]?.id).toBe(start[dcs[1]])
+  })
+})
