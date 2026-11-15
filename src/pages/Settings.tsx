@@ -91,6 +91,11 @@ export function SettingsPage() {
                 "FM's sessions, codes and descriptions for schedules",
               ],
               [
+                '/settings/training-focuses',
+                'Training focuses',
+                "FM's individual focuses and the attributes they train",
+              ],
+              [
                 '/settings/role-warnings',
                 'Role warnings',
                 "FM's warnings about role combinations, with their limits",

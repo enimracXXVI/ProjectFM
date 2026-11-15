@@ -1,0 +1,100 @@
+[
+  {
+    "code": 9,
+    "name": "Quickness",
+    "category": "Physical",
+    "attributes": ["Acceleration", "Pace"]
+  },
+  {
+    "code": 10,
+    "name": "Agility and Balance",
+    "category": "Physical",
+    "attributes": ["Agility", "Balance"]
+  },
+  {
+    "code": 11,
+    "name": "Resistance",
+    "category": "Physical",
+    "attributes": ["Strength", "Jumping Reach", "Aerial Reach"]
+  },
+  {
+    "code": 12,
+    "name": "Endurance",
+    "category": "Physical",
+    "attributes": ["Stamina", "Work Rate"]
+  },
+  { "code": 29, "name": "GK Shot Stopping", "category": "Goalkeeping", "attributes": ["Reflexes"] },
+  {
+    "code": 30,
+    "name": "GK Handling",
+    "category": "Goalkeeping",
+    "attributes": ["Handling", "Concentration"]
+  },
+  {
+    "code": 31,
+    "name": "GK Sweeping",
+    "category": "Goalkeeping",
+    "attributes": ["Command Of Area", "Communication", "One On Ones", "Rushing Out (Tendency)"]
+  },
+  {
+    "code": 32,
+    "name": "GK Distribution",
+    "category": "Goalkeeping",
+    "attributes": ["Kicking", "Throwing"]
+  },
+  {
+    "code": 5,
+    "name": "Free Kick Taking",
+    "category": "Set pieces",
+    "attributes": ["Free Kick Taking"]
+  },
+  { "code": 6, "name": "Corner Taking", "category": "Set pieces", "attributes": ["Corners"] },
+  {
+    "code": 7,
+    "name": "Penalty Taking",
+    "category": "Set pieces",
+    "attributes": ["Penalty Taking"]
+  },
+  { "code": 8, "name": "Long Throws", "category": "Set pieces", "attributes": ["Long Throws"] },
+  {
+    "code": 19,
+    "name": "Defensive Positioning",
+    "category": "Outfield",
+    "attributes": ["Marking", "Decisions", "Positioning"]
+  },
+  {
+    "code": 20,
+    "name": "Attacking Movement",
+    "category": "Outfield",
+    "attributes": ["Off The Ball", "Anticipation"]
+  },
+  { "code": 21, "name": "Final Third", "category": "Outfield", "attributes": ["Composure"] },
+  {
+    "code": 22,
+    "name": "Shooting",
+    "category": "Outfield",
+    "attributes": ["Finishing", "Long Shots"]
+  },
+  {
+    "code": 23,
+    "name": "Passing",
+    "category": "Outfield",
+    "attributes": ["Passing", "Vision", "Technique"]
+  },
+  { "code": 24, "name": "Crossing", "category": "Outfield", "attributes": ["Crossing"] },
+  {
+    "code": 25,
+    "name": "Ball Control",
+    "category": "Outfield",
+    "attributes": ["Dribbling", "First Touch"]
+  },
+  { "code": 28, "name": "Aerial", "category": "Outfield", "attributes": ["Heading", "Bravery"] },
+  { "code": 26, "name": "Tackling", "category": "Outfield", "attributes": [] },
+  { "code": 27, "name": "Marking", "category": "Outfield", "attributes": [] },
+  { "code": 13, "name": "Chance Conversion", "category": "Outfield", "attributes": [] },
+  { "code": 14, "name": "Chance Creation", "category": "Outfield", "attributes": [] },
+  { "code": 15, "name": "Ball Retention", "category": "Outfield", "attributes": [] },
+  { "code": 16, "name": "Ball Progression", "category": "Outfield", "attributes": [] },
+  { "code": 17, "name": "Pressing", "category": "Outfield", "attributes": [] },
+  { "code": 18, "name": "Containment", "category": "Outfield", "attributes": [] }
+]

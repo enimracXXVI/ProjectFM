@@ -19,6 +19,7 @@ import {
   type TrainingSchedule,
   type TrainingSession,
 } from '../training/schedule'
+import type { TrainingFocus } from '../training/focus'
 
 const field =
   'min-h-11 w-full min-w-0 rounded-lg border border-border bg-surface-2 px-3 text-base md:text-sm'
@@ -118,7 +119,46 @@ export function Training() {
           No schedules yet. Start a new one, or upload a schedule you saved in FM.
         </Placeholder>
       )}
+      <Focuses focuses={config.trainingFocuses} />
     </>
+  )
+}
+
+/** FM's individual training focuses and the attributes each one trains. */
+function Focuses({ focuses }: { focuses: TrainingFocus[] }) {
+  const config = useConfig()
+  if (focuses.length === 0) return null
+  const groups = [...new Set(focuses.map((f) => f.category))]
+  const label = (a: string) => config.attributes[a]?.label ?? a
+  return (
+    <Card className="mt-4 grid gap-3">
+      <div>
+        <h2 className="text-base font-semibold">Individual training focuses</h2>
+        <p className="text-xs text-muted">
+          What each focus trains, from FM&apos;s own data. Edit in Settings &gt; Training focuses.
+        </p>
+      </div>
+      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+        {groups.map((g) => (
+          <section key={g} className="grid content-start gap-1">
+            <h3 className="text-xs font-semibold text-muted">{g}</h3>
+            <ul className="grid gap-1 text-sm">
+              {focuses
+                .filter((f) => f.category === g)
+                .map((f) => (
+                  <li key={`${f.code}-${f.name}`}>
+                    <span className="font-semibold">{f.name}</span>
+                    <span className="text-muted">
+                      {' '}
+                      · {f.attributes.length ? f.attributes.map(label).join(', ') : 'not known'}
+                    </span>
+                  </li>
+                ))}
+            </ul>
+          </section>
+        ))}
+      </div>
+    </Card>
   )
 }
 

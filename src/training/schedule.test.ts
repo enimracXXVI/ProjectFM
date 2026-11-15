@@ -36,3 +36,19 @@ describe('training schedules', () => {
     )
   })
 })
+
+describe('training focuses', () => {
+  it('Quickness trains Pace and Acceleration, as FM shows', async () => {
+    const { DEFAULT_TRAINING_FOCUSES, focusesFor } = await import('./focus')
+    const quick = DEFAULT_TRAINING_FOCUSES.find((f) => f.name === 'Quickness')
+    expect(quick?.attributes.sort()).toEqual(['Acceleration', 'Pace'])
+    expect(focusesFor('Pace', DEFAULT_TRAINING_FOCUSES).map((f) => f.name)).toEqual(['Quickness'])
+  })
+  it('names only attributes the app knows', async () => {
+    const { DEFAULT_TRAINING_FOCUSES } = await import('./focus')
+    const { ATTRIBUTE_INFO } = await import('../data/attributeInfo')
+    const known = new Set([...Object.keys(ATTRIBUTE_INFO), 'Rushing Out (Tendency)'])
+    for (const f of DEFAULT_TRAINING_FOCUSES)
+      for (const a of f.attributes) expect(known.has(a), `${f.name}: ${a}`).toBe(true)
+  })
+})
