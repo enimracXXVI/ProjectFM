@@ -124,6 +124,8 @@ export function roleScore(
   const key = new Set(role.key)
   const preferred = new Set(role.preferred)
 
+  // A role with no key or preferred attributes (an older FM role) has nothing to rate on
+  if (!role.key.length && !role.preferred.length) return null
   const knownKeys = role.key.filter((a) => attrNumber(attributes[a]) !== null).length
   if (role.key.length && knownKeys < role.key.length / 2) return null
 

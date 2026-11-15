@@ -35,6 +35,7 @@ import {
 import { DEFAULT_ROLE_WARNINGS, type RoleWarning } from '../tactics/warnings'
 import { DEFAULT_TACTICAL_STYLES, type TacticalStyle } from '../tactics/styles'
 import { DEFAULT_MATCH_DATA, type MatchData } from '../tactics/matchData'
+import { DEFAULT_OLDER_ROLES, shownOlderRoles, type OlderRole } from './olderRoles'
 import {
   DEFAULT_TRAINING_SESSIONS,
   type TrainingSchedule,
@@ -99,6 +100,8 @@ export interface AppConfig {
   trainingSessions: TrainingSession[]
   /** FM's tactical styles: mentality and team instructions each sets, and its code. */
   tacticalStyles: TacticalStyle[]
+  /** Roles from older FMs that FM27 still defines but no longer offers (hidden unless shown). */
+  olderRoles: OlderRole[]
   /** FM's match data: how FM rates players by role, how tactical training adds up. */
   matchData: MatchData
   /** FM's individual training focuses and the attributes each works on. */
@@ -159,6 +162,7 @@ export const DEFAULT_CONFIG: AppConfig = {
   trainingSessions: DEFAULT_TRAINING_SESSIONS,
   tacticalStyles: DEFAULT_TACTICAL_STYLES,
   matchData: DEFAULT_MATCH_DATA,
+  olderRoles: DEFAULT_OLDER_ROLES,
   trainingFocuses: DEFAULT_TRAINING_FOCUSES,
   trainingSchedules: [],
   noteCategories: DEFAULT_NOTE_CATEGORIES,
@@ -192,7 +196,14 @@ export function mergeConfig(stored: Stored): AppConfig {
     staffGroups: { ...DEFAULT_CONFIG.staffGroups, ...stored.staffGroups },
     staffShort: { ...DEFAULT_CONFIG.staffShort, ...stored.staffShort },
     knowledgeLevels: withOutstanding(stored.knowledgeLevels) ?? DEFAULT_CONFIG.knowledgeLevels,
-    roles: stored.roles ? withFmCodes(stored.roles) : DEFAULT_CONFIG.roles,
+    // Older roles switched on in Settings join the roles the app uses
+    roles: [
+      ...(stored.roles ? withFmCodes(stored.roles) : DEFAULT_CONFIG.roles).filter(
+        (r) => !r.id.startsWith('old-'),
+      ),
+      ...shownOlderRoles(stored.olderRoles ?? DEFAULT_CONFIG.olderRoles),
+    ],
+    olderRoles: stored.olderRoles ?? DEFAULT_CONFIG.olderRoles,
     roleWeights: { ...DEFAULT_CONFIG.roleWeights, ...stored.roleWeights },
     showHidden: stored.showHidden ?? DEFAULT_CONFIG.showHidden,
     learned: { ...DEFAULT_CONFIG.learned, ...stored.learned },

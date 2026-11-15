@@ -15,6 +15,8 @@ import { isGoalkeeper } from '../data/attributeInfo'
 import { HIDDEN_PLAYER_ATTRS, PERSONALITY_KEYS } from '../import/dump'
 import { attributeLabel } from '../data/config'
 import { compareUrlWith } from '../lib/compare'
+import { reachBand, reachForHeight } from '../lib/reach'
+import type { PlayerRow } from '../data/db'
 import { useCurrentCareer } from '../lib/career'
 import { useConfig } from '../lib/config'
 import {
@@ -140,6 +142,8 @@ export function PlayerDetail() {
       )}
 
       <PositionRatings ratings={parsePositionRatings(p.extra['Reader positions'])} />
+
+      <ReachForHeight player={p} />
 
       <RoleFitPanel attributes={p.attributes} positions={p.positions} />
 
@@ -274,5 +278,47 @@ function Info({
       </dt>
       <dd className={clsx('font-medium', valueClass)}>{value ?? '–'}</dd>
     </div>
+  )
+}
+
+/** FM's height tables: the Jumping (and Aerial) Reach a player of this height gets. */
+function ReachForHeight({ player }: { player: PlayerRow }) {
+  const rows = (
+    [
+      ['jumping', 'Jumping Reach'],
+      ['aerial', 'Aerial Reach'],
+    ] as const
+  )
+    .map(([kind, name]) => {
+      const value = attrNumber(player.attributes[name])
+      const range = player.height_cm ? reachForHeight(kind, player.height_cm) : null
+      return value !== null && range ? { name, value, range } : null
+    })
+    .filter((x) => x !== null)
+  if (!rows.length) return null
+  return (
+    <section className="mb-5 rounded-lg border border-border bg-surface/60 p-3 text-sm">
+      <h2 className="mb-1 text-xs font-semibold text-muted">Reach for his height</h2>
+      <ul className="grid gap-1">
+        {rows.map((r) => (
+          <li key={r.name}>
+            <span className="font-semibold">
+              {r.name} {r.value}
+            </span>
+            <span className="text-muted">
+              {' '}
+              · at {player.height_cm} cm FM gives {r.range[0]} (poor leap) to{' '}
+              {r.range[r.range.length - 1]} (good leap):{' '}
+            </span>
+            <span>{reachBand(r.value, r.range)}</span>
+          </li>
+        ))}
+      </ul>
+      <p className="mt-1 text-xs text-muted">
+        In FM, reach comes mostly from height. FM&apos;s table gives each height a range from a poor
+        to a good leap; where a player sits in it shows whether he jumps better or worse than his
+        height alone would give.
+      </p>
+    </section>
   )
 }

@@ -84,6 +84,7 @@ export function SettingsPage() {
                 'Roles',
                 'Roles, positions, attributes, FM codes and instructions',
               ],
+              ['/settings/older-roles', 'Older roles', 'Roles from older FMs, hidden unless shown'],
               ['/settings/tactics', 'Tactics', 'What the tactic briefing flags'],
               [
                 '/settings/tactical-styles',

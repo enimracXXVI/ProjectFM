@@ -42,12 +42,14 @@ export function RolesSettings() {
   const config = useConfig()
   const confirm = useConfirm()
   const { save, reset } = useSaveConfig('roles')
-  const [roles, setRoles] = useState(config.roles)
+  // Older roles are switched on in their own page and are not saved with these
+  const ownRoles = config.roles.filter((r) => !r.id.startsWith('old-'))
+  const [roles, setRoles] = useState(ownRoles)
   const [prev, setPrev] = useState(config.roles)
   if (config.roles !== prev) {
     // Settings reloaded (after save/reset): show the stored version
     setPrev(config.roles)
-    setRoles(config.roles)
+    setRoles(ownRoles)
   }
   const [phase, setPhase] = useState<RolePhase>('ip')
   const [filter, setFilter] = useState('')
@@ -84,7 +86,7 @@ export function RolesSettings() {
     setOpenId(id)
   }
 
-  const dirty = JSON.stringify(roles) !== JSON.stringify(config.roles)
+  const dirty = JSON.stringify(roles) !== JSON.stringify(ownRoles)
 
   return (
     <SettingsShell
