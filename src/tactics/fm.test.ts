@@ -366,3 +366,44 @@ describe('free positions on the pitch', () => {
     expect(fmPositions(two, 'oop', codes)[dcs[1]]?.id).toBe(start[dcs[1]])
   })
 })
+
+describe('FM tactical styles', () => {
+  it('has FM27 styles as FM shows them', async () => {
+    const { DEFAULT_TACTICAL_STYLES } = await import('./styles')
+    const cp = DEFAULT_TACTICAL_STYLES.find((s) => s.name === 'Control Possession')!
+    expect(cp.code).toBe('CONT')
+    expect(cp.mentality).toBe('Positive')
+    // FM's list: Shorter Passing, Play Through Press, GK Distribute to CB, Short Goal Kicks, Lower Tempo
+    const label = (c: number) =>
+      config.teamInstructions.flatMap((d) =>
+        d.options.filter((o) => o.code === c).map((o) => `${d.name}: ${o.label}`),
+      )[0]
+    const labels = cp.team!.map(label)
+    for (const l of [
+      'Passing directness: Shorter passes',
+      'Build-up strategy: Play through the press',
+      'Goalkeeper distribution: Centre-back',
+      'Goal kicks: Shorter passes',
+      'Tempo: Lower',
+    ])
+      expect(labels).toContain(l)
+    expect(DEFAULT_TACTICAL_STYLES.map((s) => s.code)).toContain('GEGE')
+  })
+
+  it('names a changed style "Custom …" and exports its code', async () => {
+    const { DEFAULT_TACTICAL_STYLES, styleText, styleCode } = await import('./styles')
+    const gp = DEFAULT_TACTICAL_STYLES.find((s) => s.code === 'GEGE')!
+    expect(styleText(gp, gp.mentality, gp.team!)).toBe('Gegenpress')
+    expect(styleText(gp, 'Attacking', gp.team!)).toBe('Custom Gegenpress')
+    expect(styleText(gp, gp.mentality, gp.team!.slice(1))).toBe('Custom Gegenpress')
+    expect(styleCode('Custom Gegenpress', DEFAULT_TACTICAL_STYLES)).toBe('GEGE')
+    expect(styleCode('My own', DEFAULT_TACTICAL_STYLES)).toBe('NULL')
+    const file = tacticFile({ ...row, style: 'Custom Gegenpress' }, config)
+    const back = await readTacticFile(file, async () => {
+      throw new Error('raw blocks need no unpacking')
+    })
+    expect(back.style).toBe('Custom Gegenpress')
+    const text = new TextDecoder('latin1').decode(file)
+    expect(text).toContain('Custom GegenpressEGEG')
+  })
+})

@@ -61,6 +61,7 @@ import { briefingText, buildBriefing } from '../tactics/briefing'
 import { readFmf } from '../tactics/fmfRead'
 import { unzstd } from '../import/readSave'
 import { useLearnFileVersion } from '../lib/fileVersion'
+import { styleOf, styleText, type TacticalStyle } from '../tactics/styles'
 import { byLastName, shortName } from '../lib/names'
 
 /** Pitch coordinates (0–1, own goal at 0) of an FM position on FM's grid. */
@@ -231,11 +232,27 @@ function TacticEditor({ tactic }: { tactic: TacticRow }) {
   const team = teamCodes(form.instructions, config.teamInstructions)
   const setTeam = (codes: number[]) =>
     setForm({ ...form, instructions: { ...form.instructions, team: codes } })
+  // FM's style: picking one sets its mentality and instructions; changing them makes it "Custom"
+  const style = styleOf(form.style, config.tacticalStyles)
+  const styleNow = style ? styleText(style, form.mentality, team) : form.style
+  const pickStyle = (code: string) => {
+    const s = config.tacticalStyles.find((x) => x.code === code && x.code !== '')
+    if (!s) return setForm({ ...form, style: null })
+    setForm({
+      ...form,
+      style: s.name,
+      mentality: s.mentality,
+      instructions: {
+        ...form.instructions,
+        team: s.team ?? defaultTeamCodes(config.teamInstructions),
+      },
+    })
+  }
   const save = useMutation({
     mutationFn: () =>
       saveTactic(career.id, tactic.id, {
         name: form.name,
-        style: form.style,
+        style: styleNow,
         mentality: form.mentality,
         slots: form.slots,
         instructions: { team },
@@ -245,7 +262,7 @@ function TacticEditor({ tactic }: { tactic: TacticRow }) {
   })
   const problems = exportProblems({ ...form, instructions: { team } }, config)
   const download = () => {
-    const bytes = tacticFile({ ...form, instructions: { team } }, config)
+    const bytes = tacticFile({ ...form, style: styleNow, instructions: { team } }, config)
     const url = URL.createObjectURL(
       new Blob([bytes.buffer as ArrayBuffer], { type: 'application/octet-stream' }),
     )
@@ -474,11 +491,18 @@ function TacticEditor({ tactic }: { tactic: TacticRow }) {
         <div className="grid grid-cols-2 gap-2">
           <label className="grid min-w-0 gap-1 text-sm">
             <span className="text-muted">Style</span>
-            <input
-              value={form.style ?? ''}
-              onChange={(e) => setForm({ ...form, style: e.target.value })}
+            <select
+              value={style?.code ?? ''}
+              onChange={(e) => pickStyle(e.target.value)}
               className={field}
-            />
+            >
+              <option value="">{form.style && !style ? form.style : 'No style'}</option>
+              {config.tacticalStyles.map((x) => (
+                <option key={x.code + x.name} value={x.code}>
+                  {x.name}
+                </option>
+              ))}
+            </select>
           </label>
           <label className="grid min-w-0 gap-1 text-sm">
             <span className="text-muted">Mentality</span>
@@ -498,6 +522,7 @@ function TacticEditor({ tactic }: { tactic: TacticRow }) {
           </label>
         </div>
         {form.mentality && <FmAboutLine about={config.fmCodes.mentalityTexts[form.mentality]} />}
+        {style && <StyleInfo style={style} current={styleNow} />}
         <label className="grid gap-1 text-sm">
           <span className="text-muted">
             Formation {phase === 'ip' ? 'in possession' : 'out of possession'}
@@ -1318,5 +1343,51 @@ function SquadFit({
         outside the XI for that position.
       </p>
     </Section>
+  )
+}
+
+/** FM's description of a tactical style, and whether the tactic still matches it. */
+function StyleInfo({ style, current }: { style: TacticalStyle; current: string | null }) {
+  const [open, setOpen] = useState(false)
+  return (
+    <div className="grid gap-1 rounded-lg border border-border bg-surface-2/50 p-2 text-xs">
+      <button
+        type="button"
+        aria-expanded={open}
+        onClick={() => setOpen(!open)}
+        className="flex items-center gap-1 text-left"
+      >
+        <span className="font-semibold">{current ?? style.name}</span>
+        {style.summary.length > 0 && (
+          <span className="min-w-0 flex-1 truncate text-muted">· {style.summary.join(' · ')}</span>
+        )}
+        <ChevronDown
+          className={clsx('size-3.5 shrink-0 text-muted', !open && '-rotate-90')}
+          aria-hidden
+        />
+      </button>
+      {current !== style.name && (
+        <p className="text-amber-300">
+          Mentality or instructions changed from FM&apos;s {style.name}: FM calls it {current}.
+        </p>
+      )}
+      {open && (
+        <>
+          {style.about && <p>{style.about}</p>}
+          {style.features.length > 0 && (
+            <p>
+              <span className="text-muted">Features of play: </span>
+              {style.features.join(', ')}
+            </p>
+          )}
+          {style.favoured.length > 0 && (
+            <p>
+              <span className="text-muted">Favoured attributes: </span>
+              {style.favoured.join(', ')}
+            </p>
+          )}
+        </>
+      )}
+    </div>
   )
 }

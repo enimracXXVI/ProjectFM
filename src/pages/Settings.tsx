@@ -86,6 +86,11 @@ export function SettingsPage() {
               ],
               ['/settings/tactics', 'Tactics', 'What the tactic briefing flags'],
               [
+                '/settings/tactical-styles',
+                'Tactical styles',
+                "FM's styles, their mentality and team instructions",
+              ],
+              [
                 '/settings/training-sessions',
                 'Training sessions',
                 "FM's sessions, codes and descriptions for schedules",

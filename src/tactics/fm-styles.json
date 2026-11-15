@@ -1,0 +1,135 @@
+[
+  {
+    "code": "CONT",
+    "name": "Control Possession",
+    "mentality": "Positive",
+    "team": [3, 7, 17, 33, 35, 44, 48, 57, 61, 66, 69, 70, 79],
+    "about": "A tactic that focuses on retaining possession and pressing high to win the ball back. Looks to play out of defence and create chances through patient, short-passing build-up play.",
+    "summary": ["Aims to dictate play", "Patiently wait for openings"],
+    "features": ["High Possession", "Patient Attacks", "Space Behind Own Defence"],
+    "favoured": ["Passing", "Composure", "Vision"]
+  },
+  {
+    "code": "GEGE",
+    "name": "Gegenpress",
+    "mentality": "Balanced",
+    "team": [7, 33, 35, 46, 52, 54, 57, 61, 65, 69, 70, 76, 79],
+    "about": "Gegenpressing relies on every player in the team working hard and, above all else, being fit and mobile enough to press the opposition immediately after losing the ball.",
+    "summary": ["Instantly win back possession", "High-intensity running"],
+    "features": [
+      "Win Possession In Attacking Areas",
+      "High Speed Counter-Attacks",
+      "Physically Demanding"
+    ],
+    "favoured": ["Stamina", "Acceleration", "Dribbling"]
+  },
+  {
+    "code": "TIKI",
+    "name": "Tiki-Taka",
+    "mentality": "Positive",
+    "team": [4, 6, 7, 12, 14, 16, 17, 35, 42, 44, 49, 55, 57, 61, 66, 69, 70, 75, 79],
+    "about": "Tiki-Taka places the emphasis on short passing, extreme pressing and movement, waiting for space to open up as opponents lose focus. An extreme variant of the Control Possession style.",
+    "summary": ["Dominate possession", "Relentless pressing", "Patiently wait for openings"],
+    "features": ["High Possession", "Highly Creative", "Slower Play"],
+    "favoured": ["Composure", "Passing", "Flair"]
+  },
+  {
+    "code": "VERT",
+    "name": "Vertical Tiki-Taka",
+    "mentality": "Balanced",
+    "team": [3, 7, 12, 17, 19, 23, 28, 33, 35, 44, 48, 53, 54, 57, 61, 66, 69, 70, 79],
+    "about": "A quick passing style of possession and movement, with a narrower, more direct approach than the standard Tiki-Taka.",
+    "summary": [
+      "Dominate possession",
+      "Relentless pressing",
+      "Emphasis on moving the ball vertically rather than side-to-side"
+    ],
+    "features": [
+      "Unpredictable Movement",
+      "Win Possession In Attacking Areas",
+      "Space Behind Own Defence"
+    ],
+    "favoured": ["Vision", "Technique", "Stamina"]
+  },
+  {
+    "code": "WING",
+    "name": "Wing Play",
+    "mentality": "Balanced",
+    "team": [2, 24, 25, 36, 47, 50, 54, 62, 66, 81],
+    "about": "Players will look to get the ball out wide as early as possible, while full-backs will look to overlap and exploit the wide areas. Once the ball is out wide, the main focus will be to cross the ball into the box.",
+    "summary": ["Looks to get quality crosses into the box", "Overloads the wide areas"],
+    "features": [
+      "High Volume Of Crosses",
+      "Outnumbers Opposition In Wide Areas",
+      "Reduced Central Threat"
+    ],
+    "favoured": ["Dribbling", "Crossing", "Anticipation"]
+  },
+  {
+    "code": "ROUT",
+    "name": "Route One",
+    "mentality": "Balanced",
+    "team": [1, 8, 9, 18, 20, 45, 47, 54, 58, 62, 71, 72, 81],
+    "about": "The aim is to try to play the furthest forward pass available, with the intent to penetrate the opposition's penalty area as early as possible.",
+    "summary": ["Quick transitions", "Direct passing"],
+    "features": ["Physically Overwhelms Defence", "Utilises Set Pieces", "Low Possession"],
+    "favoured": ["Strength", "Set Piece Ability", "Aggression"]
+  },
+  {
+    "code": "FLUI",
+    "name": "Fluid Counter-Attack",
+    "mentality": "Cautious",
+    "team": [3, 5, 13, 42, 47, 54, 58, 62, 66, 70, 72, 77],
+    "about": "Looks to draw the opposition forward to leave them vulnerable on the break. Players will be fluid on the counter, trying to combine with each other and carry the ball with clear intent.",
+    "summary": ["Soak up pressure", "More expressive and fluid counter-attacks"],
+    "features": ["Invites Pressure", "High Speed Counter-Attacks", "Unpredictable Movement"],
+    "favoured": ["Pace", "Work Rate", "Technique"]
+  },
+  {
+    "code": "DIRE",
+    "name": "Direct Counter-Attack",
+    "mentality": "Cautious",
+    "team": [2, 5, 8, 42, 47, 54, 58, 63, 66, 72, 77],
+    "about": "Draws the opposition forward to leave them vulnerable on the break. Players will look to move the ball forward as quickly as possible on the counter-attack to exploit spaces in behind.",
+    "summary": ["Soak up pressure", "Direct and structured counter-attacks"],
+    "features": [
+      "Compresses Space Defensively",
+      "High Speed Counter-Attacks",
+      "Reduced Possession"
+    ],
+    "favoured": ["Work Rate", "Pace", "Strength"]
+  },
+  {
+    "code": "CATE",
+    "name": "Catenaccio",
+    "mentality": "Defensive",
+    "team": [2, 8, 18, 20, 43, 48, 53, 54, 58, 63, 67, 71, 73, 74, 77, 78],
+    "about": "A defence-focused style that primarily looks to deny the opposition goalscoring opportunities. A Libero is traditionally deployed to offer cover behind the defensive line.",
+    "summary": [
+      "Looks to nullify the opposition's attacking threat",
+      "Highly-structured defensive approach"
+    ],
+    "features": ["Very Organised", "Interrupts Opposition Rhythm", "Reduced Possession"],
+    "favoured": ["Concentration", "Positioning", "Set Piece Ability"]
+  },
+  {
+    "code": "PARK",
+    "name": "Park the Bus",
+    "mentality": "Defensive",
+    "team": [2, 5, 8, 9, 18, 20, 34, 43, 45, 48, 52, 58, 63, 67, 71, 72, 74, 77, 78, 81],
+    "about": "Players will look to get behind the ball and protect their defensive third, focusing more on the clean sheet than on possession.",
+    "summary": ["Low and structured defensive shape", "Restrict space in the final third"],
+    "features": ["Compresses Space Defensively", "Effective At Time Wasting", "Invites Pressure"],
+    "favoured": ["Teamwork", "Work Rate", "Aggression"]
+  },
+  {
+    "code": "NULL",
+    "name": "Clean Slate",
+    "mentality": "Balanced",
+    "team": null,
+    "about": "The tactics board is a clean slate, ready for a playing style to be created from the ground up.",
+    "summary": ["No instructions set", "Standard approach to play"],
+    "features": [],
+    "favoured": []
+  }
+]

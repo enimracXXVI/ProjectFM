@@ -6,6 +6,7 @@
  * Zstandard frame made of raw (uncompressed) blocks, and a directory frame at the end.
  * The codes inside (mentality, positions, roles, instructions) come from Settings.
  */
+import { styleCode } from './styles'
 import type { AppConfig } from '../data/config'
 import type { RoleDef, RolePhase } from '../data/roles'
 import {
@@ -36,7 +37,10 @@ const PREFERENCES = hex(
 /** Player instruction FM sets only in a match (mark a named opponent): never written. */
 const MARK_PLAYER = 34
 
-type Config = Pick<AppConfig, 'roles' | 'fmCodes' | 'teamInstructions' | 'playerInstructions'>
+type Config = Pick<
+  AppConfig,
+  'roles' | 'fmCodes' | 'teamInstructions' | 'playerInstructions' | 'tacticalStyles'
+>
 
 interface PhaseSlot {
   position: FmPosition
@@ -127,8 +131,10 @@ function build(t: TacticRow, config: Config) {
     for (const c of team) if (c > 0) bits[c >> 3] |= 1 << (c & 7)
     w.bytes(bits)
     w.u8(0xff)
-    w.u32(0)
-    w.bytes(hex('4c4c554e'))
+    // The style's name and code, as FM writes them (the code's letters reversed)
+    w.text(t.style?.trim() ?? '')
+    const code = styleCode(t.style, config.tacticalStyles).padEnd(4, ' ').slice(0, 4)
+    w.bytes(new TextEncoder().encode([...code].reverse().join('')))
     for (let i = 0; i < 11; i++) {
       // A plain goalkeeper needs no role entry of its own
       const override = !(i === 0 && ip[i].code === LEGACY_IP[0])
