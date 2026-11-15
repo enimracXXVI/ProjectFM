@@ -1,8 +1,8 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
-import { render, screen } from '@testing-library/react'
+import { cleanup, render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { MemoryRouter } from 'react-router-dom'
-import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import App from './App'
 import type { Career } from './data/db'
 import { ConfirmProvider } from './components/ConfirmDialog'
@@ -40,8 +40,11 @@ const career = (id: string, club: string): Career => ({
   created_at: '',
 })
 
+const clients: QueryClient[] = []
+
 function renderAt(path: string) {
   const qc = new QueryClient({ defaultOptions: { queries: { retry: false } } })
+  clients.push(qc)
   return render(
     <QueryClientProvider client={qc}>
       <MemoryRouter initialEntries={[path]}>
@@ -56,6 +59,13 @@ function renderAt(path: string) {
 }
 
 describe('App', () => {
+  // Unmount and let React Query's batched notifications run before the page is torn down
+  afterEach(async () => {
+    cleanup()
+    for (const qc of clients.splice(0)) qc.clear()
+    await new Promise((r) => setTimeout(r, 20))
+  })
+
   beforeEach(() => {
     auth.session = { user: { email: 'me@example.com' } }
     api.careers = [career('a', 'Fiorentina'), career('b', 'Empoli')]
