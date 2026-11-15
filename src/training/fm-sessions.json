@@ -5,7 +5,8 @@
     "category": "Tactical Understanding",
     "about": "Work on the tempo and directness of our passing as part of our tactical setup.",
     "fm": true,
-    "attributes": {}
+    "attributes": {},
+    "color": "#22a06b"
   },
   {
     "code": 1,
@@ -13,7 +14,8 @@
     "category": "Tactical Understanding",
     "about": "Work on how we look to bypass the opposition's press as part of our tactical setup.",
     "fm": true,
-    "attributes": {}
+    "attributes": {},
+    "color": "#22a06b"
   },
   {
     "code": 2,
@@ -21,7 +23,8 @@
     "category": "Tactical Understanding",
     "about": "Work on how and with what level of urgency we look to create chances as part of our tactical setup.",
     "fm": true,
-    "attributes": {}
+    "attributes": {},
+    "color": "#22a06b"
   },
   {
     "code": 3,
@@ -29,7 +32,8 @@
     "category": "Tactical Understanding",
     "about": "Work on the positions and roles we are asking the players to take up when in possession as part of our tactical setup.",
     "fm": true,
-    "attributes": {}
+    "attributes": {},
+    "color": "#22a06b"
   },
   {
     "code": 4,
@@ -37,7 +41,8 @@
     "category": "Tactical Understanding",
     "about": "Work on where and when we engage the opponent defensively as part of our tactical setup.",
     "fm": true,
-    "attributes": {}
+    "attributes": {},
+    "color": "#22a06b"
   },
   {
     "code": 5,
@@ -45,7 +50,8 @@
     "category": "Tactical Understanding",
     "about": "Work on the intensity and style of our press as part of our tactical setup.",
     "fm": true,
-    "attributes": {}
+    "attributes": {},
+    "color": "#22a06b"
   },
   {
     "code": 6,
@@ -53,7 +59,8 @@
     "category": "Tactical Understanding",
     "about": "Work on where we set our pressing traps as part of our tactical setup.",
     "fm": true,
-    "attributes": {}
+    "attributes": {},
+    "color": "#22a06b"
   },
   {
     "code": 7,
@@ -61,7 +68,8 @@
     "category": "Tactical Understanding",
     "about": "Work on the positions and roles we are asking the players to take up when out of possession as part of our tactical setup.",
     "fm": true,
-    "attributes": {}
+    "attributes": {},
+    "color": "#22a06b"
   },
   {
     "code": 100,
@@ -69,7 +77,8 @@
     "category": "Match Preparation",
     "about": "Reinforce how the players organise themselves behind the ball when in possession according to our tactics ahead of the next match.",
     "fm": true,
-    "attributes": {}
+    "attributes": {},
+    "color": "#2f6fd6"
   },
   {
     "code": 101,
@@ -77,7 +86,8 @@
     "category": "Match Preparation",
     "about": "Reinforce in-possession decision making according to our tactics ahead of the next match.",
     "fm": true,
-    "attributes": {}
+    "attributes": {},
+    "color": "#2f6fd6"
   },
   {
     "code": 102,
@@ -85,7 +95,8 @@
     "category": "Match Preparation",
     "about": "Reinforce anticipating each other's movements ahead of the ball when in possession according to our tactics ahead of the next match.",
     "fm": true,
-    "attributes": {}
+    "attributes": {},
+    "color": "#2f6fd6"
   },
   {
     "code": 103,
@@ -93,7 +104,8 @@
     "category": "Match Preparation",
     "about": "Reinforce the players' collective concentration on setting our out of possession block according to our tactics ahead of the next match.",
     "fm": true,
-    "attributes": {}
+    "attributes": {},
+    "color": "#2f6fd6"
   },
   {
     "code": 104,
@@ -101,7 +113,8 @@
     "category": "Match Preparation",
     "about": "Reinforce the players' individual positioning when out of possession according to our tactics ahead of the next match.",
     "fm": true,
-    "attributes": {}
+    "attributes": {},
+    "color": "#2f6fd6"
   },
   {
     "code": 105,
@@ -109,7 +122,8 @@
     "category": "Match Preparation",
     "about": "Reinforce how the players engage with the opposition when out of possession according to our tactics ahead of the next match.",
     "fm": true,
-    "attributes": {}
+    "attributes": {},
+    "color": "#2f6fd6"
   },
   {
     "code": 106,
@@ -117,7 +131,8 @@
     "category": "Match Preparation",
     "about": "Focuses on optimising our offensive and defensive setup at corners according to our tactics ahead of the next match.",
     "fm": true,
-    "attributes": {}
+    "attributes": {},
+    "color": "#2f6fd6"
   },
   {
     "code": 107,
@@ -125,7 +140,8 @@
     "category": "Match Preparation",
     "about": "Focuses on optimising our offensive and defensive setup at free kicks according to our tactics ahead of the next match.",
     "fm": true,
-    "attributes": {}
+    "attributes": {},
+    "color": "#2f6fd6"
   },
   {
     "code": 108,
@@ -133,7 +149,8 @@
     "category": "Match Preparation",
     "about": "Focuses on attempting to mitigate the pressure associated with taking and facing penalties ahead of the next match.",
     "fm": true,
-    "attributes": {}
+    "attributes": {},
+    "color": "#2f6fd6"
   },
   {
     "code": 200,
@@ -141,7 +158,8 @@
     "category": "Footballing Development",
     "about": "An opportunity in the schedule for individual work to take place.",
     "fm": true,
-    "attributes": {}
+    "attributes": {},
+    "color": "#d63aa0"
   },
   {
     "code": 201,
@@ -175,7 +193,8 @@
       ],
       "defensive": ["Finishing", "Long Shots", "Anticipation", "Flair", "Off The Ball"],
       "goalkeeping": ["Technique", "Decisions", "Flair", "Vision"]
-    }
+    },
+    "color": "#d63aa0"
   },
   {
     "code": 202,
@@ -199,7 +218,8 @@
         "Teamwork"
       ],
       "goalkeeping": ["Anticipation", "Bravery", "Composure", "Concentration", "Positioning"]
-    }
+    },
+    "color": "#d63aa0"
   },
   {
     "code": 203,
@@ -223,7 +243,8 @@
       ],
       "defensive": ["First Touch", "Crossing", "Passing", "Vision", "Dribbling"],
       "goalkeeping": ["First Touch", "Passing", "Vision", "Teamwork"]
-    }
+    },
+    "color": "#d63aa0"
   },
   {
     "code": 220,
@@ -270,7 +291,8 @@
       ],
       "goalkeeping": ["Position/Role"]
     },
-    "hidden": true
+    "hidden": true,
+    "color": "#d63aa0"
   },
   {
     "code": 221,
@@ -314,7 +336,8 @@
       ],
       "goalkeeping": ["Position/Role"]
     },
-    "hidden": true
+    "hidden": true,
+    "color": "#d63aa0"
   },
   {
     "code": 222,
@@ -359,7 +382,8 @@
       ],
       "goalkeeping": ["Position/Role"]
     },
-    "hidden": true
+    "hidden": true,
+    "color": "#d63aa0"
   },
   {
     "code": 223,
@@ -390,7 +414,8 @@
       "defensive": ["Crossing", "Dribbling", "Technique", "Anticipation", "Off The Ball"],
       "goalkeeping": ["Position/Role"]
     },
-    "hidden": true
+    "hidden": true,
+    "color": "#d63aa0"
   },
   {
     "code": 224,
@@ -422,7 +447,8 @@
       ],
       "goalkeeping": ["Position/Role"]
     },
-    "hidden": true
+    "hidden": true,
+    "color": "#d63aa0"
   },
   {
     "code": 225,
@@ -436,7 +462,8 @@
       "defensive": ["Tackling", "Aggression", "Bravery", "Decisions", "Positioning"],
       "goalkeeping": ["Position/Role"]
     },
-    "hidden": true
+    "hidden": true,
+    "color": "#d63aa0"
   },
   {
     "code": 226,
@@ -450,7 +477,8 @@
       "defensive": ["Marking", "Anticipation", "Concentration", "Positioning", "Teamwork"],
       "goalkeeping": ["Position/Role"]
     },
-    "hidden": true
+    "hidden": true,
+    "color": "#d63aa0"
   },
   {
     "code": 227,
@@ -464,7 +492,8 @@
       "defensive": ["Heading", "Marking", "Anticipation", "Decisions", "Positioning"],
       "goalkeeping": ["Position/Role"]
     },
-    "hidden": true
+    "hidden": true,
+    "color": "#d63aa0"
   },
   {
     "code": 228,
@@ -478,7 +507,8 @@
       "defensive": ["Anticipation", "Composure", "Decisions", "Off The Ball", "Teamwork"],
       "goalkeeping": ["Position/Role"]
     },
-    "hidden": true
+    "hidden": true,
+    "color": "#d63aa0"
   },
   {
     "code": 229,
@@ -492,7 +522,8 @@
       "defensive": ["Anticipation", "Composure", "Decisions", "Positioning", "Teamwork"],
       "goalkeeping": ["Position/Role"]
     },
-    "hidden": true
+    "hidden": true,
+    "color": "#d63aa0"
   },
   {
     "code": 230,
@@ -530,7 +561,8 @@
       ],
       "goalkeeping": ["Position/Role"]
     },
-    "hidden": true
+    "hidden": true,
+    "color": "#d63aa0"
   },
   {
     "code": 231,
@@ -544,7 +576,8 @@
       "defensive": ["Finishing", "Heading", "Long Shots", "Technique", "Anticipation", "Composure"],
       "goalkeeping": ["Position/Role"]
     },
-    "hidden": true
+    "hidden": true,
+    "color": "#d63aa0"
   },
   {
     "code": 232,
@@ -558,7 +591,8 @@
       "defensive": ["First Touch", "Passing", "Anticipation", "Composure", "Decisions", "Teamwork"],
       "goalkeeping": ["Position/Role"]
     },
-    "hidden": true
+    "hidden": true,
+    "color": "#d63aa0"
   },
   {
     "code": 233,
@@ -572,7 +606,8 @@
       "defensive": ["Marking", "Tackling", "Technique", "Concentration", "Positioning"],
       "goalkeeping": ["Position/Role"]
     },
-    "hidden": true
+    "hidden": true,
+    "color": "#d63aa0"
   },
   {
     "code": 234,
@@ -586,7 +621,8 @@
       "defensive": ["Heading", "Marking", "Technique", "Bravery", "Positioning"],
       "goalkeeping": ["Position/Role"]
     },
-    "hidden": true
+    "hidden": true,
+    "color": "#d63aa0"
   },
   {
     "code": 235,
@@ -600,7 +636,8 @@
       "defensive": ["Marking", "Concentration", "Positioning", "Teamwork", "Work Rate"],
       "goalkeeping": ["Position/Role"]
     },
-    "hidden": true
+    "hidden": true,
+    "color": "#d63aa0"
   },
   {
     "code": 236,
@@ -635,7 +672,8 @@
       ],
       "goalkeeping": ["Position/Role"]
     },
-    "hidden": true
+    "hidden": true,
+    "color": "#d63aa0"
   },
   {
     "code": 237,
@@ -649,7 +687,8 @@
       "defensive": ["First Touch", "Dribbling", "Passing", "Decisions", "Teamwork", "Work Rate"],
       "goalkeeping": ["Position/Role"]
     },
-    "hidden": true
+    "hidden": true,
+    "color": "#d63aa0"
   },
   {
     "code": 238,
@@ -675,7 +714,8 @@
         "Balance"
       ]
     },
-    "hidden": true
+    "hidden": true,
+    "color": "#d63aa0"
   },
   {
     "code": 239,
@@ -689,7 +729,8 @@
       "defensive": ["Position/Role"],
       "goalkeeping": ["Reflexes", "Anticipation", "Positioning", "Agility"]
     },
-    "hidden": true
+    "hidden": true,
+    "color": "#d63aa0"
   },
   {
     "code": 240,
@@ -703,7 +744,8 @@
       "defensive": ["Position/Role"],
       "goalkeeping": ["Aerial Reach", "Handling", "Concentration", "Balance"]
     },
-    "hidden": true
+    "hidden": true,
+    "color": "#d63aa0"
   },
   {
     "code": 241,
@@ -723,7 +765,8 @@
         "Acceleration"
       ]
     },
-    "hidden": true
+    "hidden": true,
+    "color": "#d63aa0"
   },
   {
     "code": 242,
@@ -737,7 +780,8 @@
       "defensive": ["Position/Role"],
       "goalkeeping": ["First Touch", "Kicking", "Passing", "Throwing", "Composure", "Vision"]
     },
-    "hidden": true
+    "hidden": true,
+    "color": "#d63aa0"
   },
   {
     "code": 243,
@@ -758,7 +802,8 @@
         "Positioning"
       ]
     },
-    "hidden": true
+    "hidden": true,
+    "color": "#d63aa0"
   },
   {
     "code": 244,
@@ -772,7 +817,8 @@
       "defensive": ["Penalty Taking", "Composure"],
       "goalkeeping": ["Penalty Taking", "Reflexes", "Composure"]
     },
-    "hidden": true
+    "hidden": true,
+    "color": "#d63aa0"
   },
   {
     "code": 300,
@@ -780,7 +826,8 @@
     "category": "Physical & Recovery",
     "about": "Allow the players a session off from training to rest.",
     "fm": true,
-    "attributes": {}
+    "attributes": {},
+    "color": "#8a8f98"
   },
   {
     "code": 301,
@@ -788,7 +835,8 @@
     "category": "Physical & Recovery",
     "about": "A session focused on in-house recovery with the medical and sports science teams.",
     "fm": true,
-    "attributes": {}
+    "attributes": {},
+    "color": "#d64545"
   },
   {
     "code": 302,
@@ -796,7 +844,8 @@
     "category": "Physical & Recovery",
     "about": "Gentle physical work focused on delaying the onset of late-season fatigue. Best suited for early season.",
     "fm": true,
-    "attributes": {}
+    "attributes": {},
+    "color": "#d64545"
   },
   {
     "code": 303,
@@ -846,7 +895,8 @@
         "Work Rate",
         "Aerial Reach"
       ]
-    }
+    },
+    "color": "#d64545"
   },
   {
     "code": 304,
@@ -896,7 +946,8 @@
         "Work Rate",
         "Aerial Reach"
       ]
-    }
+    },
+    "color": "#d64545"
   },
   {
     "code": 305,
@@ -905,7 +956,8 @@
     "about": "Allow the players a session off from training to rest.",
     "fm": false,
     "attributes": {},
-    "hidden": true
+    "hidden": true,
+    "color": "#8a8f98"
   },
   {
     "code": 306,
@@ -914,7 +966,8 @@
     "about": "A session focused on in-house recovery with the medical and sports science teams.",
     "fm": false,
     "attributes": {},
-    "hidden": true
+    "hidden": true,
+    "color": "#d64545"
   },
   {
     "code": 307,
@@ -923,7 +976,8 @@
     "about": "Gentle physical work focused on delaying the onset of late-season fatigue. Best suited for early season international breaks or before international tournaments provided the players have had a break following the end of domestic duties.",
     "fm": false,
     "attributes": {},
-    "hidden": true
+    "hidden": true,
+    "color": "#d64545"
   },
   {
     "code": 400,
@@ -931,7 +985,8 @@
     "category": "Extra-Curricular",
     "about": "Time dedicated to building off-pitch relationships and strong ties as a team.",
     "fm": true,
-    "attributes": {}
+    "attributes": {},
+    "color": "#e07b24"
   },
   {
     "code": 401,
@@ -939,7 +994,8 @@
     "category": "Extra-Curricular",
     "about": "An opportunity to give back to the fans via charitable endeavours in the local community.",
     "fm": true,
-    "attributes": {}
+    "attributes": {},
+    "color": "#e07b24"
   },
   {
     "code": 402,
@@ -948,7 +1004,8 @@
     "about": "Journeying to or from an away match as a team.",
     "fm": false,
     "attributes": {},
-    "hidden": true
+    "hidden": true,
+    "color": "#e07b24"
   },
   {
     "code": 500,
@@ -957,7 +1014,8 @@
     "about": "",
     "fm": false,
     "attributes": {},
-    "hidden": true
+    "hidden": true,
+    "color": "#8a8f98"
   },
   {
     "code": 501,
@@ -966,6 +1024,7 @@
     "about": "",
     "fm": false,
     "attributes": {},
-    "hidden": true
+    "hidden": true,
+    "color": "#8a8f98"
   }
 ]

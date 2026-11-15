@@ -5,7 +5,7 @@ import { SettingsSection } from '../../components/SettingsSection'
 import { SettingsShell } from '../../components/SettingsShell'
 import { useConfig } from '../../lib/config'
 import { useSaveConfig } from '../../lib/useSaveConfig'
-import type { TrainingSession } from '../../training/schedule'
+import { sessionColor, type TrainingSession } from '../../training/schedule'
 
 const input =
   'min-h-11 w-full min-w-0 rounded-lg border border-border bg-surface-2 px-3 text-base md:text-sm'
@@ -73,6 +73,11 @@ export function TrainingSessionsSettings() {
                       <span className="min-w-0 flex-1 truncate text-sm font-semibold">
                         {s.name || 'New session'}
                       </span>
+                      <span
+                        aria-hidden
+                        className="size-2.5 shrink-0 rounded-sm"
+                        style={{ backgroundColor: sessionColor(s) }}
+                      />
                       {s.hidden && <span className="text-xs text-muted">hidden</span>}
                       <span className="text-xs text-muted tabular-nums">{s.code}</span>
                     </button>
@@ -118,6 +123,15 @@ export function TrainingSessionsSettings() {
                             onChange={(e) => update(i, { category: e.target.value })}
                             className={input}
                           />
+                        </label>
+                        <label className="flex min-h-9 items-center gap-2 text-sm">
+                          <input
+                            type="color"
+                            value={sessionColor(s)}
+                            onChange={(e) => update(i, { color: e.target.value })}
+                            className="h-9 w-12 shrink-0 cursor-pointer rounded border border-border bg-surface-2"
+                          />
+                          Colour FM shows it in
                         </label>
                         <label className="grid gap-1 text-xs text-muted">
                           FM&apos;s description

@@ -21,6 +21,8 @@ export interface TrainingSession {
   fm: boolean
   /** Kept in the list but not offered in the schedule dropdowns (youth, national team…). */
   hidden?: boolean
+  /** Colour FM shows the session in (by its section; Rest is grey). */
+  color?: string
   /** Attributes the session works on, by unit (attacking, midfield, defensive, goalkeeping). */
   attributes?: Record<string, string[]>
 }
@@ -34,6 +36,17 @@ export interface TrainingSchedule {
 }
 
 export const DEFAULT_TRAINING_SESSIONS = sessions as TrainingSession[]
+
+/** A session's colour: its own, else FM's default for that session, else grey. */
+export function sessionColor(s: TrainingSession | undefined): string {
+  if (!s) return '#8a8f98'
+  return (
+    s.color ??
+    DEFAULT_TRAINING_SESSIONS.find((d) => d.code === s.code)?.color ??
+    DEFAULT_TRAINING_SESSIONS.find((d) => d.category === s.category && d.code !== REST)?.color ??
+    '#8a8f98'
+  )
+}
 export const DAYS = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']
 export const SLOTS = 3
 /** FM's Rest session: an empty week is all rest. */

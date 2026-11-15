@@ -5,17 +5,20 @@ import { Button, ErrorText } from '../components/form'
 import { Card, PageHeader, Placeholder } from '../components/ui'
 import { useConfirm } from '../components/confirm'
 import { unzstd } from '../import/readSave'
+import { useLearnFileVersion } from '../lib/fileVersion'
 import { useConfig } from '../lib/config'
 import { TEXT, useUrlState } from '../lib/urlState'
 import { useSaveConfig } from '../lib/useSaveConfig'
 import { fileTitle } from '../tactics/fmf'
 import {
   DAYS,
+  REST,
   SLOTS,
   blankSchedule,
   readScheduleFile,
   scheduleFile,
   scheduleProblems,
+  sessionColor,
   type TrainingSchedule,
   type TrainingSession,
 } from '../training/schedule'
@@ -33,6 +36,8 @@ export function Training() {
   const current = schedules.find((s) => s.id === selected) ?? schedules[0] ?? null
   const [error, setError] = useState<unknown>(null)
   const [reading, setReading] = useState(false)
+  const learnVersion = useLearnFileVersion()
+  const [versionNote, setVersionNote] = useState<string | null>(null)
 
   const add = async (s: TrainingSchedule) => {
     await save.mutateAsync([...schedules, s])
@@ -43,7 +48,9 @@ export function Training() {
     if (!/\.fmf$/i.test(file.name)) return setError(new Error('Choose an FM schedule file (.fmf).'))
     setReading(true)
     try {
-      const sessions = await readScheduleFile(new Uint8Array(await file.arrayBuffer()), unzstd)
+      const bytes = new Uint8Array(await file.arrayBuffer())
+      const sessions = await readScheduleFile(bytes, unzstd)
+      setVersionNote(await learnVersion(bytes))
       await add({ ...blankSchedule(file.name.replace(/\.fmf$/i, '')), sessions })
     } catch (e) {
       setError(e)
@@ -101,6 +108,11 @@ export function Training() {
           />
         </label>
         <ErrorText error={error ?? save.error} />
+        {versionNote && (
+          <p className="w-full rounded-lg border border-sky-400/50 bg-sky-400/10 p-2 text-sm text-sky-200">
+            {versionNote}
+          </p>
+        )}
       </div>
       {current ? (
         <ScheduleEditor
@@ -225,8 +237,12 @@ function ScheduleEditor({
                         setSlot(i, Number(e.target.value))
                         setActive(i)
                       }}
+                      style={{
+                        borderLeftColor: sessionColor(s),
+                        backgroundColor: `color-mix(in srgb, ${sessionColor(s)} 22%, var(--color-surface-2))`,
+                      }}
                       className={clsx(
-                        'min-h-11 min-w-0 rounded-lg border bg-surface-2 px-2 text-xs md:text-sm',
+                        'min-h-11 min-w-0 rounded-lg border border-l-4 px-2 text-xs md:text-sm',
                         active === i ? 'border-accent' : 'border-border',
                         s && !s.fm && 'text-amber-300',
                       )}
@@ -280,7 +296,18 @@ function ScheduleEditor({
             <ul className="grid gap-0.5 text-xs">
               {mix.map(([c, n]) => (
                 <li key={c} className="flex justify-between">
-                  <span className="text-muted">{c}</span>
+                  <span className="flex items-center gap-1.5 text-muted">
+                    <span
+                      aria-hidden
+                      className="size-2.5 rounded-sm"
+                      style={{
+                        backgroundColor: sessionColor(
+                          sessions.find((x) => x.category === c && x.code !== REST),
+                        ),
+                      }}
+                    />
+                    {c}
+                  </span>
                   <span className="tabular-nums">{n}</span>
                 </li>
               ))}
@@ -346,7 +373,10 @@ function ScheduleEditor({
 /** FM's description of the session picked in a slot, and what it trains. */
 function SessionInfo({ session, slot }: { session: TrainingSession; slot: number }) {
   return (
-    <div className="grid gap-1 rounded-lg border border-accent/40 bg-surface-2/60 p-2 text-xs">
+    <div
+      className="grid gap-1 rounded-lg border border-l-4 border-accent/40 bg-surface-2/60 p-2 text-xs"
+      style={{ borderLeftColor: sessionColor(session) }}
+    >
       <p>
         <span className="font-semibold">{session.name}</span>
         <span className="text-muted">

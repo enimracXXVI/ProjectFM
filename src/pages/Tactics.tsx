@@ -58,6 +58,7 @@ import { exportProblems, fileTitle, tacticFile } from '../tactics/fmf'
 import { briefingText, buildBriefing } from '../tactics/briefing'
 import { readFmf } from '../tactics/fmfRead'
 import { unzstd } from '../import/readSave'
+import { useLearnFileVersion } from '../lib/fileVersion'
 import { byLastName, shortName } from '../lib/names'
 
 const field =
@@ -84,10 +85,14 @@ export function Tactics() {
   })
   // An FM tactic file: shape, roles and instructions as in FM, best XI from the first team
   const { data: players } = usePlayers(career.id)
+  const learnVersion = useLearnFileVersion()
+  const [versionNote, setVersionNote] = useState<string | null>(null)
   const upload = useMutation({
     mutationFn: async (file: File) => {
       if (!/\.fmf$/i.test(file.name)) throw new Error('Choose an FM tactic file (.fmf).')
-      const t = await readFmf(new Uint8Array(await file.arrayBuffer()), unzstd)
+      const bytes = new Uint8Array(await file.arrayBuffer())
+      const t = await readFmf(bytes, unzstd)
+      setVersionNote(await learnVersion(bytes))
       const read = fromSave(t, config.roles, config.fmCodes)
       const squad = (players ?? []).filter((p) => p.in_squad && !p.extra.team)
       const ctx = { roles: config.roles, weights: config.roleWeights, fmCodes: config.fmCodes }
@@ -161,6 +166,11 @@ export function Tactics() {
           />
         </label>
         <ErrorText error={upload.error} />
+        {versionNote && (
+          <p className="w-full rounded-lg border border-sky-400/50 bg-sky-400/10 p-2 text-sm text-sky-200">
+            {versionNote}
+          </p>
+        )}
         <ErrorText error={create.error} />
       </div>
       {current ? (

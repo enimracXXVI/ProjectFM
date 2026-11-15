@@ -85,3 +85,23 @@ describe('FM file version', () => {
     expect(hexed).toContain('0200010002f8186c05010010')
   })
 })
+
+describe('FM file version check', () => {
+  it('reads the version FM wrote into a file', async () => {
+    const { fileVersionOf } = await import('../lib/fileVersion')
+    const unzip = async (frame: Uint8Array) => {
+      const { zstdDecompressSync } = (await import('node:zlib' as string)) as {
+        zstdDecompressSync: (b: Uint8Array) => Uint8Array
+      }
+      return new Uint8Array(zstdDecompressSync(frame))
+    }
+    const ours = scheduleFile(blankSchedule('Week'), 'abcdef01')
+    expect(await fileVersionOf(ours, unzip)).toBe('abcdef01')
+    // FM's own (encrypted) FM27 tactic file
+    const fs = (await import('node:fs' as string)) as {
+      readFileSync: (p: string) => Uint8Array
+    }
+    const fm = new Uint8Array(fs.readFileSync('src/tactics/fixtures/time-wasting-more.fmf'))
+    expect(await fileVersionOf(fm, unzip)).toBe('f8186c05')
+  })
+})
