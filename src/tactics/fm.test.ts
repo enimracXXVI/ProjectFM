@@ -311,3 +311,20 @@ describe('FM texts and warnings', () => {
     expect(check(three).join(' ')).toMatch(/^The Half Back role looks to drop in/)
   })
 })
+
+describe('FM’s own tactic files', () => {
+  // The same tactic saved in FM three times, only Time wasting changed (encrypted files)
+  it.each([
+    ['less', 'Less often'],
+    ['standard', 'Standard'],
+    ['more', 'More often'],
+  ])('reads Time wasting %s', async (file, label) => {
+    const { readFileSync } = await import('node:fs')
+    const { zstdDecompressSync } = await import('node:zlib')
+    const bytes = new Uint8Array(readFileSync(`src/tactics/fixtures/time-wasting-${file}.fmf`))
+    const t = await readTacticFile(bytes, async (f) => new Uint8Array(zstdDecompressSync(f)))
+    const team = fromSave(t, config.roles, config.fmCodes).team!
+    const def = config.teamInstructions.find((d) => d.name === 'Time wasting')!
+    expect(chosen(def, team)?.label).toBe(label)
+  })
+})

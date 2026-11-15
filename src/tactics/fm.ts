@@ -145,8 +145,13 @@ export function fillAbout(list: FmInstruction[], defaults: FmInstruction[]): FmI
   return list.map((d) => {
     const def = defaults.find((x) => x.name === d.name && x.phase === d.phase)
     // Time wasting was first listed as Standard / Sometimes / Often; FM's options are
-    // Less Often / Standard / More Often (seen in game)
-    if (def && d.name === 'Time wasting' && d.options.some((o) => o.label === 'Sometimes'))
+    // Less Often / Standard / More Often (seen in game),
+    // and Less Often was then taken for 79; FM stores Less Often as nothing, Standard as 79
+    if (
+      def &&
+      d.name === 'Time wasting' &&
+      d.options.some((o) => o.label === 'Sometimes' || (o.code === 79 && o.label !== 'Standard'))
+    )
       return def
     return {
       ...d,
@@ -253,8 +258,9 @@ export function rolesAt(
 export function chosen(def: FmInstruction, codes: number[] | undefined): FmOption | null {
   return (
     def.options.find((o) => o.code !== 0 && codes?.includes(o.code)) ??
-    def.options.find((o) => o.code === (def.default ?? 0)) ??
+    // Nothing set: the option FM stores as nothing, else the instruction's default
     def.options.find((o) => o.code === 0) ??
+    def.options.find((o) => o.code === def.default) ??
     def.options[0] ??
     null
   )

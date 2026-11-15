@@ -282,18 +282,18 @@
       "options": [
         {
           "label": "Less often",
-          "code": 79
+          "code": 0
         },
         {
           "label": "Standard",
-          "code": 0
+          "code": 79
         },
         {
           "label": "More often",
           "code": 78
         }
       ],
-      "default": 0
+      "default": 79
     },
     {
       "phase": "ip",
