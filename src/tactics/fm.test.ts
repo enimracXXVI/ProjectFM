@@ -407,3 +407,30 @@ describe('FM tactical styles', () => {
     expect(text).toContain('Custom GegenpressEGEG')
   })
 })
+
+describe('FM template tactics', () => {
+  it('turns all of FM27s templates into tactics that export cleanly', async () => {
+    const { FM_TEMPLATES, templateTactic } = await import('./templates')
+    expect(FM_TEMPLATES).toHaveLength(90)
+    const problems: string[] = []
+    for (const tpl of FM_TEMPLATES) {
+      const t = templateTactic(tpl, config.tacticalStyles, config.roles, config.fmCodes)
+      expect(t.slots).toHaveLength(11)
+      const unknown = t.slots.filter((s) => s.unknownRole || s.unknownRoleOop)
+      if (unknown.length) problems.push(`${tpl.style} ${tpl.label}: unknown roles`)
+      const p = exportProblems(
+        {
+          ...row,
+          name: t.name,
+          style: t.style,
+          mentality: t.mentality,
+          slots: t.slots,
+          instructions: { team: t.team },
+        },
+        config,
+      )
+      if (p.length) problems.push(`${tpl.style} ${tpl.label}: ${p.join(' ')}`)
+    }
+    expect(problems).toEqual([])
+  })
+})

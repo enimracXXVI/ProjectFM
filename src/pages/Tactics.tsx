@@ -62,6 +62,7 @@ import { readFmf } from '../tactics/fmfRead'
 import { unzstd } from '../import/readSave'
 import { useLearnFileVersion } from '../lib/fileVersion'
 import { styleOf, styleText, type TacticalStyle } from '../tactics/styles'
+import { FM_TEMPLATES, templateTactic } from '../tactics/templates'
 import { byLastName, shortName } from '../lib/names'
 
 /** Pitch coordinates (0–1, own goal at 0) of an FM position on FM's grid. */
@@ -96,6 +97,31 @@ export function Tactics() {
   })
   // An FM tactic file: shape, roles and instructions as in FM, best XI from the first team
   const { data: players } = usePlayers(career.id)
+  // One of FM's template tactics, with the best XI from the first team
+  const fromTemplate = useMutation({
+    mutationFn: async (index: number) => {
+      const t = templateTactic(
+        FM_TEMPLATES[index],
+        config.tacticalStyles,
+        config.roles,
+        config.fmCodes,
+      )
+      const squad = (players ?? []).filter((p) => p.in_squad && !p.extra.team)
+      const ctx = { roles: config.roles, weights: config.roleWeights, fmCodes: config.fmCodes }
+      const xi = bestXi(t.slots, squad, ctx, new Set())
+      return saveTactic(career.id, null, {
+        name: t.name,
+        style: t.style,
+        mentality: t.mentality,
+        slots: t.slots.map((s, i) => ({ ...s, player: xi[i] })),
+        instructions: { team: t.team },
+      })
+    },
+    onSuccess: (t) => {
+      qc.invalidateQueries({ queryKey: ['tactics'] })
+      setSelected(t.id)
+    },
+  })
   const learnVersion = useLearnFileVersion()
   const [versionNote, setVersionNote] = useState<string | null>(null)
   const upload = useMutation({
@@ -157,6 +183,28 @@ export function Tactics() {
         <Button variant="ghost" onClick={() => create.mutate()} disabled={create.isPending}>
           <Plus className="size-4" aria-hidden /> New tactic
         </Button>
+        <select
+          aria-label="New tactic from an FM template"
+          value=""
+          disabled={fromTemplate.isPending}
+          onChange={(e) => e.target.value && fromTemplate.mutate(Number(e.target.value))}
+          className="min-h-11 max-w-full rounded-lg border border-border bg-surface-2 px-3 text-sm font-semibold"
+        >
+          <option value="">{fromTemplate.isPending ? 'Creating…' : 'From FM template…'}</option>
+          {config.tacticalStyles
+            .filter((st) => FM_TEMPLATES.some((t) => t.style === st.code))
+            .map((st) => (
+              <optgroup key={st.code} label={st.name}>
+                {FM_TEMPLATES.map((t, i) =>
+                  t.style === st.code ? (
+                    <option key={i} value={i}>
+                      {st.name}: {t.label}
+                    </option>
+                  ) : null,
+                )}
+              </optgroup>
+            ))}
+        </select>
         <label
           className={clsx(
             'inline-flex min-h-11 cursor-pointer items-center gap-2 rounded-lg px-3 text-sm font-semibold hover:bg-surface-2',
@@ -176,7 +224,7 @@ export function Tactics() {
             }}
           />
         </label>
-        <ErrorText error={upload.error} />
+        <ErrorText error={upload.error ?? fromTemplate.error} />
         {versionNote && (
           <p className="w-full rounded-lg border border-sky-400/50 bg-sky-400/10 p-2 text-sm text-sky-200">
             {versionNote}

@@ -1,0 +1,1632 @@
+[
+  {
+    "style": "CATE",
+    "label": "5-2-3 DM Wide / 5-2-3 DM Wide",
+    "codes": [4, 1, 2, 7, 2, 3, 4, 1, 20, 0, 0, 8, 97, 132, 136, 102, 0, 0, 255],
+    "slots": [
+      { "mask": 1, "maskOop": 1, "role": "2097153", "roleOop": "4194305" },
+      { "mask": 32, "maskOop": 32, "role": "4194312", "roleOop": "2101248" },
+      { "mask": 2097168, "maskOop": 2097168, "role": "18874368", "roleOop": "2097160" },
+      { "mask": 1048592, "maskOop": 1048592, "role": "18874368", "roleOop": "2097160" },
+      { "mask": 64, "maskOop": 64, "role": "4194312", "roleOop": "2113536" },
+      { "mask": 16384, "maskOop": 16384, "role": "8389632", "roleOop": "4398050705408" },
+      { "mask": 2048, "maskOop": 2048, "role": "562949957615616", "roleOop": "274882101248" },
+      { "mask": 2097280, "maskOop": 2097280, "role": "2097168", "roleOop": "2359296" },
+      { "mask": 16, "maskOop": 16, "role": "2097154", "roleOop": "2097184" },
+      { "mask": 1048704, "maskOop": 1048704, "role": "4227072", "roleOop": "2129920" },
+      { "mask": 4096, "maskOop": 4096, "role": "35184380477440", "roleOop": "274882101248" }
+    ]
+  },
+  {
+    "style": "CATE",
+    "label": "5-2-3 DM Wide / 5-2-2-1 DM AM",
+    "codes": [4, 1, 2, 7, 2, 3, 4, 1, 20, 0, 0, 8, 97, 132, 136, 102, 0, 0, 255],
+    "slots": [
+      { "mask": 1, "maskOop": 1, "role": "2097153", "roleOop": "4194305" },
+      { "mask": 32, "maskOop": 32, "role": "4194312", "roleOop": "2101248" },
+      { "mask": 2097168, "maskOop": 2097168, "role": "18874368", "roleOop": "2097160" },
+      { "mask": 1048592, "maskOop": 1048592, "role": "18874368", "roleOop": "2097160" },
+      { "mask": 64, "maskOop": 64, "role": "4194312", "roleOop": "2113536" },
+      { "mask": 16384, "maskOop": 16384, "role": "8389632", "roleOop": "4398050705408" },
+      { "mask": 2048, "maskOop": 2105344, "role": "562949957615616", "roleOop": "2149580800" },
+      { "mask": 2097280, "maskOop": 2097280, "role": "2097168", "roleOop": "2359296" },
+      { "mask": 16, "maskOop": 16, "role": "2097154", "roleOop": "2097184" },
+      { "mask": 1048704, "maskOop": 1048704, "role": "4227072", "roleOop": "2129920" },
+      { "mask": 4096, "maskOop": 1056768, "role": "35184380477440", "roleOop": "1077936128" }
+    ]
+  },
+  {
+    "style": "CATE",
+    "label": "5-2-3 DM Wide / 4-3-3 DM Wide",
+    "codes": [4, 1, 2, 7, 2, 3, 4, 1, 20, 0, 0, 8, 97, 132, 136, 102, 0, 0, 255],
+    "slots": [
+      { "mask": 1, "maskOop": 1, "role": "2097153", "roleOop": "4194305" },
+      { "mask": 32, "maskOop": 4, "role": "4194312", "roleOop": "2097664" },
+      { "mask": 2097168, "maskOop": 2097168, "role": "18874368", "roleOop": "2097160" },
+      { "mask": 1048592, "maskOop": 1048592, "role": "18874368", "roleOop": "2097160" },
+      { "mask": 64, "maskOop": 8, "role": "4194312", "roleOop": "2099200" },
+      { "mask": 16384, "maskOop": 16384, "role": "8389632", "roleOop": "4398050705408" },
+      { "mask": 2048, "maskOop": 2048, "role": "562949957615616", "roleOop": "274882101248" },
+      { "mask": 2097280, "maskOop": 2098176, "role": "2097168", "roleOop": "270532608" },
+      { "mask": 16, "maskOop": 128, "role": "18874368", "roleOop": "2162688" },
+      { "mask": 1048704, "maskOop": 1049600, "role": "4227072", "roleOop": "5242880" },
+      { "mask": 4096, "maskOop": 4096, "role": "35184380477440", "roleOop": "549757911040" }
+    ]
+  },
+  {
+    "style": "CATE",
+    "label": "5-2-1-2 DM AM / 5-2-1-2 DM AM",
+    "codes": [4, 1, 2, 7, 2, 3, 4, 1, 20, 0, 0, 8, 97, 132, 136, 102, 0, 0, 255],
+    "slots": [
+      { "mask": 1, "maskOop": 1, "role": "2097153", "roleOop": "4194305" },
+      { "mask": 32, "maskOop": 32, "role": "4194312", "roleOop": "2101248" },
+      { "mask": 2097168, "maskOop": 2097168, "role": "18874368", "roleOop": "2097160" },
+      { "mask": 1048592, "maskOop": 1048592, "role": "18874368", "roleOop": "2097160" },
+      { "mask": 64, "maskOop": 64, "role": "4194312", "roleOop": "2101248" },
+      { "mask": 8192, "maskOop": 8192, "role": "4303355904", "roleOop": "2149580800" },
+      { "mask": 2113536, "maskOop": 2113536, "role": "2155872256", "roleOop": "8796095119360" },
+      { "mask": 2097280, "maskOop": 2097280, "role": "4227072", "roleOop": "2129920" },
+      { "mask": 16, "maskOop": 16, "role": "2097154", "roleOop": "2097184" },
+      { "mask": 1048704, "maskOop": 1048704, "role": "2097168", "roleOop": "2129920" },
+      { "mask": 1064960, "maskOop": 1064960, "role": "8912896", "roleOop": "4398050705408" }
+    ]
+  },
+  {
+    "style": "CATE",
+    "label": "5-2-1-2 DM AM / 5-3-2 DM WB",
+    "codes": [4, 1, 2, 7, 2, 3, 4, 1, 20, 0, 0, 8, 97, 132, 136, 102, 0, 0, 255],
+    "slots": [
+      { "mask": 1, "maskOop": 1, "role": "2097153", "roleOop": "4194305" },
+      { "mask": 32, "maskOop": 32, "role": "4194312", "roleOop": "2101248" },
+      { "mask": 2097168, "maskOop": 2097168, "role": "18874368", "roleOop": "2097160" },
+      { "mask": 1048592, "maskOop": 1048592, "role": "18874368", "roleOop": "2097160" },
+      { "mask": 64, "maskOop": 64, "role": "4194312", "roleOop": "2101248" },
+      { "mask": 8192, "maskOop": 1049600, "role": "4303355904", "roleOop": "5242880" },
+      { "mask": 2113536, "maskOop": 2113536, "role": "2155872256", "roleOop": "4398050705408" },
+      { "mask": 2097280, "maskOop": 2098176, "role": "4227072", "roleOop": "5242880" },
+      { "mask": 16, "maskOop": 16, "role": "2097154", "roleOop": "2097184" },
+      { "mask": 1048704, "maskOop": 128, "role": "2097168", "roleOop": "2359296" },
+      { "mask": 1064960, "maskOop": 1064960, "role": "8912896", "roleOop": "17592194433024" }
+    ]
+  },
+  {
+    "style": "CATE",
+    "label": "5-2-1-2 DM AM / 4-4-2 Diamond Narrow",
+    "codes": [4, 1, 2, 7, 2, 3, 4, 1, 20, 0, 0, 8, 97, 132, 136, 102, 0, 0, 255],
+    "slots": [
+      { "mask": 1, "maskOop": 1, "role": "2097153", "roleOop": "4194305" },
+      { "mask": 32, "maskOop": 4, "role": "4194312", "roleOop": "2097664" },
+      { "mask": 2097168, "maskOop": 2097168, "role": "18874368", "roleOop": "2097160" },
+      { "mask": 1048592, "maskOop": 1048592, "role": "18874368", "roleOop": "2097160" },
+      { "mask": 64, "maskOop": 8, "role": "4194312", "roleOop": "2097664" },
+      { "mask": 8192, "maskOop": 8192, "role": "4303355904", "roleOop": "2149580800" },
+      { "mask": 2113536, "maskOop": 2113536, "role": "2155872256", "roleOop": "8796095119360" },
+      { "mask": 2097280, "maskOop": 2098176, "role": "4227072", "roleOop": "5242880" },
+      { "mask": 16, "maskOop": 128, "role": "18874368", "roleOop": "2162688" },
+      { "mask": 1048704, "maskOop": 1049600, "role": "2097168", "roleOop": "541065216" },
+      { "mask": 1064960, "maskOop": 1064960, "role": "8912896", "roleOop": "4398050705408" }
+    ]
+  },
+  {
+    "style": "CATE",
+    "label": "5-2-2-1 DM AM / 5-2-2-1 DM AM",
+    "codes": [4, 1, 2, 7, 2, 3, 4, 1, 20, 0, 0, 8, 97, 132, 136, 102, 0, 0, 255],
+    "slots": [
+      { "mask": 1, "maskOop": 1, "role": "2097153", "roleOop": "4194305" },
+      { "mask": 32, "maskOop": 32, "role": "4194312", "roleOop": "2101248" },
+      { "mask": 2097168, "maskOop": 2097168, "role": "18874368", "roleOop": "2097160" },
+      { "mask": 1048592, "maskOop": 1048592, "role": "18874368", "roleOop": "2097160" },
+      { "mask": 64, "maskOop": 64, "role": "4194312", "roleOop": "2113536" },
+      { "mask": 16384, "maskOop": 16384, "role": "8390656", "roleOop": "4398050705408" },
+      { "mask": 2105344, "maskOop": 2105344, "role": "72057594046316544", "roleOop": "1077936128" },
+      { "mask": 2097280, "maskOop": 2097280, "role": "4227072", "roleOop": "2129920" },
+      { "mask": 16, "maskOop": 16, "role": "2097154", "roleOop": "2097184" },
+      { "mask": 1048704, "maskOop": 1048704, "role": "2097168", "roleOop": "2359296" },
+      { "mask": 1056768, "maskOop": 1056768, "role": "8519680", "roleOop": "2149580800" }
+    ]
+  },
+  {
+    "style": "CATE",
+    "label": "5-2-2-1 DM AM / 5-2-3 DM Wide",
+    "codes": [4, 1, 2, 7, 2, 3, 4, 1, 20, 0, 0, 8, 97, 132, 136, 102, 0, 0, 255],
+    "slots": [
+      { "mask": 1, "maskOop": 1, "role": "2097153", "roleOop": "4194305" },
+      { "mask": 32, "maskOop": 32, "role": "4194312", "roleOop": "2113536" },
+      { "mask": 2097168, "maskOop": 2097168, "role": "18874368", "roleOop": "2097160" },
+      { "mask": 1048592, "maskOop": 1048592, "role": "18874368", "roleOop": "2097160" },
+      { "mask": 64, "maskOop": 64, "role": "4194312", "roleOop": "2113536" },
+      { "mask": 16384, "maskOop": 16384, "role": "8390656", "roleOop": "4398050705408" },
+      { "mask": 2105344, "maskOop": 2048, "role": "72057594046316544", "roleOop": "274882101248" },
+      { "mask": 2097280, "maskOop": 2097280, "role": "4227072", "roleOop": "2129920" },
+      { "mask": 16, "maskOop": 16, "role": "2097154", "roleOop": "2097184" },
+      { "mask": 1048704, "maskOop": 1048704, "role": "2097168", "roleOop": "2129920" },
+      { "mask": 1056768, "maskOop": 4096, "role": "8519680", "roleOop": "274882101248" }
+    ]
+  },
+  {
+    "style": "CATE",
+    "label": "5-2-2-1 DM AM / 4-3-2-1 DM AM Narrow",
+    "codes": [4, 1, 2, 7, 2, 3, 4, 1, 20, 0, 0, 8, 97, 132, 136, 102, 0, 0, 255],
+    "slots": [
+      { "mask": 1, "maskOop": 1, "role": "2097153", "roleOop": "4194305" },
+      { "mask": 32, "maskOop": 4, "role": "4194312", "roleOop": "2099200" },
+      { "mask": 2097168, "maskOop": 2097168, "role": "18874368", "roleOop": "2097160" },
+      { "mask": 1048592, "maskOop": 1048592, "role": "18874368", "roleOop": "2097160" },
+      { "mask": 64, "maskOop": 8, "role": "4194312", "roleOop": "2097664" },
+      { "mask": 16384, "maskOop": 16384, "role": "8390656", "roleOop": "8796095119360" },
+      { "mask": 2105344, "maskOop": 2105344, "role": "72057594046316544", "roleOop": "1077936128" },
+      { "mask": 2097280, "maskOop": 2098176, "role": "4227072", "roleOop": "541065216" },
+      { "mask": 16, "maskOop": 128, "role": "18874368", "roleOop": "2162688" },
+      { "mask": 1048704, "maskOop": 1049600, "role": "2097168", "roleOop": "270532608" },
+      { "mask": 1056768, "maskOop": 1056768, "role": "8519680", "roleOop": "1077936128" }
+    ]
+  },
+  {
+    "style": "CONT",
+    "label": "4-3-3 DM Wide / 4-3-3 DM Wide",
+    "codes": [4, 2, 5, 7, 2, 3, 136, 0, 2, 0, 10, 16, 1, 34, 100, 128, 0, 0, 255],
+    "slots": [
+      { "mask": 1, "maskOop": 1, "role": "4198400", "roleOop": "8388610" },
+      { "mask": 4, "maskOop": 4, "role": "4503599629467648", "roleOop": "4195328" },
+      { "mask": 2097168, "maskOop": 2097168, "role": "2097154", "roleOop": "2097160" },
+      { "mask": 1048592, "maskOop": 1048592, "role": "18874368", "roleOop": "2097160" },
+      { "mask": 8, "maskOop": 8, "role": "17592188141568", "roleOop": "2097664" },
+      { "mask": 128, "maskOop": 128, "role": "2097168", "roleOop": "2129920" },
+      { "mask": 2098176, "maskOop": 2098176, "role": "8519680", "roleOop": "5242880" },
+      { "mask": 1049600, "maskOop": 1049600, "role": "72057594046316544", "roleOop": "142606336" },
+      { "mask": 2048, "maskOop": 2048, "role": "35184380477440", "roleOop": "274882101248" },
+      { "mask": 4096, "maskOop": 4096, "role": "4194432", "roleOop": "549757911040" },
+      { "mask": 16384, "maskOop": 16384, "role": "8390656", "roleOop": "4398050705408" }
+    ]
+  },
+  {
+    "style": "CONT",
+    "label": "4-3-3 DM Wide / 4-4-2 2DM",
+    "codes": [4, 2, 5, 7, 2, 3, 136, 0, 2, 0, 10, 16, 1, 34, 100, 128, 0, 0, 255],
+    "slots": [
+      { "mask": 1, "maskOop": 1, "role": "4198400", "roleOop": "8388610" },
+      { "mask": 4, "maskOop": 4, "role": "4503599629467648", "roleOop": "2097664" },
+      { "mask": 2097168, "maskOop": 2097168, "role": "2097154", "roleOop": "2097160" },
+      { "mask": 1048592, "maskOop": 1048592, "role": "18874368", "roleOop": "2097160" },
+      { "mask": 8, "maskOop": 8, "role": "17592188141568", "roleOop": "2097664" },
+      { "mask": 128, "maskOop": 1048704, "role": "2097168", "roleOop": "2129920" },
+      { "mask": 2098176, "maskOop": 2097280, "role": "8519680", "roleOop": "4325376" },
+      {
+        "mask": 1049600,
+        "maskOop": 1064960,
+        "role": "72057594046316544",
+        "roleOop": "8796095119360"
+      },
+      { "mask": 2048, "maskOop": 256, "role": "35184380477440", "roleOop": "34363932672" },
+      { "mask": 4096, "maskOop": 512, "role": "4194432", "roleOop": "34363932672" },
+      { "mask": 16384, "maskOop": 2113536, "role": "8390656", "roleOop": "4398050705408" }
+    ]
+  },
+  {
+    "style": "CONT",
+    "label": "4-3-3 DM Wide / 4-1-4-1 DM",
+    "codes": [4, 2, 5, 7, 2, 3, 136, 0, 2, 0, 10, 16, 1, 34, 100, 128, 0, 0, 255],
+    "slots": [
+      { "mask": 1, "maskOop": 1, "role": "4198400", "roleOop": "8388610" },
+      { "mask": 4, "maskOop": 4, "role": "4503599629467648", "roleOop": "2097664" },
+      { "mask": 2097168, "maskOop": 2097168, "role": "2097154", "roleOop": "2097160" },
+      { "mask": 1048592, "maskOop": 1048592, "role": "18874368", "roleOop": "2097160" },
+      { "mask": 8, "maskOop": 8, "role": "17592188141568", "roleOop": "2097664" },
+      { "mask": 128, "maskOop": 128, "role": "2097168", "roleOop": "2129920" },
+      { "mask": 2098176, "maskOop": 2098176, "role": "8519680", "roleOop": "5242880" },
+      { "mask": 1049600, "maskOop": 1049600, "role": "72057594046316544", "roleOop": "142606336" },
+      { "mask": 2048, "maskOop": 256, "role": "35184380477440", "roleOop": "34363932672" },
+      { "mask": 4096, "maskOop": 512, "role": "4194432", "roleOop": "34363932672" },
+      { "mask": 16384, "maskOop": 16384, "role": "8390656", "roleOop": "4398050705408" }
+    ]
+  },
+  {
+    "style": "CONT",
+    "label": "4-2-3-1 DM AM Wide / 4-4-2 2DM",
+    "codes": [4, 2, 5, 7, 2, 3, 136, 0, 2, 0, 10, 16, 1, 34, 100, 128, 0, 0, 255],
+    "slots": [
+      { "mask": 1, "maskOop": 1, "role": "4198400", "roleOop": "8388610" },
+      { "mask": 4, "maskOop": 4, "role": "36028797023158272", "roleOop": "2097664" },
+      { "mask": 2097168, "maskOop": 2097168, "role": "18874368", "roleOop": "2097160" },
+      { "mask": 1048592, "maskOop": 1048592, "role": "2097154", "roleOop": "2097160" },
+      { "mask": 8, "maskOop": 8, "role": "4503599629467648", "roleOop": "2097664" },
+      { "mask": 2097280, "maskOop": 2097280, "role": "4259840", "roleOop": "4325376" },
+      { "mask": 8192, "maskOop": 1064960, "role": "8519680", "roleOop": "8796095119360" },
+      { "mask": 1048704, "maskOop": 1048704, "role": "2097168", "roleOop": "2129920" },
+      { "mask": 2048, "maskOop": 256, "role": "4194432", "roleOop": "34363932672" },
+      { "mask": 16384, "maskOop": 2113536, "role": "8390656", "roleOop": "17592194433024" },
+      { "mask": 4096, "maskOop": 512, "role": "35184380477440", "roleOop": "34363932672" }
+    ]
+  },
+  {
+    "style": "CONT",
+    "label": "4-2-3-1 DM AM Wide / 4-4-1-1 2DM",
+    "codes": [4, 2, 5, 7, 2, 3, 136, 0, 2, 0, 10, 16, 1, 34, 100, 128, 0, 0, 255],
+    "slots": [
+      { "mask": 1, "maskOop": 1, "role": "4198400", "roleOop": "8388610" },
+      { "mask": 4, "maskOop": 4, "role": "36028797023158272", "roleOop": "2097664" },
+      { "mask": 2097168, "maskOop": 2097168, "role": "18874368", "roleOop": "2097160" },
+      { "mask": 1048592, "maskOop": 1048592, "role": "2097154", "roleOop": "2097160" },
+      { "mask": 8, "maskOop": 8, "role": "4503599629467648", "roleOop": "2097664" },
+      { "mask": 2097280, "maskOop": 2097280, "role": "4259840", "roleOop": "4325376" },
+      { "mask": 8192, "maskOop": 8192, "role": "8519680", "roleOop": "1077936128" },
+      { "mask": 1048704, "maskOop": 1048704, "role": "2097168", "roleOop": "2129920" },
+      { "mask": 2048, "maskOop": 256, "role": "4194432", "roleOop": "34363932672" },
+      { "mask": 16384, "maskOop": 16384, "role": "8390656", "roleOop": "17592194433024" },
+      { "mask": 4096, "maskOop": 512, "role": "35184380477440", "roleOop": "34363932672" }
+    ]
+  },
+  {
+    "style": "CONT",
+    "label": "4-2-3-1 DM AM Wide / 4-3-3 DM Wide",
+    "codes": [4, 2, 5, 7, 2, 3, 136, 0, 2, 0, 10, 16, 1, 34, 100, 128, 0, 0, 255],
+    "slots": [
+      { "mask": 1, "maskOop": 1, "role": "4198400", "roleOop": "8388610" },
+      { "mask": 4, "maskOop": 4, "role": "36028797023158272", "roleOop": "4195328" },
+      { "mask": 2097168, "maskOop": 2097168, "role": "18874368", "roleOop": "2097184" },
+      { "mask": 1048592, "maskOop": 1048592, "role": "2097154", "roleOop": "2097160" },
+      { "mask": 8, "maskOop": 8, "role": "4503599629467648", "roleOop": "2097664" },
+      { "mask": 2097280, "maskOop": 2098176, "role": "4259840", "roleOop": "5242880" },
+      { "mask": 8192, "maskOop": 1049600, "role": "8519680", "roleOop": "142606336" },
+      { "mask": 1048704, "maskOop": 128, "role": "2097168", "roleOop": "2129920" },
+      { "mask": 2048, "maskOop": 2048, "role": "4194432", "roleOop": "274882101248" },
+      { "mask": 16384, "maskOop": 16384, "role": "8390656", "roleOop": "4398050705408" },
+      { "mask": 4096, "maskOop": 4096, "role": "35184380477440", "roleOop": "274882101248" }
+    ]
+  },
+  {
+    "style": "CONT",
+    "label": "5-2-3 DM Wide / 5-2-3 DM Wide",
+    "codes": [4, 2, 5, 7, 2, 3, 136, 0, 2, 0, 10, 16, 1, 34, 100, 128, 0, 0, 255],
+    "slots": [
+      { "mask": 1, "maskOop": 1, "role": "4198400", "roleOop": "8388610" },
+      { "mask": 32, "maskOop": 32, "role": "274886295552", "roleOop": "4202496" },
+      { "mask": 2097168, "maskOop": 2097168, "role": "2251799815782400", "roleOop": "2097280" },
+      { "mask": 1048592, "maskOop": 1048592, "role": "2251799815782400", "roleOop": "2097216" },
+      { "mask": 64, "maskOop": 64, "role": "4194312", "roleOop": "2101248" },
+      { "mask": 2097280, "maskOop": 2097280, "role": "2097168", "roleOop": "2129920" },
+      { "mask": 16, "maskOop": 16, "role": "18874368", "roleOop": "2097160" },
+      { "mask": 1048704, "maskOop": 1048704, "role": "4227072", "roleOop": "2621440" },
+      { "mask": 2048, "maskOop": 2048, "role": "562949957615616", "roleOop": "274882101248" },
+      { "mask": 16384, "maskOop": 16384, "role": "8390656", "roleOop": "4398050705408" },
+      { "mask": 4096, "maskOop": 4096, "role": "142606336", "roleOop": "1099520016384" }
+    ]
+  },
+  {
+    "style": "CONT",
+    "label": "5-2-3 DM Wide / 5-2-2-1 DM AM",
+    "codes": [4, 2, 5, 7, 2, 3, 136, 0, 2, 0, 10, 16, 1, 34, 100, 128, 0, 0, 255],
+    "slots": [
+      { "mask": 1, "maskOop": 1, "role": "4198400", "roleOop": "8388610" },
+      { "mask": 32, "maskOop": 32, "role": "274886295552", "roleOop": "4202496" },
+      { "mask": 2097168, "maskOop": 2097168, "role": "2251799815782400", "roleOop": "2097280" },
+      { "mask": 1048592, "maskOop": 1048592, "role": "2251799815782400", "roleOop": "2097216" },
+      { "mask": 64, "maskOop": 64, "role": "4194312", "roleOop": "2101248" },
+      { "mask": 2097280, "maskOop": 2097280, "role": "2097168", "roleOop": "2129920" },
+      { "mask": 16, "maskOop": 16, "role": "18874368", "roleOop": "2097160" },
+      { "mask": 1048704, "maskOop": 1048704, "role": "4227072", "roleOop": "2621440" },
+      { "mask": 2048, "maskOop": 2105344, "role": "562949957615616", "roleOop": "1077936128" },
+      { "mask": 16384, "maskOop": 16384, "role": "8390656", "roleOop": "4398050705408" },
+      { "mask": 4096, "maskOop": 1056768, "role": "142606336", "roleOop": "4303355904" }
+    ]
+  },
+  {
+    "style": "CONT",
+    "label": "5-2-3 DM Wide / 4-3-3 DM Wide",
+    "codes": [4, 2, 5, 7, 2, 3, 136, 0, 2, 0, 10, 16, 1, 34, 100, 128, 0, 0, 255],
+    "slots": [
+      { "mask": 1, "maskOop": 1, "role": "4198400", "roleOop": "8388610" },
+      { "mask": 32, "maskOop": 4, "role": "274886295552", "roleOop": "4195328" },
+      { "mask": 2097168, "maskOop": 2097168, "role": "2251799815782400", "roleOop": "2097184" },
+      { "mask": 1048592, "maskOop": 1048592, "role": "2251799815782400", "roleOop": "2097160" },
+      { "mask": 64, "maskOop": 8, "role": "4194312", "roleOop": "2097664" },
+      { "mask": 2097280, "maskOop": 2098176, "role": "2097168", "roleOop": "5242880" },
+      { "mask": 16, "maskOop": 128, "role": "18874368", "roleOop": "2129920" },
+      { "mask": 1048704, "maskOop": 1049600, "role": "4227072", "roleOop": "142606336" },
+      { "mask": 2048, "maskOop": 2048, "role": "562949957615616", "roleOop": "274882101248" },
+      { "mask": 16384, "maskOop": 16384, "role": "8390656", "roleOop": "4398050705408" },
+      { "mask": 4096, "maskOop": 4096, "role": "142606336", "roleOop": "549757911040" }
+    ]
+  },
+  {
+    "style": "DIRE",
+    "label": "4-4-2 2DM / 4-4-2 2DM",
+    "codes": [4, 2, 3, 7, 2, 3, 36, 1, 0, 0, 0, 132, 64, 132, 4, 33, 0, 0, 255],
+    "slots": [
+      { "mask": 1, "maskOop": 1, "role": "9007199256838144", "roleOop": "4194305" },
+      { "mask": 4, "maskOop": 4, "role": "4194308", "roleOop": "2097664" },
+      { "mask": 2097168, "maskOop": 2097168, "role": "538968064", "roleOop": "2097160" },
+      { "mask": 1048592, "maskOop": 1048592, "role": "2097154", "roleOop": "2097160" },
+      { "mask": 8, "maskOop": 8, "role": "4194312", "roleOop": "2097664" },
+      { "mask": 256, "maskOop": 256, "role": "4194432", "roleOop": "34363932672" },
+      { "mask": 2097280, "maskOop": 2097280, "role": "2097168", "roleOop": "2359296" },
+      { "mask": 1048704, "maskOop": 1048704, "role": "4227072", "roleOop": "2129920" },
+      { "mask": 512, "maskOop": 512, "role": "4194368", "roleOop": "68721573888" },
+      { "mask": 2113536, "maskOop": 2113536, "role": "8389632", "roleOop": "4398050705408" },
+      { "mask": 1064960, "maskOop": 1064960, "role": "8912896", "roleOop": "4398050705408" }
+    ]
+  },
+  {
+    "style": "DIRE",
+    "label": "4-4-2 2DM / 4-4-1-1 2DM",
+    "codes": [4, 2, 3, 7, 2, 3, 36, 1, 0, 0, 0, 132, 64, 132, 4, 33, 0, 0, 255],
+    "slots": [
+      { "mask": 1, "maskOop": 1, "role": "9007199256838144", "roleOop": "4194305" },
+      { "mask": 4, "maskOop": 4, "role": "4194308", "roleOop": "2097664" },
+      { "mask": 2097168, "maskOop": 2097168, "role": "538968064", "roleOop": "2097160" },
+      { "mask": 1048592, "maskOop": 1048592, "role": "2097154", "roleOop": "2097160" },
+      { "mask": 8, "maskOop": 8, "role": "4194312", "roleOop": "2097664" },
+      { "mask": 256, "maskOop": 256, "role": "4194432", "roleOop": "34363932672" },
+      { "mask": 2097280, "maskOop": 2097280, "role": "2097168", "roleOop": "2359296" },
+      { "mask": 1048704, "maskOop": 1048704, "role": "4227072", "roleOop": "2129920" },
+      { "mask": 512, "maskOop": 512, "role": "4194368", "roleOop": "68721573888" },
+      { "mask": 2113536, "maskOop": 16384, "role": "8389632", "roleOop": "4398050705408" },
+      { "mask": 1064960, "maskOop": 8192, "role": "8912896", "roleOop": "1077936128" }
+    ]
+  },
+  {
+    "style": "DIRE",
+    "label": "4-4-2 2DM / 5-3-2 DM WB",
+    "codes": [4, 2, 3, 7, 2, 3, 36, 1, 0, 0, 0, 132, 64, 132, 4, 33, 0, 0, 255],
+    "slots": [
+      { "mask": 1, "maskOop": 1, "role": "9007199256838144", "roleOop": "4194305" },
+      { "mask": 4, "maskOop": 32, "role": "4194308", "roleOop": "2101248" },
+      { "mask": 2097168, "maskOop": 2097168, "role": "538968064", "roleOop": "2097160" },
+      { "mask": 1048592, "maskOop": 16, "role": "2097154", "roleOop": "2097184" },
+      { "mask": 8, "maskOop": 1048592, "role": "4194312", "roleOop": "2097216" },
+      { "mask": 256, "maskOop": 2098176, "role": "4194432", "roleOop": "5242880" },
+      { "mask": 2097280, "maskOop": 128, "role": "2097168", "roleOop": "2359296" },
+      { "mask": 1048704, "maskOop": 1049600, "role": "4227072", "roleOop": "270532608" },
+      { "mask": 512, "maskOop": 64, "role": "4194368", "roleOop": "4202496" },
+      { "mask": 2113536, "maskOop": 2113536, "role": "8389632", "roleOop": "4398050705408" },
+      { "mask": 1064960, "maskOop": 1064960, "role": "8912896", "roleOop": "35184380477440" }
+    ]
+  },
+  {
+    "style": "DIRE",
+    "label": "4-3-3 DM Wide / 4-3-3 DM Wide",
+    "codes": [4, 2, 3, 7, 2, 3, 36, 1, 0, 0, 0, 132, 64, 132, 4, 33, 0, 0, 255],
+    "slots": [
+      { "mask": 1, "maskOop": 1, "role": "9007199256838144", "roleOop": "4194305" },
+      { "mask": 4, "maskOop": 4, "role": "4194308", "roleOop": "2097664" },
+      { "mask": 2097168, "maskOop": 2097168, "role": "2097154", "roleOop": "2097160" },
+      { "mask": 1048592, "maskOop": 1048592, "role": "538968064", "roleOop": "2097160" },
+      { "mask": 8, "maskOop": 8, "role": "4194312", "roleOop": "2097664" },
+      { "mask": 2048, "maskOop": 2048, "role": "4194432", "roleOop": "549757911040" },
+      { "mask": 2098176, "maskOop": 2098176, "role": "8389120", "roleOop": "5242880" },
+      { "mask": 1049600, "maskOop": 1049600, "role": "281474980904960", "roleOop": "5242880" },
+      { "mask": 4096, "maskOop": 4096, "role": "142606336", "roleOop": "549757911040" },
+      { "mask": 128, "maskOop": 128, "role": "2097168", "roleOop": "2129920" },
+      { "mask": 16384, "maskOop": 16384, "role": "8390656", "roleOop": "17592194433024" }
+    ]
+  },
+  {
+    "style": "DIRE",
+    "label": "4-3-3 DM Wide / 4-4-2 2DM",
+    "codes": [4, 2, 3, 7, 2, 3, 36, 1, 0, 0, 0, 132, 64, 132, 4, 33, 0, 0, 255],
+    "slots": [
+      { "mask": 1, "maskOop": 1, "role": "9007199256838144", "roleOop": "4194305" },
+      { "mask": 4, "maskOop": 4, "role": "4194308", "roleOop": "2097664" },
+      { "mask": 2097168, "maskOop": 2097168, "role": "2097154", "roleOop": "2097160" },
+      { "mask": 1048592, "maskOop": 1048592, "role": "538968064", "roleOop": "2097160" },
+      { "mask": 8, "maskOop": 8, "role": "4194312", "roleOop": "2097664" },
+      { "mask": 2048, "maskOop": 256, "role": "4194432", "roleOop": "34363932672" },
+      { "mask": 2098176, "maskOop": 2113536, "role": "8389120", "roleOop": "8796095119360" },
+      { "mask": 1049600, "maskOop": 1048704, "role": "281474980904960", "roleOop": "2129920" },
+      { "mask": 4096, "maskOop": 512, "role": "142606336", "roleOop": "34363932672" },
+      { "mask": 128, "maskOop": 2097280, "role": "2097168", "roleOop": "2129920" },
+      { "mask": 16384, "maskOop": 1064960, "role": "8390656", "roleOop": "17592194433024" }
+    ]
+  },
+  {
+    "style": "DIRE",
+    "label": "4-3-3 DM Wide / 4-1-4-1 DM",
+    "codes": [4, 2, 3, 7, 2, 3, 36, 1, 0, 0, 0, 132, 64, 132, 4, 33, 0, 0, 255],
+    "slots": [
+      { "mask": 1, "maskOop": 1, "role": "9007199256838144", "roleOop": "4194305" },
+      { "mask": 4, "maskOop": 4, "role": "4194308", "roleOop": "2099200" },
+      { "mask": 2097168, "maskOop": 2097168, "role": "538968064", "roleOop": "2097160" },
+      { "mask": 1048592, "maskOop": 1048592, "role": "2097154", "roleOop": "2097160" },
+      { "mask": 8, "maskOop": 8, "role": "4194312", "roleOop": "2097664" },
+      { "mask": 2048, "maskOop": 256, "role": "4194432", "roleOop": "34363932672" },
+      { "mask": 2098176, "maskOop": 2098176, "role": "8389120", "roleOop": "5242880" },
+      { "mask": 1049600, "maskOop": 1049600, "role": "281474980904960", "roleOop": "5242880" },
+      { "mask": 4096, "maskOop": 512, "role": "142606336", "roleOop": "34363932672" },
+      { "mask": 128, "maskOop": 128, "role": "2097168", "roleOop": "2162688" },
+      { "mask": 16384, "maskOop": 16384, "role": "8390656", "roleOop": "17592194433024" }
+    ]
+  },
+  {
+    "style": "DIRE",
+    "label": "5-2-3 DM Wide / 5-2-3 DM Wide",
+    "codes": [4, 2, 3, 7, 2, 3, 36, 1, 0, 0, 0, 132, 64, 132, 4, 33, 0, 0, 255],
+    "slots": [
+      { "mask": 1, "maskOop": 1, "role": "9007199256838144", "roleOop": "4194305" },
+      { "mask": 2097168, "maskOop": 2097168, "role": "2251799815782400", "roleOop": "2097160" },
+      { "mask": 16, "maskOop": 16, "role": "538968064", "roleOop": "2097184" },
+      { "mask": 1048592, "maskOop": 1048592, "role": "2251799815782400", "roleOop": "2097160" },
+      { "mask": 32, "maskOop": 32, "role": "4194312", "roleOop": "2113536" },
+      { "mask": 2097280, "maskOop": 2097280, "role": "4227072", "roleOop": "2129920" },
+      { "mask": 1048704, "maskOop": 1048704, "role": "2097168", "roleOop": "2129920" },
+      { "mask": 64, "maskOop": 64, "role": "4194312", "roleOop": "2101248" },
+      { "mask": 2048, "maskOop": 2048, "role": "562949957615616", "roleOop": "274882101248" },
+      { "mask": 4096, "maskOop": 4096, "role": "142606336", "roleOop": "274882101248" },
+      { "mask": 16384, "maskOop": 16384, "role": "8389632", "roleOop": "4398050705408" }
+    ]
+  },
+  {
+    "style": "DIRE",
+    "label": "5-2-3 DM Wide / 5-2-2-1 DM AM",
+    "codes": [4, 2, 3, 7, 2, 3, 36, 1, 0, 0, 0, 132, 64, 132, 4, 33, 0, 0, 255],
+    "slots": [
+      { "mask": 1, "maskOop": 1, "role": "9007199256838144", "roleOop": "4194305" },
+      { "mask": 2097168, "maskOop": 2097168, "role": "2251799815782400", "roleOop": "2097160" },
+      { "mask": 16, "maskOop": 16, "role": "538968064", "roleOop": "2097184" },
+      { "mask": 1048592, "maskOop": 1048592, "role": "2251799815782400", "roleOop": "2097160" },
+      { "mask": 32, "maskOop": 32, "role": "4194312", "roleOop": "2113536" },
+      { "mask": 2097280, "maskOop": 2097280, "role": "4227072", "roleOop": "2129920" },
+      { "mask": 1048704, "maskOop": 1048704, "role": "2097168", "roleOop": "2129920" },
+      { "mask": 64, "maskOop": 64, "role": "4194312", "roleOop": "2101248" },
+      { "mask": 2048, "maskOop": 2105344, "role": "562949957615616", "roleOop": "1077936128" },
+      { "mask": 4096, "maskOop": 1056768, "role": "142606336", "roleOop": "8598323200" },
+      { "mask": 16384, "maskOop": 16384, "role": "8389632", "roleOop": "4398050705408" }
+    ]
+  },
+  {
+    "style": "DIRE",
+    "label": "5-2-3 DM Wide / 4-3-3 DM Wide",
+    "codes": [4, 2, 3, 7, 2, 3, 36, 1, 0, 0, 0, 132, 64, 132, 4, 33, 0, 0, 255],
+    "slots": [
+      { "mask": 1, "maskOop": 1, "role": "9007199256838144", "roleOop": "4194305" },
+      { "mask": 2097168, "maskOop": 2097168, "role": "2251799815782400", "roleOop": "2097160" },
+      { "mask": 16, "maskOop": 128, "role": "538968064", "roleOop": "2162688" },
+      { "mask": 1048592, "maskOop": 1048592, "role": "2251799815782400", "roleOop": "2097160" },
+      { "mask": 32, "maskOop": 4, "role": "4194312", "roleOop": "2099200" },
+      { "mask": 2097280, "maskOop": 2098176, "role": "4227072", "roleOop": "5242880" },
+      { "mask": 1048704, "maskOop": 1049600, "role": "2097168", "roleOop": "270532608" },
+      { "mask": 64, "maskOop": 8, "role": "4194312", "roleOop": "2097664" },
+      { "mask": 2048, "maskOop": 2048, "role": "562949957615616", "roleOop": "549757911040" },
+      { "mask": 4096, "maskOop": 4096, "role": "142606336", "roleOop": "274882101248" },
+      { "mask": 16384, "maskOop": 16384, "role": "8389632", "roleOop": "4398050705408" }
+    ]
+  },
+  {
+    "style": "FLUI",
+    "label": "4-3-3 DM Wide / 4-3-3 DM Wide",
+    "codes": [4, 2, 3, 7, 2, 3, 40, 32, 0, 0, 0, 132, 64, 68, 68, 33, 0, 0, 255],
+    "slots": [
+      { "mask": 1, "maskOop": 1, "role": "2097153", "roleOop": "4194305" },
+      { "mask": 4, "maskOop": 4, "role": "4194308", "roleOop": "2097664" },
+      { "mask": 2097168, "maskOop": 2097168, "role": "18874368", "roleOop": "2097160" },
+      { "mask": 1048592, "maskOop": 1048592, "role": "2097154", "roleOop": "2097160" },
+      { "mask": 8, "maskOop": 8, "role": "4194312", "roleOop": "2097664" },
+      { "mask": 128, "maskOop": 128, "role": "2097168", "roleOop": "2129920" },
+      { "mask": 1049600, "maskOop": 1049600, "role": "4194336", "roleOop": "270532608" },
+      { "mask": 2098176, "maskOop": 2098176, "role": "8389120", "roleOop": "142606336" },
+      { "mask": 2048, "maskOop": 2048, "role": "4194432", "roleOop": "549757911040" },
+      { "mask": 4096, "maskOop": 4096, "role": "562949957615616", "roleOop": "274882101248" },
+      { "mask": 16384, "maskOop": 16384, "role": "8390656", "roleOop": "4398050705408" }
+    ]
+  },
+  {
+    "style": "FLUI",
+    "label": "4-3-3 DM Wide / 4-4-2 2DM",
+    "codes": [4, 3, 3, 7, 2, 3, 40, 32, 0, 0, 0, 132, 64, 68, 68, 33, 0, 0, 255],
+    "slots": [
+      { "mask": 1, "maskOop": 1, "role": "2097153", "roleOop": "4194305" },
+      { "mask": 4, "maskOop": 4, "role": "4194308", "roleOop": "2097664" },
+      { "mask": 2097168, "maskOop": 2097168, "role": "18874368", "roleOop": "2097160" },
+      { "mask": 1048592, "maskOop": 1048592, "role": "2097154", "roleOop": "2097160" },
+      { "mask": 8, "maskOop": 8, "role": "4194312", "roleOop": "2097664" },
+      { "mask": 128, "maskOop": 2097280, "role": "2097168", "roleOop": "2129920" },
+      { "mask": 1049600, "maskOop": 1048704, "role": "4194336", "roleOop": "2129920" },
+      { "mask": 2098176, "maskOop": 2113536, "role": "8389120", "roleOop": "8796095119360" },
+      { "mask": 2048, "maskOop": 256, "role": "4194432", "roleOop": "34363932672" },
+      { "mask": 4096, "maskOop": 512, "role": "562949957615616", "roleOop": "34363932672" },
+      { "mask": 16384, "maskOop": 1064960, "role": "8390656", "roleOop": "4398050705408" }
+    ]
+  },
+  {
+    "style": "FLUI",
+    "label": "4-3-3 DM Wide / 4-1-4-1 DM",
+    "codes": [4, 2, 3, 7, 2, 3, 40, 32, 0, 0, 0, 132, 64, 68, 68, 33, 0, 0, 255],
+    "slots": [
+      { "mask": 1, "maskOop": 1, "role": "2097153", "roleOop": "4194305" },
+      { "mask": 4, "maskOop": 4, "role": "4194308", "roleOop": "2097664" },
+      { "mask": 2097168, "maskOop": 2097168, "role": "18874368", "roleOop": "2097160" },
+      { "mask": 1048592, "maskOop": 1048592, "role": "2097154", "roleOop": "2097160" },
+      { "mask": 8, "maskOop": 8, "role": "4194312", "roleOop": "2097664" },
+      { "mask": 128, "maskOop": 128, "role": "2097168", "roleOop": "2129920" },
+      { "mask": 1049600, "maskOop": 1049600, "role": "4194336", "roleOop": "270532608" },
+      { "mask": 2098176, "maskOop": 2098176, "role": "8389120", "roleOop": "142606336" },
+      { "mask": 2048, "maskOop": 256, "role": "4194432", "roleOop": "34363932672" },
+      { "mask": 4096, "maskOop": 512, "role": "562949957615616", "roleOop": "34363932672" },
+      { "mask": 16384, "maskOop": 16384, "role": "8390656", "roleOop": "17592194433024" }
+    ]
+  },
+  {
+    "style": "FLUI",
+    "label": "4-2-3-1 DM AM Wide / 4-4-2 2DM",
+    "codes": [4, 2, 3, 7, 2, 3, 40, 32, 0, 0, 0, 132, 64, 68, 68, 33, 0, 0, 255],
+    "slots": [
+      { "mask": 1, "maskOop": 1, "role": "2097153", "roleOop": "4194305" },
+      { "mask": 4, "maskOop": 4, "role": "4194312", "roleOop": "2097664" },
+      { "mask": 2097168, "maskOop": 2097168, "role": "18874368", "roleOop": "2097160" },
+      { "mask": 1048592, "maskOop": 1048592, "role": "2097154", "roleOop": "2097160" },
+      { "mask": 8, "maskOop": 8, "role": "4194308", "roleOop": "2097664" },
+      { "mask": 8192, "maskOop": 1064960, "role": "72057594046316544", "roleOop": "8796095119360" },
+      { "mask": 1048704, "maskOop": 1048704, "role": "4227072", "roleOop": "2359296" },
+      { "mask": 2097280, "maskOop": 2097280, "role": "2097168", "roleOop": "2129920" },
+      { "mask": 2048, "maskOop": 256, "role": "562949957615616", "roleOop": "34363932672" },
+      { "mask": 4096, "maskOop": 512, "role": "4194432", "roleOop": "34363932672" },
+      { "mask": 16384, "maskOop": 2113536, "role": "8390656", "roleOop": "4398050705408" }
+    ]
+  },
+  {
+    "style": "FLUI",
+    "label": "4-2-3-1 DM AM Wide / 4-4-1-1 2DM",
+    "codes": [4, 2, 3, 7, 2, 3, 40, 32, 0, 0, 0, 132, 64, 68, 68, 33, 0, 0, 255],
+    "slots": [
+      { "mask": 1, "maskOop": 1, "role": "2097153", "roleOop": "4194305" },
+      { "mask": 4, "maskOop": 4, "role": "4194312", "roleOop": "2097664" },
+      { "mask": 2097168, "maskOop": 2097168, "role": "18874368", "roleOop": "2097160" },
+      { "mask": 1048592, "maskOop": 1048592, "role": "2097154", "roleOop": "2097160" },
+      { "mask": 8, "maskOop": 8, "role": "4194308", "roleOop": "2097664" },
+      { "mask": 8192, "maskOop": 8192, "role": "72057594046316544", "roleOop": "1077936128" },
+      { "mask": 1048704, "maskOop": 1048704, "role": "4227072", "roleOop": "2359296" },
+      { "mask": 2097280, "maskOop": 2097280, "role": "2097168", "roleOop": "2129920" },
+      { "mask": 2048, "maskOop": 256, "role": "562949957615616", "roleOop": "34363932672" },
+      { "mask": 4096, "maskOop": 512, "role": "4194432", "roleOop": "34363932672" },
+      { "mask": 16384, "maskOop": 16384, "role": "8390656", "roleOop": "4398050705408" }
+    ]
+  },
+  {
+    "style": "FLUI",
+    "label": "4-2-3-1 DM AM Wide / 4-3-3 DM Wide",
+    "codes": [4, 2, 3, 7, 2, 3, 40, 32, 0, 0, 0, 132, 64, 68, 68, 33, 0, 0, 255],
+    "slots": [
+      { "mask": 1, "maskOop": 1, "role": "2097153", "roleOop": "4194305" },
+      { "mask": 4, "maskOop": 4, "role": "4194312", "roleOop": "2097664" },
+      { "mask": 2097168, "maskOop": 2097168, "role": "18874368", "roleOop": "2097160" },
+      { "mask": 1048592, "maskOop": 1048592, "role": "2097154", "roleOop": "2097160" },
+      { "mask": 8, "maskOop": 8, "role": "4194308", "roleOop": "2097664" },
+      { "mask": 8192, "maskOop": 2098176, "role": "72057594046316544", "roleOop": "142606336" },
+      { "mask": 1048704, "maskOop": 1049600, "role": "4227072", "roleOop": "270532608" },
+      { "mask": 2097280, "maskOop": 128, "role": "2097168", "roleOop": "2129920" },
+      { "mask": 2048, "maskOop": 2048, "role": "562949957615616", "roleOop": "549757911040" },
+      { "mask": 4096, "maskOop": 4096, "role": "4194432", "roleOop": "274882101248" },
+      { "mask": 16384, "maskOop": 16384, "role": "8390656", "roleOop": "4398050705408" }
+    ]
+  },
+  {
+    "style": "FLUI",
+    "label": "5-2-2-1 DM AM / 5-2-2-1 DM AM",
+    "codes": [4, 2, 3, 7, 2, 3, 40, 32, 0, 0, 0, 132, 64, 68, 68, 33, 0, 0, 255],
+    "slots": [
+      { "mask": 1, "maskOop": 1, "role": "2097153", "roleOop": "4194305" },
+      { "mask": 2097168, "maskOop": 2097168, "role": "2251799815782400", "roleOop": "2097216" },
+      { "mask": 16, "maskOop": 16, "role": "2097154", "roleOop": "2097184" },
+      { "mask": 1048592, "maskOop": 1048592, "role": "2251799815782400", "roleOop": "2097216" },
+      { "mask": 32, "maskOop": 32, "role": "4194312", "roleOop": "2101248" },
+      { "mask": 2097280, "maskOop": 2097280, "role": "4227072", "roleOop": "2129920" },
+      { "mask": 1048704, "maskOop": 1048704, "role": "2097168", "roleOop": "2129920" },
+      { "mask": 64, "maskOop": 64, "role": "274886295552", "roleOop": "2101248" },
+      { "mask": 2105344, "maskOop": 2105344, "role": "8389120", "roleOop": "2149580800" },
+      { "mask": 1056768, "maskOop": 1056768, "role": "72057594046316544", "roleOop": "1077936128" },
+      { "mask": 16384, "maskOop": 16384, "role": "8389632", "roleOop": "17592194433024" }
+    ]
+  },
+  {
+    "style": "FLUI",
+    "label": "5-2-2-1 DM AM / 5-2-3 DM Wide",
+    "codes": [4, 2, 3, 7, 2, 3, 40, 32, 0, 0, 0, 132, 64, 68, 68, 33, 0, 0, 255],
+    "slots": [
+      { "mask": 1, "maskOop": 1, "role": "2097153", "roleOop": "4194305" },
+      { "mask": 2097168, "maskOop": 2097168, "role": "2251799815782400", "roleOop": "2097216" },
+      { "mask": 16, "maskOop": 16, "role": "2097154", "roleOop": "2097184" },
+      { "mask": 1048592, "maskOop": 1048592, "role": "2251799815782400", "roleOop": "2097216" },
+      { "mask": 32, "maskOop": 32, "role": "4194312", "roleOop": "2101248" },
+      { "mask": 2097280, "maskOop": 2097280, "role": "4227072", "roleOop": "2129920" },
+      { "mask": 1048704, "maskOop": 1048704, "role": "2097168", "roleOop": "2129920" },
+      { "mask": 64, "maskOop": 64, "role": "274886295552", "roleOop": "2101248" },
+      { "mask": 2105344, "maskOop": 2048, "role": "8389120", "roleOop": "274882101248" },
+      { "mask": 1056768, "maskOop": 4096, "role": "72057594046316544", "roleOop": "1099520016384" },
+      { "mask": 16384, "maskOop": 16384, "role": "8389632", "roleOop": "4398050705408" }
+    ]
+  },
+  {
+    "style": "FLUI",
+    "label": "5-2-2-1 DM AM / 4-3-2-1 DM AM Narrow",
+    "codes": [4, 2, 3, 7, 2, 3, 40, 32, 0, 0, 0, 132, 64, 68, 68, 33, 0, 0, 255],
+    "slots": [
+      { "mask": 1, "maskOop": 1, "role": "2097153", "roleOop": "4194305" },
+      { "mask": 2097168, "maskOop": 2097168, "role": "2251799815782400", "roleOop": "2097160" },
+      { "mask": 16, "maskOop": 128, "role": "2097154", "roleOop": "2129920" },
+      { "mask": 1048592, "maskOop": 1048592, "role": "2251799815782400", "roleOop": "2097160" },
+      { "mask": 32, "maskOop": 4, "role": "4194312", "roleOop": "2097664" },
+      { "mask": 2097280, "maskOop": 2098176, "role": "4227072", "roleOop": "541065216" },
+      { "mask": 1048704, "maskOop": 1049600, "role": "2097168", "roleOop": "5242880" },
+      { "mask": 64, "maskOop": 8, "role": "274886295552", "roleOop": "2097664" },
+      { "mask": 2105344, "maskOop": 2105344, "role": "8389120", "roleOop": "1077936128" },
+      { "mask": 1056768, "maskOop": 1056768, "role": "72057594046316544", "roleOop": "8598323200" },
+      { "mask": 16384, "maskOop": 16384, "role": "8389632", "roleOop": "4398050705408" }
+    ]
+  },
+  {
+    "style": "GEGE",
+    "label": "4-3-3 DM Wide / 4-3-3 DM Wide",
+    "codes": [4, 2, 4, 7, 2, 3, 128, 0, 0, 0, 10, 64, 80, 34, 98, 144, 0, 0, 255],
+    "slots": [
+      { "mask": 1, "maskOop": 1, "role": "4198400", "roleOop": "8388610" },
+      { "mask": 4, "maskOop": 4, "role": "4194312", "roleOop": "4195328" },
+      { "mask": 2097168, "maskOop": 2097168, "role": "2097154", "roleOop": "2097160" },
+      { "mask": 1048592, "maskOop": 1048592, "role": "18874368", "roleOop": "2097160" },
+      { "mask": 8, "maskOop": 8, "role": "4194312", "roleOop": "2097664" },
+      { "mask": 128, "maskOop": 128, "role": "2097168", "roleOop": "2129920" },
+      { "mask": 2098176, "maskOop": 2098176, "role": "281474980904960", "roleOop": "5242880" },
+      { "mask": 1049600, "maskOop": 1049600, "role": "4194336", "roleOop": "142606336" },
+      { "mask": 2048, "maskOop": 2048, "role": "142606336", "roleOop": "274882101248" },
+      { "mask": 4096, "maskOop": 4096, "role": "562949957615616", "roleOop": "274882101248" },
+      { "mask": 16384, "maskOop": 16384, "role": "8390656", "roleOop": "4398050705408" }
+    ]
+  },
+  {
+    "style": "GEGE",
+    "label": "4-3-3 DM Wide / 4-4-2 2DM",
+    "codes": [4, 2, 4, 7, 2, 3, 128, 0, 0, 0, 10, 64, 80, 34, 98, 144, 0, 0, 255],
+    "slots": [
+      { "mask": 1, "maskOop": 1, "role": "4198400", "roleOop": "8388610" },
+      { "mask": 4, "maskOop": 4, "role": "4194312", "roleOop": "2097664" },
+      { "mask": 2097168, "maskOop": 2097168, "role": "2097154", "roleOop": "2097160" },
+      { "mask": 1048592, "maskOop": 1048592, "role": "18874368", "roleOop": "2097160" },
+      { "mask": 8, "maskOop": 8, "role": "4194312", "roleOop": "2097664" },
+      { "mask": 128, "maskOop": 1048704, "role": "2097168", "roleOop": "2129920" },
+      { "mask": 2098176, "maskOop": 2097280, "role": "281474980904960", "roleOop": "4325376" },
+      { "mask": 1049600, "maskOop": 1064960, "role": "4194336", "roleOop": "8796095119360" },
+      { "mask": 2048, "maskOop": 256, "role": "142606336", "roleOop": "34363932672" },
+      { "mask": 4096, "maskOop": 512, "role": "562949957615616", "roleOop": "34363932672" },
+      { "mask": 16384, "maskOop": 2113536, "role": "8390656", "roleOop": "4398050705408" }
+    ]
+  },
+  {
+    "style": "GEGE",
+    "label": "4-3-3 DM Wide / 4-1-4-1 DM",
+    "codes": [4, 2, 4, 7, 2, 3, 128, 0, 0, 0, 10, 64, 80, 34, 98, 144, 0, 0, 255],
+    "slots": [
+      { "mask": 1, "maskOop": 1, "role": "4198400", "roleOop": "8388610" },
+      { "mask": 4, "maskOop": 4, "role": "4194312", "roleOop": "4195328" },
+      { "mask": 2097168, "maskOop": 2097168, "role": "2097154", "roleOop": "2097160" },
+      { "mask": 1048592, "maskOop": 1048592, "role": "18874368", "roleOop": "2097160" },
+      { "mask": 8, "maskOop": 8, "role": "4194312", "roleOop": "2097664" },
+      { "mask": 128, "maskOop": 128, "role": "2097168", "roleOop": "2129920" },
+      { "mask": 2098176, "maskOop": 2098176, "role": "281474980904960", "roleOop": "5242880" },
+      { "mask": 1049600, "maskOop": 1049600, "role": "4194336", "roleOop": "142606336" },
+      { "mask": 2048, "maskOop": 256, "role": "142606336", "roleOop": "34363932672" },
+      { "mask": 4096, "maskOop": 512, "role": "562949957615616", "roleOop": "34363932672" },
+      { "mask": 16384, "maskOop": 16384, "role": "8390656", "roleOop": "4398050705408" }
+    ]
+  },
+  {
+    "style": "GEGE",
+    "label": "4-2-3-1 DM AM Wide / 4-4-2 2DM",
+    "codes": [4, 1, 4, 7, 2, 3, 128, 0, 0, 0, 10, 64, 80, 34, 98, 144, 0, 0, 255],
+    "slots": [
+      { "mask": 1, "maskOop": 1, "role": "4198400", "roleOop": "8388610" },
+      { "mask": 4, "maskOop": 4, "role": "4194312", "roleOop": "2097664" },
+      { "mask": 2097168, "maskOop": 2097168, "role": "18874368", "roleOop": "2097160" },
+      { "mask": 1048592, "maskOop": 1048592, "role": "2097154", "roleOop": "2097160" },
+      { "mask": 8, "maskOop": 8, "role": "4194308", "roleOop": "2097664" },
+      { "mask": 8192, "maskOop": 1064960, "role": "2199031644160", "roleOop": "4398050705408" },
+      { "mask": 2097280, "maskOop": 2097280, "role": "2097168", "roleOop": "2129920" },
+      { "mask": 1048704, "maskOop": 1048704, "role": "4227072", "roleOop": "4325376" },
+      { "mask": 2048, "maskOop": 256, "role": "562949957615616", "roleOop": "34363932672" },
+      { "mask": 4096, "maskOop": 512, "role": "142606336", "roleOop": "34363932672" },
+      { "mask": 16384, "maskOop": 2113536, "role": "8390656", "roleOop": "4398050705408" }
+    ]
+  },
+  {
+    "style": "GEGE",
+    "label": "4-2-3-1 DM AM Wide / 4-4-1-1 2DM",
+    "codes": [4, 1, 4, 7, 2, 3, 128, 0, 0, 0, 10, 64, 80, 34, 98, 144, 0, 0, 255],
+    "slots": [
+      { "mask": 1, "maskOop": 1, "role": "4198400", "roleOop": "8388610" },
+      { "mask": 4, "maskOop": 4, "role": "4194312", "roleOop": "2097664" },
+      { "mask": 2097168, "maskOop": 2097168, "role": "18874368", "roleOop": "2097160" },
+      { "mask": 1048592, "maskOop": 1048592, "role": "2097154", "roleOop": "2097160" },
+      { "mask": 8, "maskOop": 8, "role": "4194308", "roleOop": "2097664" },
+      { "mask": 8192, "maskOop": 8192, "role": "2199031644160", "roleOop": "1077936128" },
+      { "mask": 2097280, "maskOop": 2097280, "role": "2097168", "roleOop": "2129920" },
+      { "mask": 1048704, "maskOop": 1048704, "role": "4227072", "roleOop": "4325376" },
+      { "mask": 2048, "maskOop": 256, "role": "562949957615616", "roleOop": "34363932672" },
+      { "mask": 4096, "maskOop": 512, "role": "142606336", "roleOop": "34363932672" },
+      { "mask": 16384, "maskOop": 16384, "role": "8390656", "roleOop": "4398050705408" }
+    ]
+  },
+  {
+    "style": "GEGE",
+    "label": "4-2-3-1 DM AM Wide / 4-3-3 DM Wide",
+    "codes": [4, 1, 4, 7, 2, 3, 128, 0, 0, 0, 10, 64, 80, 34, 98, 144, 0, 0, 255],
+    "slots": [
+      { "mask": 1, "maskOop": 1, "role": "4198400", "roleOop": "8388610" },
+      { "mask": 4, "maskOop": 4, "role": "4194312", "roleOop": "2097664" },
+      { "mask": 2097168, "maskOop": 2097168, "role": "18874368", "roleOop": "2097160" },
+      { "mask": 1048592, "maskOop": 1048592, "role": "2097154", "roleOop": "2097160" },
+      { "mask": 8, "maskOop": 8, "role": "4194308", "roleOop": "2097664" },
+      { "mask": 8192, "maskOop": 2098176, "role": "2199031644160", "roleOop": "142606336" },
+      { "mask": 2097280, "maskOop": 128, "role": "2097168", "roleOop": "2129920" },
+      { "mask": 1048704, "maskOop": 1049600, "role": "4227072", "roleOop": "5242880" },
+      { "mask": 2048, "maskOop": 2048, "role": "562949957615616", "roleOop": "274882101248" },
+      { "mask": 4096, "maskOop": 4096, "role": "142606336", "roleOop": "274882101248" },
+      { "mask": 16384, "maskOop": 16384, "role": "8390656", "roleOop": "4398050705408" }
+    ]
+  },
+  {
+    "style": "GEGE",
+    "label": "4-2-4 DM Wide / 4-4-2 2DM",
+    "codes": [4, 1, 4, 7, 2, 3, 128, 0, 0, 0, 10, 64, 80, 34, 98, 144, 0, 0, 255],
+    "slots": [
+      { "mask": 1, "maskOop": 1, "role": "4198400", "roleOop": "8388610" },
+      { "mask": 4, "maskOop": 4, "role": "4194312", "roleOop": "2097664" },
+      { "mask": 2097168, "maskOop": 2097168, "role": "18874368", "roleOop": "2097160" },
+      { "mask": 1048592, "maskOop": 1048592, "role": "2097154", "roleOop": "2097160" },
+      { "mask": 8, "maskOop": 8, "role": "4194308", "roleOop": "2097664" },
+      { "mask": 2097280, "maskOop": 2097280, "role": "2097168", "roleOop": "2129920" },
+      { "mask": 1048704, "maskOop": 1048704, "role": "4227072", "roleOop": "4325376" },
+      { "mask": 2048, "maskOop": 256, "role": "562949957615616", "roleOop": "34363932672" },
+      { "mask": 4096, "maskOop": 512, "role": "142606336", "roleOop": "34363932672" },
+      { "mask": 2113536, "maskOop": 2113536, "role": "2155872256", "roleOop": "4398050705408" },
+      { "mask": 1064960, "maskOop": 1064960, "role": "8389632", "roleOop": "4398050705408" }
+    ]
+  },
+  {
+    "style": "GEGE",
+    "label": "4-2-4 DM Wide / 4-4-1-1 2DM",
+    "codes": [4, 1, 4, 7, 2, 3, 128, 0, 0, 0, 10, 64, 80, 34, 98, 144, 0, 0, 255],
+    "slots": [
+      { "mask": 1, "maskOop": 1, "role": "4198400", "roleOop": "8388610" },
+      { "mask": 4, "maskOop": 4, "role": "4194312", "roleOop": "2097664" },
+      { "mask": 2097168, "maskOop": 2097168, "role": "18874368", "roleOop": "2097160" },
+      { "mask": 1048592, "maskOop": 1048592, "role": "2097154", "roleOop": "2097160" },
+      { "mask": 8, "maskOop": 8, "role": "4194308", "roleOop": "2097664" },
+      { "mask": 2097280, "maskOop": 2097280, "role": "2097168", "roleOop": "2129920" },
+      { "mask": 1048704, "maskOop": 1048704, "role": "4227072", "roleOop": "4325376" },
+      { "mask": 2048, "maskOop": 256, "role": "562949957615616", "roleOop": "34363932672" },
+      { "mask": 4096, "maskOop": 512, "role": "142606336", "roleOop": "34363932672" },
+      { "mask": 2113536, "maskOop": 8192, "role": "2155872256", "roleOop": "1077936128" },
+      { "mask": 1064960, "maskOop": 16384, "role": "8389632", "roleOop": "4398050705408" }
+    ]
+  },
+  {
+    "style": "GEGE",
+    "label": "4-2-4 DM Wide / 5-3-2 DM WB",
+    "codes": [4, 1, 4, 7, 2, 3, 128, 0, 0, 0, 10, 64, 80, 34, 98, 144, 0, 0, 255],
+    "slots": [
+      { "mask": 1, "maskOop": 1, "role": "4198400", "roleOop": "8388610" },
+      { "mask": 4, "maskOop": 32, "role": "4194312", "roleOop": "4202496" },
+      { "mask": 2097168, "maskOop": 2097168, "role": "18874368", "roleOop": "2097216" },
+      { "mask": 1048592, "maskOop": 16, "role": "2097154", "roleOop": "2097160" },
+      { "mask": 8, "maskOop": 1048592, "role": "4194308", "roleOop": "2097168" },
+      { "mask": 2097280, "maskOop": 128, "role": "2097168", "roleOop": "2129920" },
+      { "mask": 1048704, "maskOop": 1049600, "role": "4227072", "roleOop": "5242880" },
+      { "mask": 2048, "maskOop": 2098176, "role": "562949957615616", "roleOop": "142606336" },
+      { "mask": 4096, "maskOop": 64, "role": "142606336", "roleOop": "4202496" },
+      { "mask": 2113536, "maskOop": 2113536, "role": "2155872256", "roleOop": "4398050705408" },
+      { "mask": 1064960, "maskOop": 1064960, "role": "8389632", "roleOop": "4398050705408" }
+    ]
+  },
+  {
+    "style": "PARK",
+    "label": "4-4-2 2DM / 4-4-2 2DM",
+    "codes": [4, 1, 2, 7, 2, 3, 36, 3, 20, 0, 4, 40, 17, 132, 136, 101, 2, 0, 255],
+    "slots": [
+      { "mask": 1, "maskOop": 1, "role": "9007199256838144", "roleOop": "2097156" },
+      { "mask": 4, "maskOop": 4, "role": "4194308", "roleOop": "2097664" },
+      { "mask": 2097168, "maskOop": 2097168, "role": "538968064", "roleOop": "2097160" },
+      { "mask": 1048592, "maskOop": 1048592, "role": "538968064", "roleOop": "2097160" },
+      { "mask": 8, "maskOop": 8, "role": "4194308", "roleOop": "2097664" },
+      { "mask": 2097280, "maskOop": 2097280, "role": "4227072", "roleOop": "2129920" },
+      { "mask": 1064960, "maskOop": 1064960, "role": "8390656", "roleOop": "8796095119360" },
+      { "mask": 1048704, "maskOop": 1048704, "role": "2097168", "roleOop": "2129920" },
+      { "mask": 2113536, "maskOop": 2113536, "role": "8389632", "roleOop": "4398050705408" },
+      { "mask": 256, "maskOop": 256, "role": "4194368", "roleOop": "68721573888" },
+      { "mask": 512, "maskOop": 512, "role": "4194432", "roleOop": "68721573888" }
+    ]
+  },
+  {
+    "style": "PARK",
+    "label": "4-4-2 2DM / 4-4-1-1 2DM",
+    "codes": [4, 0, 2, 7, 2, 3, 36, 3, 20, 0, 4, 40, 17, 132, 136, 101, 2, 0, 255],
+    "slots": [
+      { "mask": 1, "maskOop": 1, "role": "9007199256838144", "roleOop": "2097156" },
+      { "mask": 4, "maskOop": 4, "role": "4194308", "roleOop": "2097664" },
+      { "mask": 2097168, "maskOop": 2097168, "role": "538968064", "roleOop": "2097160" },
+      { "mask": 1048592, "maskOop": 1048592, "role": "538968064", "roleOop": "2097160" },
+      { "mask": 8, "maskOop": 8, "role": "4194308", "roleOop": "2097664" },
+      { "mask": 2097280, "maskOop": 2097280, "role": "4227072", "roleOop": "2129920" },
+      { "mask": 1064960, "maskOop": 8192, "role": "8390656", "roleOop": "1077936128" },
+      { "mask": 1048704, "maskOop": 1048704, "role": "2097168", "roleOop": "2129920" },
+      { "mask": 2113536, "maskOop": 16384, "role": "8389632", "roleOop": "4398050705408" },
+      { "mask": 256, "maskOop": 256, "role": "4194368", "roleOop": "68721573888" },
+      { "mask": 512, "maskOop": 512, "role": "4194432", "roleOop": "68721573888" }
+    ]
+  },
+  {
+    "style": "PARK",
+    "label": "4-4-2 2DM / 5-3-2 DM WB",
+    "codes": [4, 0, 2, 7, 2, 3, 36, 3, 20, 0, 4, 40, 17, 132, 136, 101, 2, 0, 255],
+    "slots": [
+      { "mask": 1, "maskOop": 1, "role": "9007199256838144", "roleOop": "2097156" },
+      { "mask": 4, "maskOop": 2097168, "role": "4194308", "roleOop": "2097160" },
+      { "mask": 2097168, "maskOop": 16, "role": "538968064", "roleOop": "2097184" },
+      { "mask": 1048592, "maskOop": 1048592, "role": "538968064", "roleOop": "2097160" },
+      { "mask": 8, "maskOop": 64, "role": "4194308", "roleOop": "2113536" },
+      { "mask": 2097280, "maskOop": 2098176, "role": "4227072", "roleOop": "270532608" },
+      { "mask": 1064960, "maskOop": 1064960, "role": "8390656", "roleOop": "8796095119360" },
+      { "mask": 1048704, "maskOop": 128, "role": "2097168", "roleOop": "2129920" },
+      { "mask": 2113536, "maskOop": 2113536, "role": "8389632", "roleOop": "4398050705408" },
+      { "mask": 256, "maskOop": 32, "role": "4194368", "roleOop": "2101248" },
+      { "mask": 512, "maskOop": 1049600, "role": "4194432", "roleOop": "541065216" }
+    ]
+  },
+  {
+    "style": "PARK",
+    "label": "5-2-3 DM Wide / 5-2-3 DM Wide",
+    "codes": [4, 2, 2, 7, 2, 3, 36, 3, 20, 0, 4, 40, 17, 132, 136, 101, 2, 0, 255],
+    "slots": [
+      { "mask": 1, "maskOop": 1, "role": "9007199256838144", "roleOop": "2097156" },
+      { "mask": 2097168, "maskOop": 2097168, "role": "2097154", "roleOop": "2097160" },
+      { "mask": 16, "maskOop": 16, "role": "538968064", "roleOop": "2097184" },
+      { "mask": 1048592, "maskOop": 1048592, "role": "2097154", "roleOop": "2097160" },
+      { "mask": 32, "maskOop": 32, "role": "4194312", "roleOop": "2113536" },
+      { "mask": 2097280, "maskOop": 2097280, "role": "4227072", "roleOop": "2129920" },
+      { "mask": 1048704, "maskOop": 1048704, "role": "2097168", "roleOop": "2129920" },
+      { "mask": 64, "maskOop": 64, "role": "4194312", "roleOop": "2113536" },
+      { "mask": 2048, "maskOop": 2048, "role": "4194432", "roleOop": "274882101248" },
+      { "mask": 4096, "maskOop": 4096, "role": "562949957615616", "roleOop": "274882101248" },
+      { "mask": 16384, "maskOop": 16384, "role": "8390656", "roleOop": "8796095119360" }
+    ]
+  },
+  {
+    "style": "PARK",
+    "label": "5-2-3 DM Wide / 5-2-2-1 DM AM",
+    "codes": [4, 2, 2, 7, 2, 3, 36, 3, 20, 0, 4, 40, 17, 132, 136, 101, 2, 0, 255],
+    "slots": [
+      { "mask": 1, "maskOop": 1, "role": "9007199256838144", "roleOop": "2097156" },
+      { "mask": 2097168, "maskOop": 2097168, "role": "2097154", "roleOop": "2097160" },
+      { "mask": 16, "maskOop": 16, "role": "538968064", "roleOop": "2097184" },
+      { "mask": 1048592, "maskOop": 1048592, "role": "2097154", "roleOop": "2097160" },
+      { "mask": 32, "maskOop": 32, "role": "4194312", "roleOop": "2113536" },
+      { "mask": 2097280, "maskOop": 2097280, "role": "4227072", "roleOop": "2129920" },
+      { "mask": 1048704, "maskOop": 1048704, "role": "2097168", "roleOop": "2359296" },
+      { "mask": 64, "maskOop": 64, "role": "4194312", "roleOop": "2101248" },
+      { "mask": 2048, "maskOop": 2105344, "role": "4194432", "roleOop": "1077936128" },
+      { "mask": 4096, "maskOop": 1056768, "role": "562949957615616", "roleOop": "2149580800" },
+      { "mask": 16384, "maskOop": 16384, "role": "8390656", "roleOop": "8796095119360" }
+    ]
+  },
+  {
+    "style": "PARK",
+    "label": "5-2-3 DM Wide / 4-3-3 DM Wide",
+    "codes": [4, 2, 2, 7, 2, 3, 36, 3, 20, 0, 4, 40, 17, 132, 136, 101, 2, 0, 255],
+    "slots": [
+      { "mask": 1, "maskOop": 1, "role": "9007199256838144", "roleOop": "2097156" },
+      { "mask": 2097168, "maskOop": 2097168, "role": "2097154", "roleOop": "2097160" },
+      { "mask": 16, "maskOop": 128, "role": "538968064", "roleOop": "2162688" },
+      { "mask": 1048592, "maskOop": 1048592, "role": "2097154", "roleOop": "2097160" },
+      { "mask": 32, "maskOop": 4, "role": "4194312", "roleOop": "2097664" },
+      { "mask": 2097280, "maskOop": 2098176, "role": "4227072", "roleOop": "5242880" },
+      { "mask": 1048704, "maskOop": 1049600, "role": "2097168", "roleOop": "270532608" },
+      { "mask": 64, "maskOop": 8, "role": "4194312", "roleOop": "2097664" },
+      { "mask": 2048, "maskOop": 2048, "role": "4194432", "roleOop": "549757911040" },
+      { "mask": 4096, "maskOop": 4096, "role": "562949957615616", "roleOop": "549757911040" },
+      { "mask": 16384, "maskOop": 16384, "role": "8390656", "roleOop": "4398050705408" }
+    ]
+  },
+  {
+    "style": "PARK",
+    "label": "4-3-3 DM Wide / 4-3-3 DM Wide",
+    "codes": [4, 1, 2, 7, 2, 3, 36, 3, 20, 0, 4, 40, 17, 132, 136, 101, 2, 0, 255],
+    "slots": [
+      { "mask": 1, "maskOop": 1, "role": "9007199256838144", "roleOop": "2097156" },
+      { "mask": 4, "maskOop": 4, "role": "4194308", "roleOop": "2099200" },
+      { "mask": 2097168, "maskOop": 2097168, "role": "538968064", "roleOop": "2097160" },
+      { "mask": 1048592, "maskOop": 1048592, "role": "2097154", "roleOop": "2097160" },
+      { "mask": 8, "maskOop": 8, "role": "4194308", "roleOop": "2097664" },
+      { "mask": 128, "maskOop": 128, "role": "2097168", "roleOop": "2162688" },
+      { "mask": 2098176, "maskOop": 2098176, "role": "4194336", "roleOop": "5242880" },
+      { "mask": 1049600, "maskOop": 1049600, "role": "4194336", "roleOop": "5242880" },
+      { "mask": 2048, "maskOop": 2048, "role": "4194432", "roleOop": "549757911040" },
+      { "mask": 4096, "maskOop": 4096, "role": "562949957615616", "roleOop": "274882101248" },
+      { "mask": 16384, "maskOop": 16384, "role": "8390656", "roleOop": "8796095119360" }
+    ]
+  },
+  {
+    "style": "PARK",
+    "label": "4-3-3 DM Wide / 4-4-2 2DM",
+    "codes": [4, 1, 2, 7, 2, 3, 36, 3, 20, 0, 4, 40, 17, 132, 136, 101, 2, 0, 255],
+    "slots": [
+      { "mask": 1, "maskOop": 1, "role": "9007199256838144", "roleOop": "2097156" },
+      { "mask": 4, "maskOop": 4, "role": "4194308", "roleOop": "2097664" },
+      { "mask": 2097168, "maskOop": 2097168, "role": "538968064", "roleOop": "2097160" },
+      { "mask": 1048592, "maskOop": 1048592, "role": "2097154", "roleOop": "2097160" },
+      { "mask": 8, "maskOop": 8, "role": "4194308", "roleOop": "2099200" },
+      { "mask": 128, "maskOop": 2097280, "role": "2097168", "roleOop": "2162688" },
+      { "mask": 2098176, "maskOop": 2113536, "role": "4194336", "roleOop": "8796095119360" },
+      { "mask": 1049600, "maskOop": 1048704, "role": "4194336", "roleOop": "2359296" },
+      { "mask": 2048, "maskOop": 256, "role": "4194432", "roleOop": "34363932672" },
+      { "mask": 4096, "maskOop": 512, "role": "562949957615616", "roleOop": "68721573888" },
+      { "mask": 16384, "maskOop": 1064960, "role": "8390656", "roleOop": "4398050705408" }
+    ]
+  },
+  {
+    "style": "PARK",
+    "label": "4-3-3 DM Wide / 4-1-4-1 DM",
+    "codes": [4, 1, 2, 7, 2, 3, 36, 3, 20, 0, 4, 40, 17, 132, 136, 101, 2, 0, 255],
+    "slots": [
+      { "mask": 1, "maskOop": 1, "role": "9007199256838144", "roleOop": "2097156" },
+      { "mask": 4, "maskOop": 4, "role": "4194308", "roleOop": "2097664" },
+      { "mask": 2097168, "maskOop": 2097168, "role": "538968064", "roleOop": "2097160" },
+      { "mask": 1048592, "maskOop": 1048592, "role": "2097154", "roleOop": "2097160" },
+      { "mask": 8, "maskOop": 8, "role": "4194308", "roleOop": "2099200" },
+      { "mask": 128, "maskOop": 128, "role": "2097168", "roleOop": "2162688" },
+      { "mask": 2098176, "maskOop": 2098176, "role": "4194336", "roleOop": "5242880" },
+      { "mask": 1049600, "maskOop": 1049600, "role": "4194336", "roleOop": "270532608" },
+      { "mask": 2048, "maskOop": 256, "role": "4194432", "roleOop": "34363932672" },
+      { "mask": 4096, "maskOop": 512, "role": "562949957615616", "roleOop": "68721573888" },
+      { "mask": 16384, "maskOop": 16384, "role": "8390656", "roleOop": "4398050705408" }
+    ]
+  },
+  {
+    "style": "ROUT",
+    "label": "4-2-4 DM Wide / 4-4-2 2DM",
+    "codes": [4, 2, 4, 7, 2, 3, 2, 3, 20, 0, 0, 160, 64, 68, 128, 1, 2, 0, 255],
+    "slots": [
+      { "mask": 1, "maskOop": 1, "role": "9007199256838144", "roleOop": "2097156" },
+      { "mask": 4, "maskOop": 4, "role": "4194308", "roleOop": "2097664" },
+      { "mask": 2097168, "maskOop": 2097168, "role": "538968064", "roleOop": "2097160" },
+      { "mask": 1048592, "maskOop": 1048592, "role": "538968064", "roleOop": "2097160" },
+      { "mask": 8, "maskOop": 8, "role": "4194308", "roleOop": "2097664" },
+      { "mask": 2048, "maskOop": 256, "role": "4194432", "roleOop": "34363932672" },
+      { "mask": 2097280, "maskOop": 2097280, "role": "2097168", "roleOop": "2129920" },
+      { "mask": 1048704, "maskOop": 1048704, "role": "4259840", "roleOop": "2129920" },
+      { "mask": 4096, "maskOop": 512, "role": "4194432", "roleOop": "34363932672" },
+      { "mask": 2113536, "maskOop": 2113536, "role": "8650752", "roleOop": "4398050705408" },
+      { "mask": 1064960, "maskOop": 1064960, "role": "2155872256", "roleOop": "4398050705408" }
+    ]
+  },
+  {
+    "style": "ROUT",
+    "label": "4-2-4 DM Wide / 4-4-1-1 2DM",
+    "codes": [4, 2, 4, 7, 2, 3, 2, 3, 20, 0, 0, 160, 64, 68, 128, 1, 2, 0, 255],
+    "slots": [
+      { "mask": 1, "maskOop": 1, "role": "9007199256838144", "roleOop": "2097156" },
+      { "mask": 4, "maskOop": 4, "role": "4194308", "roleOop": "2097664" },
+      { "mask": 2097168, "maskOop": 2097168, "role": "538968064", "roleOop": "2097160" },
+      { "mask": 1048592, "maskOop": 1048592, "role": "538968064", "roleOop": "2097160" },
+      { "mask": 8, "maskOop": 8, "role": "4194308", "roleOop": "2097664" },
+      { "mask": 2048, "maskOop": 256, "role": "4194432", "roleOop": "34363932672" },
+      { "mask": 2097280, "maskOop": 2097280, "role": "2097168", "roleOop": "2129920" },
+      { "mask": 1048704, "maskOop": 1048704, "role": "4259840", "roleOop": "2129920" },
+      { "mask": 4096, "maskOop": 512, "role": "4194432", "roleOop": "34363932672" },
+      { "mask": 2113536, "maskOop": 16384, "role": "8650752", "roleOop": "4398050705408" },
+      { "mask": 1064960, "maskOop": 8192, "role": "2155872256", "roleOop": "1077936128" }
+    ]
+  },
+  {
+    "style": "ROUT",
+    "label": "4-2-4 DM Wide / 5-3-2 DM WB",
+    "codes": [4, 2, 4, 7, 2, 3, 2, 3, 20, 0, 0, 160, 64, 68, 128, 1, 2, 0, 255],
+    "slots": [
+      { "mask": 1, "maskOop": 1, "role": "9007199256838144", "roleOop": "2097156" },
+      { "mask": 4, "maskOop": 32, "role": "4194308", "roleOop": "2101248" },
+      { "mask": 2097168, "maskOop": 2097168, "role": "538968064", "roleOop": "2097216" },
+      { "mask": 1048592, "maskOop": 16, "role": "538968064", "roleOop": "2097184" },
+      { "mask": 8, "maskOop": 1048592, "role": "4194308", "roleOop": "2097216" },
+      { "mask": 2048, "maskOop": 2098176, "role": "4194432", "roleOop": "5242880" },
+      { "mask": 2097280, "maskOop": 128, "role": "2097168", "roleOop": "2129920" },
+      { "mask": 1048704, "maskOop": 1049600, "role": "4259840", "roleOop": "5242880" },
+      { "mask": 4096, "maskOop": 64, "role": "4194432", "roleOop": "2101248" },
+      { "mask": 2113536, "maskOop": 2113536, "role": "8650752", "roleOop": "4398050705408" },
+      { "mask": 1064960, "maskOop": 1064960, "role": "2155872256", "roleOop": "35184380477440" }
+    ]
+  },
+  {
+    "style": "ROUT",
+    "label": "4-3-3 DM Wide / 4-3-3 DM Wide",
+    "codes": [4, 2, 4, 7, 2, 3, 2, 3, 20, 0, 0, 160, 64, 68, 128, 1, 2, 0, 255],
+    "slots": [
+      { "mask": 1, "maskOop": 1, "role": "9007199256838144", "roleOop": "2097156" },
+      { "mask": 4, "maskOop": 4, "role": "4194308", "roleOop": "2099200" },
+      { "mask": 2097168, "maskOop": 2097168, "role": "538968064", "roleOop": "2097160" },
+      { "mask": 1048592, "maskOop": 1048592, "role": "538968064", "roleOop": "2097160" },
+      { "mask": 8, "maskOop": 8, "role": "4194308", "roleOop": "2097664" },
+      { "mask": 2048, "maskOop": 2048, "role": "35184380477440", "roleOop": "274882101248" },
+      { "mask": 2098176, "maskOop": 2098176, "role": "4194336", "roleOop": "5242880" },
+      { "mask": 1049600, "maskOop": 1049600, "role": "8389120", "roleOop": "5242880" },
+      { "mask": 4096, "maskOop": 4096, "role": "4194432", "roleOop": "549757911040" },
+      { "mask": 128, "maskOop": 128, "role": "2097168", "roleOop": "2129920" },
+      { "mask": 16384, "maskOop": 16384, "role": "8650752", "roleOop": "4398050705408" }
+    ]
+  },
+  {
+    "style": "ROUT",
+    "label": "4-3-3 DM Wide / 4-4-2 2DM",
+    "codes": [4, 2, 4, 7, 2, 3, 2, 3, 20, 0, 0, 160, 64, 68, 128, 1, 2, 0, 255],
+    "slots": [
+      { "mask": 1, "maskOop": 1, "role": "9007199256838144", "roleOop": "2097156" },
+      { "mask": 4, "maskOop": 4, "role": "4194308", "roleOop": "2099200" },
+      { "mask": 2097168, "maskOop": 2097168, "role": "538968064", "roleOop": "2097160" },
+      { "mask": 1048592, "maskOop": 1048592, "role": "538968064", "roleOop": "2097160" },
+      { "mask": 8, "maskOop": 8, "role": "4194308", "roleOop": "2097664" },
+      { "mask": 2048, "maskOop": 256, "role": "35184380477440", "roleOop": "34363932672" },
+      { "mask": 2098176, "maskOop": 2097280, "role": "4194336", "roleOop": "2129920" },
+      { "mask": 1049600, "maskOop": 1064960, "role": "8389120", "roleOop": "8796095119360" },
+      { "mask": 4096, "maskOop": 512, "role": "4194432", "roleOop": "34363932672" },
+      { "mask": 128, "maskOop": 1048704, "role": "2097168", "roleOop": "2359296" },
+      { "mask": 16384, "maskOop": 2113536, "role": "8650752", "roleOop": "4398050705408" }
+    ]
+  },
+  {
+    "style": "ROUT",
+    "label": "4-3-3 DM Wide / 4-1-4-1 DM",
+    "codes": [4, 2, 4, 7, 2, 3, 2, 3, 20, 0, 0, 160, 64, 68, 128, 1, 2, 0, 255],
+    "slots": [
+      { "mask": 1, "maskOop": 1, "role": "9007199256838144", "roleOop": "2097156" },
+      { "mask": 4, "maskOop": 4, "role": "4194308", "roleOop": "2099200" },
+      { "mask": 2097168, "maskOop": 2097168, "role": "538968064", "roleOop": "2097160" },
+      { "mask": 1048592, "maskOop": 1048592, "role": "538968064", "roleOop": "2097160" },
+      { "mask": 8, "maskOop": 8, "role": "4194308", "roleOop": "2097664" },
+      { "mask": 2048, "maskOop": 256, "role": "35184380477440", "roleOop": "34363932672" },
+      { "mask": 2098176, "maskOop": 2098176, "role": "4194336", "roleOop": "5242880" },
+      { "mask": 1049600, "maskOop": 1049600, "role": "8389120", "roleOop": "5242880" },
+      { "mask": 4096, "maskOop": 512, "role": "4194432", "roleOop": "34363932672" },
+      { "mask": 128, "maskOop": 128, "role": "2097168", "roleOop": "2129920" },
+      { "mask": 16384, "maskOop": 16384, "role": "8650752", "roleOop": "17592194433024" }
+    ]
+  },
+  {
+    "style": "ROUT",
+    "label": "5-3-2 DM WB / 5-3-2 DM WB",
+    "codes": [4, 2, 4, 7, 2, 3, 2, 3, 20, 0, 0, 160, 64, 68, 128, 1, 2, 0, 255],
+    "slots": [
+      { "mask": 1, "maskOop": 1, "role": "9007199256838144", "roleOop": "2097156" },
+      { "mask": 2097168, "maskOop": 2097168, "role": "2251799815782400", "roleOop": "2097216" },
+      { "mask": 16, "maskOop": 16, "role": "538968064", "roleOop": "2097184" },
+      { "mask": 1048592, "maskOop": 1048592, "role": "2251799815782400", "roleOop": "2097216" },
+      { "mask": 32, "maskOop": 32, "role": "274886295552", "roleOop": "2101248" },
+      { "mask": 128, "maskOop": 128, "role": "4227072", "roleOop": "2359296" },
+      { "mask": 64, "maskOop": 64, "role": "4194312", "roleOop": "2101248" },
+      { "mask": 2098176, "maskOop": 2098176, "role": "4194336", "roleOop": "5242880" },
+      { "mask": 1049600, "maskOop": 1049600, "role": "8389120", "roleOop": "5242880" },
+      { "mask": 2113536, "maskOop": 2113536, "role": "8912896", "roleOop": "35184380477440" },
+      { "mask": 1064960, "maskOop": 1064960, "role": "8650752", "roleOop": "4398050705408" }
+    ]
+  },
+  {
+    "style": "ROUT",
+    "label": "5-3-2 DM WB / 5-2-1-2 DM AM",
+    "codes": [4, 2, 4, 7, 2, 3, 2, 3, 20, 0, 0, 160, 64, 68, 128, 1, 2, 0, 255],
+    "slots": [
+      { "mask": 1, "maskOop": 1, "role": "9007199256838144", "roleOop": "2097156" },
+      { "mask": 2097168, "maskOop": 2097168, "role": "2251799815782400", "roleOop": "2097216" },
+      { "mask": 16, "maskOop": 16, "role": "538968064", "roleOop": "2097184" },
+      { "mask": 1048592, "maskOop": 1048592, "role": "2251799815782400", "roleOop": "2097216" },
+      { "mask": 32, "maskOop": 32, "role": "274886295552", "roleOop": "2101248" },
+      { "mask": 128, "maskOop": 1048704, "role": "4227072", "roleOop": "2359296" },
+      { "mask": 64, "maskOop": 64, "role": "4194312", "roleOop": "2101248" },
+      { "mask": 2098176, "maskOop": 2097280, "role": "4194336", "roleOop": "2129920" },
+      { "mask": 1049600, "maskOop": 8192, "role": "8389120", "roleOop": "2149580800" },
+      { "mask": 2113536, "maskOop": 2113536, "role": "8912896", "roleOop": "35184380477440" },
+      { "mask": 1064960, "maskOop": 1064960, "role": "8650752", "roleOop": "4398050705408" }
+    ]
+  },
+  {
+    "style": "ROUT",
+    "label": "5-3-2 DM WB / 4-4-2 2DM",
+    "codes": [4, 2, 4, 7, 2, 3, 2, 3, 20, 0, 0, 160, 64, 68, 128, 1, 2, 0, 255],
+    "slots": [
+      { "mask": 1, "maskOop": 1, "role": "9007199256838144", "roleOop": "2097156" },
+      { "mask": 2097168, "maskOop": 4, "role": "2251799815782400", "roleOop": "2099200" },
+      { "mask": 16, "maskOop": 2097168, "role": "538968064", "roleOop": "2097160" },
+      { "mask": 1048592, "maskOop": 8, "role": "2251799815782400", "roleOop": "2097664" },
+      { "mask": 32, "maskOop": 256, "role": "274886295552", "roleOop": "34363932672" },
+      { "mask": 128, "maskOop": 1048592, "role": "4227072", "roleOop": "2097160" },
+      { "mask": 64, "maskOop": 512, "role": "4194312", "roleOop": "68721573888" },
+      { "mask": 2098176, "maskOop": 2097280, "role": "4194336", "roleOop": "2129920" },
+      { "mask": 1049600, "maskOop": 1048704, "role": "8389120", "roleOop": "2129920" },
+      { "mask": 2113536, "maskOop": 2113536, "role": "8912896", "roleOop": "35184380477440" },
+      { "mask": 1064960, "maskOop": 1064960, "role": "8650752", "roleOop": "4398050705408" }
+    ]
+  },
+  {
+    "style": "TIKI",
+    "label": "4-3-3 DM Wide / 4-3-3 DM Wide",
+    "codes": [4, 2, 5, 7, 2, 3, 208, 80, 3, 0, 8, 20, 130, 34, 100, 136, 0, 0, 255],
+    "slots": [
+      { "mask": 1, "maskOop": 1, "role": "4198400", "roleOop": "8388610" },
+      { "mask": 4, "maskOop": 4, "role": "17592188141568", "roleOop": "4195328" },
+      { "mask": 2097168, "maskOop": 2097168, "role": "18874368", "roleOop": "2097160" },
+      { "mask": 1048592, "maskOop": 1048592, "role": "2097154", "roleOop": "2097160" },
+      { "mask": 8, "maskOop": 8, "role": "4503599629467648", "roleOop": "2099200" },
+      { "mask": 128, "maskOop": 128, "role": "4227072", "roleOop": "2129920" },
+      { "mask": 2098176, "maskOop": 2098176, "role": "8519680", "roleOop": "142606336" },
+      { "mask": 1049600, "maskOop": 1049600, "role": "144115188080050176", "roleOop": "5242880" },
+      { "mask": 2048, "maskOop": 2048, "role": "4194432", "roleOop": "274882101248" },
+      { "mask": 4096, "maskOop": 4096, "role": "35184380477440", "roleOop": "274882101248" },
+      { "mask": 16384, "maskOop": 16384, "role": "8389632", "roleOop": "8796095119360" }
+    ]
+  },
+  {
+    "style": "TIKI",
+    "label": "4-3-3 DM Wide / 4-4-2 2DM",
+    "codes": [4, 2, 5, 7, 2, 3, 208, 80, 3, 0, 8, 20, 130, 34, 100, 136, 0, 0, 255],
+    "slots": [
+      { "mask": 1, "maskOop": 1, "role": "4198400", "roleOop": "8388610" },
+      { "mask": 4, "maskOop": 4, "role": "17592188141568", "roleOop": "2097664" },
+      { "mask": 2097168, "maskOop": 2097168, "role": "18874368", "roleOop": "2097160" },
+      { "mask": 1048592, "maskOop": 1048592, "role": "2097154", "roleOop": "2097160" },
+      { "mask": 8, "maskOop": 8, "role": "4503599629467648", "roleOop": "2099200" },
+      { "mask": 128, "maskOop": 2097280, "role": "4227072", "roleOop": "2129920" },
+      { "mask": 2098176, "maskOop": 2113536, "role": "8519680", "roleOop": "8796095119360" },
+      { "mask": 1049600, "maskOop": 1048704, "role": "144115188080050176", "roleOop": "4325376" },
+      { "mask": 2048, "maskOop": 256, "role": "4194432", "roleOop": "34363932672" },
+      { "mask": 4096, "maskOop": 512, "role": "35184380477440", "roleOop": "34363932672" },
+      { "mask": 16384, "maskOop": 1064960, "role": "8389632", "roleOop": "4398050705408" }
+    ]
+  },
+  {
+    "style": "TIKI",
+    "label": "4-3-3 DM Wide / 4-1-4-1 DM",
+    "codes": [4, 2, 5, 7, 2, 3, 208, 80, 3, 0, 8, 20, 130, 34, 100, 136, 0, 0, 255],
+    "slots": [
+      { "mask": 1, "maskOop": 1, "role": "4198400", "roleOop": "8388610" },
+      { "mask": 4, "maskOop": 4, "role": "17592188141568", "roleOop": "4195328" },
+      { "mask": 2097168, "maskOop": 2097168, "role": "18874368", "roleOop": "2097160" },
+      { "mask": 1048592, "maskOop": 1048592, "role": "2097154", "roleOop": "2097160" },
+      { "mask": 8, "maskOop": 8, "role": "4503599629467648", "roleOop": "2099200" },
+      { "mask": 128, "maskOop": 128, "role": "4227072", "roleOop": "2129920" },
+      { "mask": 2098176, "maskOop": 2098176, "role": "8519680", "roleOop": "142606336" },
+      { "mask": 1049600, "maskOop": 1049600, "role": "144115188080050176", "roleOop": "5242880" },
+      { "mask": 2048, "maskOop": 256, "role": "4194432", "roleOop": "34363932672" },
+      { "mask": 4096, "maskOop": 512, "role": "35184380477440", "roleOop": "34363932672" },
+      { "mask": 16384, "maskOop": 16384, "role": "8389632", "roleOop": "4398050705408" }
+    ]
+  },
+  {
+    "style": "TIKI",
+    "label": "4-2-3-1 DM AM Wide / 4-4-2 2DM",
+    "codes": [4, 2, 5, 7, 2, 3, 208, 80, 3, 0, 8, 20, 130, 34, 100, 136, 0, 0, 255],
+    "slots": [
+      { "mask": 1, "maskOop": 1, "role": "4198400", "roleOop": "8388610" },
+      { "mask": 4, "maskOop": 4, "role": "4503599629467648", "roleOop": "2099200" },
+      { "mask": 2097168, "maskOop": 2097168, "role": "18874368", "roleOop": "2097160" },
+      { "mask": 1048592, "maskOop": 1048592, "role": "2097154", "roleOop": "2097160" },
+      { "mask": 8, "maskOop": 8, "role": "36028797023158272", "roleOop": "2097664" },
+      { "mask": 2097280, "maskOop": 2097280, "role": "2097168", "roleOop": "2129920" },
+      { "mask": 1048704, "maskOop": 1048704, "role": "70368748371968", "roleOop": "4325376" },
+      { "mask": 2048, "maskOop": 256, "role": "4194432", "roleOop": "137447342080" },
+      { "mask": 8192, "maskOop": 2113536, "role": "4303355904", "roleOop": "8796095119360" },
+      { "mask": 4096, "maskOop": 512, "role": "35184380477440", "roleOop": "34363932672" },
+      { "mask": 16384, "maskOop": 1064960, "role": "8390656", "roleOop": "4398050705408" }
+    ]
+  },
+  {
+    "style": "TIKI",
+    "label": "4-2-3-1 DM AM Wide / 4-4-1-1 2DM",
+    "codes": [4, 2, 5, 7, 2, 3, 208, 80, 3, 0, 8, 20, 130, 34, 100, 136, 0, 0, 255],
+    "slots": [
+      { "mask": 1, "maskOop": 1, "role": "4198400", "roleOop": "8388610" },
+      { "mask": 4, "maskOop": 4, "role": "4503599629467648", "roleOop": "2097664" },
+      { "mask": 2097168, "maskOop": 2097168, "role": "18874368", "roleOop": "2097160" },
+      { "mask": 1048592, "maskOop": 1048592, "role": "2097154", "roleOop": "2097160" },
+      { "mask": 8, "maskOop": 8, "role": "36028797023158272", "roleOop": "2097664" },
+      { "mask": 2097280, "maskOop": 2097280, "role": "2097168", "roleOop": "2129920" },
+      { "mask": 1048704, "maskOop": 1048704, "role": "70368748371968", "roleOop": "4325376" },
+      { "mask": 2048, "maskOop": 256, "role": "4194432", "roleOop": "34363932672" },
+      { "mask": 8192, "maskOop": 8192, "role": "4303355904", "roleOop": "4303355904" },
+      { "mask": 4096, "maskOop": 512, "role": "35184380477440", "roleOop": "34363932672" },
+      { "mask": 16384, "maskOop": 16384, "role": "8390656", "roleOop": "4398050705408" }
+    ]
+  },
+  {
+    "style": "TIKI",
+    "label": "4-2-3-1 DM AM Wide / 4-3-3 DM Wide",
+    "codes": [4, 2, 5, 7, 2, 3, 208, 80, 3, 0, 8, 20, 130, 34, 100, 136, 0, 0, 255],
+    "slots": [
+      { "mask": 1, "maskOop": 1, "role": "4198400", "roleOop": "8388610" },
+      { "mask": 4, "maskOop": 4, "role": "4503599629467648", "roleOop": "2099200" },
+      { "mask": 2097168, "maskOop": 2097168, "role": "18874368", "roleOop": "2097160" },
+      { "mask": 1048592, "maskOop": 1048592, "role": "2097154", "roleOop": "2097160" },
+      { "mask": 8, "maskOop": 8, "role": "36028797023158272", "roleOop": "4195328" },
+      { "mask": 2097280, "maskOop": 128, "role": "2097168", "roleOop": "2129920" },
+      { "mask": 1048704, "maskOop": 1049600, "role": "70368748371968", "roleOop": "5242880" },
+      { "mask": 2048, "maskOop": 2048, "role": "4194432", "roleOop": "549757911040" },
+      { "mask": 8192, "maskOop": 2098176, "role": "4303355904", "roleOop": "142606336" },
+      { "mask": 4096, "maskOop": 4096, "role": "35184380477440", "roleOop": "274882101248" },
+      { "mask": 16384, "maskOop": 16384, "role": "8390656", "roleOop": "4398050705408" }
+    ]
+  },
+  {
+    "style": "TIKI",
+    "label": "5-2-3 DM Wide / 5-2-3 DM Wide",
+    "codes": [4, 2, 5, 7, 2, 3, 208, 80, 3, 0, 8, 20, 130, 34, 100, 136, 0, 0, 255],
+    "slots": [
+      { "mask": 1, "maskOop": 1, "role": "4198400", "roleOop": "8388610" },
+      { "mask": 32, "maskOop": 32, "role": "4194312", "roleOop": "2101248" },
+      { "mask": 2097168, "maskOop": 2097168, "role": "2251799815782400", "roleOop": "2097216" },
+      { "mask": 1048592, "maskOop": 1048592, "role": "2251799815782400", "roleOop": "2097216" },
+      { "mask": 64, "maskOop": 64, "role": "274886295552", "roleOop": "4202496" },
+      { "mask": 16, "maskOop": 16, "role": "18874368", "roleOop": "2097160" },
+      { "mask": 2097280, "maskOop": 2097280, "role": "4227072", "roleOop": "4325376" },
+      { "mask": 1048704, "maskOop": 1048704, "role": "2097168", "roleOop": "2129920" },
+      { "mask": 2048, "maskOop": 2048, "role": "142606336", "roleOop": "274882101248" },
+      { "mask": 4096, "maskOop": 4096, "role": "562949957615616", "roleOop": "1099520016384" },
+      { "mask": 16384, "maskOop": 16384, "role": "2155872256", "roleOop": "4398050705408" }
+    ]
+  },
+  {
+    "style": "TIKI",
+    "label": "5-2-3 DM Wide / 5-2-2-1 DM AM",
+    "codes": [4, 2, 5, 7, 2, 3, 208, 80, 3, 0, 8, 20, 130, 34, 100, 136, 0, 0, 255],
+    "slots": [
+      { "mask": 1, "maskOop": 1, "role": "4198400", "roleOop": "8388610" },
+      { "mask": 32, "maskOop": 32, "role": "4194312", "roleOop": "4202496" },
+      { "mask": 2097168, "maskOop": 2097168, "role": "2251799815782400", "roleOop": "2097216" },
+      { "mask": 1048592, "maskOop": 1048592, "role": "2251799815782400", "roleOop": "2097216" },
+      { "mask": 64, "maskOop": 64, "role": "274886295552", "roleOop": "4202496" },
+      { "mask": 16, "maskOop": 16, "role": "18874368", "roleOop": "2097160" },
+      { "mask": 2097280, "maskOop": 2097280, "role": "4227072", "roleOop": "2129920" },
+      { "mask": 1048704, "maskOop": 1048704, "role": "2097168", "roleOop": "2359296" },
+      { "mask": 2048, "maskOop": 2105344, "role": "142606336", "roleOop": "1077936128" },
+      { "mask": 4096, "maskOop": 1056768, "role": "562949957615616", "roleOop": "4303355904" },
+      { "mask": 16384, "maskOop": 16384, "role": "2155872256", "roleOop": "4398050705408" }
+    ]
+  },
+  {
+    "style": "TIKI",
+    "label": "5-2-3 DM Wide / 4-3-3 DM Wide",
+    "codes": [4, 2, 5, 7, 2, 3, 208, 80, 3, 0, 8, 20, 130, 34, 100, 136, 0, 0, 255],
+    "slots": [
+      { "mask": 1, "maskOop": 1, "role": "4198400", "roleOop": "8388610" },
+      { "mask": 32, "maskOop": 4, "role": "4194312", "roleOop": "2097664" },
+      { "mask": 2097168, "maskOop": 2097168, "role": "2251799815782400", "roleOop": "2097160" },
+      { "mask": 1048592, "maskOop": 1048592, "role": "2251799815782400", "roleOop": "2097160" },
+      { "mask": 64, "maskOop": 8, "role": "274886295552", "roleOop": "2097664" },
+      { "mask": 16, "maskOop": 128, "role": "18874368", "roleOop": "2359296" },
+      { "mask": 2097280, "maskOop": 2098176, "role": "4227072", "roleOop": "5242880" },
+      { "mask": 1048704, "maskOop": 1049600, "role": "2097168", "roleOop": "541065216" },
+      { "mask": 2048, "maskOop": 2048, "role": "142606336", "roleOop": "274882101248" },
+      { "mask": 4096, "maskOop": 4096, "role": "562949957615616", "roleOop": "1099520016384" },
+      { "mask": 16384, "maskOop": 16384, "role": "2155872256", "roleOop": "4398050705408" }
+    ]
+  },
+  {
+    "style": "VERT",
+    "label": "4-3-3 DM Wide / 4-3-3 DM Wide",
+    "codes": [4, 3, 4, 7, 2, 3, 136, 16, 138, 16, 10, 16, 97, 34, 100, 128, 0, 0, 255],
+    "slots": [
+      { "mask": 1, "maskOop": 1, "role": "4198400", "roleOop": "4194305" },
+      { "mask": 4, "maskOop": 4, "role": "17592188141568", "roleOop": "4195328" },
+      { "mask": 2097168, "maskOop": 2097168, "role": "18874368", "roleOop": "2097160" },
+      { "mask": 1048592, "maskOop": 1048592, "role": "2097154", "roleOop": "2097160" },
+      { "mask": 8, "maskOop": 8, "role": "4503599629467648", "roleOop": "2099200" },
+      { "mask": 128, "maskOop": 128, "role": "4227072", "roleOop": "2129920" },
+      { "mask": 1049600, "maskOop": 1049600, "role": "72057594046316544", "roleOop": "142606336" },
+      { "mask": 2098176, "maskOop": 2098176, "role": "144115188080050176", "roleOop": "5242880" },
+      { "mask": 2048, "maskOop": 2048, "role": "35184380477440", "roleOop": "274882101248" },
+      { "mask": 4096, "maskOop": 4096, "role": "4194432", "roleOop": "274882101248" },
+      { "mask": 16384, "maskOop": 16384, "role": "2155872256", "roleOop": "8796095119360" }
+    ]
+  },
+  {
+    "style": "VERT",
+    "label": "4-3-3 DM Wide / 4-4-2 2DM",
+    "codes": [4, 3, 4, 7, 2, 3, 136, 16, 138, 16, 10, 16, 97, 34, 100, 128, 0, 0, 255],
+    "slots": [
+      { "mask": 1, "maskOop": 1, "role": "4198400", "roleOop": "4194305" },
+      { "mask": 4, "maskOop": 4, "role": "17592188141568", "roleOop": "4195328" },
+      { "mask": 2097168, "maskOop": 2097168, "role": "18874368", "roleOop": "2097160" },
+      { "mask": 1048592, "maskOop": 1048592, "role": "2097154", "roleOop": "2097160" },
+      { "mask": 8, "maskOop": 8, "role": "4503599629467648", "roleOop": "2099200" },
+      { "mask": 128, "maskOop": 1048704, "role": "4227072", "roleOop": "2359296" },
+      {
+        "mask": 1049600,
+        "maskOop": 1064960,
+        "role": "72057594046316544",
+        "roleOop": "8796095119360"
+      },
+      { "mask": 2098176, "maskOop": 2097280, "role": "144115188080050176", "roleOop": "2129920" },
+      { "mask": 2048, "maskOop": 256, "role": "35184380477440", "roleOop": "34363932672" },
+      { "mask": 4096, "maskOop": 512, "role": "4194432", "roleOop": "34363932672" },
+      { "mask": 16384, "maskOop": 2113536, "role": "2155872256", "roleOop": "4398050705408" }
+    ]
+  },
+  {
+    "style": "VERT",
+    "label": "4-3-3 DM Wide / 4-1-4-1 DM",
+    "codes": [4, 3, 4, 7, 2, 3, 136, 16, 138, 16, 10, 16, 97, 34, 100, 128, 0, 0, 255],
+    "slots": [
+      { "mask": 1, "maskOop": 1, "role": "4198400", "roleOop": "4194305" },
+      { "mask": 4, "maskOop": 4, "role": "17592188141568", "roleOop": "4195328" },
+      { "mask": 2097168, "maskOop": 2097168, "role": "18874368", "roleOop": "2097160" },
+      { "mask": 1048592, "maskOop": 1048592, "role": "2097154", "roleOop": "2097160" },
+      { "mask": 8, "maskOop": 8, "role": "4503599629467648", "roleOop": "2099200" },
+      { "mask": 128, "maskOop": 128, "role": "4227072", "roleOop": "2129920" },
+      { "mask": 1049600, "maskOop": 1049600, "role": "72057594046316544", "roleOop": "142606336" },
+      { "mask": 2098176, "maskOop": 2098176, "role": "144115188080050176", "roleOop": "5242880" },
+      { "mask": 2048, "maskOop": 256, "role": "35184380477440", "roleOop": "34363932672" },
+      { "mask": 4096, "maskOop": 512, "role": "4194432", "roleOop": "34363932672" },
+      { "mask": 16384, "maskOop": 16384, "role": "2155872256", "roleOop": "4398050705408" }
+    ]
+  },
+  {
+    "style": "VERT",
+    "label": "4-4-2 Diamond Narrow / 4-4-2 Diamond Narrow",
+    "codes": [4, 3, 4, 7, 2, 3, 136, 16, 138, 16, 10, 16, 97, 34, 100, 128, 0, 0, 255],
+    "slots": [
+      { "mask": 1, "maskOop": 1, "role": "4198400", "roleOop": "4194305" },
+      { "mask": 4, "maskOop": 4, "role": "4194308", "roleOop": "2097664" },
+      { "mask": 2097168, "maskOop": 2097168, "role": "18874368", "roleOop": "2097160" },
+      { "mask": 1048592, "maskOop": 1048592, "role": "2097154", "roleOop": "2097160" },
+      { "mask": 8, "maskOop": 8, "role": "4194312", "roleOop": "4195328" },
+      { "mask": 128, "maskOop": 128, "role": "4227072", "roleOop": "2129920" },
+      { "mask": 1049600, "maskOop": 1049600, "role": "144115188080050176", "roleOop": "5242880" },
+      { "mask": 2098176, "maskOop": 2098176, "role": "281474980904960", "roleOop": "541065216" },
+      { "mask": 2113536, "maskOop": 2113536, "role": "2155872256", "roleOop": "35184380477440" },
+      { "mask": 8192, "maskOop": 8192, "role": "8389120", "roleOop": "2149580800" },
+      { "mask": 1064960, "maskOop": 1064960, "role": "8390656", "roleOop": "4398050705408" }
+    ]
+  },
+  {
+    "style": "VERT",
+    "label": "4-4-2 Diamond Narrow / 4-3-3 DM Wide",
+    "codes": [4, 3, 4, 7, 2, 3, 136, 16, 138, 16, 10, 16, 97, 34, 100, 128, 0, 0, 255],
+    "slots": [
+      { "mask": 1, "maskOop": 1, "role": "4198400", "roleOop": "4194305" },
+      { "mask": 4, "maskOop": 4, "role": "4194308", "roleOop": "2097664" },
+      { "mask": 2097168, "maskOop": 2097168, "role": "18874368", "roleOop": "2097160" },
+      { "mask": 1048592, "maskOop": 1048592, "role": "2097154", "roleOop": "2097160" },
+      { "mask": 8, "maskOop": 8, "role": "4194312", "roleOop": "4195328" },
+      { "mask": 128, "maskOop": 128, "role": "4227072", "roleOop": "2129920" },
+      { "mask": 1049600, "maskOop": 1049600, "role": "144115188080050176", "roleOop": "5242880" },
+      { "mask": 2098176, "maskOop": 2098176, "role": "281474980904960", "roleOop": "541065216" },
+      { "mask": 2113536, "maskOop": 2048, "role": "2155872256", "roleOop": "2199031644160" },
+      { "mask": 8192, "maskOop": 16384, "role": "8389120", "roleOop": "8796095119360" },
+      { "mask": 1064960, "maskOop": 4096, "role": "8390656", "roleOop": "274882101248" }
+    ]
+  },
+  {
+    "style": "VERT",
+    "label": "4-4-2 Diamond Narrow / 4-4-2 2DM",
+    "codes": [4, 3, 4, 7, 2, 3, 136, 16, 138, 16, 10, 16, 97, 34, 100, 128, 0, 0, 255],
+    "slots": [
+      { "mask": 1, "maskOop": 1, "role": "4198400", "roleOop": "4194305" },
+      { "mask": 4, "maskOop": 4, "role": "4194308", "roleOop": "2097664" },
+      { "mask": 2097168, "maskOop": 2097168, "role": "18874368", "roleOop": "2097160" },
+      { "mask": 1048592, "maskOop": 1048592, "role": "2097154", "roleOop": "2097160" },
+      { "mask": 8, "maskOop": 8, "role": "4194312", "roleOop": "4195328" },
+      { "mask": 128, "maskOop": 1048704, "role": "4227072", "roleOop": "2129920" },
+      { "mask": 1049600, "maskOop": 512, "role": "144115188080050176", "roleOop": "34363932672" },
+      { "mask": 2098176, "maskOop": 256, "role": "281474980904960", "roleOop": "34363932672" },
+      { "mask": 2113536, "maskOop": 2113536, "role": "2155872256", "roleOop": "35184380477440" },
+      { "mask": 8192, "maskOop": 2097280, "role": "8389120", "roleOop": "4325376" },
+      { "mask": 1064960, "maskOop": 1064960, "role": "8390656", "roleOop": "4398050705408" }
+    ]
+  },
+  {
+    "style": "VERT",
+    "label": "4-2-3-1 DM AM Wide / 4-4-2 2DM",
+    "codes": [4, 3, 4, 7, 2, 3, 136, 16, 138, 16, 10, 16, 97, 34, 100, 128, 0, 0, 255],
+    "slots": [
+      { "mask": 1, "maskOop": 1, "role": "4198400", "roleOop": "8388610" },
+      { "mask": 4, "maskOop": 4, "role": "4194312", "roleOop": "2097664" },
+      { "mask": 2097168, "maskOop": 2097168, "role": "2097154", "roleOop": "2097160" },
+      { "mask": 1048592, "maskOop": 1048592, "role": "18874368", "roleOop": "2097160" },
+      { "mask": 8, "maskOop": 8, "role": "36028797023158272", "roleOop": "2097664" },
+      { "mask": 2097280, "maskOop": 2097280, "role": "70368748371968", "roleOop": "2129920" },
+      { "mask": 1048704, "maskOop": 1048704, "role": "2097168", "roleOop": "2359296" },
+      { "mask": 2048, "maskOop": 256, "role": "562949957615616", "roleOop": "34363932672" },
+      { "mask": 8192, "maskOop": 1064960, "role": "8389120", "roleOop": "8796095119360" },
+      { "mask": 4096, "maskOop": 512, "role": "35184380477440", "roleOop": "34363932672" },
+      { "mask": 16384, "maskOop": 2113536, "role": "8389632", "roleOop": "17592194433024" }
+    ]
+  },
+  {
+    "style": "VERT",
+    "label": "4-2-3-1 DM AM Wide / 4-4-1-1 2DM",
+    "codes": [4, 3, 4, 7, 2, 3, 136, 16, 138, 16, 10, 16, 97, 34, 100, 128, 0, 0, 255],
+    "slots": [
+      { "mask": 1, "maskOop": 1, "role": "4198400", "roleOop": "4194305" },
+      { "mask": 4, "maskOop": 4, "role": "4194312", "roleOop": "2097664" },
+      { "mask": 2097168, "maskOop": 2097168, "role": "18874368", "roleOop": "2097160" },
+      { "mask": 1048592, "maskOop": 1048592, "role": "2097154", "roleOop": "2097160" },
+      { "mask": 8, "maskOop": 8, "role": "36028797023158272", "roleOop": "2097664" },
+      { "mask": 2097280, "maskOop": 2097280, "role": "4227072", "roleOop": "2129920" },
+      { "mask": 1048704, "maskOop": 1048704, "role": "2097168", "roleOop": "2359296" },
+      { "mask": 2048, "maskOop": 256, "role": "562949957615616", "roleOop": "34363932672" },
+      { "mask": 8192, "maskOop": 8192, "role": "8389120", "roleOop": "1077936128" },
+      { "mask": 4096, "maskOop": 512, "role": "35184380477440", "roleOop": "34363932672" },
+      { "mask": 16384, "maskOop": 16384, "role": "8389632", "roleOop": "17592194433024" }
+    ]
+  },
+  {
+    "style": "VERT",
+    "label": "4-2-3-1 DM AM Wide / 4-3-3 DM Wide",
+    "codes": [4, 3, 4, 7, 2, 3, 136, 16, 138, 16, 10, 16, 97, 34, 100, 128, 0, 0, 255],
+    "slots": [
+      { "mask": 1, "maskOop": 1, "role": "4198400", "roleOop": "4194305" },
+      { "mask": 4, "maskOop": 4, "role": "4194312", "roleOop": "4195328" },
+      { "mask": 2097168, "maskOop": 2097168, "role": "18874368", "roleOop": "2097160" },
+      { "mask": 1048592, "maskOop": 1048592, "role": "2097154", "roleOop": "2097160" },
+      { "mask": 8, "maskOop": 8, "role": "36028797023158272", "roleOop": "2097664" },
+      { "mask": 2097280, "maskOop": 2098176, "role": "4227072", "roleOop": "5242880" },
+      { "mask": 1048704, "maskOop": 128, "role": "2097168", "roleOop": "2359296" },
+      { "mask": 2048, "maskOop": 2048, "role": "562949957615616", "roleOop": "274882101248" },
+      { "mask": 8192, "maskOop": 1049600, "role": "8389120", "roleOop": "142606336" },
+      { "mask": 4096, "maskOop": 4096, "role": "35184380477440", "roleOop": "549757911040" },
+      { "mask": 16384, "maskOop": 16384, "role": "8389632", "roleOop": "17592194433024" }
+    ]
+  },
+  {
+    "style": "WING",
+    "label": "4-2-4 DM Wide / 4-4-2 2DM",
+    "codes": [4, 2, 4, 7, 2, 3, 4, 0, 0, 3, 16, 128, 68, 64, 4, 0, 2, 0, 255],
+    "slots": [
+      { "mask": 1, "maskOop": 1, "role": "2097153", "roleOop": "4194305" },
+      { "mask": 4, "maskOop": 4, "role": "4194312", "roleOop": "2097664" },
+      { "mask": 2097168, "maskOop": 2097168, "role": "2097154", "roleOop": "2097160" },
+      { "mask": 1048592, "maskOop": 1048592, "role": "2097154", "roleOop": "2097160" },
+      { "mask": 8, "maskOop": 8, "role": "4194308", "roleOop": "2097664" },
+      { "mask": 2048, "maskOop": 256, "role": "4194432", "roleOop": "34363932672" },
+      { "mask": 2097280, "maskOop": 2097280, "role": "2097168", "roleOop": "2129920" },
+      { "mask": 1048704, "maskOop": 1048704, "role": "4259840", "roleOop": "2129920" },
+      { "mask": 4096, "maskOop": 512, "role": "4194432", "roleOop": "34363932672" },
+      { "mask": 2113536, "maskOop": 2113536, "role": "8389632", "roleOop": "4398050705408" },
+      { "mask": 1064960, "maskOop": 1064960, "role": "8390656", "roleOop": "8796095119360" }
+    ]
+  },
+  {
+    "style": "WING",
+    "label": "4-2-4 DM Wide / 4-4-1-1 2DM",
+    "codes": [4, 2, 4, 7, 2, 3, 4, 0, 0, 3, 16, 128, 68, 64, 4, 0, 2, 0, 255],
+    "slots": [
+      { "mask": 1, "maskOop": 1, "role": "2097153", "roleOop": "4194305" },
+      { "mask": 4, "maskOop": 4, "role": "4194312", "roleOop": "2097664" },
+      { "mask": 2097168, "maskOop": 2097168, "role": "2097154", "roleOop": "2097160" },
+      { "mask": 1048592, "maskOop": 1048592, "role": "2097154", "roleOop": "2097160" },
+      { "mask": 8, "maskOop": 8, "role": "4194308", "roleOop": "2097664" },
+      { "mask": 2048, "maskOop": 256, "role": "4194432", "roleOop": "34363932672" },
+      { "mask": 2097280, "maskOop": 2097280, "role": "2097168", "roleOop": "2129920" },
+      { "mask": 1048704, "maskOop": 1048704, "role": "4259840", "roleOop": "2129920" },
+      { "mask": 4096, "maskOop": 512, "role": "4194432", "roleOop": "34363932672" },
+      { "mask": 2113536, "maskOop": 16384, "role": "8389632", "roleOop": "4398050705408" },
+      { "mask": 1064960, "maskOop": 8192, "role": "8390656", "roleOop": "1077936128" }
+    ]
+  },
+  {
+    "style": "WING",
+    "label": "4-2-4 DM Wide / 5-3-2 DM WB",
+    "codes": [4, 2, 4, 7, 2, 3, 4, 0, 0, 3, 16, 128, 68, 64, 4, 0, 2, 0, 255],
+    "slots": [
+      { "mask": 1, "maskOop": 1, "role": "2097153", "roleOop": "4194305" },
+      { "mask": 4, "maskOop": 32, "role": "4194312", "roleOop": "2101248" },
+      { "mask": 2097168, "maskOop": 2097168, "role": "2097154", "roleOop": "2097216" },
+      { "mask": 1048592, "maskOop": 16, "role": "2097154", "roleOop": "2097184" },
+      { "mask": 8, "maskOop": 1048592, "role": "4194308", "roleOop": "2097216" },
+      { "mask": 2048, "maskOop": 2098176, "role": "4194432", "roleOop": "142606336" },
+      { "mask": 2097280, "maskOop": 128, "role": "2097168", "roleOop": "2129920" },
+      { "mask": 1048704, "maskOop": 1049600, "role": "4259840", "roleOop": "5242880" },
+      { "mask": 4096, "maskOop": 64, "role": "4194432", "roleOop": "4202496" },
+      { "mask": 2113536, "maskOop": 2113536, "role": "8389632", "roleOop": "4398050705408" },
+      { "mask": 1064960, "maskOop": 1064960, "role": "8390656", "roleOop": "35184380477440" }
+    ]
+  },
+  {
+    "style": "WING",
+    "label": "4-3-3 DM Wide / 4-3-3 DM Wide",
+    "codes": [4, 2, 4, 7, 2, 3, 4, 0, 0, 3, 16, 128, 68, 64, 4, 0, 2, 0, 255],
+    "slots": [
+      { "mask": 1, "maskOop": 1, "role": "2097153", "roleOop": "4194305" },
+      { "mask": 4, "maskOop": 4, "role": "4194308", "roleOop": "2097664" },
+      { "mask": 2097168, "maskOop": 2097168, "role": "2097154", "roleOop": "2097160" },
+      { "mask": 1048592, "maskOop": 1048592, "role": "2097154", "roleOop": "2097160" },
+      { "mask": 8, "maskOop": 8, "role": "4194312", "roleOop": "2097664" },
+      { "mask": 2048, "maskOop": 2048, "role": "35184380477440", "roleOop": "274882101248" },
+      { "mask": 2098176, "maskOop": 2098176, "role": "144115188080050176", "roleOop": "5242880" },
+      { "mask": 1049600, "maskOop": 1049600, "role": "4194336", "roleOop": "5242880" },
+      { "mask": 4096, "maskOop": 4096, "role": "4194432", "roleOop": "549757911040" },
+      { "mask": 128, "maskOop": 128, "role": "2097168", "roleOop": "2129920" },
+      { "mask": 16384, "maskOop": 16384, "role": "8390656", "roleOop": "4398050705408" }
+    ]
+  },
+  {
+    "style": "WING",
+    "label": "4-3-3 DM Wide / 4-4-2 2DM",
+    "codes": [4, 2, 4, 7, 2, 3, 4, 0, 0, 3, 16, 128, 68, 64, 4, 0, 2, 0, 255],
+    "slots": [
+      { "mask": 1, "maskOop": 1, "role": "2097153", "roleOop": "4194305" },
+      { "mask": 4, "maskOop": 4, "role": "4194308", "roleOop": "2097664" },
+      { "mask": 2097168, "maskOop": 2097168, "role": "2097154", "roleOop": "2097160" },
+      { "mask": 1048592, "maskOop": 1048592, "role": "2097154", "roleOop": "2097160" },
+      { "mask": 8, "maskOop": 8, "role": "4194312", "roleOop": "2097664" },
+      { "mask": 2048, "maskOop": 256, "role": "35184380477440", "roleOop": "34363932672" },
+      { "mask": 2098176, "maskOop": 2097280, "role": "144115188080050176", "roleOop": "2129920" },
+      { "mask": 1049600, "maskOop": 1064960, "role": "4194336", "roleOop": "8796095119360" },
+      { "mask": 4096, "maskOop": 512, "role": "4194432", "roleOop": "34363932672" },
+      { "mask": 128, "maskOop": 1048704, "role": "2097168", "roleOop": "2359296" },
+      { "mask": 16384, "maskOop": 2113536, "role": "8390656", "roleOop": "35184380477440" }
+    ]
+  },
+  {
+    "style": "WING",
+    "label": "4-3-3 DM Wide / 4-1-4-1 DM",
+    "codes": [4, 2, 4, 7, 2, 3, 4, 0, 0, 3, 16, 128, 68, 64, 4, 0, 2, 0, 255],
+    "slots": [
+      { "mask": 1, "maskOop": 1, "role": "2097153", "roleOop": "4194305" },
+      { "mask": 4, "maskOop": 4, "role": "4194308", "roleOop": "2097664" },
+      { "mask": 2097168, "maskOop": 2097168, "role": "2097154", "roleOop": "2097160" },
+      { "mask": 1048592, "maskOop": 1048592, "role": "2097154", "roleOop": "2097160" },
+      { "mask": 8, "maskOop": 8, "role": "4194312", "roleOop": "2097664" },
+      { "mask": 2048, "maskOop": 256, "role": "35184380477440", "roleOop": "34363932672" },
+      { "mask": 2098176, "maskOop": 2098176, "role": "144115188080050176", "roleOop": "5242880" },
+      { "mask": 1049600, "maskOop": 1049600, "role": "4194336", "roleOop": "5242880" },
+      { "mask": 4096, "maskOop": 512, "role": "4194432", "roleOop": "34363932672" },
+      { "mask": 128, "maskOop": 128, "role": "2097168", "roleOop": "2359296" },
+      { "mask": 16384, "maskOop": 16384, "role": "8390656", "roleOop": "4398050705408" }
+    ]
+  },
+  {
+    "style": "WING",
+    "label": "4-2-3-1 DM AM Wide / 4-4-2 2DM",
+    "codes": [4, 2, 4, 7, 2, 3, 4, 0, 0, 3, 16, 128, 68, 64, 4, 0, 2, 0, 255],
+    "slots": [
+      { "mask": 1, "maskOop": 1, "role": "2097153", "roleOop": "4194305" },
+      { "mask": 4, "maskOop": 4, "role": "4194312", "roleOop": "2097664" },
+      { "mask": 2097168, "maskOop": 2097168, "role": "2097154", "roleOop": "2097160" },
+      { "mask": 1048592, "maskOop": 1048592, "role": "2097154", "roleOop": "2097160" },
+      { "mask": 8, "maskOop": 8, "role": "4194308", "roleOop": "2097664" },
+      { "mask": 2097280, "maskOop": 2097280, "role": "2097168", "roleOop": "2359296" },
+      { "mask": 1048704, "maskOop": 1048704, "role": "4259840", "roleOop": "2129920" },
+      { "mask": 2048, "maskOop": 256, "role": "4194432", "roleOop": "34363932672" },
+      { "mask": 8192, "maskOop": 1064960, "role": "2199031644160", "roleOop": "35184380477440" },
+      { "mask": 4096, "maskOop": 512, "role": "4194432", "roleOop": "34363932672" },
+      { "mask": 16384, "maskOop": 2113536, "role": "2155872256", "roleOop": "8796095119360" }
+    ]
+  },
+  {
+    "style": "WING",
+    "label": "4-2-3-1 DM AM Wide / 4-4-1-1 2DM",
+    "codes": [4, 2, 4, 7, 2, 3, 4, 0, 0, 3, 16, 128, 68, 64, 4, 0, 2, 0, 255],
+    "slots": [
+      { "mask": 1, "maskOop": 1, "role": "2097153", "roleOop": "4194305" },
+      { "mask": 4, "maskOop": 4, "role": "4194312", "roleOop": "2097664" },
+      { "mask": 2097168, "maskOop": 2097168, "role": "2097154", "roleOop": "2097160" },
+      { "mask": 1048592, "maskOop": 1048592, "role": "2097154", "roleOop": "2097160" },
+      { "mask": 8, "maskOop": 8, "role": "4194308", "roleOop": "2097664" },
+      { "mask": 2097280, "maskOop": 2097280, "role": "2097168", "roleOop": "2359296" },
+      { "mask": 1048704, "maskOop": 1048704, "role": "4259840", "roleOop": "2129920" },
+      { "mask": 2048, "maskOop": 256, "role": "4194432", "roleOop": "34363932672" },
+      { "mask": 8192, "maskOop": 16384, "role": "2199031644160", "roleOop": "4398050705408" },
+      { "mask": 4096, "maskOop": 512, "role": "4194432", "roleOop": "34363932672" },
+      { "mask": 16384, "maskOop": 8192, "role": "2155872256", "roleOop": "1077936128" }
+    ]
+  },
+  {
+    "style": "WING",
+    "label": "4-2-3-1 DM AM Wide / 4-3-3 DM Wide",
+    "codes": [4, 2, 4, 7, 2, 3, 4, 0, 0, 3, 16, 128, 68, 64, 4, 0, 2, 0, 255],
+    "slots": [
+      { "mask": 1, "maskOop": 1, "role": "2097153", "roleOop": "4194305" },
+      { "mask": 4, "maskOop": 4, "role": "4194312", "roleOop": "2097664" },
+      { "mask": 2097168, "maskOop": 2097168, "role": "2097154", "roleOop": "2097160" },
+      { "mask": 1048592, "maskOop": 1048592, "role": "2097154", "roleOop": "2097160" },
+      { "mask": 8, "maskOop": 8, "role": "4194308", "roleOop": "2097664" },
+      { "mask": 2097280, "maskOop": 128, "role": "2097168", "roleOop": "2129920" },
+      { "mask": 1048704, "maskOop": 1049600, "role": "4259840", "roleOop": "5242880" },
+      { "mask": 2048, "maskOop": 2048, "role": "4194432", "roleOop": "274882101248" },
+      { "mask": 8192, "maskOop": 16384, "role": "2199031644160", "roleOop": "4398050705408" },
+      { "mask": 4096, "maskOop": 4096, "role": "4194432", "roleOop": "549757911040" },
+      { "mask": 16384, "maskOop": 2098176, "role": "2155872256", "roleOop": "5242880" }
+    ]
+  }
+]
