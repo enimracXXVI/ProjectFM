@@ -1183,6 +1183,10 @@ function InstructionsEditor({
   const config = useConfig()
   const defs = config.teamInstructions.filter((d) => d.phase === phase)
   const conflicts = conflictsIn(codes, config.teamInstructions, config.fmCodes)
+  // Codes no team instruction in Settings has (FM's styles set some that FM never shows)
+  const hidden = codes.filter(
+    (c) => !config.teamInstructions.some((d) => d.options.some((o) => o.code === c)),
+  )
   return (
     <section className="grid gap-2">
       <ul className="grid grid-cols-2 gap-x-2 gap-y-1">
@@ -1209,6 +1213,21 @@ function InstructionsEditor({
           FM does not allow {c} together.
         </p>
       ))}
+      {phase === 'ip' && hidden.length > 0 && (
+        <p className="flex flex-wrap items-center gap-x-2 text-xs text-muted">
+          <span>
+            Also carries FM settings no instruction screen shows: code{hidden.length > 1 && 's'}{' '}
+            {hidden.join(', ')} (set by FM&apos;s styles; FM keeps them when it saves).
+          </span>
+          <button
+            type="button"
+            onClick={() => onChange(codes.filter((c) => !hidden.includes(c)))}
+            className="font-semibold text-accent"
+          >
+            Clear
+          </button>
+        </p>
+      )}
     </section>
   )
 }
