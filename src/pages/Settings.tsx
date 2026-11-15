@@ -91,6 +91,11 @@ export function SettingsPage() {
                 "FM's styles, their mentality and team instructions",
               ],
               [
+                '/settings/match-data',
+                'FM match data',
+                'Match rating points by role, tactical training',
+              ],
+              [
                 '/settings/training-sessions',
                 'Training sessions',
                 "FM's sessions, codes and descriptions for schedules",

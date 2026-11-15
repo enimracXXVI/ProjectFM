@@ -34,6 +34,7 @@ import {
 } from '../tactics/fm'
 import { DEFAULT_ROLE_WARNINGS, type RoleWarning } from '../tactics/warnings'
 import { DEFAULT_TACTICAL_STYLES, type TacticalStyle } from '../tactics/styles'
+import { DEFAULT_MATCH_DATA, type MatchData } from '../tactics/matchData'
 import {
   DEFAULT_TRAINING_SESSIONS,
   type TrainingSchedule,
@@ -98,6 +99,8 @@ export interface AppConfig {
   trainingSessions: TrainingSession[]
   /** FM's tactical styles: mentality and team instructions each sets, and its code. */
   tacticalStyles: TacticalStyle[]
+  /** FM's match data: how FM rates players by role, how tactical training adds up. */
+  matchData: MatchData
   /** FM's individual training focuses and the attributes each works on. */
   trainingFocuses: TrainingFocus[]
   /** Your weekly training schedules (shared by all careers). */
@@ -155,6 +158,7 @@ export const DEFAULT_CONFIG: AppConfig = {
   roleWarnings: DEFAULT_ROLE_WARNINGS,
   trainingSessions: DEFAULT_TRAINING_SESSIONS,
   tacticalStyles: DEFAULT_TACTICAL_STYLES,
+  matchData: DEFAULT_MATCH_DATA,
   trainingFocuses: DEFAULT_TRAINING_FOCUSES,
   trainingSchedules: [],
   noteCategories: DEFAULT_NOTE_CATEGORIES,
@@ -209,6 +213,7 @@ export function mergeConfig(stored: Stored): AppConfig {
     briefingLowFit: stored.briefingLowFit ?? DEFAULT_CONFIG.briefingLowFit,
     trainingSessions: stored.trainingSessions ?? DEFAULT_CONFIG.trainingSessions,
     tacticalStyles: stored.tacticalStyles ?? DEFAULT_CONFIG.tacticalStyles,
+    matchData: stored.matchData ?? DEFAULT_CONFIG.matchData,
     trainingFocuses: stored.trainingFocuses
       ? withWho(stored.trainingFocuses)
       : DEFAULT_CONFIG.trainingFocuses,

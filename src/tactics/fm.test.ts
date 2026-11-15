@@ -434,3 +434,42 @@ describe('FM template tactics', () => {
     expect(problems).toEqual([])
   })
 })
+
+describe('FM match data', () => {
+  it('counts complexity points as FM lists them', async () => {
+    const { tacticComplexity } = await import('./complexity')
+    const { DEFAULT_TACTICAL_STYLES } = await import('./styles')
+    const gp = DEFAULT_TACTICAL_STYLES.find((s) => s.code === 'GEGE')!
+    const c = tacticComplexity(row.slots, gp.team!, config)
+    // Much higher tempo 2, narrower 1, counter 2, play through press 3, GK to CB 1,
+    // high press 2, higher line 2, step up (hold line) 2, much more pressing 3,
+    // prevent short GK 1, counter-press 3, time wasting standard 1
+    expect(c.team.points).toBe(23)
+    expect(c.team.max).toBe(49)
+    expect(c.players).toHaveLength(11)
+    const f9 = config.roles.find((r) => r.name === 'False Nine')!
+    expect(f9.fm?.complexity).toBe(3)
+  })
+
+  it('finds the rating set of every in-possession role', async () => {
+    const { ratingSet, DEFAULT_MATCH_DATA } = await import('./matchData')
+    const ip = config.roles.filter((r) => r.phase === 'ip')
+    const missing = ip.filter((r) => !ratingSet(r, DEFAULT_MATCH_DATA, config.fmCodes.roleCodeMask))
+    expect(missing.map((r) => r.id)).toEqual([])
+    const gk = ratingSet(
+      config.roles.find((r) => r.id === 'gk-ip')!,
+      DEFAULT_MATCH_DATA,
+      config.fmCodes.roleCodeMask,
+    )!
+    expect(gk.find(([n]) => n === 'Saves')?.[1]).toBeGreaterThan(0)
+    expect(DEFAULT_MATCH_DATA.ratings.start).toBe(6700)
+  })
+
+  it('matches style roles to FM27 roles by name, leaving older ones unmatched', async () => {
+    const { DEFAULT_TACTICAL_STYLES, matchRoles } = await import('./styles')
+    const cp = DEFAULT_TACTICAL_STYLES.find((s) => s.code === 'CONT')!
+    const m = matchRoles(cp, config.roles)
+    expect(m.find((x) => x.name === 'Sweeper Keeper')?.roles.map((r) => r.id)).toEqual(['sk'])
+    expect(m.find((x) => x.name === 'Ball-Playing Defender')?.roles).toEqual([])
+  })
+})

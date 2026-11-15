@@ -39,6 +39,7 @@ import { FmCodesSettings } from './pages/settings/FmCodes'
 import { TrainingSessionsSettings } from './pages/settings/TrainingSessions'
 import { TrainingFocusesSettings } from './pages/settings/TrainingFocuses'
 import { TacticalStylesSettings } from './pages/settings/TacticalStyles'
+import { MatchDataSettings } from './pages/settings/MatchData'
 import { Training } from './pages/Training'
 import { RoleWarningsSettings, TacticsSettings } from './pages/settings/TacticsSettings'
 import { InstructionsSettings, PlayerInstructionsSettings } from './pages/settings/Instructions'
@@ -116,6 +117,7 @@ function SignedIn() {
         <Route path="settings/training-sessions" element={<TrainingSessionsSettings />} />
         <Route path="settings/training-focuses" element={<TrainingFocusesSettings />} />
         <Route path="settings/tactical-styles" element={<TacticalStylesSettings />} />
+        <Route path="settings/match-data" element={<MatchDataSettings />} />
         <Route path="settings/role-warnings" element={<RoleWarningsSettings />} />
         <Route path="settings/database" element={<DatabaseSettings />} />
         <Route path="settings/colours" element={<ColoursSettings />} />

@@ -7,7 +7,8 @@
     "about": "A tactic that focuses on retaining possession and pressing high to win the ball back. Looks to play out of defence and create chances through patient, short-passing build-up play.",
     "summary": ["Aims to dictate play", "Patiently wait for openings"],
     "features": ["High Possession", "Patient Attacks", "Space Behind Own Defence"],
-    "favoured": ["Passing", "Composure", "Vision"]
+    "favoured": ["Passing", "Composure", "Vision"],
+    "roles": ["Advanced Playmaker", "Deep-Lying Forward", "Ball-Playing Defender", "Sweeper Keeper"]
   },
   {
     "code": "GEGE",
@@ -21,7 +22,14 @@
       "High Speed Counter-Attacks",
       "Physically Demanding"
     ],
-    "favoured": ["Stamina", "Acceleration", "Dribbling"]
+    "favoured": ["Stamina", "Acceleration", "Dribbling"],
+    "roles": [
+      "Pressing Forward",
+      "Inside Forward",
+      "Shadow Striker",
+      "Box-To-Box Midfielder",
+      "Sweeper Keeper"
+    ]
   },
   {
     "code": "TIKI",
@@ -31,7 +39,14 @@
     "about": "Tiki-Taka places the emphasis on short passing, extreme pressing and movement, waiting for space to open up as opponents lose focus. An extreme variant of the Control Possession style.",
     "summary": ["Dominate possession", "Relentless pressing", "Patiently wait for openings"],
     "features": ["High Possession", "Highly Creative", "Slower Play"],
-    "favoured": ["Composure", "Passing", "Flair"]
+    "favoured": ["Composure", "Passing", "Flair"],
+    "roles": [
+      "Ball-Playing Defender",
+      "Deep-Lying Forward",
+      "False Number Nine",
+      "Advanced Playmaker",
+      "Sweeper Keeper"
+    ]
   },
   {
     "code": "VERT",
@@ -49,7 +64,8 @@
       "Win Possession In Attacking Areas",
       "Space Behind Own Defence"
     ],
-    "favoured": ["Vision", "Technique", "Stamina"]
+    "favoured": ["Vision", "Technique", "Stamina"],
+    "roles": ["Regista", "Mezzala", "Wing-Back", "Inside Forward", "Deep-Lying Playmaker"]
   },
   {
     "code": "WING",
@@ -63,7 +79,8 @@
       "Outnumbers Opposition In Wide Areas",
       "Reduced Central Threat"
     ],
-    "favoured": ["Dribbling", "Crossing", "Anticipation"]
+    "favoured": ["Dribbling", "Crossing", "Anticipation"],
+    "roles": ["Winger", "Wing-Back"]
   },
   {
     "code": "ROUT",
@@ -73,7 +90,8 @@
     "about": "The aim is to try to play the furthest forward pass available, with the intent to penetrate the opposition's penalty area as early as possible.",
     "summary": ["Quick transitions", "Direct passing"],
     "features": ["Physically Overwhelms Defence", "Utilises Set Pieces", "Low Possession"],
-    "favoured": ["Strength", "Set Piece Ability", "Aggression"]
+    "favoured": ["Strength", "Set Piece Ability", "Aggression"],
+    "roles": ["Target Man", "No-Nonsense Centre-Back"]
   },
   {
     "code": "FLUI",
@@ -83,7 +101,8 @@
     "about": "Looks to draw the opposition forward to leave them vulnerable on the break. Players will be fluid on the counter, trying to combine with each other and carry the ball with clear intent.",
     "summary": ["Soak up pressure", "More expressive and fluid counter-attacks"],
     "features": ["Invites Pressure", "High Speed Counter-Attacks", "Unpredictable Movement"],
-    "favoured": ["Pace", "Work Rate", "Technique"]
+    "favoured": ["Pace", "Work Rate", "Technique"],
+    "roles": ["Box-To-Box Midfielder", "Wing-Back", "Sweeper Keeper"]
   },
   {
     "code": "DIRE",
@@ -97,7 +116,8 @@
       "High Speed Counter-Attacks",
       "Reduced Possession"
     ],
-    "favoured": ["Work Rate", "Pace", "Strength"]
+    "favoured": ["Work Rate", "Pace", "Strength"],
+    "roles": ["Pressing Forward"]
   },
   {
     "code": "CATE",
@@ -110,7 +130,8 @@
       "Highly-structured defensive approach"
     ],
     "features": ["Very Organised", "Interrupts Opposition Rhythm", "Reduced Possession"],
-    "favoured": ["Concentration", "Positioning", "Set Piece Ability"]
+    "favoured": ["Concentration", "Positioning", "Set Piece Ability"],
+    "roles": ["Libero"]
   },
   {
     "code": "PARK",
@@ -120,7 +141,8 @@
     "about": "Players will look to get behind the ball and protect their defensive third, focusing more on the clean sheet than on possession.",
     "summary": ["Low and structured defensive shape", "Restrict space in the final third"],
     "features": ["Compresses Space Defensively", "Effective At Time Wasting", "Invites Pressure"],
-    "favoured": ["Teamwork", "Work Rate", "Aggression"]
+    "favoured": ["Teamwork", "Work Rate", "Aggression"],
+    "roles": ["Pressing Forward", "Defensive Winger"]
   },
   {
     "code": "NULL",
@@ -130,6 +152,7 @@
     "about": "The tactics board is a clean slate, ready for a playing style to be created from the ground up.",
     "summary": ["No instructions set", "Standard approach to play"],
     "features": [],
-    "favoured": []
+    "favoured": [],
+    "roles": []
   }
 ]

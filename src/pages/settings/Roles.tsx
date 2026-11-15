@@ -374,6 +374,21 @@ function RoleFmEditor({ role, onChange }: { role: RoleDef; onChange: (fm: RoleFm
             className={`${input} tabular-nums`}
           />
         </label>
+        <label className="grid gap-1 text-xs text-muted">
+          Complexity points (FM&apos;s match data: what the role adds to a player&apos;s tactical
+          complexity, up to 9 a player)
+          <input
+            value={fm.complexity ?? ''}
+            inputMode="numeric"
+            onChange={(e) =>
+              onChange({
+                ...fm,
+                complexity: e.target.value === '' ? undefined : Number(e.target.value) || 0,
+              })
+            }
+            className={`${input} tabular-nums`}
+          />
+        </label>
         <div>
           <p className="mb-1 text-xs text-muted">
             Where FM offers the role (FM positions; left, centre and right of a pair or trio count

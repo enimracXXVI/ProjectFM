@@ -20,6 +20,8 @@ export interface TacticalStyle {
   features: string[]
   /** Attributes the style favours. */
   favoured: string[]
+  /** Roles FM's style data prefers (FM's names; some are from older FMs). */
+  roles?: string[]
 }
 
 export const DEFAULT_TACTICAL_STYLES = styles as TacticalStyle[]
@@ -44,4 +46,21 @@ export function styleText(style: TacticalStyle, mentality: string | null, team: 
     (style.team === null ||
       (team.length === style.team.length && style.team.every((c) => team.includes(c))))
   return same ? style.name : `Custom ${style.name}`
+}
+
+const norm = (s: string) => s.toLowerCase().replace(/[^a-z]/g, '')
+
+/** The style's preferred roles (FM's list when saved before they were kept). */
+export const preferredRoles = (style: TacticalStyle) =>
+  style.roles ?? DEFAULT_TACTICAL_STYLES.find((s) => s.code === style.code)?.roles ?? []
+
+/** Each preferred role with the app's role of the same name, if FM27 still has it. */
+export function matchRoles<R extends { id: string; name: string }>(
+  style: TacticalStyle,
+  roles: R[],
+) {
+  return preferredRoles(style).map((name) => ({
+    name,
+    roles: roles.filter((r) => norm(r.name) === norm(name)),
+  }))
 }

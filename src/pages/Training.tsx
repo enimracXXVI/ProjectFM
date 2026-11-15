@@ -1,5 +1,5 @@
 import { clsx } from 'clsx'
-import { Copy, Download, Plus, Trash2, Upload } from 'lucide-react'
+import { ChevronDown, Copy, Download, Plus, Trash2, Upload } from 'lucide-react'
 import { useState } from 'react'
 import { Button, ErrorText } from '../components/form'
 import { Card, PageHeader, Placeholder } from '../components/ui'
@@ -7,6 +7,9 @@ import { useConfirm } from '../components/confirm'
 import { unzstd } from '../import/readSave'
 import { useLearnFileVersion } from '../lib/fileVersion'
 import { useConfig } from '../lib/config'
+import { useCareer } from '../lib/career'
+import { useStaff } from '../data/hooks'
+import { band } from '../tactics/matchData'
 import { TEXT, useUrlState } from '../lib/urlState'
 import { useSaveConfig } from '../lib/useSaveConfig'
 import { fileTitle } from '../tactics/fmf'
@@ -132,8 +135,85 @@ export function Training() {
           No schedules yet. Start a new one, or upload a schedule you saved in FM.
         </Placeholder>
       )}
+      <TacticalTraining />
       <Focuses focuses={config.trainingFocuses} />
     </>
+  )
+}
+
+/** How FM adds up tactical training (FM's match data), with the club's coaches. */
+function TacticalTraining() {
+  const config = useConfig()
+  const { current } = useCareer()
+  const { data: staff } = useStaff(current?.id ?? '')
+  const t = config.matchData.training
+  const [open, setOpen] = useState(false)
+  const coaches = (staff ?? [])
+    .filter(
+      (s) => /coach/i.test(s.role ?? '') && !/goalkeeping|fitness|set piece/i.test(s.role ?? ''),
+    )
+    .map((s) => ({ name: s.name, role: s.role, tactical: Number(s.attributes.Tactical) }))
+    .filter((c) => Number.isFinite(c.tactical) && c.tactical > 0)
+    .sort((a, b) => b.tactical - a.tactical)
+  const pct = (m: number) => `${Math.round(m * 100)}%`
+  const bands = (list: [number, number][], unit: string) =>
+    list.map(([from, m]) => `${from}${unit}: ${pct(m)}`).join(' · ')
+  return (
+    <Card className="mt-4 grid gap-2">
+      <button
+        type="button"
+        aria-expanded={open}
+        onClick={() => setOpen(!open)}
+        className="flex items-center gap-2 text-left"
+      >
+        <h2 className="text-base font-semibold">How tactical training adds up</h2>
+        <ChevronDown
+          className={clsx('ml-auto size-4 text-muted', !open && '-rotate-90')}
+          aria-hidden
+        />
+      </button>
+      <p className="text-xs text-muted">
+        From FM&apos;s match data. One tactic gets {t.split.one}% of tactical training; with two,
+        the main one gets {t.split.twoMain}% and the other {t.split.twoOther}%; with three,{' '}
+        {t.split.threeMain}% and {t.split.threeOther}% each for the others.
+      </p>
+      {open && (
+        <div className="grid gap-2 text-xs">
+          <p>
+            <span className="text-muted">Coach quality (coaching attribute): </span>
+            {bands(t.coach, '+')}
+          </p>
+          <p>
+            <span className="text-muted">Player&apos;s tactical ability: </span>
+            {bands(t.player, '+')}
+          </p>
+          <p>
+            <span className="text-muted">Time at the club: </span>
+            {bands(t.weeks, ' weeks')}
+          </p>
+          {coaches.length > 0 && (
+            <div>
+              <p className="text-muted">
+                Your coaches&apos; Tactical, with the band it falls in (FM&apos;s file gives the
+                bands, not which coaches or attribute count):
+              </p>
+              <ul className="mt-1 grid gap-0.5 sm:grid-cols-2">
+                {coaches.map((c) => (
+                  <li key={c.name} className="flex justify-between gap-2">
+                    <span className="truncate">
+                      {c.name} <span className="text-muted">· {c.role}</span>
+                    </span>
+                    <span className="tabular-nums">
+                      {c.tactical} · {pct(band(t.coach, c.tactical) ?? 0)}
+                    </span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+        </div>
+      )}
+    </Card>
   )
 }
 

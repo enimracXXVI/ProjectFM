@@ -61,8 +61,10 @@ import { briefingText, buildBriefing } from '../tactics/briefing'
 import { readFmf } from '../tactics/fmfRead'
 import { unzstd } from '../import/readSave'
 import { useLearnFileVersion } from '../lib/fileVersion'
-import { styleOf, styleText, type TacticalStyle } from '../tactics/styles'
+import { matchRoles, styleOf, styleText, type TacticalStyle } from '../tactics/styles'
 import { FM_TEMPLATES, templateTactic } from '../tactics/templates'
+import { tacticComplexity } from '../tactics/complexity'
+import { ratingSet } from '../tactics/matchData'
 import { byLastName, shortName } from '../lib/names'
 
 /** Pitch coordinates (0–1, own goal at 0) of an FM position on FM's grid. */
@@ -570,7 +572,8 @@ function TacticEditor({ tactic }: { tactic: TacticRow }) {
           </label>
         </div>
         {form.mentality && <FmAboutLine about={config.fmCodes.mentalityTexts[form.mentality]} />}
-        {style && <StyleInfo style={style} current={styleNow} />}
+        {style && <StyleInfo style={style} current={styleNow} slots={form.slots} />}
+        <ComplexityInfo slots={form.slots} team={team} />
         <label className="grid gap-1 text-sm">
           <span className="text-muted">
             Formation {phase === 'ip' ? 'in possession' : 'out of possession'}
@@ -1017,6 +1020,10 @@ function SlotPanel({
         </label>
       </div>
       {role && (role.about || role.tags?.length) && <RoleAbout role={role} />}
+      <RatingGuide
+        role={config.roles.find((r) => r.id === slot.role) ?? null}
+        complexity={role?.fm?.complexity}
+      />
       <PlayerInstructions
         slot={slot}
         phase={phase}
@@ -1414,8 +1421,20 @@ function SquadFit({
 }
 
 /** FM's description of a tactical style, and whether the tactic still matches it. */
-function StyleInfo({ style, current }: { style: TacticalStyle; current: string | null }) {
+function StyleInfo({
+  style,
+  current,
+  slots,
+}: {
+  style: TacticalStyle
+  current: string | null
+  slots: TacticSlot[]
+}) {
+  const config = useConfig()
   const [open, setOpen] = useState(false)
+  // FM's preferred roles for the style, and which the tactic uses
+  const used = new Set(slots.flatMap((s) => [s.role, s.roleOop]).filter(Boolean))
+  const preferred = matchRoles(style, config.roles)
   return (
     <div className="grid gap-1 rounded-lg border border-border bg-surface-2/50 p-2 text-xs">
       <button
@@ -1453,7 +1472,166 @@ function StyleInfo({ style, current }: { style: TacticalStyle; current: string |
               {style.favoured.join(', ')}
             </p>
           )}
+          {preferred.length > 0 && (
+            <div>
+              <span className="text-muted">Preferred roles (FM&apos;s style data): </span>
+              <ul className="mt-0.5 flex flex-wrap gap-1">
+                {preferred.map((p) => {
+                  const inUse = p.roles.some((r) => used.has(r.id))
+                  return (
+                    <li
+                      key={p.name}
+                      title={
+                        p.roles.length
+                          ? inUse
+                            ? 'Used in this tactic'
+                            : 'Not used in this tactic'
+                          : 'A role from older FMs: FM27 has no role of this name'
+                      }
+                      className={clsx(
+                        'rounded-full border px-2 py-0.5',
+                        inUse
+                          ? 'border-accent bg-accent/15 text-accent'
+                          : p.roles.length
+                            ? 'border-border'
+                            : 'border-dashed border-border text-muted',
+                      )}
+                    >
+                      {inUse && '✓ '}
+                      {p.name}
+                    </li>
+                  )
+                })}
+              </ul>
+              {preferred.some((p) => !p.roles.length) && (
+                <p className="mt-0.5 text-muted">
+                  Dashed: names from older FMs that FM27 has no role for.
+                </p>
+              )}
+            </div>
+          )}
         </>
+      )}
+    </div>
+  )
+}
+
+/** FM's complexity points for the tactic, with what costs most. */
+function ComplexityInfo({ slots, team }: { slots: TacticSlot[]; team: number[] }) {
+  const config = useConfig()
+  const [open, setOpen] = useState(false)
+  const c = tacticComplexity(slots, team, config)
+  const heavy = c.players.flatMap((p) => p.items.filter((x) => x.points >= 3)).map((x) => x.label)
+  return (
+    <div className="grid gap-1 rounded-lg border border-border bg-surface-2/50 p-2 text-xs">
+      <button
+        type="button"
+        aria-expanded={open}
+        onClick={() => setOpen(!open)}
+        className="flex items-center gap-1 text-left"
+      >
+        <span className="font-semibold">Complexity</span>
+        <span className="min-w-0 flex-1 truncate text-muted">
+          · team {c.team.points}/{c.team.max} · players {c.playerAverage.toFixed(1)}/{c.playerMax}{' '}
+          on average
+        </span>
+        <ChevronDown
+          className={clsx('size-3.5 shrink-0 text-muted', !open && '-rotate-90')}
+          aria-hidden
+        />
+      </button>
+      {heavy.length > 0 && (
+        <p className="text-amber-300">
+          Hardest to learn: {[...new Set(heavy)].join(', ')} (3 points each).
+        </p>
+      )}
+      {open && (
+        <>
+          <p className="text-muted">
+            FM&apos;s points from its match data: more points take longer for the squad to learn.
+            FM&apos;s own badge also weighs your players and the opponent.
+          </p>
+          <ul className="grid gap-0.5">
+            {[...c.team.items]
+              .sort((a, b) => b.points - a.points)
+              .map((x) => (
+                <li key={x.label} className="flex justify-between gap-2">
+                  <span>{x.label}</span>
+                  <span className="tabular-nums">{x.points}</span>
+                </li>
+              ))}
+          </ul>
+          <ul className="grid gap-0.5 border-t border-border pt-1">
+            {c.players.map((p) => (
+              <li key={p.slot} className="flex justify-between gap-2">
+                <span className="truncate">
+                  {slots[p.slot].position ?? '?'}: {p.items.map((x) => x.label).join(', ') || '–'}
+                </span>
+                <span className="tabular-nums">{p.points}</span>
+              </li>
+            ))}
+          </ul>
+        </>
+      )}
+    </div>
+  )
+}
+
+const SKIP_RATING = /^(Shootout|90min|Team Goals)/
+
+/** How FM's match ratings reward and punish a role (FM's match data). */
+function RatingGuide({ role, complexity }: { role: RoleDef | null; complexity?: number }) {
+  const config = useConfig()
+  const [open, setOpen] = useState(false)
+  const set = ratingSet(role, config.matchData, config.fmCodes.roleCodeMask)
+  if (!set && complexity === undefined) return null
+  const items = (set ?? []).filter(([n, v]) => v !== 0 && !SKIP_RATING.test(n))
+  const up = items.filter(([, v]) => v > 0).sort((a, b) => b[1] - a[1])
+  const down = items.filter(([, v]) => v < 0).sort((a, b) => a[1] - b[1])
+  const fmt = (v: number) => `${v > 0 ? '+' : ''}${(v / 1000).toFixed(v % 10 ? 3 : 2)}`
+  return (
+    <div className="grid gap-1 rounded-lg border border-border bg-surface-2/50 p-2 text-xs">
+      <button
+        type="button"
+        aria-expanded={open}
+        onClick={() => setOpen(!open)}
+        className="flex items-center gap-1 text-left"
+      >
+        <span className="font-semibold">How FM rates {role?.name ?? 'this role'}</span>
+        {complexity !== undefined && <span className="text-muted">· complexity {complexity}</span>}
+        <ChevronDown
+          className={clsx('ml-auto size-3.5 shrink-0 text-muted', !open && '-rotate-90')}
+          aria-hidden
+        />
+      </button>
+      {open && set && (
+        <>
+          <p className="text-muted">
+            Every player starts the match at {(config.matchData.ratings.start / 1000).toFixed(1)};
+            each event below moves the rating (FM&apos;s match data, by in-possession role).
+          </p>
+          <div className="grid gap-2 sm:grid-cols-2">
+            <ul className="grid content-start gap-0.5">
+              {up.map(([n, v]) => (
+                <li key={n} className="flex justify-between gap-2">
+                  <span>{n}</span>
+                  <span className="text-emerald-400 tabular-nums">{fmt(v)}</span>
+                </li>
+              ))}
+            </ul>
+            <ul className="grid content-start gap-0.5">
+              {down.map(([n, v]) => (
+                <li key={n} className="flex justify-between gap-2">
+                  <span>{n}</span>
+                  <span className="text-red-400 tabular-nums">{fmt(v)}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
+        </>
+      )}
+      {open && !set && (
+        <p className="text-muted">FM&apos;s rating data has no entry for this role.</p>
       )}
     </div>
   )

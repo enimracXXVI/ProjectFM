@@ -163,11 +163,13 @@
       "options": [
         {
           "label": "Much shorter passes",
-          "code": 4
+          "code": 4,
+          "complexity": 3
         },
         {
           "label": "Shorter passes",
-          "code": 3
+          "code": 3,
+          "complexity": 2
         },
         {
           "label": "Standard",
@@ -175,11 +177,13 @@
         },
         {
           "label": "More direct passes",
-          "code": 2
+          "code": 2,
+          "complexity": 1
         },
         {
           "label": "Much more direct passes",
-          "code": 1
+          "code": 1,
+          "complexity": 1
         }
       ],
       "default": 0
@@ -190,11 +194,13 @@
       "options": [
         {
           "label": "Much lower",
-          "code": 49
+          "code": 49,
+          "complexity": 2
         },
         {
           "label": "Lower",
-          "code": 48
+          "code": 48,
+          "complexity": 1
         },
         {
           "label": "Standard",
@@ -202,11 +208,13 @@
         },
         {
           "label": "Higher",
-          "code": 47
+          "code": 47,
+          "complexity": 1
         },
         {
           "label": "Much higher",
-          "code": 46
+          "code": 46,
+          "complexity": 2
         }
       ],
       "default": 0
@@ -217,11 +225,13 @@
       "options": [
         {
           "label": "Much narrower",
-          "code": 53
+          "code": 53,
+          "complexity": 2
         },
         {
           "label": "Narrower",
-          "code": 52
+          "code": 52,
+          "complexity": 1
         },
         {
           "label": "Standard",
@@ -229,11 +239,13 @@
         },
         {
           "label": "Wider",
-          "code": 51
+          "code": 51,
+          "complexity": 1
         },
         {
           "label": "Much wider",
-          "code": 50
+          "code": 50,
+          "complexity": 2
         }
       ],
       "default": 0
@@ -244,7 +256,8 @@
       "options": [
         {
           "label": "Hold shape",
-          "code": 55
+          "code": 55,
+          "complexity": 1
         },
         {
           "label": "Standard",
@@ -252,7 +265,8 @@
         },
         {
           "label": "Counter-attack",
-          "code": 54
+          "code": 54,
+          "complexity": 2
         }
       ],
       "default": 0
@@ -263,7 +277,8 @@
       "options": [
         {
           "label": "Be more disciplined",
-          "code": 20
+          "code": 20,
+          "complexity": 3
         },
         {
           "label": "Balanced",
@@ -271,7 +286,8 @@
         },
         {
           "label": "Be more expressive",
-          "code": 19
+          "code": 19,
+          "complexity": 2
         }
       ],
       "default": 0
@@ -286,11 +302,13 @@
         },
         {
           "label": "Standard",
-          "code": 79
+          "code": 79,
+          "complexity": 1
         },
         {
           "label": "More often",
-          "code": 78
+          "code": 78,
+          "complexity": 2
         }
       ],
       "default": 79
@@ -305,7 +323,8 @@
         },
         {
           "label": "Play for set pieces",
-          "code": 18
+          "code": 18,
+          "complexity": 1
         }
       ],
       "default": 0
@@ -316,7 +335,8 @@
       "options": [
         {
           "label": "Hit early crosses",
-          "code": 9
+          "code": 9,
+          "complexity": 1
         },
         {
           "label": "Standard",
@@ -324,7 +344,8 @@
         },
         {
           "label": "Work ball into box",
-          "code": 17
+          "code": 17,
+          "complexity": 2
         }
       ],
       "default": 0
@@ -335,7 +356,8 @@
       "options": [
         {
           "label": "Discourage",
-          "code": 16
+          "code": 16,
+          "complexity": 1
         },
         {
           "label": "Balanced",
@@ -343,7 +365,8 @@
         },
         {
           "label": "Encourage",
-          "code": 15
+          "code": 15,
+          "complexity": 1
         }
       ],
       "default": 0
@@ -358,15 +381,18 @@
         },
         {
           "label": "Floated crosses",
-          "code": 10
+          "code": 10,
+          "complexity": 1
         },
         {
           "label": "Whipped crosses",
-          "code": 11
+          "code": 11,
+          "complexity": 1
         },
         {
           "label": "Low crosses",
-          "code": 12
+          "code": 12,
+          "complexity": 1
         }
       ],
       "default": 0
@@ -377,7 +403,8 @@
       "options": [
         {
           "label": "Discourage",
-          "code": 14
+          "code": 14,
+          "complexity": 1
         },
         {
           "label": "Balanced",
@@ -385,7 +412,8 @@
         },
         {
           "label": "Encourage",
-          "code": 13
+          "code": 13,
+          "complexity": 2
         }
       ],
       "default": 0
@@ -400,15 +428,18 @@
         },
         {
           "label": "Overlap left",
-          "code": 26
+          "code": 26,
+          "complexity": 1
         },
         {
           "label": "Overlap right",
-          "code": 27
+          "code": 27,
+          "complexity": 1
         },
         {
           "label": "Overlap both flanks",
-          "code": 25
+          "code": 25,
+          "complexity": 1
         }
       ],
       "default": 0
@@ -423,15 +454,18 @@
         },
         {
           "label": "Underlap left",
-          "code": 29
+          "code": 29,
+          "complexity": 1
         },
         {
           "label": "Underlap right",
-          "code": 30
+          "code": 30,
+          "complexity": 1
         },
         {
           "label": "Underlap both flanks",
-          "code": 28
+          "code": 28,
+          "complexity": 1
         }
       ],
       "default": 0
@@ -446,19 +480,23 @@
         },
         {
           "label": "Centre",
-          "code": 23
+          "code": 23,
+          "complexity": 3
         },
         {
           "label": "Left flank",
-          "code": 21
+          "code": 21,
+          "complexity": 2
         },
         {
           "label": "Right flank",
-          "code": 22
+          "code": 22,
+          "complexity": 2
         },
         {
           "label": "Both flanks",
-          "code": 24
+          "code": 24,
+          "complexity": 1
         }
       ],
       "default": 0
@@ -469,7 +507,8 @@
       "options": [
         {
           "label": "Pass to feet",
-          "code": 6
+          "code": 6,
+          "complexity": 1
         },
         {
           "label": "Balanced",
@@ -477,7 +516,8 @@
         },
         {
           "label": "Pass into space",
-          "code": 5
+          "code": 5,
+          "complexity": 1
         }
       ],
       "default": 0
@@ -488,7 +528,8 @@
       "options": [
         {
           "label": "Play through the press",
-          "code": 7
+          "code": 7,
+          "complexity": 3
         },
         {
           "label": "Balanced",
@@ -496,7 +537,8 @@
         },
         {
           "label": "Bypass the press",
-          "code": 8
+          "code": 8,
+          "complexity": 0
         }
       ],
       "default": 0
@@ -507,7 +549,8 @@
       "options": [
         {
           "label": "Shorter passes",
-          "code": 44
+          "code": 44,
+          "complexity": 1
         },
         {
           "label": "Mixed",
@@ -515,7 +558,8 @@
         },
         {
           "label": "Long passing",
-          "code": 45
+          "code": 45,
+          "complexity": 1
         }
       ],
       "default": 0
@@ -526,7 +570,8 @@
       "options": [
         {
           "label": "Slow pace down",
-          "code": 43
+          "code": 43,
+          "complexity": 1
         },
         {
           "label": "Balanced",
@@ -534,7 +579,8 @@
         },
         {
           "label": "Distribute quickly",
-          "code": 42
+          "code": 42,
+          "complexity": 2
         }
       ],
       "default": 0
@@ -549,27 +595,33 @@
         },
         {
           "label": "Centre-back",
-          "code": 35
+          "code": 35,
+          "complexity": 1
         },
         {
           "label": "Full-back",
-          "code": 36
+          "code": 36,
+          "complexity": 1
         },
         {
           "label": "Flanks",
-          "code": 37
+          "code": 37,
+          "complexity": 1
         },
         {
           "label": "Playmaker",
-          "code": 39
+          "code": 39,
+          "complexity": 1
         },
         {
           "label": "Target forward",
-          "code": 40
+          "code": 40,
+          "complexity": 1
         },
         {
           "label": "Bypass the defensive line",
-          "code": 38
+          "code": 38,
+          "complexity": 1
         }
       ],
       "default": 0
@@ -584,7 +636,8 @@
         },
         {
           "label": "Participate",
-          "code": 60
+          "code": 60,
+          "complexity": 0
         }
       ],
       "default": 0
@@ -595,15 +648,18 @@
       "options": [
         {
           "label": "Low block",
-          "code": 63
+          "code": 63,
+          "complexity": 0
         },
         {
           "label": "Mid block",
-          "code": 62
+          "code": 62,
+          "complexity": 1
         },
         {
           "label": "High press",
-          "code": 61
+          "code": 61,
+          "complexity": 2
         }
       ],
       "default": 62
@@ -614,11 +670,13 @@
       "options": [
         {
           "label": "Much lower",
-          "code": 59
+          "code": 59,
+          "complexity": 1
         },
         {
           "label": "Lower",
-          "code": 58
+          "code": 58,
+          "complexity": 1
         },
         {
           "label": "Standard",
@@ -626,11 +684,13 @@
         },
         {
           "label": "Higher",
-          "code": 57
+          "code": 57,
+          "complexity": 2
         },
         {
           "label": "Much higher",
-          "code": 56
+          "code": 56,
+          "complexity": 3
         }
       ],
       "default": 0
@@ -641,7 +701,8 @@
       "options": [
         {
           "label": "Step up more",
-          "code": 76
+          "code": 76,
+          "complexity": 2
         },
         {
           "label": "Balanced",
@@ -649,7 +710,8 @@
         },
         {
           "label": "Drop off more",
-          "code": 77
+          "code": 77,
+          "complexity": 1
         }
       ],
       "default": 0
@@ -660,11 +722,13 @@
       "options": [
         {
           "label": "Much less often",
-          "code": 68
+          "code": 68,
+          "complexity": 2
         },
         {
           "label": "Less often",
-          "code": 67
+          "code": 67,
+          "complexity": 1
         },
         {
           "label": "Standard",
@@ -672,11 +736,13 @@
         },
         {
           "label": "More often",
-          "code": 66
+          "code": 66,
+          "complexity": 2
         },
         {
           "label": "Much more often",
-          "code": 65
+          "code": 65,
+          "complexity": 3
         }
       ],
       "default": 0
@@ -687,7 +753,8 @@
       "options": [
         {
           "label": "Regroup",
-          "code": 71
+          "code": 71,
+          "complexity": 1
         },
         {
           "label": "Standard",
@@ -695,7 +762,8 @@
         },
         {
           "label": "Counter-press",
-          "code": 70
+          "code": 70,
+          "complexity": 3
         }
       ],
       "default": 0
@@ -706,7 +774,8 @@
       "options": [
         {
           "label": "Stay on feet",
-          "code": 73
+          "code": 73,
+          "complexity": 1
         },
         {
           "label": "Standard",
@@ -714,7 +783,8 @@
         },
         {
           "label": "Get stuck in",
-          "code": 72
+          "code": 72,
+          "complexity": 1
         }
       ],
       "default": 0
@@ -729,7 +799,8 @@
         },
         {
           "label": "Yes",
-          "code": 69
+          "code": 69,
+          "complexity": 1
         }
       ],
       "default": 0
@@ -740,7 +811,8 @@
       "options": [
         {
           "label": "Trap inside",
-          "code": 80
+          "code": 80,
+          "complexity": 0
         },
         {
           "label": "Balanced",
@@ -748,7 +820,8 @@
         },
         {
           "label": "Trap outside",
-          "code": 81
+          "code": 81,
+          "complexity": 0
         }
       ],
       "default": 0
@@ -759,7 +832,8 @@
       "options": [
         {
           "label": "Stop crosses",
-          "code": 82
+          "code": 82,
+          "complexity": 1
         },
         {
           "label": "Balanced",
@@ -767,7 +841,8 @@
         },
         {
           "label": "Invite crosses",
-          "code": 83
+          "code": 83,
+          "complexity": 1
         }
       ],
       "default": 0
@@ -780,15 +855,18 @@
       "options": [
         {
           "label": "Stay wider",
-          "code": 25
+          "code": 25,
+          "complexity": 1
         },
         {
           "label": "Sit narrower",
-          "code": 26
+          "code": 26,
+          "complexity": 1
         },
         {
           "label": "Move into channels",
-          "code": 27
+          "code": 27,
+          "complexity": 2
         },
         {
           "label": "Standard",
@@ -802,11 +880,13 @@
       "options": [
         {
           "label": "Run wide with ball",
-          "code": 15
+          "code": 15,
+          "complexity": 1
         },
         {
           "label": "Cut inside with ball",
-          "code": 16
+          "code": 16,
+          "complexity": 1
         },
         {
           "label": "Standard",
@@ -820,11 +900,13 @@
       "options": [
         {
           "label": "Dribble more",
-          "code": 13
+          "code": 13,
+          "complexity": 1
         },
         {
           "label": "Dribble less",
-          "code": 14
+          "code": 14,
+          "complexity": 1
         },
         {
           "label": "Standard",
@@ -838,7 +920,8 @@
       "options": [
         {
           "label": "Make more runs",
-          "code": 22
+          "code": 22,
+          "complexity": 2
         },
         {
           "label": "Standard",
@@ -846,7 +929,8 @@
         },
         {
           "label": "Hold position",
-          "code": 23
+          "code": 23,
+          "complexity": 1
         }
       ]
     },
@@ -856,7 +940,8 @@
       "options": [
         {
           "label": "Roam from position",
-          "code": 24
+          "code": 24,
+          "complexity": 2
         },
         {
           "label": "Follow tactical shape",
@@ -870,7 +955,8 @@
       "options": [
         {
           "label": "Yes",
-          "code": 17
+          "code": 17,
+          "complexity": 1
         },
         {
           "label": "No",
@@ -884,11 +970,13 @@
       "options": [
         {
           "label": "Shoot more often",
-          "code": 18
+          "code": 18,
+          "complexity": 1
         },
         {
           "label": "Shoot less often",
-          "code": 19
+          "code": 19,
+          "complexity": 1
         },
         {
           "label": "Standard",
@@ -902,11 +990,13 @@
       "options": [
         {
           "label": "Shorter passing",
-          "code": 1
+          "code": 1,
+          "complexity": 2
         },
         {
           "label": "More direct passing",
-          "code": 2
+          "code": 2,
+          "complexity": 1
         },
         {
           "label": "Standard",
@@ -920,11 +1010,13 @@
       "options": [
         {
           "label": "Take more risks",
-          "code": 3
+          "code": 3,
+          "complexity": 3
         },
         {
           "label": "Take fewer risks",
-          "code": 4
+          "code": 4,
+          "complexity": 1
         },
         {
           "label": "Standard",
@@ -938,19 +1030,23 @@
       "options": [
         {
           "label": "Aim for far post",
-          "code": 10
+          "code": 10,
+          "complexity": 1
         },
         {
           "label": "Aim for centre",
-          "code": 11
+          "code": 11,
+          "complexity": 1
         },
         {
           "label": "Aim for near post",
-          "code": 9
+          "code": 9,
+          "complexity": 1
         },
         {
           "label": "Aim for target forward",
-          "code": 12
+          "code": 12,
+          "complexity": 2
         },
         {
           "label": "Standard",
@@ -964,11 +1060,13 @@
       "options": [
         {
           "label": "Cross from deep",
-          "code": 7
+          "code": 7,
+          "complexity": 1
         },
         {
           "label": "Cross from byline",
-          "code": 8
+          "code": 8,
+          "complexity": 1
         },
         {
           "label": "Standard",
@@ -982,11 +1080,13 @@
       "options": [
         {
           "label": "More often",
-          "code": 29
+          "code": 29,
+          "complexity": 2
         },
         {
           "label": "Less often",
-          "code": 30
+          "code": 30,
+          "complexity": 1
         },
         {
           "label": "Standard",
@@ -1000,7 +1100,8 @@
       "options": [
         {
           "label": "Mark tighter",
-          "code": 33
+          "code": 33,
+          "complexity": 2
         },
         {
           "label": "Standard",
@@ -1014,11 +1115,13 @@
       "options": [
         {
           "label": "Tackle harder",
-          "code": 31
+          "code": 31,
+          "complexity": 1
         },
         {
           "label": "Ease off tackles",
-          "code": 32
+          "code": 32,
+          "complexity": 1
         },
         {
           "label": "Standard",
@@ -1033,12 +1136,14 @@
         {
           "label": "Mark specific player",
           "code": 34,
-          "target": "player"
+          "target": "player",
+          "complexity": 3
         },
         {
           "label": "Mark specific position",
           "code": 35,
-          "target": "position"
+          "target": "position",
+          "complexity": 2
         },
         {
           "label": "Standard",
@@ -1052,23 +1157,28 @@
       "options": [
         {
           "label": "Centre",
-          "code": 36
+          "code": 36,
+          "complexity": 0
         },
         {
           "label": "Left",
-          "code": 37
+          "code": 37,
+          "complexity": 0
         },
         {
           "label": "Right",
-          "code": 38
+          "code": 38,
+          "complexity": 0
         },
         {
           "label": "Near post",
-          "code": 39
+          "code": 39,
+          "complexity": 0
         },
         {
           "label": "Far post",
-          "code": 40
+          "code": 40,
+          "complexity": 0
         },
         {
           "label": "Standard",
@@ -1082,11 +1192,13 @@
       "options": [
         {
           "label": "Attack defensive line",
-          "code": 41
+          "code": 41,
+          "complexity": 0
         },
         {
           "label": "Arrive from deep",
-          "code": 42
+          "code": 42,
+          "complexity": 0
         },
         {
           "label": "Standard",
@@ -1117,7 +1229,8 @@
           "allowed": [29, 30, 31, 32, 33, 34, 35],
           "forced": []
         }
-      }
+      },
+      "complexity": 0
     },
     "twm": {
       "code": "68719476736",
@@ -1138,7 +1251,8 @@
           "allowed": [29, 30, 31, 32, 33, 34, 35],
           "forced": []
         }
-      }
+      },
+      "complexity": 1
     },
     "ccb": {
       "code": "32",
@@ -1166,7 +1280,8 @@
           "allowed": [31, 32, 33, 34, 35],
           "forced": [30]
         }
-      }
+      },
+      "complexity": 1
     },
     "am-oop": {
       "code": "1073741824",
@@ -1194,7 +1309,8 @@
           "allowed": [29, 30, 31, 32, 33, 34, 35],
           "forced": []
         }
-      }
+      },
+      "complexity": 0
     },
     "awb": {
       "code": "274877906944",
@@ -1215,7 +1331,8 @@
           "allowed": [1, 2, 3, 4, 8, 9, 10, 11, 12, 13, 14, 15, 16, 18, 19, 25, 26],
           "forced": [22]
         }
-      }
+      },
+      "complexity": 1
     },
     "pw": {
       "code": "8796093022208",
@@ -1250,7 +1367,8 @@
           "allowed": [1, 2, 3, 13, 14, 15, 16, 17, 18, 19, 22, 36, 37],
           "forced": [23, 24, 26, 42]
         }
-      }
+      },
+      "complexity": 2
     },
     "pwb-ip": {
       "code": "36028797018963968",
@@ -1285,7 +1403,8 @@
           "allowed": [1, 2, 3, 4, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 18, 19, 22, 23, 25, 26],
           "forced": [24]
         }
-      }
+      },
+      "complexity": 3
     },
     "ncb": {
       "code": "536870912",
@@ -1313,7 +1432,8 @@
           "allowed": [18, 19, 23, 25],
           "forced": [2, 4, 14]
         }
-      }
+      },
+      "complexity": 0
     },
     "cwd": {
       "code": "256",
@@ -1336,7 +1456,8 @@
           "allowed": [29, 30, 31, 32, 33, 34, 35],
           "forced": []
         }
-      }
+      },
+      "complexity": 1
     },
     "sdm": {
       "code": "262144",
@@ -1364,7 +1485,8 @@
           "allowed": [31, 32, 33, 34, 35],
           "forced": [30]
         }
-      }
+      },
+      "complexity": 1
     },
     "ocb": {
       "code": "18014398509481984",
@@ -1387,7 +1509,8 @@
           "allowed": [1, 2, 3, 4, 8, 13, 14, 18, 19, 25],
           "forced": [22]
         }
-      }
+      },
+      "complexity": 3
     },
     "mpm": {
       "code": "144115188075855872",
@@ -1415,7 +1538,8 @@
           "allowed": [1, 2, 3, 9, 10, 11, 12, 13, 14, 15, 18, 19, 22, 23, 24, 25],
           "forced": []
         }
-      }
+      },
+      "complexity": 2
     },
     "hfb": {
       "code": "2048",
@@ -1436,7 +1560,8 @@
           "allowed": [31, 32, 33, 34, 35],
           "forced": [30]
         }
-      }
+      },
+      "complexity": 1
     },
     "dm-oop": {
       "code": "32768",
@@ -1464,7 +1589,8 @@
           "allowed": [29, 30, 31, 32, 33, 34, 35],
           "forced": []
         }
-      }
+      },
+      "complexity": 0
     },
     "ddm": {
       "code": "65536",
@@ -1492,7 +1618,8 @@
           "allowed": [29, 30, 31, 32, 33, 34, 35],
           "forced": []
         }
-      }
+      },
+      "complexity": 3
     },
     "ngk": {
       "code": "9007199254740992",
@@ -1506,7 +1633,8 @@
           "allowed": [1, 2],
           "forced": [4, 14]
         }
-      }
+      },
+      "complexity": 0
     },
     "am-ip": {
       "code": "512",
@@ -1566,7 +1694,8 @@
           ],
           "forced": []
         }
-      }
+      },
+      "complexity": 0
     },
     "wow": {
       "code": "2199023255552",
@@ -1587,7 +1716,8 @@
           "allowed": [29, 30, 31, 32, 33, 34, 35],
           "forced": []
         }
-      }
+      },
+      "complexity": 1
     },
     "w-oop": {
       "code": "274877906944",
@@ -1608,7 +1738,8 @@
           "allowed": [29, 30, 31, 32, 33, 34, 35],
           "forced": []
         }
-      }
+      },
+      "complexity": 0
     },
     "scf": {
       "code": "35184372088832",
@@ -1629,7 +1760,8 @@
           "allowed": [29, 30, 31, 32, 33, 34, 35],
           "forced": []
         }
-      }
+      },
+      "complexity": 2
     },
     "wcb-ip": {
       "code": "2251799813685248",
@@ -1652,7 +1784,8 @@
           "allowed": [1, 2, 3, 4, 7, 8, 9, 10, 11, 12, 13, 14, 18, 19, 23, 25],
           "forced": []
         }
-      }
+      },
+      "complexity": 1
     },
     "hwb": {
       "code": "16384",
@@ -1673,7 +1806,8 @@
           "allowed": [31, 32, 33, 34, 35],
           "forced": [30]
         }
-      }
+      },
+      "complexity": 1
     },
     "tf": {
       "code": "262144",
@@ -1701,7 +1835,8 @@
           "allowed": [1, 2, 3, 4, 13, 14, 15, 18, 19, 23, 24, 25, 27, 36, 37, 41, 42],
           "forced": [17]
         }
-      }
+      },
+      "complexity": 1
     },
     "dlf": {
       "code": "1024",
@@ -1729,7 +1864,8 @@
           "allowed": [1, 2, 3, 4, 13, 14, 15, 18, 19, 23, 24, 25, 27, 36, 37, 41, 42],
           "forced": [17]
         }
-      }
+      },
+      "complexity": 2
     },
     "swd": {
       "code": "128",
@@ -1752,7 +1888,8 @@
           "allowed": [29, 30, 31, 32, 33, 34, 35],
           "forced": []
         }
-      }
+      },
+      "complexity": 1
     },
     "ifb": {
       "code": "4503599627370496",
@@ -1773,7 +1910,8 @@
           "allowed": [1, 2, 3, 4, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 18, 19, 22, 23, 25, 26],
           "forced": []
         }
-      }
+      },
+      "complexity": 1
     },
     "bgk": {
       "code": "4096",
@@ -1787,7 +1925,8 @@
           "allowed": [1, 2, 13, 14],
           "forced": [3]
         }
-      }
+      },
+      "complexity": 2
     },
     "oam": {
       "code": "4294967296",
@@ -1815,7 +1954,8 @@
           "allowed": [29, 30, 31, 32, 33, 34, 35],
           "forced": []
         }
-      }
+      },
+      "complexity": 1
     },
     "f9": {
       "code": "1099511627776",
@@ -1843,7 +1983,8 @@
           "allowed": [1, 2, 3, 4, 13, 14, 15, 17, 18, 19, 25, 27, 36, 37],
           "forced": [24, 42]
         }
-      }
+      },
+      "complexity": 3
     },
     "wcm-ip": {
       "code": "281474976710656",
@@ -1864,7 +2005,8 @@
           "allowed": [1, 2, 3, 4, 9, 10, 11, 12, 13, 14, 15, 18, 19, 22, 23, 24],
           "forced": [25]
         }
-      }
+      },
+      "complexity": 1
     },
     "cm-oop": {
       "code": "1048576",
@@ -1892,7 +2034,8 @@
           "allowed": [29, 30, 31, 32, 33, 34, 35],
           "forced": []
         }
-      }
+      },
+      "complexity": 0
     },
     "owm": {
       "code": "137438953472",
@@ -1913,7 +2056,8 @@
           "allowed": [29, 30, 31, 32, 33, 34, 35],
           "forced": []
         }
-      }
+      },
+      "complexity": 1
     },
     "bbp": {
       "code": "70368744177664",
@@ -1934,7 +2078,8 @@
           "allowed": [1, 2, 3, 4, 13, 14, 18, 19, 22, 23, 27, 36, 37],
           "forced": [42]
         }
-      }
+      },
+      "complexity": 3
     },
     "if": {
       "code": "134217728",
@@ -1959,7 +2104,8 @@
           ],
           "forced": [22, 41]
         }
-      }
+      },
+      "complexity": 2
     },
     "pfb": {
       "code": "1024",
@@ -1980,7 +2126,8 @@
           "allowed": [31, 32, 33, 34, 35],
           "forced": [29]
         }
-      }
+      },
+      "complexity": 2
     },
     "wb-oop": {
       "code": "4096",
@@ -2001,7 +2148,8 @@
           "allowed": [29, 30, 31, 32, 33, 34, 35],
           "forced": []
         }
-      }
+      },
+      "complexity": 0
     },
     "pwb-oop": {
       "code": "8192",
@@ -2022,7 +2170,8 @@
           "allowed": [31, 32, 33, 34, 35],
           "forced": [29]
         }
-      }
+      },
+      "complexity": 2
     },
     "cm-ip": {
       "code": "32",
@@ -2050,7 +2199,8 @@
           "allowed": [1, 2, 3, 4, 9, 10, 11, 12, 13, 14, 15, 18, 19, 22, 23, 24, 25, 27],
           "forced": []
         }
-      }
+      },
+      "complexity": 0
     },
     "tcf": {
       "code": "8796093022208",
@@ -2078,7 +2228,8 @@
           "allowed": [29, 30, 31, 32, 33, 34, 35],
           "forced": []
         }
-      }
+      },
+      "complexity": 1
     },
     "pcm": {
       "code": "134217728",
@@ -2106,7 +2257,8 @@
           "allowed": [31, 32, 33, 34, 35],
           "forced": [29]
         }
-      }
+      },
+      "complexity": 2
     },
     "ss": {
       "code": "2199023255552",
@@ -2134,7 +2286,8 @@
           "allowed": [1, 2, 3, 4, 9, 10, 11, 12, 13, 14, 15, 17, 18, 19, 24, 25, 27, 36, 37],
           "forced": [22, 41]
         }
-      }
+      },
+      "complexity": 1
     },
     "gk-ip": {
       "code": "1",
@@ -2148,7 +2301,8 @@
           "allowed": [1, 2, 3, 4, 13, 14],
           "forced": []
         }
-      }
+      },
+      "complexity": 1
     },
     "fr": {
       "code": "4294967296",
@@ -2176,7 +2330,8 @@
           "allowed": [1, 2, 9, 10, 11, 12, 15, 17, 18, 19, 22, 24, 25, 27, 36, 37, 41, 42],
           "forced": [3, 13]
         }
-      }
+      },
+      "complexity": 3
     },
     "cb-oop": {
       "code": "8",
@@ -2204,7 +2359,8 @@
           "allowed": [29, 30, 31, 32, 33, 34, 35],
           "forced": []
         }
-      }
+      },
+      "complexity": 0
     },
     "hb": {
       "code": "34359738368",
@@ -2232,7 +2388,8 @@
           "allowed": [1, 2, 3, 4, 13, 14, 18, 19, 22, 25],
           "forced": [23]
         }
-      }
+      },
+      "complexity": 2
     },
     "iw": {
       "code": "562949953421312",
@@ -2279,7 +2436,8 @@
           ],
           "forced": []
         }
-      }
+      },
+      "complexity": 1
     },
     "cfd-ip": {
       "code": "2048",
@@ -2307,7 +2465,8 @@
           "allowed": [1, 2, 3, 4, 13, 14, 15, 17, 18, 19, 23, 24, 25, 27, 36, 37, 41, 42],
           "forced": []
         }
-      }
+      },
+      "complexity": 0
     },
     "bcb": {
       "code": "16777216",
@@ -2335,7 +2494,8 @@
           "allowed": [1, 13, 14, 18, 19, 23, 25],
           "forced": [3]
         }
-      }
+      },
+      "complexity": 2
     },
     "fb-oop": {
       "code": "512",
@@ -2356,7 +2516,8 @@
           "allowed": [29, 30, 31, 32, 33, 34, 35],
           "forced": []
         }
-      }
+      },
+      "complexity": 0
     },
     "iwb": {
       "code": "17592186044416",
@@ -2391,7 +2552,8 @@
           "allowed": [1, 2, 3, 4, 7, 8, 13, 14, 15, 16, 18, 19, 22, 24, 25, 26],
           "forced": [23]
         }
-      }
+      },
+      "complexity": 2
     },
     "gk-oop": {
       "code": "1",
@@ -2405,7 +2567,8 @@
           "allowed": [31, 32],
           "forced": []
         }
-      }
+      },
+      "complexity": 1
     },
     "bbm": {
       "code": "65536",
@@ -2426,7 +2589,8 @@
           "allowed": [1, 2, 3, 4, 13, 14, 18, 19, 22, 23, 24, 25, 27, 36, 37, 41, 42],
           "forced": []
         }
-      }
+      },
+      "complexity": 1
     },
     "wb-ip": {
       "code": "8",
@@ -2461,7 +2625,8 @@
           "allowed": [1, 2, 3, 4, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 18, 19, 22, 23, 25, 26],
           "forced": []
         }
-      }
+      },
+      "complexity": 0
     },
     "scb": {
       "code": "16",
@@ -2489,7 +2654,8 @@
           "allowed": [31, 32, 33, 34, 35],
           "forced": [29]
         }
-      }
+      },
+      "complexity": 1
     },
     "cfd-oop": {
       "code": "4398046511104",
@@ -2517,7 +2683,8 @@
           "allowed": [29, 30, 31, 32, 33, 34, 35],
           "forced": []
         }
-      }
+      },
+      "complexity": 0
     },
     "chf": {
       "code": "2147483648",
@@ -2545,7 +2712,8 @@
           "allowed": [1, 2, 4, 14, 15, 17, 18, 19, 22, 23, 24, 25, 27, 36, 37],
           "forced": [41]
         }
-      }
+      },
+      "complexity": 1
     },
     "w-ip": {
       "code": "128",
@@ -2588,7 +2756,8 @@
           ],
           "forced": []
         }
-      }
+      },
+      "complexity": 0
     },
     "dlp": {
       "code": "32768",
@@ -2616,7 +2785,8 @@
           "allowed": [1, 2, 3, 13, 14, 18, 19, 25],
           "forced": [23]
         }
-      }
+      },
+      "complexity": 1
     },
     "iow": {
       "code": "1099511627776",
@@ -2637,7 +2807,8 @@
           "allowed": [29, 30, 31, 32, 33, 34, 35],
           "forced": []
         }
-      }
+      },
+      "complexity": 2
     },
     "wdm": {
       "code": "524288",
@@ -2658,7 +2829,8 @@
           "allowed": [29, 30, 31, 32, 33, 34, 35],
           "forced": []
         }
-      }
+      },
+      "complexity": 2
     },
     "ap": {
       "code": "131072",
@@ -2707,7 +2879,8 @@
           "allowed": [1, 2, 9, 10, 11, 12, 13, 14, 15, 17, 18, 19, 23, 24, 25, 27, 36, 37],
           "forced": [3, 42]
         }
-      }
+      },
+      "complexity": 2
     },
     "tam": {
       "code": "2147483648",
@@ -2735,7 +2908,8 @@
           "allowed": [29, 30, 31, 32, 33, 34, 35],
           "forced": []
         }
-      }
+      },
+      "complexity": 1
     },
     "dm-ip": {
       "code": "16",
@@ -2763,7 +2937,8 @@
           "allowed": [1, 2, 3, 4, 13, 18, 19, 22, 23, 25],
           "forced": [14]
         }
-      }
+      },
+      "complexity": 0
     },
     "wmf": {
       "code": "34359738368",
@@ -2784,7 +2959,8 @@
           "allowed": [29, 30, 31, 32, 33, 34, 35],
           "forced": []
         }
-      }
+      },
+      "complexity": 0
     },
     "wcm-oop": {
       "code": "536870912",
@@ -2805,7 +2981,8 @@
           "allowed": [29, 30, 31, 32, 33, 34, 35],
           "forced": []
         }
-      }
+      },
+      "complexity": 2
     },
     "sam": {
       "code": "8589934592",
@@ -2826,7 +3003,8 @@
           "allowed": [29, 30, 31, 32, 33, 34, 35],
           "forced": []
         }
-      }
+      },
+      "complexity": 2
     },
     "pdm": {
       "code": "131072",
@@ -2857,7 +3035,8 @@
           "allowed": [31, 32, 33, 34, 35],
           "forced": [29]
         }
-      }
+      },
+      "complexity": 2
     },
     "cb-ip": {
       "code": "2",
@@ -2885,7 +3064,8 @@
           "allowed": [1, 2, 3, 4, 13, 14, 18, 19, 23, 25],
           "forced": []
         }
-      }
+      },
+      "complexity": 1
     },
     "acb": {
       "code": "16384",
@@ -2913,7 +3093,8 @@
           "allowed": [1, 2, 3, 4, 13, 14, 18, 19, 25],
           "forced": [23]
         }
-      }
+      },
+      "complexity": 3
     },
     "fb-ip": {
       "code": "4",
@@ -2934,7 +3115,8 @@
           "allowed": [1, 2, 3, 4, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 18, 19, 22, 23, 25, 26],
           "forced": []
         }
-      }
+      },
+      "complexity": 0
     },
     "lhk": {
       "code": "4",
@@ -2948,7 +3130,8 @@
           "allowed": [31, 32],
           "forced": []
         }
-      }
+      },
+      "complexity": 0
     },
     "scm": {
       "code": "268435456",
@@ -2976,7 +3159,8 @@
           "allowed": [31, 32, 33, 34, 35],
           "forced": [30]
         }
-      }
+      },
+      "complexity": 1
     },
     "ocf": {
       "code": "17592186044416",
@@ -3004,7 +3188,8 @@
           "allowed": [29, 30, 31, 32, 33, 34, 35],
           "forced": []
         }
-      }
+      },
+      "complexity": 1
     },
     "wm": {
       "code": "64",
@@ -3029,7 +3214,8 @@
           ],
           "forced": []
         }
-      }
+      },
+      "complexity": 0
     },
     "chm": {
       "code": "72057594037927936",
@@ -3084,7 +3270,8 @@
           ],
           "forced": [27]
         }
-      }
+      },
+      "complexity": 1
     },
     "sk": {
       "code": "2",
@@ -3098,7 +3285,8 @@
           "allowed": [31, 32],
           "forced": []
         }
-      }
+      },
+      "complexity": 2
     },
     "p": {
       "code": "524288",
@@ -3126,7 +3314,8 @@
           "allowed": [1, 2, 3, 4, 13, 14, 15, 17, 18, 19, 23, 25, 27, 36, 37],
           "forced": [41]
         }
-      }
+      },
+      "complexity": 1
     },
     "tw": {
       "code": "549755813888",
@@ -3147,7 +3336,8 @@
           "allowed": [29, 30, 31, 32, 33, 34, 35],
           "forced": []
         }
-      }
+      },
+      "complexity": 1
     },
     "wfd": {
       "code": "35184372088832",
@@ -3168,7 +3358,12 @@
           "allowed": [3, 4, 7, 8, 13, 14, 15, 16, 17, 18, 19, 24, 25, 26],
           "forced": [1, 22, 41]
         }
-      }
+      },
+      "complexity": 1
     }
+  },
+  "complexity": {
+    "teamMax": 49,
+    "playerMax": 9
   }
 }

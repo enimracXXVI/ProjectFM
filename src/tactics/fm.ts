@@ -29,6 +29,8 @@ export interface FmOption {
   target?: 'position' | 'player'
   /** FM's explanation of the option. */
   about?: FmAbout
+  /** Points the option adds to the tactic's complexity (FM's match data). */
+  complexity?: number
 }
 
 /** A team or player instruction and its options, in FM's order. */
@@ -64,6 +66,8 @@ export interface RoleFm {
   where?: { pos: string; when?: RoleCondition }[]
   /** Player instructions FM offers for the role at each FM position (option codes). */
   instructions?: Record<string, { allowed: number[]; forced: number[] }>
+  /** Points the role adds to a player's tactical complexity (FM's match data). */
+  complexity?: number
 }
 
 /** Game-wide codes: mentalities (in code order 1, 2, …), positions and role code mask. */
@@ -94,6 +98,7 @@ type Defaults = {
   teamInstructions: FmInstruction[]
   playerInstructions: FmInstruction[]
   roles: Record<string, RoleFm>
+  complexity: { teamMax: number; playerMax: number }
 }
 const D = defaults as unknown as Defaults
 
@@ -167,12 +172,19 @@ export function fillAbout(list: FmInstruction[], defaults: FmInstruction[]): FmI
         const fm = def?.options.find((x) => x.code === o.code)
         const label =
           o.code === 0 && fm && /^(Standard|Mixed crosses)$/.test(o.label) ? fm.label : o.label
-        return { ...o, label, about: o.about ?? fm?.about }
+        return {
+          ...o,
+          label,
+          about: o.about ?? fm?.about,
+          complexity: o.complexity ?? fm?.complexity,
+        }
       }),
     }
   })
 }
 export const DEFAULT_ROLE_FM: Record<string, RoleFm> = D.roles
+/** Most complexity points FM counts for the team's instructions and for one player. */
+export const COMPLEXITY_MAX = D.complexity
 
 /** Is this a list of instructions in the current shape (options with codes)? */
 export function isInstructionList(v: unknown): v is FmInstruction[] {

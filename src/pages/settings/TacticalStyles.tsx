@@ -5,7 +5,7 @@ import { SettingsShell } from '../../components/SettingsShell'
 import { useConfig } from '../../lib/config'
 import { useSaveConfig } from '../../lib/useSaveConfig'
 import { choose, chosen, defaultTeamCodes } from '../../tactics/fm'
-import type { TacticalStyle } from '../../tactics/styles'
+import { preferredRoles, type TacticalStyle } from '../../tactics/styles'
 
 const input =
   'min-h-11 w-full min-w-0 rounded-lg border border-border bg-surface-2 px-3 text-base md:text-sm'
@@ -50,6 +50,7 @@ export function TacticalStylesSettings() {
               summary: s.summary.map((x) => x.trim()).filter(Boolean),
               features: s.features.map((x) => x.trim()).filter(Boolean),
               favoured: s.favoured.map((x) => x.trim()).filter(Boolean),
+              roles: (s.roles ?? []).map((x) => x.trim()).filter(Boolean),
             })),
         )
       }
@@ -160,6 +161,15 @@ export function TacticalStylesSettings() {
                     className={`${input} py-2`}
                   />
                 </label>
+                <label className="grid gap-1 text-xs text-muted">
+                  Preferred roles (one per line, FM&apos;s names)
+                  <textarea
+                    value={lines(preferredRoles(s))}
+                    rows={3}
+                    onChange={(e) => update(i, { roles: unlines(e.target.value) })}
+                    className={`${input} py-2`}
+                  />
+                </label>
                 <label className="flex min-h-9 items-center gap-2 text-sm">
                   <input
                     type="checkbox"
@@ -227,6 +237,7 @@ export function TacticalStylesSettings() {
               summary: [],
               features: [],
               favoured: [],
+              roles: [],
             },
           ])
           setOpen(form.length)

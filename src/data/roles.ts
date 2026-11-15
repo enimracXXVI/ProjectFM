@@ -1569,9 +1569,15 @@ export const DEFAULT_ROLES: RoleDef[] = BASE_ROLES.map((r) => ({
  * the codes existed, or new defaults).
  */
 export function withFmCodes(roles: RoleDef[]): RoleDef[] {
-  return roles.map((r) =>
-    r.fm || !DEFAULT_ROLE_FM[r.id] ? r : { ...r, fm: DEFAULT_ROLE_FM[r.id] },
-  )
+  return roles.map((r) => {
+    const def = DEFAULT_ROLE_FM[r.id]
+    if (!def) return r
+    if (!r.fm) return { ...r, fm: def }
+    // Saved before roles had complexity points: take FM's
+    return r.fm.complexity === undefined && def.complexity !== undefined
+      ? { ...r, fm: { ...r.fm, complexity: def.complexity } }
+      : r
+  })
 }
 
 /** Short names confirmed on the user's FM27 tactic screen. */

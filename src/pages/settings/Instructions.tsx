@@ -183,7 +183,7 @@ function InstructionList({
                         </div>
                         <div>
                           <p className="mb-1 text-xs text-muted">
-                            Options in FM&apos;s order, each with its code
+                            Options in FM&apos;s order, each with its code and its complexity points
                             {team ? '. The ticked one is what a new tactic starts with.' : '.'}
                           </p>
                           <ul className="grid gap-1">
@@ -217,6 +217,24 @@ function InstructionList({
                                     }
                                     className={`${box} w-16 shrink-0 px-1 text-center tabular-nums`}
                                   />
+                                  {o.code !== 0 && (
+                                    <input
+                                      aria-label={`Complexity points of ${o.label}`}
+                                      title="Complexity points (FM's match data)"
+                                      inputMode="numeric"
+                                      value={o.complexity ?? ''}
+                                      placeholder="pts"
+                                      onChange={(e) =>
+                                        setOption(i, k, {
+                                          complexity:
+                                            e.target.value === ''
+                                              ? undefined
+                                              : Math.max(0, Number(e.target.value) || 0),
+                                        })
+                                      }
+                                      className={`${box} w-12 shrink-0 px-1 text-center tabular-nums`}
+                                    />
+                                  )}
                                   {!team && (
                                     <select
                                       aria-label={`Target of ${o.label}`}
