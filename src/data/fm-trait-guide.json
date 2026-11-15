@@ -1,0 +1,243 @@
+[
+  {
+    "trait": "Runs With Ball Down Left",
+    "suits": ["good athleticism", "good dribbling", "good left foot"]
+  },
+  {
+    "trait": "Runs With Ball Down Right",
+    "suits": ["good athleticism", "good dribbling", "good right foot"]
+  },
+  {
+    "trait": "Runs With Ball Through Centre",
+    "suits": ["good athleticism", "good dribbling"]
+  },
+  {
+    "trait": "Moves Into Channels",
+    "suits": ["good movement", "good anticipation"]
+  },
+  {
+    "trait": "Gets Forward Whenever Possible",
+    "suits": ["good physical strength", "good movement", "good decisions"]
+  },
+  {
+    "trait": "Plays Short Simple Passes",
+    "suits": ["weak passing"]
+  },
+  {
+    "trait": "Tries Killer Balls Often",
+    "suits": ["good passing", "good creativity", "good decisions"]
+  },
+  {
+    "trait": "Shoots From Distance",
+    "suits": ["good long shots"]
+  },
+  {
+    "trait": "Shoots With Power",
+    "suits": ["good finishing", "weak technique", "weak composure"]
+  },
+  {
+    "trait": "Places Shots",
+    "suits": ["good finishing", "good technique", "good composure"]
+  },
+  {
+    "trait": "Likes To Round Keeper",
+    "suits": ["weak finishing", "good technique", "good composure", "good dribbling"]
+  },
+  {
+    "trait": "Likes To Try To Beat Offside Trap",
+    "suits": ["good athleticism", "good reading of the game"]
+  },
+  {
+    "trait": "Argues With Officials",
+    "suits": []
+  },
+  {
+    "trait": "Likes To Lob Keeper",
+    "suits": ["good technique", "good creativity"]
+  },
+  {
+    "trait": "Plays No Through Balls",
+    "suits": ["weak passing"]
+  },
+  {
+    "trait": "Dwells On Ball",
+    "suits": ["weak decisions", "weak teamwork"]
+  },
+  {
+    "trait": "Tries To Play Way Out Of Trouble",
+    "suits": ["good reading of the game", "good technique", "good decisions"]
+  },
+  {
+    "trait": "Dives Into Tackles",
+    "suits": ["good aggression", "good bravery", "weak reading of the game", "good tackling"]
+  },
+  {
+    "trait": "Does Not Dive Into Tackles",
+    "suits": ["weak bravery", "good reading of the game", "weak tackling"]
+  },
+  {
+    "trait": "Hits Free Kicks With Power",
+    "suits": ["good free kicks"]
+  },
+  {
+    "trait": "Cuts Inside From Both Wings",
+    "suits": ["weak crossing", "good dribbling", "good movement", "good agility", "good finishing"]
+  },
+  {
+    "trait": "Marks Opponent Tightly",
+    "suits": ["good marking", "good reading of the game"]
+  },
+  {
+    "trait": "Hugs Line",
+    "suits": ["good crossing", "good dribbling", "good pace", "good left foot", "good right foot"]
+  },
+  {
+    "trait": "Plays With Back To Goal",
+    "suits": ["good strength", "good balance", "good first touch", "weak pace"]
+  },
+  {
+    "trait": "Comes Deep To Get Ball",
+    "suits": ["good first touch", "good movement", "good teamwork"]
+  },
+  {
+    "trait": "Looks For Pass Rather Than Attempting To Score",
+    "suits": ["good passing", "weak goalscoring"]
+  },
+  {
+    "trait": "Stops Play",
+    "suits": ["good reading of the game", "good decisions"]
+  },
+  {
+    "trait": "Tries Long Range Free Kicks",
+    "suits": ["good free kicks", "good long shots", "good technique", "good flair"]
+  },
+  {
+    "trait": "Tries First Time Shots",
+    "suits": ["good goalscoring", "good anticipation", "weak dribbling"]
+  },
+  {
+    "trait": "Runs With Ball Rarely",
+    "suits": ["weak dribbling"]
+  },
+  {
+    "trait": "Runs With Ball Often",
+    "suits": ["good dribbling"]
+  },
+  {
+    "trait": "Possesses Long Flat Throw",
+    "suits": ["good long throws"]
+  },
+  {
+    "trait": "Plays One-Twos",
+    "suits": ["good passing", "good reading of the game", "good first touch"]
+  },
+  {
+    "trait": "Dictates Tempo",
+    "suits": ["good passing", "good decisions", "good anticipation", "good teamwork"]
+  },
+  {
+    "trait": "Attempts Overhead Kicks",
+    "suits": ["good technique", "good agility", "good bravery", "good flair"]
+  },
+  {
+    "trait": "Knocks Ball Past Opponent",
+    "suits": ["good athleticism", "weak dribbling"]
+  },
+  {
+    "trait": "Avoids Using Weaker Foot",
+    "suits": ["weak left foot", "weak right foot"]
+  },
+  {
+    "trait": "Tries Long Range Passes",
+    "suits": ["good passing", "good technique", "good decisions"]
+  },
+  {
+    "trait": "Likes To Switch Ball To Wide Areas",
+    "suits": ["good passing", "good technique"]
+  },
+  {
+    "trait": "Develops Weaker Foot",
+    "suits": ["weak left foot", "weak right foot"]
+  },
+  {
+    "trait": "Box Player",
+    "suits": ["good aerial ability", "weak movement", "weak technique"]
+  },
+  {
+    "trait": "Uses Long Throw To Start Counter Attacks",
+    "suits": [
+      "good throwing (goalkeeper)",
+      "good decisions",
+      "good vision",
+      "good kicking (goalkeeper)"
+    ]
+  },
+  {
+    "trait": "Refrains From Taking Long Shots",
+    "suits": ["weak long shots"]
+  },
+  {
+    "trait": "Gets Into Opposition Area",
+    "suits": ["good goalscoring", "good movement", "good acceleration"]
+  },
+  {
+    "trait": "Arrives Late In Opponents' Area",
+    "suits": ["good goalscoring", "good acceleration", "good movement"]
+  },
+  {
+    "trait": "Stays Back At All Times",
+    "suits": ["weak physical strength", "weak movement", "weak decisions", "weak flair"]
+  },
+  {
+    "trait": "Cuts Inside From Left Wing",
+    "suits": ["weak crossing", "good dribbling", "good movement", "good agility", "good right foot"]
+  },
+  {
+    "trait": "Cuts Inside From Right Wing",
+    "suits": ["weak crossing", "good dribbling", "good movement", "good agility", "good left foot"]
+  },
+  {
+    "trait": "Crosses Early",
+    "suits": ["good crossing", "weak dribbling", "weak acceleration"]
+  },
+  {
+    "trait": "Carries Ball Out Of Defence",
+    "suits": ["good reading of the game", "good technique", "good dribbling"]
+  },
+  {
+    "trait": "Uses Outside Of Foot",
+    "suits": ["good technique", "good flair"]
+  },
+  {
+    "trait": "Winds Up Opponents",
+    "suits": []
+  },
+  {
+    "trait": "Gets Crowd Going",
+    "suits": []
+  },
+  {
+    "trait": "Moves Ball To Right Foot Before Dribble Attempt",
+    "suits": ["weak left foot"]
+  },
+  {
+    "trait": "Moves Ball To Left Foot Before Dribble Attempt",
+    "suits": ["weak right foot"]
+  },
+  {
+    "trait": "Tries Tricks",
+    "suits": ["good technique", "good flair"]
+  },
+  {
+    "trait": "Likes Ball Played Into Feet",
+    "suits": ["good technique", "weak physical strength"]
+  },
+  {
+    "trait": "Likes To Beat Man Repeatedly",
+    "suits": ["good technique", "good flair", "good dribbling"]
+  },
+  {
+    "trait": "Plays With Feet (goalkeeper)",
+    "suits": ["good reading of the game", "good technique", "good passing"]
+  }
+]

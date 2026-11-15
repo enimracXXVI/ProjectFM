@@ -10,7 +10,7 @@ import type { PlayerRow } from '../data/db'
 import { MORALE_WORDS } from '../import/dump'
 import { useCurrentCareer } from '../lib/career'
 import { useConfig } from '../lib/config'
-import type { UnknownCompetition, UnknownRound, UnknownValue } from '../lib/checks'
+import type { UnknownCompetition, UnknownRound, UnknownTrait, UnknownValue } from '../lib/checks'
 import type { CompetitionKind } from '../competitions/types'
 import { useSaveConfig } from '../lib/useSaveConfig'
 import type { LearnedKind } from '../lib/learned'
@@ -101,6 +101,17 @@ export function Check() {
         >
           {checks.jobs.map((j) => (
             <JobRow key={j.code} code={j.code} names={j.names} />
+          ))}
+        </Section>
+      )}
+
+      {checks.traits.length > 0 && (
+        <Section
+          title="Player traits"
+          hint="Trait numbers from the save the app has no name for. Open one of the players in FM: his traits are listed in the same order as here, so the one not named yet is this trait. Type its name as FM shows it."
+        >
+          {checks.traits.map((t) => (
+            <TraitRow key={t.bit} item={t} />
           ))}
         </Section>
       )}
@@ -412,6 +423,60 @@ function RoleRow({
             ))}
         </select>
         <Button onClick={() => save.mutate()} disabled={!role || save.isPending}>
+          Save
+        </Button>
+        <ErrorText error={save.error} />
+      </div>
+    </li>
+  )
+}
+
+function TraitRow({ item }: { item: UnknownTrait }) {
+  const config = useConfig()
+  const { save } = useSaveConfig('traitNames')
+  const [name, setName] = useState('')
+  const best = item.players[0]
+  return (
+    <li className="rounded-lg border border-amber-400/40 bg-surface p-3">
+      <p className="text-sm">
+        <span className="font-semibold">Trait #{item.bit}</span>: open{' '}
+        <span className="font-semibold">{best.name}</span> in FM. His traits, in FM&apos;s order:
+      </p>
+      <ol className="mt-1 flex flex-wrap gap-1 text-xs">
+        {best.order.map((t, i) => (
+          <li
+            key={i}
+            className={
+              t === 'this'
+                ? 'rounded-full border border-amber-400 bg-amber-400/15 px-2 py-0.5 font-semibold text-amber-200'
+                : 'rounded-full border border-border px-2 py-0.5 text-muted'
+            }
+          >
+            {i + 1}. {t === 'this' ? 'this one' : (t ?? 'another unnamed')}
+          </li>
+        ))}
+      </ol>
+      {item.players.length > 1 && (
+        <p className="text-xs text-muted">
+          Also:{' '}
+          {item.players
+            .slice(1)
+            .map((p) => p.name)
+            .join(', ')}
+        </p>
+      )}
+      <div className="mt-2 flex flex-wrap items-center gap-2">
+        <input
+          aria-label={`Name of trait ${item.bit}`}
+          value={name}
+          placeholder="Trait name as FM shows it"
+          onChange={(e) => setName(e.target.value)}
+          className={field}
+        />
+        <Button
+          onClick={() => save.mutate({ ...config.traitNames, [String(item.bit)]: name.trim() })}
+          disabled={!name.trim() || save.isPending}
+        >
           Save
         </Button>
         <ErrorText error={save.error} />

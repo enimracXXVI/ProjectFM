@@ -42,6 +42,7 @@ import { TacticalStylesSettings } from './pages/settings/TacticalStyles'
 import { MatchDataSettings } from './pages/settings/MatchData'
 import { OlderRolesSettings } from './pages/settings/OlderRoles'
 import { TraitNamesSettings } from './pages/settings/TraitNames'
+import { TraitGuideSettings } from './pages/settings/TraitGuide'
 import { Training } from './pages/Training'
 import { RoleWarningsSettings, TacticsSettings } from './pages/settings/TacticsSettings'
 import { InstructionsSettings, PlayerInstructionsSettings } from './pages/settings/Instructions'
@@ -122,6 +123,7 @@ function SignedIn() {
         <Route path="settings/match-data" element={<MatchDataSettings />} />
         <Route path="settings/older-roles" element={<OlderRolesSettings />} />
         <Route path="settings/traits" element={<TraitNamesSettings />} />
+        <Route path="settings/trait-guide" element={<TraitGuideSettings />} />
         <Route path="settings/role-warnings" element={<RoleWarningsSettings />} />
         <Route path="settings/database" element={<DatabaseSettings />} />
         <Route path="settings/colours" element={<ColoursSettings />} />

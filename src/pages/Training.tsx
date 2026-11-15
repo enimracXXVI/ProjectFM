@@ -137,6 +137,7 @@ export function Training() {
       )}
       <TacticalTraining />
       <Focuses focuses={config.trainingFocuses} />
+      <TraitGuide />
     </>
   )
 }
@@ -212,6 +213,59 @@ function TacticalTraining() {
             </div>
           )}
         </div>
+      )}
+    </Card>
+  )
+}
+
+/** What suits each player trait, from FM's staff advice rules. */
+function TraitGuide() {
+  const config = useConfig()
+  const [q, setQ] = useState('')
+  const [open, setOpen] = useState(false)
+  const list = config.traitGuide.filter(
+    (g) =>
+      !q.trim() || `${g.trait} ${g.suits.join(' ')}`.toLowerCase().includes(q.trim().toLowerCase()),
+  )
+  return (
+    <Card className="mt-4 grid gap-2">
+      <button
+        type="button"
+        aria-expanded={open}
+        onClick={() => setOpen(!open)}
+        className="flex items-center gap-2 text-left"
+      >
+        <h2 className="text-base font-semibold">Trait guide</h2>
+        <ChevronDown
+          className={clsx('ml-auto size-4 text-muted', !open && '-rotate-90')}
+          aria-hidden
+        />
+      </button>
+      <p className="text-xs text-muted">
+        What FM&apos;s staff look for before advising a player to learn a trait (or to drop it when
+        he lacks it), from FM&apos;s own advice rules. Teach traits in FM from the player&apos;s
+        training screen. Edit in Settings &gt; Trait guide.
+      </p>
+      {open && (
+        <>
+          <input
+            aria-label="Search traits"
+            value={q}
+            placeholder="Search: a trait or a strength (dribbling, left foot…)"
+            onChange={(e) => setQ(e.target.value)}
+            className={field}
+          />
+          <ul className="grid gap-1 text-sm sm:grid-cols-2">
+            {list.map((g) => (
+              <li key={g.trait} className="rounded-lg border border-border px-3 py-1.5">
+                <span className="font-semibold">{g.trait}</span>
+                <span className="block text-xs text-muted">
+                  {g.suits.length ? `Suits ${g.suits.join(', ')}` : 'No advice rule in FM'}
+                </span>
+              </li>
+            ))}
+          </ul>
+        </>
       )}
     </Card>
   )

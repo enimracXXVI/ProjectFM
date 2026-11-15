@@ -8,6 +8,7 @@ import type { AppConfig } from '../data/config'
 import type { PlayerRow, StaffRow } from '../data/db'
 import type { TacticRow } from '../tactics/types'
 import { UNKNOWN_WORD, valueOf, wordOf } from './valueWord'
+import { DEFAULT_TRAIT_NAMES } from '../data/traits'
 
 export interface UnknownValue {
   value: number
@@ -34,6 +35,17 @@ export interface TacticCheck {
   codes: { code: string; phase: 'ip' | 'oop'; position: string | null }[]
 }
 
+export interface UnknownTrait {
+  bit: number
+  /** Squad players with the trait, with the traits of theirs the app can already name. */
+  players: {
+    name: string
+    /** His traits in FM's order: a name, "this" for this trait, or null for another unnamed one. */
+    order: (string | null)[]
+    unknown: number
+  }[]
+}
+
 export interface UnknownJob {
   code: number
   names: string[]
@@ -47,6 +59,7 @@ export interface Checks {
   rounds: UnknownRound[]
   tactics: TacticCheck[]
   jobs: UnknownJob[]
+  traits: UnknownTrait[]
   total: number
 }
 
@@ -134,8 +147,33 @@ export function findChecks(
     if (s.job_code != null && s.role === `Job ${s.job_code}`)
       jobMap.set(s.job_code, [...(jobMap.get(s.job_code) ?? []), s.name])
   const jobs = [...jobMap.entries()].map(([code, names]) => ({ code, names }))
+  // Trait numbers from the save that have no name yet
+  const names = { ...DEFAULT_TRAIT_NAMES, ...config?.traitNames }
+  const traitMap = new Map<number, UnknownTrait['players']>()
+  for (const p of squad) {
+    const bits = (p.extra.Traits ?? '')
+      .split(',')
+      .filter(Boolean)
+      .map(Number)
+      .sort((a, b) => a - b)
+    const unknownBits = bits.filter((b) => !names[String(b)])
+    for (const b of unknownBits)
+      traitMap.set(b, [
+        ...(traitMap.get(b) ?? []),
+        {
+          name: p.name,
+          order: bits.map((x) => (x === b ? 'this' : (names[String(x)] ?? null))),
+          unknown: unknownBits.length,
+        },
+      ])
+  }
+  const traits = [...traitMap.entries()]
+    .sort((a, b) => a[0] - b[0])
+    // Players with only this one unnamed trait first: their FM screen names it directly
+    .map(([bit, players]) => ({ bit, players: players.sort((a, b) => a.unknown - b.unknown) }))
   return {
     jobs,
+    traits,
     morale,
     knowledge,
     personality,
@@ -149,6 +187,7 @@ export function findChecks(
       competitions.length +
       rounds.length +
       tactics.reduce((n, t) => n + t.codes.length, 0) +
-      jobs.length,
+      jobs.length +
+      traits.length,
   }
 }

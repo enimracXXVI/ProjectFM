@@ -17,6 +17,7 @@ import { attributeLabel } from '../data/config'
 import { compareUrlWith } from '../lib/compare'
 import { reachBand, reachForHeight } from '../lib/reach'
 import { traitNames } from '../data/traits'
+import { suitsFor } from '../data/traitGuide'
 import type { PlayerRow } from '../data/db'
 import { useCurrentCareer } from '../lib/career'
 import { useConfig } from '../lib/config'
@@ -130,12 +131,18 @@ export function PlayerDetail() {
             Traits
           </h2>
           {traitNames(p.extra.Traits, config.traitNames).length ? (
-            <ul className="flex flex-wrap gap-1.5 text-sm">
-              {traitNames(p.extra.Traits, config.traitNames).map((t) => (
-                <li key={t} className="rounded-full border border-border bg-surface px-3 py-1">
-                  {t}
-                </li>
-              ))}
+            <ul className="grid gap-1 text-sm sm:grid-cols-2">
+              {traitNames(p.extra.Traits, config.traitNames).map((t) => {
+                const suits = suitsFor(t, config.traitGuide)
+                return (
+                  <li key={t} className="rounded-lg border border-border bg-surface px-3 py-1.5">
+                    <span className="font-semibold">{t}</span>
+                    {suits && suits.length > 0 && (
+                      <span className="block text-xs text-muted">Suits {suits.join(', ')}</span>
+                    )}
+                  </li>
+                )
+              })}
             </ul>
           ) : (
             <p className="text-sm text-muted">No traits.</p>
