@@ -55,6 +55,7 @@ import {
   type FmPosition,
   FM_GRID,
   moveSlot,
+  DEFAULT_FM_CODES,
 } from '../tactics/fm'
 import { exportProblems, fileTitle, tacticFile } from '../tactics/fmf'
 import { briefingText, buildBriefing } from '../tactics/briefing'
@@ -1223,8 +1224,17 @@ function InstructionsEditor({
       {phase === 'ip' && hidden.length > 0 && (
         <p className="flex flex-wrap items-center gap-x-2 text-xs text-muted">
           <span>
-            Also carries FM settings no instruction screen shows: code{hidden.length > 1 && 's'}{' '}
-            {hidden.join(', ')} (set by FM&apos;s styles; FM keeps them when it saves).
+            Also carries FM settings no instruction screen shows (set by FM&apos;s styles; FM keeps
+            them when it saves):{' '}
+            {hidden
+              .map((c) => {
+                const name = (config.fmCodes.hiddenTeamCodes ?? DEFAULT_FM_CODES.hiddenTeamCodes)?.[
+                  String(c)
+                ]
+                return name ? `${name} [${c}]` : `code ${c}`
+              })
+              .join(', ')}
+            .
           </span>
           <button
             type="button"

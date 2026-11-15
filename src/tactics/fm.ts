@@ -88,6 +88,11 @@ export interface FmCodes {
    * file). FM ignores files that carry another game's version.
    */
   fileVersion: string
+  /**
+   * Names for team instruction codes no FM27 screen shows (FM's styles set some). "(?)" marks a
+   * name worked out from FM's files but not confirmed.
+   */
+  hiddenTeamCodes?: Record<string, string>
 }
 
 type Defaults = {
@@ -127,6 +132,17 @@ export const DEFAULT_FM_CODES: FmCodes = {
   roleCodeMask: D.roleCodeMask,
   // From the user's own FM27 tactic and schedule files
   fileVersion: 'f8186c05',
+  // FM27's screen code still names a goalkeeper release instruction with these four options
+  // (GKDistributionMethod in global-metadata.dat) and FM's complexity table lists them; codes
+  // 31–34 are the four free codes before GK distribution target. Order as older FMs listed them.
+  hiddenTeamCodes: {
+    '31': 'GK distribution method: Roll it out (?)',
+    '32': 'GK distribution method: Throw it long (?)',
+    '33': 'GK distribution method: Short kicks (?)',
+    '34': 'GK distribution method: Long kicks (?)',
+    '74': 'Unknown hidden setting (?)',
+    '75': 'Unknown hidden setting (?)',
+  },
   // Overlap and underlap on the same flank (from the user's FM Tactic Generator)
   conflicts: [
     [25, 28],

@@ -5,7 +5,7 @@ import { SettingsSection } from '../../components/SettingsSection'
 import { SettingsShell } from '../../components/SettingsShell'
 import { useConfig } from '../../lib/config'
 import { useSaveConfig } from '../../lib/useSaveConfig'
-import type { FmCodes, FmPosition, Side } from '../../tactics/fm'
+import { DEFAULT_FM_CODES, type FmCodes, type FmPosition, type Side } from '../../tactics/fm'
 import { POSITION_CODES, POSITION_TEXT } from '../../tactics/positions'
 import type { PositionCode } from '../../tactics/types'
 
@@ -282,6 +282,34 @@ export function FmCodesSettings() {
               className={`${input} tabular-nums`}
             />
           </label>
+        </SettingsSection>
+
+        <SettingsSection id="fm-codes/hidden" title="Hidden team instruction codes">
+          <p className="mb-2 text-xs text-muted">
+            Codes FM&apos;s styles set but no FM27 screen shows, with a name for each.
+            &quot;(?)&quot; marks a name worked out from FM&apos;s files but not confirmed.
+          </p>
+          <ul className="grid gap-1">
+            {Object.entries(form.hiddenTeamCodes ?? DEFAULT_FM_CODES.hiddenTeamCodes ?? {}).map(
+              ([code, name], _, all) => (
+                <li key={code} className="flex items-center gap-1">
+                  <span className="w-10 shrink-0 text-center text-sm tabular-nums">{code}</span>
+                  <input
+                    aria-label={`Name of code ${code}`}
+                    value={name}
+                    onChange={(e) =>
+                      set({
+                        hiddenTeamCodes: Object.fromEntries(
+                          all.map(([c, n]) => [c, c === code ? e.target.value : n]),
+                        ),
+                      })
+                    }
+                    className={input}
+                  />
+                </li>
+              ),
+            )}
+          </ul>
         </SettingsSection>
 
         <SettingsSection id="fm-codes/file-version" title="Game version in files">
