@@ -686,18 +686,6 @@
           "Reliant on team being able to create chances inside the box."
         ]
       },
-      "Standard": {
-        "short": ["No strong preference.", "A balanced shooting strategy."],
-        "text": "The team will look for a balance between shooting from distance and working a better opportunity.",
-        "pros": [
-          "Allows team to judge the situation independently.",
-          "A flexible shooting strategy."
-        ],
-        "cons": [
-          "Doesn’t sustain pressure as well as when shooting less often.",
-          "Doesn’t test the goalkeeper as much as when shooting more often."
-        ]
-      },
       "Encourage": {
         "short": ["Test the opposition goalkeeper.", "Shoot on sight."],
         "text": "Encourage the team to shoot when the opportunity arises instead of waiting for a more clear-cut opening.",
@@ -709,18 +697,21 @@
           "Sometimes a pass would create a better opportunity to score.",
           "Harder to build sustained pressure."
         ]
+      },
+      "Balanced": {
+        "short": ["No strong preference.", "A balanced shooting strategy."],
+        "text": "The team will look for a balance between shooting from distance and working a better opportunity.",
+        "pros": [
+          "Allows team to judge the situation independently.",
+          "A flexible shooting strategy."
+        ],
+        "cons": [
+          "Doesn’t sustain pressure as well as when shooting less often.",
+          "Doesn’t test the goalkeeper as much as when shooting more often."
+        ]
       }
     },
     "Crossing style": {
-      "Mixed crosses": {
-        "short": ["No strong preference.", "A balanced crossing strategy."],
-        "text": "The team are not instructed to favour a specific type of cross. Instead, the team will decide for themselves which is the best cross for the situation, or based on their own preferences.",
-        "pros": [
-          "Allows players to judge the situation for themselves.",
-          "A flexible crossing strategy."
-        ],
-        "cons": ["Loses the benefits of specialising in a specific approach."]
-      },
       "Floated crosses": {
         "short": ["Use team’s aerial advantage.", "Add elevation to crosses."],
         "text": "Encourage the team to play high crosses with backspin into the box. This means that the ball will hang in the air for longer, which should allow the team’s taller aerial threats to have a better chance of winning the header.",
@@ -753,6 +744,15 @@
           "Crosses have a higher chance of being intercepted.",
           "Resulting shots have a higher chance of being blocked."
         ]
+      },
+      "Balanced": {
+        "short": ["No strong preference.", "A balanced crossing strategy."],
+        "text": "The team are not instructed to favour a specific type of cross. Instead, the team will decide for themselves which is the best cross for the situation, or based on their own preferences.",
+        "pros": [
+          "Allows players to judge the situation for themselves.",
+          "A flexible crossing strategy."
+        ],
+        "cons": ["Loses the benefits of specialising in a specific approach."]
       }
     },
     "Dribbling": {
@@ -765,7 +765,16 @@
           "Reliant on passing to break down opposition defences."
         ]
       },
-      "Standard": {
+      "Encourage": {
+        "short": ["Run at the defence.", "Dribble more often."],
+        "text": "Encourages the team to try to take on opposition players with the ball more often.",
+        "pros": ["Breaks opposition defensive structure if successful.", "Draws fouls."],
+        "cons": [
+          "Gives the ball away more often.",
+          "Requires players with exceptional 1v1 ability."
+        ]
+      },
+      "Balanced": {
         "short": ["No strong preference.", "A balanced level of dribbling."],
         "text": "The team will look for a balance between taking on opposition defenders and playing passing combinations.",
         "pros": [
@@ -775,15 +784,6 @@
         "cons": [
           "Doesn’t retain the ball as much as a team that dribbles less.",
           "Doesn’t break the opposition structure as much as when dribbling more."
-        ]
-      },
-      "Encourage": {
-        "short": ["Run at the defence.", "Dribble more often."],
-        "text": "Encourages the team to try to take on opposition players with the ball more often.",
-        "pros": ["Breaks opposition defensive structure if successful.", "Draws fouls."],
-        "cons": [
-          "Gives the ball away more often.",
-          "Requires players with exceptional 1v1 ability."
         ]
       }
     },
@@ -903,12 +903,6 @@
           "More reliant on intricate passing patterns to create chances."
         ]
       },
-      "Standard": {
-        "short": ["A balanced passing strategy.", "No strong preference."],
-        "text": "The team will look for a balance between playing through balls and passes to feet, depending on the situation.",
-        "pros": ["A flexible passing strategy.", "Passing variety keeps defenders guessing."],
-        "cons": ["Loses the benefits of specialising in a single approach."]
-      },
       "Pass into space": {
         "short": ["Play more through balls.", "Make runs into space."],
         "text": "Encourages the team to play passes into open spaces in front of teammates for them to run onto.",
@@ -917,6 +911,12 @@
           "Gets the most out of players with exceptional speed and movement."
         ],
         "cons": ["More likely to give the ball away.", "Passes are harder to execute."]
+      },
+      "Balanced": {
+        "short": ["A balanced passing strategy.", "No strong preference."],
+        "text": "The team will look for a balance between playing through balls and passes to feet, depending on the situation.",
+        "pros": ["A flexible passing strategy.", "Passing variety keeps defenders guessing."],
+        "cons": ["Loses the benefits of specialising in a single approach."]
       }
     },
     "Build-up strategy": {
@@ -925,18 +925,6 @@
         "text": "When the opposition engage your team in a press, encourage the team to stay composed and play through it whenever possible. The team will take more risks during build-up and be more reluctant to clear the ball, in an attempt to create chances in the transition after beating the press.",
         "pros": ["Better ball retention.", "Creates transitional attacks when successful."],
         "cons": ["Requires strong technical ability.", "Risk of dangerous turnovers."]
-      },
-      "Standard": {
-        "short": ["No strong preference.", "A balanced level of risk."],
-        "text": "The team will look to find a balance between playing through the press and clearing the ball when under significant pressure. The team will adopt a flexible strategy, dependent on the amount of pressure the opposition are putting them under.",
-        "pros": [
-          "Provides a balance between safety and risk-taking when under pressure.",
-          "A flexible approach to build-up play."
-        ],
-        "cons": [
-          "Higher risk of dangerous turnovers than when bypassing the press.",
-          "Doesn’t retain the ball as well as playing through the press."
-        ]
       },
       "Bypass the press": {
         "short": ["Play direct passes when pressured.", "Take fewer risks during build-up."],
@@ -948,6 +936,18 @@
         "cons": [
           "Requires physically-gifted players to play direct passes to.",
           "Worse ball retention."
+        ]
+      },
+      "Balanced": {
+        "short": ["No strong preference.", "A balanced level of risk."],
+        "text": "The team will look to find a balance between playing through the press and clearing the ball when under significant pressure. The team will adopt a flexible strategy, dependent on the amount of pressure the opposition are putting them under.",
+        "pros": [
+          "Provides a balance between safety and risk-taking when under pressure.",
+          "A flexible approach to build-up play."
+        ],
+        "cons": [
+          "Higher risk of dangerous turnovers than when bypassing the press.",
+          "Doesn’t retain the ball as well as playing through the press."
         ]
       }
     },
@@ -1309,19 +1309,19 @@
           "Central attacks are more dangerous if oppositon beat the press."
         ]
       },
-      "Standard": {
+      "Trap outside": {
+        "short": ["Deny access to central areas.", "Win the ball in wide areas."],
+        "text": "Trap Outside asks the team to set a pressing trap designed to funnel the ball into wide areas, where the opposition have fewer options with the ball, and are more likely to concede possession.",
+        "pros": ["Compact team shape provides less space for opposition in central areas."],
+        "cons": ["More vulnerable to switch passes.", "Counter-attacks start further from goal."]
+      },
+      "Balanced": {
         "short": ["A balanced pressing strategy."],
         "text": "The team will adopt a flexible pressing strategy, looking to find a balance between protecting central and wide areas of the pitch. The team will be open to triggering a press in wide or central areas, depending on the situation.",
         "pros": [
           "Could benefit more from specialising in a targeted approach.",
           "Defends wide and central areas evenly."
         ]
-      },
-      "Trap outside": {
-        "short": ["Deny access to central areas.", "Win the ball in wide areas."],
-        "text": "Trap Outside asks the team to set a pressing trap designed to funnel the ball into wide areas, where the opposition have fewer options with the ball, and are more likely to concede possession.",
-        "pros": ["Compact team shape provides less space for opposition in central areas."],
-        "cons": ["More vulnerable to switch passes.", "Counter-attacks start further from goal."]
       }
     },
     "Cross engagement": {
@@ -1337,15 +1337,6 @@
           "Easier for defenders to be dragged from position."
         ]
       },
-      "Standard": {
-        "short": ["A balanced defensive strategy."],
-        "text": "The team will adopt a flexible defensive strategy, looking to find a balance between protecting central areas and denying crossing opportunities.",
-        "pros": [
-          "A flexible defensive strategy.",
-          "Provides a balance between central and wide protection."
-        ],
-        "cons": ["Allows more crosses into the box than when looking to stop the cross."]
-      },
       "Invite crosses": {
         "short": [
           "Makes it harder for the opposition to find space in central areas.",
@@ -1357,6 +1348,15 @@
           "Opposition wide players have more time and space on the ball.",
           "Allows more crosses to be played into the box."
         ]
+      },
+      "Balanced": {
+        "short": ["A balanced defensive strategy."],
+        "text": "The team will adopt a flexible defensive strategy, looking to find a balance between protecting central areas and denying crossing opportunities.",
+        "pros": [
+          "A flexible defensive strategy.",
+          "Provides a balance between central and wide protection."
+        ],
+        "cons": ["Allows more crosses into the box than when looking to stop the cross."]
       }
     }
   },

@@ -162,9 +162,13 @@ export function fillAbout(list: FmInstruction[], defaults: FmInstruction[]): FmI
       return def
     return {
       ...d,
-      options: d.options.map((o) =>
-        o.about ? o : { ...o, about: def?.options.find((x) => x.code === o.code)?.about },
-      ),
+      options: d.options.map((o) => {
+        // FM27 names some unset options Balanced (seen in game), not Standard / Mixed crosses
+        const fm = def?.options.find((x) => x.code === o.code)
+        const label =
+          o.code === 0 && fm && /^(Standard|Mixed crosses)$/.test(o.label) ? fm.label : o.label
+        return { ...o, label, about: o.about ?? fm?.about }
+      }),
     }
   })
 }

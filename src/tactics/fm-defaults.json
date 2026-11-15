@@ -338,7 +338,7 @@
           "code": 16
         },
         {
-          "label": "Standard",
+          "label": "Balanced",
           "code": 0
         },
         {
@@ -353,7 +353,7 @@
       "name": "Crossing style",
       "options": [
         {
-          "label": "Mixed crosses",
+          "label": "Balanced",
           "code": 0
         },
         {
@@ -380,7 +380,7 @@
           "code": 14
         },
         {
-          "label": "Standard",
+          "label": "Balanced",
           "code": 0
         },
         {
@@ -472,7 +472,7 @@
           "code": 6
         },
         {
-          "label": "Standard",
+          "label": "Balanced",
           "code": 0
         },
         {
@@ -491,7 +491,7 @@
           "code": 7
         },
         {
-          "label": "Standard",
+          "label": "Balanced",
           "code": 0
         },
         {
@@ -743,7 +743,7 @@
           "code": 80
         },
         {
-          "label": "Standard",
+          "label": "Balanced",
           "code": 0
         },
         {
@@ -762,7 +762,7 @@
           "code": 82
         },
         {
-          "label": "Standard",
+          "label": "Balanced",
           "code": 0
         },
         {
