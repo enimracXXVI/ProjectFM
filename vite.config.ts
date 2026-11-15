@@ -14,7 +14,11 @@ export default defineConfig({
     tailwindcss(),
     VitePWA({
       registerType: 'autoUpdate',
-      includeAssets: ['icons/favicon-16.png', 'icons/favicon-32.png', 'icons/apple-touch-icon.png'],
+      includeAssets: [
+        'icons/app-favicon-16.png',
+        'icons/app-favicon-32.png',
+        'icons/app-apple-touch.png',
+      ],
       manifest: {
         name: 'ProjectFM',
         short_name: 'ProjectFM',
@@ -29,10 +33,10 @@ export default defineConfig({
         theme_color: '#0b1120',
         categories: ['sports', 'games', 'utilities'],
         icons: [
-          { src: 'icons/icon-192.png', sizes: '192x192', type: 'image/png', purpose: 'any' },
-          { src: 'icons/icon-512.png', sizes: '512x512', type: 'image/png', purpose: 'any' },
+          { src: 'icons/app-192.png', sizes: '192x192', type: 'image/png', purpose: 'any' },
+          { src: 'icons/app-512.png', sizes: '512x512', type: 'image/png', purpose: 'any' },
           {
-            src: 'icons/maskable-512.png',
+            src: 'icons/app-maskable-512.png',
             sizes: '512x512',
             type: 'image/png',
             purpose: 'maskable',
