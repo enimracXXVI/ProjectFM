@@ -45,7 +45,7 @@ def _plain(v):
 
 
 # Raised whenever extract() returns new data, so the app can spot an outdated copy
-READER_VERSION = 14
+READER_VERSION = 15
 
 JOB_SCOUT, JOB_CHIEF_SCOUT = 14, 44
 _FF8 = b"\xff" * 8
@@ -404,7 +404,7 @@ def _tactics(save, club_uid):
                 "piOop": pi_oop,
                 "markOop": mark_oop,
             })
-    out.append({
+        out.append({
             "index": t.index,
             "name": t.name,
             "style": t.style_name,
@@ -695,6 +695,8 @@ def extract(path):
                 "leftFoot": p.left_foot,
                 "rightFoot": p.right_foot,
                 "personality": asdict(p.personality) if is_dataclass(p.personality) else None,
+                # Trait bit numbers (FM's player traits); names are the app's
+                "traits": [t.raw for t in (getattr(p, "traits", None) or ())],
             })
         # By player, not by the contract's club: that is empty on some contracts
         for c in save.contracts():

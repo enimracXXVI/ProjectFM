@@ -16,6 +16,7 @@ import { HIDDEN_PLAYER_ATTRS, PERSONALITY_KEYS } from '../import/dump'
 import { attributeLabel } from '../data/config'
 import { compareUrlWith } from '../lib/compare'
 import { reachBand, reachForHeight } from '../lib/reach'
+import { traitNames } from '../data/traits'
 import type { PlayerRow } from '../data/db'
 import { useCurrentCareer } from '../lib/career'
 import { useConfig } from '../lib/config'
@@ -122,6 +123,25 @@ export function PlayerDetail() {
         {config.showHidden && p.extra.CA && <Info label="CA" value={p.extra.CA} />}
         {config.showHidden && p.extra.PA && <Info label="PA" value={p.extra.PA} />}
       </dl>
+
+      {p.extra.Traits !== undefined && (
+        <section className="mb-5">
+          <h2 className="mb-1 border-b border-border pb-1 text-xs font-semibold text-muted">
+            Traits
+          </h2>
+          {traitNames(p.extra.Traits, config.traitNames).length ? (
+            <ul className="flex flex-wrap gap-1.5 text-sm">
+              {traitNames(p.extra.Traits, config.traitNames).map((t) => (
+                <li key={t} className="rounded-full border border-border bg-surface px-3 py-1">
+                  {t}
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <p className="text-sm text-muted">No traits.</p>
+          )}
+        </section>
+      )}
 
       {config.showHidden && HIDDEN_LIST.some((k) => p.extra[k]) && (
         <section className="mb-5">

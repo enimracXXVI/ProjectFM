@@ -14,6 +14,8 @@ import { SaveImport } from './SaveImport'
 export function Import() {
   const career = useCurrentCareer()
   const imports = useImports(career.id)
+  const latest =
+    [...(imports.data ?? [])].sort((a, b) => b.created_at.localeCompare(a.created_at))[0] ?? null
   const [error, setError] = useState<unknown>(null)
   const [dragging, setDragging] = useState(false)
   const [stage, setStage] = useState<Stage | null>(null)
@@ -121,23 +123,11 @@ export function Import() {
         />
       )}
 
-      {!!imports.data?.length && (
-        <section className="mt-8">
-          <h2 className="mb-2 text-sm font-semibold text-muted">Recent imports</h2>
-          <ul className="grid gap-1 text-sm">
-            {imports.data.map((i) => (
-              <li
-                key={i.id}
-                className="flex flex-wrap justify-between gap-2 rounded-lg bg-surface px-3 py-2"
-              >
-                <span className="truncate">{i.file_name}</span>
-                <span className="text-muted">
-                  {i.row_count} players · {i.season} · {new Date(i.created_at).toLocaleString()}
-                </span>
-              </li>
-            ))}
-          </ul>
-        </section>
+      {latest && (
+        <p className="mt-6 text-sm text-muted">
+          Last import: {new Date(latest.created_at).toLocaleString()}
+          {latest.season ? ` · season ${latest.season}` : ''} · {latest.row_count} players
+        </p>
       )}
     </>
   )

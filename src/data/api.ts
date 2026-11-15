@@ -576,7 +576,12 @@ export async function importFmSave(opts: {
       squad_number: squadNo,
       left_foot: u?.leftFoot ?? p.left_foot,
       right_foot: u?.rightFoot ?? p.right_foot,
-      extra: { ...p.extra, ...u?.contract, ...u?.stats },
+      extra: {
+        ...p.extra,
+        ...u?.contract,
+        ...u?.stats,
+        ...(u?.traits != null ? { Traits: u.traits } : {}),
+      },
     }
   })
 
@@ -591,10 +596,12 @@ export async function importFmSave(opts: {
       header: name,
       target: { kind: 'attribute' as const, name },
     })),
-    ...[...DUMP_PRESENT.extra, 'team', ...SAVE_CONTRACT_KEYS, ...SAVE_STATS_KEYS].map((key) => ({
-      header: key,
-      target: { kind: 'extra' as const, key },
-    })),
+    ...[...DUMP_PRESENT.extra, 'team', 'Traits', ...SAVE_CONTRACT_KEYS, ...SAVE_STATS_KEYS].map(
+      (key) => ({
+        header: key,
+        target: { kind: 'extra' as const, key },
+      }),
+    ),
   ]
   const players = await importPlayers({
     careerId: career.id,
@@ -846,7 +853,13 @@ export const isMissingTable = (e: unknown) =>
 
 export async function listTactics(careerId: string): Promise<TacticRow[]> {
   return check(
-    await supabase.from('tactics').select('*').eq('career_id', careerId).order('created_at'),
+    await supabase
+      .from('tactics')
+      .select('*')
+      .eq('career_id', careerId)
+      // The save's tactics first, in FM's order (the primary tactic first), then the user's own
+      .order('save_index', { ascending: true, nullsFirst: false })
+      .order('created_at'),
   )
 }
 
@@ -876,6 +889,8 @@ export async function importSaveTactics(careerId: string, data: SaveTactics): Pr
   const config = mergeConfig(await loadStoredConfig())
   const byUid = new Map(players.map((p) => [p.fm_uid, p.id]))
   const starters = data.selection.filter((s) => !s.substitute)
+  // The save's selection is the XI of the primary tactic (FM's first)
+  const primary = Math.min(...data.tactics.map((t) => t.index))
   for (const t of data.tactics) {
     const old = existing.find((x) => x.save_index === t.index)
     const read = fromSave(t, config.roles, config.fmCodes)
@@ -886,7 +901,9 @@ export async function importSaveTactics(careerId: string, data: SaveTactics): Pr
       roleOop: s.roleOop ?? old?.slots[i]?.roleOop ?? null,
       player:
         old?.slots[i]?.player ??
-        byUid.get(starters.find((x) => x.slot === t.slots[i].number)?.uniqueId ?? -1) ??
+        (t.index === primary
+          ? byUid.get(starters.find((x) => x.slot === t.slots[i].number)?.uniqueId ?? -1)
+          : null) ??
         null,
     }))
     await saveTactic(careerId, old?.id ?? null, {

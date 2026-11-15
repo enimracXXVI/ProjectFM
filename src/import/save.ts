@@ -22,7 +22,7 @@ import {
 export type StatsKind = 'overall' | 'league' | 'cup' | 'non_competitive'
 
 /** Version of public/fmsave/extract.py this app expects. */
-export const READER_VERSION = 14
+export const READER_VERSION = 15
 
 export interface SaveData {
   /** Version of the save reader that produced this (absent before version 3). */
@@ -36,6 +36,8 @@ export interface SaveData {
     leftFoot: number | null
     rightFoot: number | null
     personality: Record<string, number> | null
+    /** Trait bit numbers (reader 15 and later). */
+    traits?: number[]
   }[]
   contracts: {
     uniqueId: number
@@ -179,6 +181,8 @@ export interface SavePlayerUpdate {
   contract: Record<string, string> | null
   /** Stats columns for the chosen competition, or null when the player has none. */
   stats: Record<string, string> | null
+  /** Trait bits ("2,8,10", empty for none), or null from an older reader. */
+  traits: string | null
 }
 
 /** All stats keys the save import writes (cleared before new stats are written). */
@@ -210,6 +214,7 @@ export function saveUpdates(
       rightFoot: p.rightFoot ? footWithValue(p.rightFoot, words?.footWords, words?.footMins) : null,
       contract: contract ? contractFields(contract) : null,
       stats: stats ? statsFields(stats) : null,
+      traits: p.traits ? p.traits.join(',') : null,
     }
   })
 }

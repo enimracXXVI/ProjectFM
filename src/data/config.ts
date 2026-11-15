@@ -36,6 +36,7 @@ import { DEFAULT_ROLE_WARNINGS, type RoleWarning } from '../tactics/warnings'
 import { DEFAULT_TACTICAL_STYLES, type TacticalStyle } from '../tactics/styles'
 import { DEFAULT_MATCH_DATA, type MatchData } from '../tactics/matchData'
 import { DEFAULT_OLDER_ROLES, shownOlderRoles, type OlderRole } from './olderRoles'
+import { DEFAULT_TRAIT_NAMES } from './traits'
 import {
   DEFAULT_TRAINING_SESSIONS,
   type TrainingSchedule,
@@ -102,6 +103,8 @@ export interface AppConfig {
   tacticalStyles: TacticalStyle[]
   /** Roles from older FMs that FM27 still defines but no longer offers (hidden unless shown). */
   olderRoles: OlderRole[]
+  /** Names of FM's player traits by the bit the save stores them under. */
+  traitNames: Record<string, string>
   /** FM's match data: how FM rates players by role, how tactical training adds up. */
   matchData: MatchData
   /** FM's individual training focuses and the attributes each works on. */
@@ -163,6 +166,7 @@ export const DEFAULT_CONFIG: AppConfig = {
   tacticalStyles: DEFAULT_TACTICAL_STYLES,
   matchData: DEFAULT_MATCH_DATA,
   olderRoles: DEFAULT_OLDER_ROLES,
+  traitNames: DEFAULT_TRAIT_NAMES,
   trainingFocuses: DEFAULT_TRAINING_FOCUSES,
   trainingSchedules: [],
   noteCategories: DEFAULT_NOTE_CATEGORIES,
@@ -204,6 +208,7 @@ export function mergeConfig(stored: Stored): AppConfig {
       ...shownOlderRoles(stored.olderRoles ?? DEFAULT_CONFIG.olderRoles),
     ],
     olderRoles: stored.olderRoles ?? DEFAULT_CONFIG.olderRoles,
+    traitNames: { ...DEFAULT_CONFIG.traitNames, ...stored.traitNames },
     roleWeights: { ...DEFAULT_CONFIG.roleWeights, ...stored.roleWeights },
     showHidden: stored.showHidden ?? DEFAULT_CONFIG.showHidden,
     learned: { ...DEFAULT_CONFIG.learned, ...stored.learned },
