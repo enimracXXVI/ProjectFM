@@ -69,7 +69,11 @@ export function Layout() {
             collapsed ? 'justify-center' : 'px-5',
           )}
         >
-          <Logo className={collapsed ? 'h-8 w-auto' : 'h-10 w-auto'} />
+          {collapsed ? (
+            <Logo className="h-8 w-auto" />
+          ) : (
+            <Logo wide className="h-auto max-h-10 w-full object-contain object-left" />
+          )}
         </div>
         <nav
           aria-label="Main"
