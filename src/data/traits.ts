@@ -2,7 +2,7 @@
  * Names of FM's player traits by the bit the save stores them under. Bits 0–45: FM's
  * language file lists trait names in exactly this order (text 228089 + bit), which every
  * trait name fmsave confirmed in game matches (14 of 14). Bits 51 and 59 were confirmed by
- * fmsave in game; "(?)" names follow from where FM's language file keeps them, unconfirmed.
+ * fmsave in game, 47 and 58 by the user's FM player screen; "(?)" names follow from where FM's language file keeps them, unconfirmed.
  * Unnamed bits show as "Trait #n". Editable in Settings > Player traits.
  */
 export const DEFAULT_TRAIT_NAMES: Record<string, string> = {
@@ -51,9 +51,12 @@ export const DEFAULT_TRAIT_NAMES: Record<string, string> = {
   '43': 'Tries Long Range Passes',
   '44': 'Likes Ball Played Into Feet',
   '45': 'Hits Free Kicks With Power',
+  // From the user's FM screen of a player with bits 8, 20, 36, 47, 58 (FM lists traits in bit order)
+  '47': 'Likes To Switch Ball To Wide Areas',
   '50': 'Possesses Long Flat Throw (?)',
   '51': 'Runs With Ball Often',
   '52': 'Runs With Ball Rarely (?)',
+  '58': 'Cuts Inside From Right Wing',
   '59': 'Crosses Early',
 }
 

@@ -133,19 +133,18 @@ export const DEFAULT_FM_CODES: FmCodes = {
   // From the user's own FM27 tactic and schedule files
   fileVersion: 'f8186c05',
   // FM27's engine keeps a table of the option for each code (game_plugin.dll): 31–34, 64, 74
-  // and 75 hold its empty option, so FM27 has no option for them. 31–34 most likely were the
-  // goalkeeper release instruction of older FMs (still named GKDistributionMethod in FM27's
-  // screen code); 41 holds an option the screens do not list (GKDistributionTargetSpecificTeammate
-  // is the only unlisted goalkeeper target named in FM27's screen code).
+  // and 75 hold its empty option, so FM27 has no option for them. FM27's screen code registers
+  // its options in code order (GameAssembly.dll): Underlap (28–30), then GK distribution method
+  // Rollout, Throwlong, Kickshort, Longkick (31–34), then GK distribution targets (35–41). It has
+  // nothing between 63 and 65 or between 73 and 76: those options were removed with no name left.
   hiddenTeamCodes: {
-    '31': 'No FM27 option (once GK distribution method: Roll it out?)',
-    '32': 'No FM27 option (once GK distribution method: Throw it long?)',
-    '33': 'No FM27 option (once GK distribution method: Short kicks?)',
-    '34': 'No FM27 option (once GK distribution method: Long kicks?)',
-    '41': 'GK distribution: Specific teammate (?)',
-    '64': 'No FM27 option',
-    '74': 'No FM27 option (older instruction, name unknown)',
-    '75': 'No FM27 option (older instruction, name unknown)',
+    '31': 'GK distribution method: Roll it out (no FM27 option)',
+    '32': 'GK distribution method: Throw it long (no FM27 option)',
+    '33': 'GK distribution method: Short kicks (no FM27 option)',
+    '34': 'GK distribution method: Long kicks (no FM27 option)',
+    '64': 'Removed option, no name left (no FM27 option)',
+    '74': 'Removed option, no name left (no FM27 option)',
+    '75': 'Removed option, no name left (no FM27 option)',
   },
 
   // Overlap and underlap on the same flank (from the user's FM Tactic Generator)
@@ -180,6 +179,11 @@ export function fillAbout(list: FmInstruction[], defaults: FmInstruction[]): FmI
     // Time wasting was first listed as Standard / Sometimes / Often; FM's options are
     // Less Often / Standard / More Often (seen in game),
     // and Less Often was then taken for 79; FM stores Less Often as nothing, Standard as 79
+    // Specific teammate (code 41) was found later in FM27's own option list
+    const add = def?.options.filter(
+      (o) => o.code === 41 && !d.options.some((x) => x.code === o.code),
+    )
+    if (add?.length) d = { ...d, options: [...d.options, ...add] }
     if (
       def &&
       d.name === 'Time wasting' &&

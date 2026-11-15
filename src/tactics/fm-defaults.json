@@ -622,6 +622,11 @@
           "label": "Bypass the defensive line",
           "code": 38,
           "complexity": 1
+        },
+        {
+          "label": "Specific teammate",
+          "code": 41,
+          "complexity": 2
         }
       ],
       "default": 0

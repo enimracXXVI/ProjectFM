@@ -39,4 +39,10 @@ export const DEFAULT_OLDER_ROLES: OlderRole[] = [
 
 /** The older roles switched on, as plain roles. */
 export const shownOlderRoles = (list: OlderRole[]): RoleDef[] =>
-  list.filter((r) => r.show).map(({ show: _, ...r }) => r)
+  list
+    .filter((r) => r.show)
+    .map((r) => {
+      const role: RoleDef & { show?: boolean } = { ...r }
+      delete role.show
+      return role
+    })

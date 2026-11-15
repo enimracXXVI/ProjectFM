@@ -473,3 +473,14 @@ describe('FM match data', () => {
     expect(m.find((x) => x.name === 'Ball-Playing Defender')?.roles).toEqual([])
   })
 })
+
+describe('goalkeeper distribution: specific teammate', () => {
+  it('is an option, also in instruction lists saved before it was found', async () => {
+    const { fillAbout } = await import('./fm')
+    const gk = config.teamInstructions.find((d) => d.name === 'Goalkeeper distribution')!
+    expect(gk.options.find((o) => o.code === 41)?.label).toBe('Specific teammate')
+    const old = [{ ...gk, options: gk.options.filter((o) => o.code !== 41) }]
+    const filled = fillAbout(old, config.teamInstructions)
+    expect(filled[0].options.some((o) => o.code === 41)).toBe(true)
+  })
+})
