@@ -1,5 +1,6 @@
 import { ArrowLeft } from 'lucide-react'
 import { useMemo } from 'react'
+import { TraitList } from '../components/TraitList'
 import { Link, useParams } from 'react-router-dom'
 import { RoleFitPanel } from '../components/RoleFitPanel'
 import { Placeholder } from '../components/ui'
@@ -75,6 +76,7 @@ export function WorldPlayer() {
           .filter(Boolean)
           .join(' · ')}
       </p>
+      {p.traits.length > 0 && <TraitList traits={p.traits.join(',')} />}
       {mine && (
         <p className="mb-3 text-sm">
           In your squad:{' '}

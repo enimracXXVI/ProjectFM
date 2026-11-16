@@ -45,7 +45,7 @@ def _plain(v):
 
 
 # Raised whenever extract() returns new data, so the app can spot an outdated copy
-READER_VERSION = 15
+READER_VERSION = 16
 
 JOB_SCOUT, JOB_CHIEF_SCOUT = 14, 44
 _FF8 = b"\xff" * 8
@@ -212,6 +212,9 @@ def _dump(save, club_uid, club_name, extras):
         if p.personality is not None:
             for k in _PERSONALITY:
                 row[k] = getattr(p.personality, k, None)
+        traits = [t.raw for t in (getattr(p, "traits", None) or ())]
+        if traits:
+            row["traits"] = traits
         players.append(row)
     return {
         "meta": {

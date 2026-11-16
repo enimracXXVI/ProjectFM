@@ -20,7 +20,7 @@ export function TraitGuideSettings() {
   return (
     <SettingsShell
       title="Trait guide"
-      subtitle="Each player trait and what suits it, from FM27's staff advice rules. Separate strengths with commas."
+      subtitle="Each player trait: what it does (FM27's own tooltip) and what suits it (FM27's staff advice rules; separate strengths with commas)."
       dirty={JSON.stringify(form) !== prev}
       saving={save.isPending || reset.isPending}
       saved={save.isSuccess}
@@ -31,6 +31,7 @@ export function TraitGuideSettings() {
             .filter((g) => g.trait.trim())
             .map((g) => ({
               trait: g.trait.trim(),
+              about: g.about?.trim() || undefined,
               suits: g.suits.map((x) => x.trim()).filter(Boolean),
             })),
         )
@@ -47,6 +48,16 @@ export function TraitGuideSettings() {
                 setForm(form.map((x, j) => (j === i ? { ...x, trait: e.target.value } : x)))
               }
               className={`${input} font-semibold`}
+            />
+            <textarea
+              aria-label={`What ${g.trait} does`}
+              value={g.about ?? ''}
+              rows={2}
+              placeholder="What the trait does"
+              onChange={(e) =>
+                setForm(form.map((x, j) => (j === i ? { ...x, about: e.target.value } : x)))
+              }
+              className={`${input} py-2 sm:col-start-2`}
             />
             <input
               aria-label={`What suits ${g.trait}`}

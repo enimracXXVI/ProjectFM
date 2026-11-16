@@ -242,9 +242,10 @@ function TraitGuide() {
         />
       </button>
       <p className="text-xs text-muted">
-        What FM&apos;s staff look for before advising a player to learn a trait (or to drop it when
-        he lacks it), from FM&apos;s own advice rules. Teach traits in FM from the player&apos;s
-        training screen. Edit in Settings &gt; Trait guide.
+        What each trait does (FM&apos;s own text) and what FM&apos;s staff look for before advising
+        a player to learn it (or to drop it when he lacks it), from FM&apos;s own advice rules.
+        Teach traits in FM from the player&apos;s training screen. Edit in Settings &gt; Trait
+        guide.
       </p>
       {open && (
         <>
@@ -259,6 +260,7 @@ function TraitGuide() {
             {list.map((g) => (
               <li key={g.trait} className="rounded-lg border border-border px-3 py-1.5">
                 <span className="font-semibold">{g.trait}</span>
+                {g.about && <span className="block text-xs">{g.about}</span>}
                 <span className="block text-xs text-muted">
                   {g.suits.length ? `Suits ${g.suits.join(', ')}` : 'No advice rule in FM'}
                 </span>

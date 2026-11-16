@@ -59,3 +59,12 @@ describe('nations and regions', () => {
     expect(searchKey('Pongračić')).toBe('pongracic')
   })
 })
+
+describe('world traits', () => {
+  it('keeps the save trait numbers of each player', () => {
+    const players = dump.players.map((p, i) => (i === 0 ? { ...p, traits: [8, 20, 47] } : p))
+    const w = buildWorld({ ...dump, players } as Dump)
+    expect(rowToPlayer(w, w.rows[0]).traits).toEqual([8, 20, 47])
+    expect(rowToPlayer(w, w.rows[1]).traits).toEqual([])
+  })
+})

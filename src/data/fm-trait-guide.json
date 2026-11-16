@@ -1,170 +1,212 @@
 [
   {
     "trait": "Runs With Ball Down Left",
+    "about": "A player with this trait will more often look to drive forward with the ball down the left.",
     "suits": ["good athleticism", "good dribbling", "good left foot"]
   },
   {
     "trait": "Runs With Ball Down Right",
+    "about": "This makes a player more inclined to carry the ball forward on a run down the right.",
     "suits": ["good athleticism", "good dribbling", "good right foot"]
   },
   {
     "trait": "Runs With Ball Through Centre",
+    "about": "Increases how often a player chooses to run with the ball through central areas.",
     "suits": ["good athleticism", "good dribbling"]
   },
   {
+    "trait": "Gets Into Opposition Area",
+    "about": "A player with this trait makes more runs from deep to arrive in the opponent's penalty area.",
+    "suits": ["good goalscoring", "good movement", "good acceleration"]
+  },
+  {
     "trait": "Moves Into Channels",
+    "about": "A player who will make more attacking runs into the space between opposition full-backs and central defenders.",
     "suits": ["good movement", "good anticipation"]
   },
   {
     "trait": "Gets Forward Whenever Possible",
+    "about": "The player likes to get forward and join the attack.",
     "suits": ["good physical strength", "good movement", "good decisions"]
   },
   {
     "trait": "Plays Short Simple Passes",
+    "about": "The player favours the simple pass, shying away from through balls and longer distribution.",
     "suits": ["weak passing"]
   },
   {
     "trait": "Tries Killer Balls Often",
+    "about": "The player looks to thread through balls far more often.",
     "suits": ["good passing", "good creativity", "good decisions"]
   },
   {
     "trait": "Shoots From Distance",
+    "about": "A player who likes to attempt shots from outside the penalty area.",
     "suits": ["good long shots"]
   },
   {
     "trait": "Shoots With Power",
+    "about": "A player tends who to favour power over placement when shooting.",
     "suits": ["good finishing", "weak technique", "weak composure"]
   },
   {
     "trait": "Places Shots",
+    "about": "When shooting, the player leans towards accurate placement rather than sheer power.",
     "suits": ["good finishing", "good technique", "good composure"]
   },
   {
+    "trait": "Curls Ball",
+    "about": "The player curls the ball with more frequency and capability than average.",
+    "suits": []
+  },
+  {
     "trait": "Likes To Round Keeper",
+    "about": "In one-on-one situations, the player likes to try to take the ball round the goalkeeper.",
     "suits": ["weak finishing", "good technique", "good composure", "good dribbling"]
   },
   {
     "trait": "Likes To Try To Beat Offside Trap",
+    "about": "This player tends to frequently make runs in behind the opposition defence.",
     "suits": ["good athleticism", "good reading of the game"]
   },
   {
-    "trait": "Argues With Officials",
-    "suits": []
-  },
-  {
-    "trait": "Likes To Lob Keeper",
-    "suits": ["good technique", "good creativity"]
-  },
-  {
-    "trait": "Plays No Through Balls",
-    "suits": ["weak passing"]
-  },
-  {
-    "trait": "Dwells On Ball",
-    "suits": ["weak decisions", "weak teamwork"]
-  },
-  {
-    "trait": "Tries To Play Way Out Of Trouble",
-    "suits": ["good reading of the game", "good technique", "good decisions"]
-  },
-  {
-    "trait": "Dives Into Tackles",
-    "suits": ["good aggression", "good bravery", "weak reading of the game", "good tackling"]
-  },
-  {
-    "trait": "Does Not Dive Into Tackles",
-    "suits": ["weak bravery", "good reading of the game", "weak tackling"]
-  },
-  {
-    "trait": "Hits Free Kicks With Power",
-    "suits": ["good free kicks"]
-  },
-  {
-    "trait": "Cuts Inside From Both Wings",
-    "suits": ["weak crossing", "good dribbling", "good movement", "good agility", "good finishing"]
-  },
-  {
     "trait": "Marks Opponent Tightly",
+    "about": "The player likes to get tight to mark when defending.",
     "suits": ["good marking", "good reading of the game"]
   },
   {
-    "trait": "Hugs Line",
-    "suits": ["good crossing", "good dribbling", "good pace", "good left foot", "good right foot"]
+    "trait": "Argues With Officials",
+    "about": "The player is more prone to showing dissent towards match officials.",
+    "suits": []
   },
   {
     "trait": "Plays With Back To Goal",
+    "about": "They will look to hold the ball up in attacking areas.",
     "suits": ["good strength", "good balance", "good first touch", "weak pace"]
   },
   {
     "trait": "Comes Deep To Get Ball",
+    "about": "The player drops off the line more often to collect possession in space.",
     "suits": ["good first touch", "good movement", "good teamwork"]
   },
   {
-    "trait": "Looks For Pass Rather Than Attempting To Score",
-    "suits": ["good passing", "weak goalscoring"]
-  },
-  {
-    "trait": "Stops Play",
-    "suits": ["good reading of the game", "good decisions"]
-  },
-  {
-    "trait": "Tries Long Range Free Kicks",
-    "suits": ["good free kicks", "good long shots", "good technique", "good flair"]
-  },
-  {
-    "trait": "Tries First Time Shots",
-    "suits": ["good goalscoring", "good anticipation", "weak dribbling"]
-  },
-  {
-    "trait": "Runs With Ball Rarely",
-    "suits": ["weak dribbling"]
-  },
-  {
-    "trait": "Runs With Ball Often",
-    "suits": ["good dribbling"]
-  },
-  {
-    "trait": "Possesses Long Flat Throw",
-    "suits": ["good long throws"]
-  },
-  {
     "trait": "Plays One-Twos",
+    "about": "They will play a simple pass-and-move action more often, giving and going while moving into space to receive in a better position.",
     "suits": ["good passing", "good reading of the game", "good first touch"]
   },
   {
+    "trait": "Likes To Lob Keeper",
+    "about": "When presented with a chance, the player is more likely to try to lift the ball over the goalkeeper.",
+    "suits": ["good technique", "good creativity"]
+  },
+  {
     "trait": "Dictates Tempo",
+    "about": "The player is more likely to take command of midfield situations, using their attributes to set the team's tempo.",
     "suits": ["good passing", "good decisions", "good anticipation", "good teamwork"]
   },
   {
     "trait": "Attempts Overhead Kicks",
+    "about": "In attacking situations, the player is more likely to go for a spectacular overhead kick instead of a header, particularly when shooting.",
     "suits": ["good technique", "good agility", "good bravery", "good flair"]
   },
   {
+    "trait": "Looks For Pass Rather Than Attempting To Score",
+    "about": "The player tends to lay a scoring chance off to a team-mate rather than take it on themselves.",
+    "suits": ["good passing", "weak goalscoring"]
+  },
+  {
+    "trait": "Plays No Through Balls",
+    "about": "This player tends not to attempt through balls and instead looks for safer options.",
+    "suits": ["weak passing"]
+  },
+  {
+    "trait": "Stops Play",
+    "about": "In possession, the player is more inclined to slow things down and weigh up their options.",
+    "suits": ["good reading of the game", "good decisions"]
+  },
+  {
     "trait": "Knocks Ball Past Opponent",
+    "about": "They like to knock the ball past a defender and attempt to beat them for pace by racing on to it.",
     "suits": ["good athleticism", "weak dribbling"]
   },
   {
+    "trait": "Dwells On Ball",
+    "about": "The player takes longer over their decisions when in possession.",
+    "suits": ["weak decisions", "weak teamwork"]
+  },
+  {
+    "trait": "Arrives Late In Opponents' Area",
+    "about": "As team-mates work into a crossing position, the player times late runs into the box.",
+    "suits": ["good goalscoring", "good acceleration", "good movement"]
+  },
+  {
+    "trait": "Tries To Play Way Out Of Trouble",
+    "about": "Under pressure in a defensive position, the player favours passing or dribbling their way out over a safety-first clearance.",
+    "suits": ["good reading of the game", "good technique", "good decisions"]
+  },
+  {
+    "trait": "Stays Back At All Times",
+    "about": "The player holds their position and makes no forward runs.",
+    "suits": ["weak physical strength", "weak movement", "weak decisions", "weak flair"]
+  },
+  {
     "trait": "Avoids Using Weaker Foot",
+    "about": "The player sticks to their preferred foot wherever they can, even when their weaker foot would suit the situation better.",
     "suits": ["weak left foot", "weak right foot"]
   },
   {
-    "trait": "Tries Long Range Passes",
-    "suits": ["good passing", "good technique", "good decisions"]
+    "trait": "Tries Long Range Free Kicks",
+    "about": "The player is more willing to shoot directly from free kicks well outside the penalty area.",
+    "suits": ["good free kicks", "good long shots", "good technique", "good flair"]
+  },
+  {
+    "trait": "Dives Into Tackles",
+    "about": "The player commits to a tackle more often. This is about how they engage, not simply about going to ground when challenging for the ball.",
+    "suits": ["good aggression", "good bravery", "weak reading of the game", "good tackling"]
+  },
+  {
+    "trait": "Does Not Dive Into Tackles",
+    "about": "This player tends not to commit to tackles very often, with a focus on not engaging, rather than literally avoiding going to ground to win the ball.",
+    "suits": ["weak bravery", "good reading of the game", "weak tackling"]
+  },
+  {
+    "trait": "Cuts Inside From Both Wings",
+    "about": "Receiving the ball out wide, the player cuts inside to attack central areas more often.",
+    "suits": ["weak crossing", "good dribbling", "good movement", "good agility", "good finishing"]
+  },
+  {
+    "trait": "Hugs Line",
+    "about": "The player keeps to the wide areas of the pitch whenever they can.",
+    "suits": ["good crossing", "good dribbling", "good pace", "good left foot", "good right foot"]
+  },
+  {
+    "trait": "Hits Free Kicks With Power",
+    "about": "The player is more likely to strike free kicks with a lower, harder trajectory.",
+    "suits": ["good free kicks"]
   },
   {
     "trait": "Likes To Switch Ball To Wide Areas",
+    "about": "The player more often switches the ball from the middle out wide with long, diagonal passes.",
     "suits": ["good passing", "good technique"]
   },
   {
-    "trait": "Develops Weaker Foot",
-    "suits": ["weak left foot", "weak right foot"]
+    "trait": "Possesses Long Flat Throw",
+    "about": "The player can launch a long throw with a low, flat trajectory much like a cross.",
+    "suits": ["good long throws"]
   },
   {
-    "trait": "Box Player",
-    "suits": ["good aerial ability", "weak movement", "weak technique"]
+    "trait": "Runs With Ball Often",
+    "about": "Given the choice, the player tends to run with the ball rather than pass it.",
+    "suits": ["good dribbling"]
+  },
+  {
+    "trait": "Runs With Ball Rarely",
+    "about": "The player has little appetite for dribbling, moving with the ball less often than would normally be expected.",
+    "suits": ["weak dribbling"]
   },
   {
     "trait": "Uses Long Throw To Start Counter Attacks",
+    "about": "The goalkeeper likes to attempt to spring counter-attacks by throwing the ball out quickly from hand.",
     "suits": [
       "good throwing (goalkeeper)",
       "good decisions",
@@ -174,70 +216,117 @@
   },
   {
     "trait": "Refrains From Taking Long Shots",
+    "about": "The player attempts shots from outside the penalty area less often.",
     "suits": ["weak long shots"]
   },
   {
-    "trait": "Gets Into Opposition Area",
-    "suits": ["good goalscoring", "good movement", "good acceleration"]
-  },
-  {
-    "trait": "Arrives Late In Opponents' Area",
-    "suits": ["good goalscoring", "good acceleration", "good movement"]
-  },
-  {
-    "trait": "Stays Back At All Times",
-    "suits": ["weak physical strength", "weak movement", "weak decisions", "weak flair"]
+    "trait": "Does Not Move Into Channels",
+    "about": "The player does not like to make runs into the channels. For central players this means they prefer to stay in the middle, and for wide players they tend to hold a wide position.",
+    "suits": []
   },
   {
     "trait": "Cuts Inside From Left Wing",
+    "about": "On the ball at the left wing, the player more often cuts inside to attack through central areas.",
     "suits": ["weak crossing", "good dribbling", "good movement", "good agility", "good right foot"]
   },
   {
     "trait": "Cuts Inside From Right Wing",
+    "about": "With the ball at their feet on the right wing, the player is more likely to cut inside and attack central areas.",
     "suits": ["weak crossing", "good dribbling", "good movement", "good agility", "good left foot"]
   },
   {
     "trait": "Crosses Early",
+    "about": "The player tends to cross from a deeper position rather than working a better opening higher up the pitch.",
     "suits": ["good crossing", "weak dribbling", "weak acceleration"]
   },
   {
-    "trait": "Carries Ball Out Of Defence",
+    "trait": "Brings Ball Out Of Defence",
+    "about": "The defender is more likely to carry the ball forward into midfield positions.",
     "suits": ["good reading of the game", "good technique", "good dribbling"]
   },
   {
     "trait": "Uses Outside Of Foot",
+    "about": "The player tends to use the outside of their stronger foot rather than use their weaker one, even when their body position makes the weaker foot the more natural choice.",
     "suits": ["good technique", "good flair"]
   },
   {
-    "trait": "Winds Up Opponents",
-    "suits": []
-  },
-  {
-    "trait": "Gets Crowd Going",
-    "suits": []
-  },
-  {
     "trait": "Moves Ball To Right Foot Before Dribble Attempt",
+    "about": "Before taking someone on, the player tends to shift the ball onto their right foot, adjusting their body shape to do so.",
     "suits": ["weak left foot"]
   },
   {
     "trait": "Moves Ball To Left Foot Before Dribble Attempt",
+    "about": "The player is more likely to set themselves on their left foot, adjusting their body shape before attempting a dribble.",
     "suits": ["weak right foot"]
   },
   {
-    "trait": "Tries Tricks",
-    "suits": ["good technique", "good flair"]
-  },
-  {
     "trait": "Likes Ball Played Into Feet",
+    "about": "The player shows for the ball and asks for it into feet rather than into space or in the air.",
     "suits": ["good technique", "weak physical strength"]
   },
   {
-    "trait": "Likes To Beat Man Repeatedly",
+    "trait": "Tries Tricks",
+    "about": "The player approaches play with more flair, bringing a wider range of skills into their game.",
+    "suits": ["good technique", "good flair"]
+  },
+  {
+    "trait": "Winds Up Opponents",
+    "about": "The player sets out to annoy and frustrate opponents, hoping to make them lose focus and their temper.",
+    "suits": []
+  },
+  {
+    "trait": "Likes To Beat Opponent Repeatedly",
+    "about": "They enjoy beating an opponent more than once, dribbling past them then cutting back to do it all over again.",
     "suits": ["good technique", "good flair", "good dribbling"]
   },
   {
-    "trait": "Plays With Feet (goalkeeper)",
+    "trait": "Gets Crowd Going",
+    "about": "When the ball is out of play, the player looks to the crowd for a positive reaction.",
+    "suits": []
+  },
+  {
+    "trait": "Tries First Time Shots",
+    "about": "The player tends to shoot first time rather than take a settling touch, except in a one-on-one, where they will pick whatever the situation calls for.",
+    "suits": ["good goalscoring", "good anticipation", "weak dribbling"]
+  },
+  {
+    "trait": "Tries Long Range Passes",
+    "about": "The player is more willing to attempt passes over longer distances.",
+    "suits": ["good passing", "good technique", "good decisions"]
+  },
+  {
+    "trait": "Demands To Take Free Kicks",
+    "about": "The player pushes to take free kicks.",
+    "suits": []
+  },
+  {
+    "trait": "Demands To Take Penalties",
+    "about": "The player insists on taking penalties.",
+    "suits": []
+  },
+  {
+    "trait": "Plays Ball With Feet",
+    "about": "The goalkeeper is more inclined to play the ball with their feet.",
     "suits": ["good reading of the game", "good technique", "good passing"]
+  },
+  {
+    "trait": "Play Football For As Long As Possible",
+    "about": "The player looks to extend their career for as long as possible, dropping down the levels rather than retiring.",
+    "suits": []
+  },
+  {
+    "trait": "Retires At The Top (?)",
+    "about": "The player would rather retire while still at the top than carry on playing down the levels.",
+    "suits": []
+  },
+  {
+    "trait": "Develops Weaker Foot",
+    "about": "",
+    "suits": ["weak left foot", "weak right foot"]
+  },
+  {
+    "trait": "Box Player",
+    "about": "",
+    "suits": ["good aerial ability", "weak movement", "weak technique"]
   }
 ]

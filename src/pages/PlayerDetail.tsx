@@ -16,8 +16,7 @@ import { HIDDEN_PLAYER_ATTRS, PERSONALITY_KEYS } from '../import/dump'
 import { attributeLabel } from '../data/config'
 import { compareUrlWith } from '../lib/compare'
 import { reachBand, reachForHeight } from '../lib/reach'
-import { traitNames } from '../data/traits'
-import { suitsFor } from '../data/traitGuide'
+import { TraitList } from '../components/TraitList'
 import type { PlayerRow } from '../data/db'
 import { useCurrentCareer } from '../lib/career'
 import { useConfig } from '../lib/config'
@@ -125,30 +124,7 @@ export function PlayerDetail() {
         {config.showHidden && p.extra.PA && <Info label="PA" value={p.extra.PA} />}
       </dl>
 
-      {p.extra.Traits !== undefined && (
-        <section className="mb-5">
-          <h2 className="mb-1 border-b border-border pb-1 text-xs font-semibold text-muted">
-            Traits
-          </h2>
-          {traitNames(p.extra.Traits, config.traitNames).length ? (
-            <ul className="grid gap-1 text-sm sm:grid-cols-2">
-              {traitNames(p.extra.Traits, config.traitNames).map((t) => {
-                const suits = suitsFor(t, config.traitGuide)
-                return (
-                  <li key={t} className="rounded-lg border border-border bg-surface px-3 py-1.5">
-                    <span className="font-semibold">{t}</span>
-                    {suits && suits.length > 0 && (
-                      <span className="block text-xs text-muted">Suits {suits.join(', ')}</span>
-                    )}
-                  </li>
-                )
-              })}
-            </ul>
-          ) : (
-            <p className="text-sm text-muted">No traits.</p>
-          )}
-        </section>
-      )}
+      {p.extra.Traits !== undefined && <TraitList traits={p.extra.Traits} />}
 
       {config.showHidden && HIDDEN_LIST.some((k) => p.extra[k]) && (
         <section className="mb-5">

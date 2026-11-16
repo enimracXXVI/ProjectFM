@@ -6,6 +6,7 @@ import { Link } from 'react-router-dom'
 import { Card, PageHeader, Placeholder } from '../components/ui'
 import { useCurrentCareer } from '../lib/career'
 import { useConfig } from '../lib/config'
+import { traitNames } from '../data/traits'
 import { scoreTextColor } from '../lib/attributes'
 import { parsePositions, roleScore, scoreColor } from '../lib/roleFit'
 import { useWorld } from '../world/hooks'
@@ -44,6 +45,7 @@ export function World() {
   // Phones: cards, or the table (scrolls both ways, header and names stay in place)
   const [layout, setLayout] = useUrlState<'cards' | 'table'>('layout', 'cards', TEXT as never)
   const [positions, setPositions] = useUrlState<string[]>('pos', [])
+  const [traits, setTraits] = useUrlState<string[]>('traits', [])
   const [ageMin, setAgeMin] = useUrlState('ageMin', '', TEXT)
   const [ageMax, setAgeMax] = useUrlState('ageMax', '', TEXT)
   const [regionId, setRegionId] = useUrlState('region', '', TEXT)
@@ -61,6 +63,7 @@ export function World() {
   const filters = useDeferredValue({
     name,
     positions,
+    traits,
     ageMin,
     ageMax,
     regionId,
@@ -75,6 +78,14 @@ export function World() {
 
   const regionOf = useMemo(() => regionLookup(config.regions), [config.regions])
   const role = config.roles.find((r) => r.id === filters.roleId)
+  // Traits the world's players have, by name (FM's numbers named in Settings > Player traits)
+  const traitOptions = useMemo(() => {
+    const bits = new Set<number>()
+    for (const r of data?.file.rows ?? []) for (const b of r[20] ?? []) bits.add(b)
+    return [...bits]
+      .map((b) => ({ bit: String(b), name: traitNames(String(b), config.traitNames)[0] }))
+      .sort((a, b) => a.name.localeCompare(b.name))
+  }, [data, config.traitNames])
   const nations = useMemo(
     () => [...new Set((data?.file.rows ?? []).map((r) => r[3]).filter(Boolean) as string[])].sort(),
     [data],
@@ -92,6 +103,7 @@ export function World() {
     const cmin = config.showHidden && f.caMin ? Number(f.caMin) : null
     const pmin = config.showHidden && f.paMin ? Number(f.paMin) : null
     const wanted = new Set(f.positions)
+    const wantedTraits = f.traits.map(Number)
     const myClub = file.meta.myClub
 
     const out: { row: WorldRow; score: number | null }[] = []
@@ -107,6 +119,7 @@ export function World() {
       if (q && !searchKey(r[1]).includes(q)) continue
       if (clubQ && !searchKey(`${r[5] ?? ''} ${r[6] ?? ''}`).includes(clubQ)) continue
       if (wanted.size && !parsePositions(r[7]).some((p) => wanted.has(p))) continue
+      if (wantedTraits.length && !wantedTraits.every((b) => r[20]?.includes(b))) continue
       out.push({ row: r, score: null })
     }
     if (role) {
@@ -247,6 +260,40 @@ export function World() {
                 )
               })}
             </div>
+            {traitOptions.length > 0 && (
+              <div className="flex flex-wrap items-center gap-1.5">
+                <select
+                  aria-label="Add a trait the players must have"
+                  value=""
+                  onChange={(e) =>
+                    e.target.value &&
+                    !traits.includes(e.target.value) &&
+                    setTraits([...traits, e.target.value])
+                  }
+                  className={`${input} max-w-xs`}
+                >
+                  <option value="">Has trait…</option>
+                  {traitOptions
+                    .filter((t) => !traits.includes(t.bit))
+                    .map((t) => (
+                      <option key={t.bit} value={t.bit}>
+                        {t.name}
+                      </option>
+                    ))}
+                </select>
+                {traits.map((b) => (
+                  <button
+                    key={b}
+                    type="button"
+                    aria-label={`Remove ${traitNames(b, config.traitNames)[0]}`}
+                    onClick={() => setTraits(traits.filter((x) => x !== b))}
+                    className="min-h-9 rounded-full border border-accent bg-accent/15 px-3 text-sm text-accent"
+                  >
+                    {traitNames(b, config.traitNames)[0]} ✕
+                  </button>
+                ))}
+              </div>
+            )}
             <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-6">
               <input
                 aria-label="Minimum age"
