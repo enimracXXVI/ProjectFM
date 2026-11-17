@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { DEFAULT_FOOT_MINS, DEFAULT_FOOT_WORDS } from '../import/dump'
-import { footLevel, pitchSpots } from './profile'
+import { bestSpot, footLevel, pitchSpots } from './profile'
 
 describe('profile pitch', () => {
   it('turns FM position text into pitch spots', () => {
@@ -21,5 +21,14 @@ describe('foot level', () => {
     expect(footLevel('Strong', w, m)?.level).toBe(5)
     expect(footLevel(5, w, m)?.word).toBe('Weak')
     expect(footLevel(null, w, m)).toBeNull()
+  })
+})
+
+describe('best position', () => {
+  it('is his highest rated listed position', () => {
+    expect(bestSpot('M/AM (C)', { MC: 20, AMC: 17, ST: 20 })).toBe('MC')
+    expect(bestSpot('D (RL)', undefined)).toBe('DR')
+    expect(bestSpot(null, { DC: 12, DM: 15 })).toBe('DM')
+    expect(bestSpot(null, undefined)).toBe('natural')
   })
 })

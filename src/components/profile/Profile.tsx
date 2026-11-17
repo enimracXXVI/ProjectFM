@@ -1,5 +1,5 @@
 import { clsx } from 'clsx'
-import { ChevronRight, Dumbbell, Info as InfoIcon } from 'lucide-react'
+import { ChevronRight, Dumbbell } from 'lucide-react'
 import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
 import type { AttributeSection } from '../../data/attributeInfo'
 import { attributeLabel } from '../../data/config'
@@ -13,6 +13,7 @@ import {
   footLevel,
   footTextColor,
   PITCH_SPOTS,
+  bestSpot,
   pitchSpots,
   SPOT_POSITION,
 } from '../../lib/profile'
@@ -131,25 +132,42 @@ function Pitch({
 function BestRoles({ data, spot }: { data: ProfileData; spot?: string }) {
   const { roles, roleWeights } = useConfig()
   const [phase, setPhase] = useState<'ip' | 'oop'>('ip')
-  const [natural, setNatural] = useState(true)
+  // A position, or "natural" for all the positions he plays
+  const [selected, setSelected] = useState(spot ?? 'natural')
   const fits = useMemo(
     () => allRoleFits(data.attributes, data.positions, roles, roleWeights),
     [data.attributes, data.positions, roles, roleWeights],
   )
-  const position = spot ? SPOT_POSITION[spot] : null
+  const listed = new Set(pitchSpots(data.positions))
+  const position = selected !== 'natural' ? SPOT_POSITION[selected] : null
   const shown = fits
     .filter(
-      (f) =>
-        f.role.phase === phase &&
-        (position ? f.role.positions.includes(position) : !natural || f.natural),
+      (f) => f.role.phase === phase && (position ? f.role.positions.includes(position) : f.natural),
     )
     .slice(0, 5)
   return (
     <div className="grid gap-2 text-sm">
-      <div className="flex items-center gap-2">
-        <span className="mr-auto font-semibold">
-          Best roles{position && <span className="text-muted"> · {position}</span>}
-        </span>
+      <div className="flex flex-wrap items-center gap-2">
+        <select
+          aria-label="Position"
+          value={selected}
+          onChange={(e) => setSelected(e.target.value)}
+          className="mr-auto min-h-8 min-w-0 rounded-md border border-border bg-surface-2 px-2 text-sm font-semibold"
+        >
+          <option value="natural">Best roles · his positions</option>
+          {Object.keys(PITCH_SPOTS)
+            .filter((s) => s !== 'SW' || listed.has('SW'))
+            .map((s) => {
+              const r = data.ratings?.[s]
+              return (
+                <option key={s} value={s}>
+                  {SPOT_POSITION[s]}
+                  {r !== undefined ? ` · ${r}` : ''}
+                  {listed.has(s) ? ' ✓' : ''}
+                </option>
+              )
+            })}
+        </select>
         <div className="flex rounded-md border border-border p-0.5 text-xs" role="group">
           {(
             [
@@ -197,12 +215,6 @@ function BestRoles({ data, spot }: { data: ProfileData; spot?: string }) {
             </li>
           ))}
         </ul>
-      )}
-      {!position && (
-        <label className="flex items-center gap-1.5 text-xs text-muted">
-          <input type="checkbox" checked={natural} onChange={(e) => setNatural(e.target.checked)} />
-          Natural positions only
-        </label>
       )}
     </div>
   )
@@ -366,20 +378,18 @@ function TraitRow({ name }: { name: string }) {
   const { open, setOpen, ref } = usePopover()
   return (
     <li ref={ref as never} className="relative border-b border-border/40 last:border-0">
-      <div className="flex min-h-8 items-center justify-between gap-2">
-        <span>{name}</span>
-        {g && (g.about || g.suits.length > 0) && (
-          <button
-            type="button"
-            aria-label={`About ${name}`}
-            aria-expanded={open}
-            onClick={() => setOpen((o) => !o)}
-            className="grid size-7 shrink-0 place-items-center rounded-full text-muted hover:text-text"
-          >
-            <InfoIcon className="size-4" aria-hidden />
-          </button>
-        )}
-      </div>
+      {g && (g.about || g.suits.length > 0) ? (
+        <button
+          type="button"
+          aria-expanded={open}
+          onClick={() => setOpen((o) => !o)}
+          className="flex min-h-8 w-full cursor-help items-center text-left hover:text-accent"
+        >
+          {name}
+        </button>
+      ) : (
+        <div className="flex min-h-8 items-center">{name}</div>
+      )}
       {open && g && (
         <div className={clsx(popoverBox, 'top-full right-0 left-0 z-30 lg:right-auto lg:w-80')}>
           <p className="font-semibold">{name}</p>
@@ -690,7 +700,7 @@ export function ProfileStrip({ data }: { data: ProfileData }) {
       </div>
       {open && (
         <div className={clsx(popoverBox, 'top-full right-0 left-0 mt-1')}>
-          <BestRoles data={data} />
+          <BestRoles data={data} spot={bestSpot(data.positions, data.ratings)} />
         </div>
       )}
     </div>

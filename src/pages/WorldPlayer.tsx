@@ -44,7 +44,6 @@ export function WorldPlayer() {
   if (!p) return <Placeholder>Player not found in the world database.</Placeholder>
 
   const mine = squad?.find((s) => s.fm_uid === p.id)
-  const fromSave = data?.file.meta.source === 'FM save'
   const hasReach = p.height !== null && p.attributes['Jumping Reach'] !== undefined
 
   const profile: ProfileData = {
@@ -198,8 +197,6 @@ export function WorldPlayer() {
               { label: 'Wage', value: p.wage != null ? eurWagePerYear(p.wage) : null },
               { label: 'Expires', value: p.expires ? isoDate(p.expires) : null },
               { label: 'Value', value: p.value != null ? eur(p.value) : null },
-              // An FM save does not record transfer listing
-              ...(fromSave ? [] : [{ label: 'Transfer listed', value: p.listed ? 'Yes' : 'No' }]),
             ]}
           />
         </div>

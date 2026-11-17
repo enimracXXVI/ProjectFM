@@ -56,7 +56,6 @@ export function World() {
   const [caMin, setCaMin] = useUrlState('caMin', '', TEXT)
   const [paMin, setPaMin] = useUrlState('paMin', '', TEXT)
   const [hideMine, setHideMine] = useUrlState('hideMine', true, BOOL)
-  const [listedOnly, setListedOnly] = useUrlState('listed', false, BOOL)
   const [showFilters, setShowFilters] = useUrlState('filters', false, BOOL)
   const [sort, setSort] = useUrlState<{ col: SortCol; asc: boolean } | null>('sort', null)
   const [limit, setLimit] = useUrlState('shown', PAGE, NUM)
@@ -74,7 +73,6 @@ export function World() {
     caMin,
     paMin,
     hideMine,
-    listedOnly,
   })
 
   const regionOf = useMemo(() => regionLookup(config.regions), [config.regions])
@@ -110,7 +108,6 @@ export function World() {
     const out: { row: WorldRow; score: number | null }[] = []
     for (const r of file.rows) {
       if (f.hideMine && r[5] && r[5] === myClub) continue
-      if (f.listedOnly && !r[14]) continue
       if (amin !== null && (r[2] ?? 0) < amin) continue
       if (amax !== null && (r[2] ?? 99) > amax) continue
       if (cmin !== null && (r[9] ?? 0) < cmin) continue
@@ -374,14 +371,6 @@ export function World() {
                   onChange={(e) => setHideMine(e.target.checked)}
                 />
                 Hide my club
-              </label>
-              <label className="flex min-h-11 items-center gap-2">
-                <input
-                  type="checkbox"
-                  checked={listedOnly}
-                  onChange={(e) => setListedOnly(e.target.checked)}
-                />
-                Transfer listed only
               </label>
             </div>
           </div>

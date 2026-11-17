@@ -69,9 +69,6 @@ export function PlayerDetail() {
       { label: 'Personality', value: p.personality },
       ...(status ? [{ label: 'Status', value: status }] : []),
       ...(p.extra.selection ? [{ label: 'Selection', value: p.extra.selection }] : []),
-      ...(p.extra.Condition ? [{ label: 'Condition', value: p.extra.Condition }] : []),
-      ...(p.extra.Morale ? [{ label: 'Morale', value: p.extra.Morale }] : []),
-      ...(p.second_nation ? [{ label: 'Second nation', value: p.second_nation }] : []),
     ],
     summary: [p.height_cm ? `${p.height_cm} cm` : '', p.personality ?? '', status ?? ''],
     traits: p.extra.Traits ?? null,
@@ -247,6 +244,12 @@ function ContractAndStats({
   ]
   // Stats in boxes (General, Attacking…), as set in Settings → Contract & Stats
   const groups = new Map<string, InfoRow[]>()
+  // Condition and morale (from the save) lead the General box
+  const now: InfoRow[] = [
+    { label: 'Condition', value: p.extra.Condition },
+    { label: 'Morale', value: p.extra.Morale },
+  ].filter((r) => r.value)
+  if (now.length) groups.set('General', now)
   for (const c of config.views.stats.columns) {
     if (p.extra[c.key] === undefined) continue
     const g = statGroup(c)

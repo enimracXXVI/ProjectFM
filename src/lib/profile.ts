@@ -86,3 +86,13 @@ export const SPOT_POSITION: Record<string, string> = {
   AMR: 'AM (R)',
   ST: 'ST (C)',
 }
+
+/** His best position: the highest rated of his own positions (or of all, without his list). */
+export function bestSpot(positions: string | null, ratings?: Record<string, number>): string {
+  const listed = pitchSpots(positions)
+  const rated = (list: string[]) =>
+    [...list].sort((a, b) => (ratings?.[b] ?? 0) - (ratings?.[a] ?? 0))[0]
+  if (listed.length) return ratings ? rated(listed) : listed[0]
+  const all = Object.keys(ratings ?? {})
+  return all.length ? rated(all) : 'natural'
+}
