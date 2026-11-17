@@ -4,21 +4,21 @@ import { valueOf, wordOf } from './valueWord'
 
 /** Where each FM position sits on the small profile pitch (x, y in %, attack at the top). */
 export const PITCH_SPOTS: Record<string, [number, number]> = {
-  ST: [50, 10],
-  AML: [15, 27],
-  AMC: [50, 27],
-  AMR: [85, 27],
-  ML: [12, 44],
-  MC: [50, 44],
-  MR: [88, 44],
-  WBL: [12, 60],
-  DM: [50, 60],
-  WBR: [88, 60],
-  DL: [15, 75],
-  DC: [50, 75],
-  DR: [85, 75],
+  ST: [50, 9],
+  AML: [15, 25],
+  AMC: [50, 25],
+  AMR: [85, 25],
+  ML: [12, 42],
+  MC: [50, 42],
+  MR: [88, 42],
+  WBL: [12, 58],
+  DM: [50, 58],
+  WBR: [88, 58],
+  DL: [15, 74],
+  DC: [50, 74],
+  DR: [85, 74],
   SW: [50, 84],
-  GK: [50, 93],
+  GK: [50, 92],
 }
 
 /** FM position text ("D/WB (L), M (C)") as pitch spots: DL, WBL, MC. */
@@ -66,4 +66,23 @@ export function footColor(level: number, of: number): string {
 }
 export function footTextColor(level: number, of: number): string {
   return footColor(level, of).replace('bg-', 'text-')
+}
+
+/** FM position names (as roles list them) for each pitch spot. */
+export const SPOT_POSITION: Record<string, string> = {
+  GK: 'GK',
+  SW: 'SW',
+  DL: 'D (L)',
+  DC: 'D (C)',
+  DR: 'D (R)',
+  WBL: 'WB (L)',
+  DM: 'DM',
+  WBR: 'WB (R)',
+  ML: 'M (L)',
+  MC: 'M (C)',
+  MR: 'M (R)',
+  AML: 'AM (L)',
+  AMC: 'AM (C)',
+  AMR: 'AM (R)',
+  ST: 'ST (C)',
 }

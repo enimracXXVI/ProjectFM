@@ -6,6 +6,7 @@ import { SettingsSection } from '../../components/SettingsSection'
 import {
   DEFAULT_VIEWS,
   RESERVED_EXTRA_KEYS,
+  statGroup,
   type ExtraColumn,
   type ExtraViewKey,
 } from '../../data/columns'
@@ -102,7 +103,12 @@ export function ColumnsSettings() {
         {columns.map((c, i) => (
           <li
             key={c.key}
-            className="grid gap-2 rounded-xl border border-border bg-surface p-3 md:grid-cols-[10rem_8rem_12rem_1fr_auto]"
+            className={clsx(
+              'grid gap-2 rounded-xl border border-border bg-surface p-3',
+              tab === 'stats'
+                ? 'md:grid-cols-[10rem_8rem_8rem_12rem_1fr_auto]'
+                : 'md:grid-cols-[10rem_8rem_12rem_1fr_auto]',
+            )}
           >
             <div className="grid gap-1 text-xs text-muted">
               FM column
@@ -118,6 +124,17 @@ export function ColumnsSettings() {
                 className={input}
               />
             </label>
+            {tab === 'stats' && (
+              <label className="grid gap-1 text-xs text-muted">
+                Box on player page
+                <input
+                  value={c.group ?? ''}
+                  placeholder={statGroup(c)}
+                  onChange={(e) => update(i, { group: e.target.value })}
+                  className={input}
+                />
+              </label>
+            )}
             <label className="grid gap-1 text-xs text-muted">
               Tooltip title
               <input

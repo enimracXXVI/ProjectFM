@@ -1,4 +1,5 @@
 import { clsx } from 'clsx'
+import { Face } from '../components/Pictures'
 import { ChevronDown, ChevronUp, Scale, TrendingUp, Trophy } from 'lucide-react'
 import { useMemo } from 'react'
 import { SORT, TEXT, useUrlState } from '../lib/urlState'
@@ -326,6 +327,7 @@ export function Squad() {
                     <span className="w-6 shrink-0 text-right text-sm text-muted tabular-nums">
                       {p.squad_number ?? ''}
                     </span>
+                    <Face id={p.fm_uid} className="size-7" />
                     <span className="min-w-0 truncate font-semibold">{p.name}</span>
                     <TeamBadge player={p} />
                     <StatusChip code={p.extra.status} />
@@ -470,7 +472,11 @@ export function Squad() {
                     )}
                   >
                     <td className="sticky left-0 z-[1] bg-surface px-4 py-2.5 whitespace-nowrap shadow-[inset_-1px_0_0_var(--color-border)] group-hover:bg-surface-2">
-                      <Link to={`/squad/${p.id}`} className="font-medium hover:text-accent">
+                      <Link
+                        to={`/squad/${p.id}`}
+                        className="inline-flex items-center gap-2 font-medium hover:text-accent"
+                      >
+                        <Face id={p.fm_uid} className="size-6" />
                         {p.name}
                       </Link>{' '}
                       <TeamBadge player={p} /> <StatusChip code={p.extra.status} />

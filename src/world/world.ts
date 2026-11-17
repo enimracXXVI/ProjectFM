@@ -7,6 +7,7 @@ import { ATTRIBUTE_INFO } from '../data/attributeInfo'
 import type { Region } from '../data/regions'
 import {
   HIDDEN_PLAYER_ATTRS,
+  PERSONALITY_KEYS,
   playerFromDump,
   type Dump,
   type DumpMeta,
@@ -18,7 +19,26 @@ export const WORLD_VERSION = 1
 
 /** Attribute order of each row's `attrs` array. */
 export const WORLD_ATTRS = Object.keys(ATTRIBUTE_INFO)
-export const WORLD_HIDDEN = HIDDEN_PLAYER_ATTRS
+/** Hidden values kept per player (files saved before personality was added hold only the first five). */
+export const WORLD_HIDDEN = [...HIDDEN_PLAYER_ATTRS, ...PERSONALITY_KEYS.map(([, label]) => label)]
+/** Order of each row's position ratings. */
+export const WORLD_POSITIONS = [
+  'GK',
+  'SW',
+  'DL',
+  'DC',
+  'DR',
+  'WBL',
+  'DM',
+  'WBR',
+  'ML',
+  'MC',
+  'MR',
+  'AML',
+  'AMC',
+  'AMR',
+  'ST',
+]
 
 // Row layout (positions in the array)
 export type WorldRow = [
@@ -51,6 +71,11 @@ export type WorldRow = [
   /** Foot strengths 1–20 (absent in older files). */
   footLeft?: number | null,
   footRight?: number | null,
+  /** Club Unique ID, position ratings (WORLD_POSITIONS order), squad number, birth date. */
+  clubId?: number | null,
+  ratings?: number[] | null,
+  squadNo?: number | null,
+  dob?: string | null,
 ]
 
 export interface WorldFile {
@@ -74,6 +99,10 @@ export function isActivePlayer(p: DumpPerson): boolean {
   if (!p.club && rep === UNSET_REP) return false
   return p.name !== '?'
 }
+
+/** A position rating from the reader's keys (strikers are "STC" there). */
+const ratingOf = (r: Record<string, number>, k: string) =>
+  r[k] ?? (k === 'ST' ? r.STC : undefined) ?? 0
 
 /** Builds the world file from a parsed dump. */
 export function buildWorld(dump: Dump): WorldFile {
@@ -105,6 +134,10 @@ export function buildWorld(dump: Dump): WorldFile {
       Array.isArray(raw.traits) && raw.traits.length ? (raw.traits as number[]) : null,
       p.footLeft || null,
       p.footRight || null,
+      p.clubId || null,
+      p.posRatings ? WORLD_POSITIONS.map((k) => ratingOf(p.posRatings!, k)) : null,
+      p.squadNo || null,
+      p.dob || null,
     ]
   })
   return { version: WORLD_VERSION, meta: dump.meta, attrs: WORLD_ATTRS, hidden: WORLD_HIDDEN, rows }
@@ -136,6 +169,11 @@ export interface WorldPlayer {
   /** Foot strengths 1–20, null when the file has none. */
   footLeft: number | null
   footRight: number | null
+  clubId: number | null
+  /** Position ratings 1–20 by spot (empty in older files). */
+  ratings: Record<string, number>
+  squadNo: number | null
+  dob: string | null
 }
 
 /** Expands a row into a player object (done on demand: the file holds tens of thousands). */
@@ -155,6 +193,12 @@ export function rowToPlayer(file: WorldFile, r: WorldRow): WorldPlayer {
     traits: r[20] ?? [],
     footLeft: r[21] ?? null,
     footRight: r[22] ?? null,
+    clubId: r[23] ?? null,
+    ratings: Object.fromEntries(
+      (r[24] ?? []).map((v, i) => [WORLD_POSITIONS[i], v] as const).filter(([, v]) => v > 0),
+    ),
+    squadNo: r[25] ?? null,
+    dob: r[26] ?? null,
     id: r[0],
     name: r[1],
     age: r[2],

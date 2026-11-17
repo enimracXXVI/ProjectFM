@@ -14,7 +14,55 @@ export interface ExtraColumn {
   label?: string
   /** Shown in the tooltip under the title. */
   description?: string
+  /** Stats only: the box the column is shown in on the player page (General, Attacking…). */
+  group?: string
 }
+
+/** Default boxes for stats columns on the player page; columns not listed go to Other. */
+export const DEFAULT_STAT_GROUPS: Record<string, string> = {
+  Apps: 'General',
+  Starts: 'General',
+  'Sub apps': 'General',
+  Minutes: 'General',
+  Rating: 'General',
+  'Player of the Match': 'General',
+  'Pts/Gm': 'General',
+  'Tgls/90': 'General',
+  'Tcon/90': 'General',
+  'Distance (km)': 'General',
+  Goals: 'Attacking',
+  xG: 'Attacking',
+  'xG-OP': 'Attacking',
+  'xG/90': 'Attacking',
+  'Conv %': 'Attacking',
+  Shots: 'Attacking',
+  'Shots on target': 'Attacking',
+  'Drb/90': 'Attacking',
+  Assists: 'Creating',
+  xA: 'Creating',
+  'xA/90': 'Creating',
+  'Key passes': 'Creating',
+  'OP-KP/90': 'Creating',
+  'Pr passes/90': 'Creating',
+  'Pass %': 'Creating',
+  'Clear-cut chances': 'Creating',
+  'Cr C/A': 'Creating',
+  'Crs A/90': 'Creating',
+  'Hdr %': 'Defending',
+  'Int/90': 'Defending',
+  'Tck R': 'Defending',
+  'Tck/90': 'Defending',
+  'K Tck/90': 'Defending',
+  MLG: 'Defending',
+  'Clean sheets': 'Defending',
+  'xG prevented': 'Defending',
+  'Yellow cards': 'Discipline',
+  'Red cards': 'Discipline',
+}
+
+/** The box a stats column is shown in. */
+export const statGroup = (c: ExtraColumn) =>
+  c.group?.trim() || DEFAULT_STAT_GROUPS[c.key] || 'Other'
 
 export type ExtraViewKey = 'contract' | 'stats'
 

@@ -1,4 +1,5 @@
 import { clsx } from 'clsx'
+import { ClubCrest, Face, Flag } from '../components/Pictures'
 import { ChevronDown, ChevronUp, SlidersHorizontal } from 'lucide-react'
 import { useDeferredValue, useMemo } from 'react'
 import { BOOL, NUM, TEXT, useUrlState } from '../lib/urlState'
@@ -488,7 +489,11 @@ export function World() {
             {shown.map(({ row, score }) => (
               <tr key={row[0]} className="group hover:bg-surface-2">
                 <td className="sticky left-0 z-[1] bg-surface px-4 py-2 whitespace-nowrap shadow-[inset_-1px_0_0_var(--color-border)] group-hover:bg-surface-2">
-                  <Link to={`/world/${row[0]}`} className="font-medium hover:text-accent">
+                  <Link
+                    to={`/world/${row[0]}`}
+                    className="inline-flex items-center gap-2 font-medium hover:text-accent"
+                  >
+                    <Face id={row[0]} className="size-6" />
                     {row[1]}
                   </Link>
                 </td>
@@ -513,9 +518,17 @@ export function World() {
                 )}
                 <td className="px-3 py-2">{row[2] ?? '–'}</td>
                 <td className="px-3 py-2 whitespace-nowrap text-muted">{row[7] ?? '–'}</td>
-                <td className="px-3 py-2 whitespace-nowrap text-muted">{row[3] ?? '–'}</td>
+                <td className="px-3 py-2 whitespace-nowrap text-muted">
+                  <span className="inline-flex items-center gap-1.5">
+                    <Flag nation={row[3]} />
+                    {row[3] ?? '–'}
+                  </span>
+                </td>
                 <td className="max-w-56 truncate px-3 py-2 text-muted" title={row[6] ?? undefined}>
-                  {row[5] ?? 'Free agent'}
+                  <span className="inline-flex items-center gap-1.5">
+                    <ClubCrest id={row[23]} />
+                    {row[5] ?? 'Free agent'}
+                  </span>
                 </td>
                 {config.showHidden && <td className="px-3 py-2">{row[9] ?? '–'}</td>}
                 {config.showHidden && <td className="px-3 py-2">{row[10] ?? '–'}</td>}

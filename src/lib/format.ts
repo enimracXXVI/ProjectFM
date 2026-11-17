@@ -29,3 +29,7 @@ export function formatMoney(value: number, symbol = '€'): string {
 export function formatWage(value: number, symbol = '€'): string {
   return `${formatMoney(value, symbol)} p/w`
 }
+
+/** "2003-01-14" (ISO date) as a local date; null when missing. */
+export const isoDate = (iso: string | null | undefined) =>
+  iso ? new Date(`${iso.slice(0, 10)}T12:00:00`).toLocaleDateString() : null

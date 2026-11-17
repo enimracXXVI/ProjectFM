@@ -41,6 +41,7 @@ import { TrainingFocusesSettings } from './pages/settings/TrainingFocuses'
 import { TacticalStylesSettings } from './pages/settings/TacticalStyles'
 import { MatchDataSettings } from './pages/settings/MatchData'
 import { OlderRolesSettings } from './pages/settings/OlderRoles'
+import { PicturesSettings } from './pages/settings/Pictures'
 import { TraitNamesSettings } from './pages/settings/TraitNames'
 import { TraitGuideSettings } from './pages/settings/TraitGuide'
 import { Training } from './pages/Training'
@@ -122,6 +123,7 @@ function SignedIn() {
         <Route path="settings/tactical-styles" element={<TacticalStylesSettings />} />
         <Route path="settings/match-data" element={<MatchDataSettings />} />
         <Route path="settings/older-roles" element={<OlderRolesSettings />} />
+        <Route path="settings/pictures" element={<PicturesSettings />} />
         <Route path="settings/traits" element={<TraitNamesSettings />} />
         <Route path="settings/trait-guide" element={<TraitGuideSettings />} />
         <Route path="settings/role-warnings" element={<RoleWarningsSettings />} />

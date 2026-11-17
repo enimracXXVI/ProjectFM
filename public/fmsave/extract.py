@@ -45,7 +45,7 @@ def _plain(v):
 
 
 # Raised whenever extract() returns new data, so the app can spot an outdated copy
-READER_VERSION = 16
+READER_VERSION = 17
 
 JOB_SCOUT, JOB_CHIEF_SCOUT = 14, 44
 _FF8 = b"\xff" * 8
@@ -165,6 +165,11 @@ def _dump(save, club_uid, club_name, extras):
     Nations are FM database ids (`natDb`); the app turns them into names.
     """
     nation_db_ids = {n.nation_id: n.database_id for n in save.nations()}
+    # Club Unique IDs (the game database ids, as picture sites use them)
+    try:
+        club_ids = {c.uid: c.unique_id for c in save.clubs()}
+    except Exception:
+        club_ids = {}
     contracts = {}
     for c in save.contracts():
         contracts.setdefault(c.player_uid, c)
@@ -188,6 +193,8 @@ def _dump(save, club_uid, club_name, extras):
             "age": p.age,
             "natDb": [nation_db_ids.get(n) for n in nats if n is not None],
             "club": p.club_name,
+            "clubId": club_ids.get(p.club_uid) if p.club_uid is not None else None,
+            "dob": p.birth_date.isoformat() if p.birth_date else None,
             "ca": p.ability.current if p.ability else None,
             "pa": p.ability.potential if p.ability else None,
             "height": p.height_cm or None,

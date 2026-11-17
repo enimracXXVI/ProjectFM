@@ -40,6 +40,12 @@ export interface DumpPerson {
   morale?: number
   posRatings?: Record<string, number>
   // FM save additions
+  /** Club Unique ID (reader 17 and later). */
+  clubId?: number | null
+  /** Date of birth, yyyy-mm-dd (reader 17 and later). */
+  dob?: string | null
+  /** Transfer value in the dump's currency (GBP). */
+  value?: number | null
   lastName?: string | null
   commonName?: string | null
   job?: string
@@ -116,6 +122,9 @@ export const READER_EXTRA_KEYS = [
   'Reader positions',
   'Last name',
   'Common name',
+  'Club ID',
+  'Date of birth',
+  'Value',
 ]
 
 export const HIDDEN_EXTRA_KEYS = new Set([
@@ -281,6 +290,9 @@ export function playerFromDump(p: DumpPerson): ImportedPlayer {
   }
   if (p.lastName) extra['Last name'] = p.lastName
   if (p.commonName) extra['Common name'] = p.commonName
+  if (p.clubId) extra['Club ID'] = String(p.clubId)
+  if (p.dob) extra['Date of birth'] = p.dob
+  if (typeof p.value === 'number' && p.value > 0) extra.Value = String(p.value)
   if (p.ca) extra.CA = String(p.ca)
   if (p.pa) extra.PA = String(p.pa)
   for (const [key, label] of PERSONALITY_KEYS) {

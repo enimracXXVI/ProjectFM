@@ -77,3 +77,28 @@ describe('world feet', () => {
     expect([p.footLeft, p.footRight]).toEqual([9, 20])
   })
 })
+
+describe('world profile data', () => {
+  it('keeps club id, position ratings, squad number, birth date and all hidden values', () => {
+    const players = dump.players.map((p, i) =>
+      i === 0
+        ? {
+            ...p,
+            clubId: 1234,
+            posRatings: { MC: 20, AMC: 17, ST: 10, GK: 1 },
+            squadNo: 14,
+            dob: '2003-01-14',
+            ambition: 15,
+          }
+        : p,
+    )
+    const w = buildWorld({ ...dump, players } as Dump)
+    const p = rowToPlayer(w, w.rows[0])
+    expect(p.clubId).toBe(1234)
+    expect(p.ratings).toEqual({ GK: 1, MC: 20, AMC: 17, ST: 10 })
+    expect(p.squadNo).toBe(14)
+    expect(p.dob).toBe('2003-01-14')
+    expect(w.hidden).toHaveLength(13)
+    expect(p.hidden.Ambition).toBe(15)
+  })
+})

@@ -47,6 +47,25 @@ import { DEFAULT_TRAINING_FOCUSES, type TrainingFocus, withWho } from '../traini
 import { DEFAULT_NOTE_CATEGORIES, type NoteCategory } from './notes'
 import { DEFAULT_STATUSES, normalizeStatus, type StatusInfo } from './statusInfo'
 
+export interface Pictures {
+  enabled: boolean
+  /** Address the paths below are added to. */
+  base: string
+  /** Paths with {id} for the FM Unique ID. */
+  face: string
+  club: string
+  flag: string
+}
+
+/** sortitoutsi's free picture database (faces, crests and flags by FM Unique ID). */
+export const DEFAULT_PICTURES: Pictures = {
+  enabled: true,
+  base: 'https://sortitoutsi.b-cdb.net/uploads/',
+  face: 'face/face_{id}.png',
+  club: 'team/club_{id}.png',
+  flag: 'flags/flag_{id}.png',
+}
+
 export type Layout = Record<Role, AttributeSection[][]>
 
 /** Everything the user can customise in Settings. */
@@ -74,6 +93,8 @@ export interface AppConfig {
   roleWeights: RoleWeights
   /** Show values FM keeps hidden (CA/PA, hidden attributes, personality values). */
   showHidden: boolean
+  /** Faces, club crests and flags from an online picture database, by FM Unique ID. */
+  pictures: Pictures
   /** FM words the user taught for values the app could not name (value → word). */
   learned: Learned
   /** Competitions by FM database id: name and type. */
@@ -148,6 +169,7 @@ export const DEFAULT_CONFIG: AppConfig = {
   roles: DEFAULT_ROLES,
   roleWeights: DEFAULT_ROLE_WEIGHTS,
   showHidden: false,
+  pictures: DEFAULT_PICTURES,
   learned: { morale: {}, knowledge: {}, rounds: {} },
   // Confirmed by the user from FM
   competitions: {
@@ -216,6 +238,7 @@ export function mergeConfig(stored: Stored): AppConfig {
     traitGuide: stored.traitGuide ?? DEFAULT_CONFIG.traitGuide,
     roleWeights: { ...DEFAULT_CONFIG.roleWeights, ...stored.roleWeights },
     showHidden: stored.showHidden ?? DEFAULT_CONFIG.showHidden,
+    pictures: { ...DEFAULT_CONFIG.pictures, ...stored.pictures },
     learned: { ...DEFAULT_CONFIG.learned, ...stored.learned },
     competitions: { ...DEFAULT_CONFIG.competitions, ...stored.competitions },
     mobileBar: stored.mobileBar ?? DEFAULT_CONFIG.mobileBar,

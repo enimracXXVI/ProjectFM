@@ -78,7 +78,12 @@ export function SettingsPage() {
               ],
               ['/settings/attributes', 'Attributes', 'Names, short headers and descriptions'],
               ['/settings/layout', 'Layout', 'Grouping and order of attributes'],
-              ['/settings/columns', 'Contract & Stats', 'Columns, order, names and tooltips'],
+              [
+                '/settings/columns',
+                'Contract & Stats',
+                'Columns, groups, order, names and tooltips',
+              ],
+              ['/settings/pictures', 'Pictures', 'Faces, club crests and flags from sortitoutsi'],
               [
                 '/settings/roles',
                 'Roles',

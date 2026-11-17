@@ -8,7 +8,14 @@ import { traitNames } from '../../data/traits'
 import type { AttributeValue } from '../../import/types'
 import { attrColor, attrNumber, formatAttr, scoreTextColor, valueColor } from '../../lib/attributes'
 import { useConfig } from '../../lib/config'
-import { footColor, footLevel, footTextColor, PITCH_SPOTS, pitchSpots } from '../../lib/profile'
+import {
+  footColor,
+  footLevel,
+  footTextColor,
+  PITCH_SPOTS,
+  pitchSpots,
+  SPOT_POSITION,
+} from '../../lib/profile'
 import { allRoleFits, scoreColor } from '../../lib/roleFit'
 import { Tooltip } from '../Tooltip'
 
@@ -120,8 +127,8 @@ function Pitch({
   )
 }
 
-/** Top roles for the player, in or out of possession. */
-function BestRoles({ data }: { data: ProfileData }) {
+/** Top roles for the player (or for one position), in or out of possession. */
+function BestRoles({ data, spot }: { data: ProfileData; spot?: string }) {
   const { roles, roleWeights } = useConfig()
   const [phase, setPhase] = useState<'ip' | 'oop'>('ip')
   const [natural, setNatural] = useState(true)
@@ -129,11 +136,20 @@ function BestRoles({ data }: { data: ProfileData }) {
     () => allRoleFits(data.attributes, data.positions, roles, roleWeights),
     [data.attributes, data.positions, roles, roleWeights],
   )
-  const shown = fits.filter((f) => f.role.phase === phase && (!natural || f.natural)).slice(0, 5)
+  const position = spot ? SPOT_POSITION[spot] : null
+  const shown = fits
+    .filter(
+      (f) =>
+        f.role.phase === phase &&
+        (position ? f.role.positions.includes(position) : !natural || f.natural),
+    )
+    .slice(0, 5)
   return (
     <div className="grid gap-2 text-sm">
       <div className="flex items-center gap-2">
-        <span className="mr-auto font-semibold">Best roles</span>
+        <span className="mr-auto font-semibold">
+          Best roles{position && <span className="text-muted"> · {position}</span>}
+        </span>
         <div className="flex rounded-md border border-border p-0.5 text-xs" role="group">
           {(
             [
@@ -157,7 +173,11 @@ function BestRoles({ data }: { data: ProfileData }) {
         </div>
       </div>
       {shown.length === 0 ? (
-        <p className="text-muted">No roles for the player's positions in this phase.</p>
+        <p className="text-muted">
+          {position
+            ? 'FM27 has no roles for this position in this phase.'
+            : "No roles for the player's positions in this phase."}
+        </p>
       ) : (
         <ul className="grid gap-1">
           {shown.map((f) => (
@@ -178,10 +198,12 @@ function BestRoles({ data }: { data: ProfileData }) {
           ))}
         </ul>
       )}
-      <label className="flex items-center gap-1.5 text-xs text-muted">
-        <input type="checkbox" checked={natural} onChange={(e) => setNatural(e.target.checked)} />
-        Natural positions only
-      </label>
+      {!position && (
+        <label className="flex items-center gap-1.5 text-xs text-muted">
+          <input type="checkbox" checked={natural} onChange={(e) => setNatural(e.target.checked)} />
+          Natural positions only
+        </label>
+      )}
     </div>
   )
 }
@@ -197,24 +219,82 @@ function useBestRole(data: ProfileData) {
   )
 }
 
-/** Small pitch; a tap opens the best roles. */
-function PitchWithRoles({ data }: { data: ProfileData }) {
+/** Colour of a position spot: green where he plays, then by his rating there. */
+function spotClass(natural: boolean, r: number | undefined) {
+  if (natural) return 'bg-emerald-400 text-emerald-950'
+  if (r === undefined) return 'bg-emerald-900/70 text-emerald-200/70'
+  if (r >= 15) return 'bg-lime-300 text-lime-950'
+  if (r >= 10) return 'bg-amber-400 text-amber-950'
+  return 'bg-emerald-900/70 text-emerald-200/70'
+}
+
+/**
+ * Every position on a pitch with his rating there (1–20, when the import has them).
+ * A tap on a position shows the best roles there; the button below, his best roles overall.
+ */
+function PositionsPitch({ data }: { data: ProfileData }) {
   const { open, setOpen, ref } = usePopover()
+  const [spot, setSpot] = useState<string | null>(null)
+  const listed = new Set(pitchSpots(data.positions))
+  const show = (s: string | null) => {
+    if (open && spot === s) setOpen(false)
+    else {
+      setSpot(s)
+      setOpen(true)
+    }
+  }
   return (
     <div ref={ref} className="relative flex flex-col items-center">
+      <div className="relative aspect-[3/4] w-48 rounded-lg border border-emerald-800/70 bg-emerald-950/60">
+        <span className="absolute inset-x-0 top-1/2 h-px bg-emerald-800/50" />
+        <span className="absolute top-1/2 left-1/2 size-10 -translate-1/2 rounded-full border border-emerald-800/50" />
+        <span className="absolute top-0 left-1/2 h-[9%] w-2/5 -translate-x-1/2 border-x border-b border-emerald-800/50" />
+        <span className="absolute bottom-0 left-1/2 h-[9%] w-2/5 -translate-x-1/2 border-x border-t border-emerald-800/50" />
+        {Object.entries(PITCH_SPOTS)
+          // FM27 has no sweeper role: the spot only shows for a listed sweeper
+          .filter(([s]) => s !== 'SW' || listed.has('SW'))
+          .map(([s, [x, y]]) => {
+            const r = data.ratings?.[s]
+            const natural = listed.has(s)
+            return (
+              <button
+                key={s}
+                type="button"
+                aria-label={`Best roles at ${SPOT_POSITION[s]}${r !== undefined ? `, rating ${r}` : ''}`}
+                aria-pressed={open && spot === s}
+                onClick={() => show(s)}
+                className="absolute flex -translate-1/2 flex-col items-center"
+                style={{ left: `${x}%`, top: `${y}%` }}
+              >
+                <span className="text-[8px] leading-none font-semibold text-emerald-200/80">
+                  {s}
+                </span>
+                <span
+                  className={clsx(
+                    'mt-0.5 grid size-5 place-items-center rounded-full text-[10px] font-bold tabular-nums',
+                    spotClass(natural, r),
+                    open && spot === s && 'ring-2 ring-white',
+                  )}
+                >
+                  {r ?? ''}
+                </span>
+              </button>
+            )
+          })}
+      </div>
       <button
         type="button"
-        aria-expanded={open}
-        aria-label="Show best roles"
-        onClick={() => setOpen((o) => !o)}
-        className="rounded-lg focus-visible:outline-2 focus-visible:outline-accent"
+        aria-pressed={open && spot === null}
+        onClick={() => show(null)}
+        className="mt-1 text-xs text-muted hover:text-text"
       >
-        <Pitch positions={data.positions} ratings={data.ratings} />
+        {data.positions ?? '–'} · <span className="text-accent">best roles</span>
       </button>
-      <span className="mt-1 text-xs text-muted">{data.positions ?? '–'} · tap for best roles</span>
       {open && (
-        <div className={clsx(popoverBox, 'top-full left-0 mt-1 w-80 max-w-[calc(100vw-2rem)]')}>
-          <BestRoles data={data} />
+        <div
+          className={clsx(popoverBox, 'top-full left-0 mt-1 w-[23rem] max-w-[calc(100vw-2rem)]')}
+        >
+          <BestRoles key={spot ?? 'all'} data={data} spot={spot ?? undefined} />
         </div>
       )}
     </div>
@@ -623,7 +703,7 @@ export function ProfileTab({ data, footer }: { data: ProfileData; footer?: React
     <>
       <div className="hidden gap-4 lg:grid lg:grid-cols-[16rem_minmax(0,1fr)]">
         <div className="grid content-start gap-4 self-start rounded-xl border border-border bg-surface p-4">
-          <PitchWithRoles data={data} />
+          <PositionsPitch data={data} />
           <Details data={data} withFeet />
         </div>
         <div className="self-start rounded-xl border border-border bg-surface p-4">

@@ -1,4 +1,3 @@
-import { clsx } from 'clsx'
 import { ArrowLeft, Dumbbell, Scale } from 'lucide-react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import { FocusSelect } from '../components/FocusSelect'
@@ -13,7 +12,12 @@ import {
 import { StatusChip } from '../components/StatusChip'
 import { TeamSelect } from '../components/TeamSelect'
 import { Tooltip } from '../components/Tooltip'
+import { ClubCrest, Face, Flag } from '../components/Pictures'
+import { InfoCard, type InfoRow } from '../components/profile/InfoCard'
+import { isoDate } from '../lib/format'
 import { Placeholder } from '../components/ui'
+import { statGroup } from '../data/columns'
+import { eur } from '../lib/money'
 import { isGoalkeeper } from '../data/attributeInfo'
 import { attributeLabel } from '../data/config'
 import type { PlayerRow } from '../data/db'
@@ -121,6 +125,7 @@ export function PlayerDetail() {
       </Link>
 
       <div className="mb-3 flex items-center gap-3">
+        <Face id={p.fm_uid} className="size-14 lg:size-16" />
         <span className="grid size-11 shrink-0 place-items-center rounded-xl bg-accent/15 text-lg font-bold text-accent lg:size-14 lg:text-xl">
           {p.squad_number ?? '–'}
         </span>
@@ -128,15 +133,16 @@ export function PlayerDetail() {
           <h1 className="flex flex-wrap items-center gap-x-2 text-xl font-bold tracking-tight lg:text-2xl">
             {p.name} <StatusChip code={p.extra.status} />
           </h1>
-          <p className="text-sm text-muted">
-            {[
-              p.positions,
-              p.age != null ? `${p.age} years` : null,
-              p.nation,
-              !p.in_squad && 'Left the club',
-            ]
-              .filter(Boolean)
-              .join(' · ')}
+          <p className="flex flex-wrap items-center gap-x-1.5 text-sm text-muted">
+            {[p.positions, p.age != null ? `${p.age} years` : null].filter(Boolean).join(' · ')}
+            {p.nation && (
+              <>
+                <span>·</span>
+                <Flag nation={p.nation} />
+                {p.nation}
+              </>
+            )}
+            {!p.in_squad && <span>· Left the club</span>}
           </p>
         </div>
         <button
@@ -171,71 +177,102 @@ export function PlayerDetail() {
         <DevChart snapshots={allSnapshots ?? []} goalkeeper={data.goalkeeper} />
       )}
 
-      {tab === 'contract' && <ContractAndStats player={p} season={career.current_season ?? null} />}
+      {tab === 'contract' && (
+        <ContractAndStats player={p} club={career.club} season={career.current_season ?? null} />
+      )}
 
       {tab === 'notes' && <NotesPanel scope={{ kind: 'player', id: p.id }} />}
     </>
   )
 }
 
-function ContractAndStats({ player: p, season }: { player: PlayerRow; season: string | null }) {
-  const config = useConfig()
-  const views = [config.views.contract, config.views.stats]
-    .map((view) => ({ view, items: view.columns.filter((c) => p.extra[c.key] !== undefined) }))
-    .filter((v) => v.items.length > 0)
-  if (!views.length)
-    return (
-      <Placeholder>No contract or stats yet: import a view or a save that has them.</Placeholder>
-    )
-  return (
-    <>
-      {views.map(({ view, items }) => (
-        <section key={view.label} className="mb-5">
-          <h2 className="mb-1 border-b border-border pb-1 text-xs font-semibold text-muted">
-            {view.label}
-            {view === config.views.stats && season ? ` · ${season}` : ''}
-          </h2>
-          <dl className="grid grid-cols-2 gap-2 text-sm sm:grid-cols-3 lg:grid-cols-5">
-            {items.map((c) => (
-              <Info
-                key={c.key}
-                label={c.label || c.key}
-                value={p.extra[c.key]}
-                description={c.description}
-              />
-            ))}
-          </dl>
-        </section>
-      ))}
-    </>
-  )
-}
+/** Contract keys shown in this order at the top of the Contract box. */
+const CONTRACT_FIRST = ['Playing Time', 'Contract Status', 'Wage', 'Expires']
 
-export function Info({
-  label,
-  value,
-  description,
-  valueClass,
+function ContractAndStats({
+  player: p,
+  club,
+  season,
 }: {
-  label: string
-  value: string | null
-  description?: string
-  valueClass?: string
+  player: PlayerRow
+  club: string
+  season: string | null
 }) {
+  const config = useConfig()
+  const contractCols = config.views.contract.columns
+  const labelOf = (key: string) => contractCols.find((c) => c.key === key)?.label || key
+  const value =
+    p.extra['Transfer Value'] ?? (p.extra.Value ? eur(Number(p.extra.Value)) : undefined)
+  const contract: InfoRow[] = [
+    {
+      label: 'Club',
+      value: (
+        <>
+          <ClubCrest id={p.extra['Club ID']} />
+          {club}
+        </>
+      ),
+    },
+    { label: 'Squad number', value: p.squad_number },
+    ...CONTRACT_FIRST.map((k) => ({ label: labelOf(k), value: p.extra[k] })),
+    { label: 'Value', value },
+    ...contractCols
+      .filter((c) => !CONTRACT_FIRST.includes(c.key) && c.key !== 'Transfer Value')
+      .map((c) => ({ label: c.label || c.key, value: p.extra[c.key], hint: c.description })),
+  ]
+  const personal: InfoRow[] = [
+    { label: 'Name', value: p.name },
+    { label: 'Age', value: p.age },
+    { label: 'Date of birth', value: isoDate(p.extra['Date of birth']) },
+    {
+      label: 'Nationality',
+      value: p.nation && (
+        <>
+          <Flag nation={p.nation} />
+          {p.nation}
+        </>
+      ),
+    },
+    {
+      label: 'Other nationality',
+      value: p.second_nation && (
+        <>
+          <Flag nation={p.second_nation} />
+          {p.second_nation}
+        </>
+      ),
+    },
+    { label: 'Personality', value: p.personality },
+    { label: 'Height', value: p.height_cm ? `${p.height_cm} cm` : null },
+  ]
+  // Stats in boxes (General, Attacking…), as set in Settings → Contract & Stats
+  const groups = new Map<string, InfoRow[]>()
+  for (const c of config.views.stats.columns) {
+    if (p.extra[c.key] === undefined) continue
+    const g = statGroup(c)
+    groups.set(g, [
+      ...(groups.get(g) ?? []),
+      { label: c.label || c.key, value: p.extra[c.key], hint: c.description },
+    ])
+  }
   return (
-    <div className="rounded-lg border border-border bg-surface px-3 py-2">
-      <dt className="text-xs text-muted">
-        {description ? (
-          <Tooltip title={label} text={description}>
-            <span tabIndex={0} className="cursor-help">
-              {label}
-            </span>
-          </Tooltip>
-        ) : (
-          label
-        )}
-      </dt>
-      <dd className={clsx('font-medium', valueClass)}>{value ?? '–'}</dd>
+    <div className="grid gap-4">
+      <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+        <InfoCard title="Personal" rows={personal} />
+        <InfoCard title="Contract" rows={contract} />
+      </div>
+      {groups.size > 0 ? (
+        <>
+          <h2 className="text-sm font-semibold">Stats{season ? ` · ${season}` : ''}</h2>
+          <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+            {[...groups].map(([g, rows]) => (
+              <InfoCard key={g} title={g} rows={rows} />
+            ))}
+          </div>
+        </>
+      ) : (
+        <p className="text-sm text-muted">No stats yet: import a save or a stats view.</p>
+      )}
     </div>
   )
 }

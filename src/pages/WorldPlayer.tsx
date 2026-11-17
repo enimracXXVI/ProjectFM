@@ -8,6 +8,9 @@ import {
   ProfileTabs,
   type ProfileData,
 } from '../components/profile/Profile'
+import { ClubCrest, Face, Flag } from '../components/Pictures'
+import { InfoCard } from '../components/profile/InfoCard'
+import { isoDate } from '../lib/format'
 import { Placeholder } from '../components/ui'
 import { isGoalkeeper } from '../data/attributeInfo'
 import { usePlayers } from '../data/hooks'
@@ -18,7 +21,7 @@ import { eur, eurWagePerYear } from '../lib/money'
 import { TEXT, useUrlState } from '../lib/urlState'
 import { useWorld } from '../world/hooks'
 import { rowToPlayer } from '../world/world'
-import { Info, ReachLines } from './PlayerDetail'
+import { ReachLines } from './PlayerDetail'
 
 type Tab = 'profile' | 'contract' | 'notes'
 
@@ -41,15 +44,24 @@ export function WorldPlayer() {
   if (!p) return <Placeholder>Player not found in the world database.</Placeholder>
 
   const mine = squad?.find((s) => s.fm_uid === p.id)
+  const fromSave = data?.file.meta.source === 'FM save'
   const hasReach = p.height !== null && p.attributes['Jumping Reach'] !== undefined
 
   const profile: ProfileData = {
     positions: p.positions,
+    ratings: p.ratings,
     attributes: p.attributes,
     feet: [p.footLeft, p.footRight],
     info: [
-      { label: 'Club', value: p.club ?? 'Free agent' },
-      { label: 'Division', value: p.division },
+      {
+        label: 'Club',
+        value: (
+          <span className="inline-flex items-center gap-1.5">
+            <ClubCrest id={p.clubId} />
+            {p.club ?? 'Free agent'}
+          </span>
+        ),
+      },
       { label: 'Height', value: p.height ? `${p.height} cm` : null },
       { label: 'Personality', value: p.personality },
       { label: 'Value', value: eur(p.value) },
@@ -94,17 +106,25 @@ export function WorldPlayer() {
       </Link>
 
       <div className="mb-3 flex items-center gap-3">
+        <Face id={p.id} className="size-14 lg:size-16" />
         <div className="min-w-0 flex-1">
           <h1 className="text-xl font-bold tracking-tight lg:text-2xl">{p.name}</h1>
-          <p className="text-sm text-muted">
-            {[
-              p.positions,
-              p.age && `${p.age} years`,
-              [p.nation, p.secondNation].filter(Boolean).join(' / '),
-              p.club,
-            ]
-              .filter(Boolean)
-              .join(' · ')}
+          <p className="flex flex-wrap items-center gap-x-1.5 text-sm text-muted">
+            {[p.positions, p.age && `${p.age} years`].filter(Boolean).join(' · ')}
+            {p.nation && (
+              <>
+                <span>·</span>
+                <Flag nation={p.nation} />
+                {p.nation}
+              </>
+            )}
+            {p.club && (
+              <>
+                <span>·</span>
+                <ClubCrest id={p.clubId} />
+                {p.club}
+              </>
+            )}
           </p>
           {mine && (
             <p className="text-sm">
@@ -133,13 +153,56 @@ export function WorldPlayer() {
       {tab === 'profile' && <ProfileTab data={profile} />}
 
       {tab === 'contract' && (
-        <dl className="grid grid-cols-2 gap-2 text-sm sm:grid-cols-4">
-          <Info label="Club" value={p.club ?? 'Free agent'} />
-          <Info label="Value" value={eur(p.value)} />
-          <Info label="Wage" value={eurWagePerYear(p.wage)} />
-          <Info label="Contract until" value={p.expires} />
-          <Info label="Transfer listed" value={p.listed ? 'Yes' : 'No'} />
-        </dl>
+        <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+          <InfoCard
+            title="Personal"
+            rows={[
+              { label: 'Name', value: p.name },
+              { label: 'Age', value: p.age },
+              { label: 'Date of birth', value: isoDate(p.dob) },
+              {
+                label: 'Nationality',
+                value: p.nation && (
+                  <>
+                    <Flag nation={p.nation} />
+                    {p.nation}
+                  </>
+                ),
+              },
+              {
+                label: 'Other nationality',
+                value: p.secondNation && (
+                  <>
+                    <Flag nation={p.secondNation} />
+                    {p.secondNation}
+                  </>
+                ),
+              },
+              { label: 'Personality', value: p.personality },
+              { label: 'Height', value: p.height ? `${p.height} cm` : null },
+            ]}
+          />
+          <InfoCard
+            title="Contract"
+            rows={[
+              {
+                label: 'Club',
+                value: (
+                  <>
+                    <ClubCrest id={p.clubId} />
+                    {p.club ?? 'Free agent'}
+                  </>
+                ),
+              },
+              { label: 'Squad number', value: p.squadNo },
+              { label: 'Wage', value: p.wage != null ? eurWagePerYear(p.wage) : null },
+              { label: 'Expires', value: p.expires ? isoDate(p.expires) : null },
+              { label: 'Value', value: p.value != null ? eur(p.value) : null },
+              // An FM save does not record transfer listing
+              ...(fromSave ? [] : [{ label: 'Transfer listed', value: p.listed ? 'Yes' : 'No' }]),
+            ]}
+          />
+        </div>
       )}
 
       {tab === 'notes' && <NotesPanel scope={{ kind: 'world', id: String(p.id), name: p.name }} />}
