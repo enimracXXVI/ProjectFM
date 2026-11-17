@@ -423,6 +423,15 @@ function LinkSelect({
       className={`${field} min-w-0`}
     >
       <option value="">Not linked</option>
+      {/* A link not in the lists (a world player, someone who left) stays selectable */}
+      {value && !groups.some(([, list]) => list.some((t) => linkValue(t.link) === value)) && (
+        <option value={value}>
+          {(() => {
+            const link = parseLinkValue(value)
+            return link ? targets.describe(link).label : value
+          })()}
+        </option>
+      )}
       {groups.map(([name, list]) =>
         list.length ? (
           <optgroup key={name} label={name}>

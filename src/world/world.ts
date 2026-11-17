@@ -48,6 +48,9 @@ export type WorldRow = [
   commonName?: string | null,
   /** Trait numbers from the FM save (absent in older files). */
   traits?: number[] | null,
+  /** Foot strengths 1–20 (absent in older files). */
+  footLeft?: number | null,
+  footRight?: number | null,
 ]
 
 export interface WorldFile {
@@ -100,6 +103,8 @@ export function buildWorld(dump: Dump): WorldFile {
       ip.extra['Last name'] ?? null,
       ip.extra['Common name'] ?? null,
       Array.isArray(raw.traits) && raw.traits.length ? (raw.traits as number[]) : null,
+      p.footLeft || null,
+      p.footRight || null,
     ]
   })
   return { version: WORLD_VERSION, meta: dump.meta, attrs: WORLD_ATTRS, hidden: WORLD_HIDDEN, rows }
@@ -128,6 +133,9 @@ export interface WorldPlayer {
   commonName: string | null
   /** FM's player traits by the number the save stores them under. */
   traits: number[]
+  /** Foot strengths 1–20, null when the file has none. */
+  footLeft: number | null
+  footRight: number | null
 }
 
 /** Expands a row into a player object (done on demand: the file holds tens of thousands). */
@@ -145,6 +153,8 @@ export function rowToPlayer(file: WorldFile, r: WorldRow): WorldPlayer {
     lastName: r[18] ?? null,
     commonName: r[19] ?? null,
     traits: r[20] ?? [],
+    footLeft: r[21] ?? null,
+    footRight: r[22] ?? null,
     id: r[0],
     name: r[1],
     age: r[2],

@@ -68,3 +68,12 @@ describe('world traits', () => {
     expect(rowToPlayer(w, w.rows[1]).traits).toEqual([])
   })
 })
+
+describe('world feet', () => {
+  it('keeps both foot strengths', () => {
+    const players = dump.players.map((p, i) => (i === 0 ? { ...p, footLeft: 9, footRight: 20 } : p))
+    const w = buildWorld({ ...dump, players } as Dump)
+    const p = rowToPlayer(w, w.rows[0])
+    expect([p.footLeft, p.footRight]).toEqual([9, 20])
+  })
+})

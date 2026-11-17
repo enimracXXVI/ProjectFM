@@ -42,10 +42,9 @@ export function Login() {
   return (
     <div className="grid min-h-full place-items-center px-4 pt-safe">
       <div className="w-full max-w-sm">
-        <h1 className="mb-4">
-          <Logo className="h-20 w-auto" />
+        <h1 className="mb-8 flex justify-center">
+          <Logo wide className="h-16 w-auto max-w-full" />
         </h1>
-        <p className="mb-6 text-sm text-muted">Your Football Manager careers, on every device.</p>
 
         <div className="mb-4 grid grid-cols-2 rounded-lg border border-border p-0.5" role="tablist">
           {(

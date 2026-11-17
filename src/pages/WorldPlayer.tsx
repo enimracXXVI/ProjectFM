@@ -1,23 +1,33 @@
-import { ArrowLeft } from 'lucide-react'
+import { ArrowLeft, Scale } from 'lucide-react'
 import { useMemo } from 'react'
-import { TraitList } from '../components/TraitList'
-import { Link, useParams } from 'react-router-dom'
-import { RoleFitPanel } from '../components/RoleFitPanel'
+import { Link, useNavigate, useParams } from 'react-router-dom'
+import { NotesPanel } from '../components/NotesPanel'
+import {
+  ProfileStrip,
+  ProfileTab,
+  ProfileTabs,
+  type ProfileData,
+} from '../components/profile/Profile'
 import { Placeholder } from '../components/ui'
 import { isGoalkeeper } from '../data/attributeInfo'
-import { attributeLabel } from '../data/config'
 import { usePlayers } from '../data/hooks'
-import { attrColor, formatAttr, valueColor } from '../lib/attributes'
 import { useCurrentCareer } from '../lib/career'
+import { compareUrlWith } from '../lib/compare'
 import { useConfig } from '../lib/config'
-import { rowToPlayer } from '../world/world'
-import { useWorld } from '../world/hooks'
 import { eur, eurWagePerYear } from '../lib/money'
+import { TEXT, useUrlState } from '../lib/urlState'
+import { useWorld } from '../world/hooks'
+import { rowToPlayer } from '../world/world'
+import { Info, ReachLines } from './PlayerDetail'
+
+type Tab = 'profile' | 'contract' | 'notes'
 
 export function WorldPlayer() {
   const { id = '' } = useParams()
   const career = useCurrentCareer()
   const config = useConfig()
+  const navigate = useNavigate()
+  const [tab, setTab] = useUrlState<Tab>('tab', 'profile', TEXT as never)
   const { data, isPending, error } = useWorld(career.id)
   const { data: squad } = usePlayers(career.id)
 
@@ -31,116 +41,108 @@ export function WorldPlayer() {
   if (!p) return <Placeholder>Player not found in the world database.</Placeholder>
 
   const mine = squad?.find((s) => s.fm_uid === p.id)
-  const columns = config.layout[isGoalkeeper(p.positions) ? 'goalkeepers' : 'outfield']
-    .map((col) =>
-      col
-        .map((s) => ({
-          ...s,
-          attributes: s.attributes.filter((n) => p.attributes[n] !== undefined),
-        }))
-        .filter((s) => s.attributes.length > 0),
-    )
-    .filter((col) => col.length > 0)
+  const hasReach = p.height !== null && p.attributes['Jumping Reach'] !== undefined
 
-  const info: [string, string | null][] = [
-    ['Club', p.club ?? 'Free agent'],
-    ['Division', p.division],
-    ['Personality', p.personality],
-    ['Height', p.height ? `${p.height} cm` : null],
-    ['Value', eur(p.value)],
-    ['Wage', eurWagePerYear(p.wage)],
-    ['Contract until', p.expires],
-    ['Transfer listed', p.listed ? 'Yes' : 'No'],
+  const profile: ProfileData = {
+    positions: p.positions,
+    attributes: p.attributes,
+    feet: [p.footLeft, p.footRight],
+    info: [
+      { label: 'Club', value: p.club ?? 'Free agent' },
+      { label: 'Division', value: p.division },
+      { label: 'Height', value: p.height ? `${p.height} cm` : null },
+      { label: 'Personality', value: p.personality },
+      { label: 'Value', value: eur(p.value) },
+    ],
+    summary: [p.height ? `${p.height} cm` : '', p.personality ?? '', eur(p.value) ?? ''],
+    traits: p.traits.join(','),
+    hidden: config.showHidden
+      ? [
+          { label: 'CA', value: p.ca, strong: true },
+          { label: 'PA', value: p.pa, strong: true },
+          ...Object.entries(p.hidden).map(([label, value]) => ({ label, value })),
+        ]
+      : null,
+    sections: hasReach
+      ? [
+          {
+            title: 'Reach',
+            body: (
+              <div className="grid gap-1">
+                <ReachLines height={p.height} attributes={p.attributes} />
+              </div>
+            ),
+          },
+        ]
+      : [],
+    goalkeeper: isGoalkeeper(p.positions),
+  }
+
+  const tabs: [Tab, string][] = [
+    ['profile', 'Profile'],
+    ['contract', 'Contract'],
+    ['notes', 'Notes'],
   ]
-  if (config.showHidden)
-    info.push(
-      ['CA', p.ca != null ? String(p.ca) : null],
-      ['PA', p.pa != null ? String(p.pa) : null],
-    )
 
   return (
     <>
       <Link
         to="/world"
-        className="mb-3 inline-flex min-h-11 items-center gap-1 text-sm text-muted hover:text-text"
+        className="mb-2 inline-flex min-h-11 items-center gap-1 text-sm text-muted hover:text-text"
       >
         <ArrowLeft className="size-4" aria-hidden /> World
       </Link>
-      <h1 className="text-2xl font-bold tracking-tight">{p.name}</h1>
-      <p className="mb-1 text-sm text-muted">
-        {[
-          p.positions,
-          p.age && `${p.age} years`,
-          [p.nation, p.secondNation].filter(Boolean).join(' / '),
-        ]
-          .filter(Boolean)
-          .join(' · ')}
-      </p>
-      {p.traits.length > 0 && <TraitList traits={p.traits.join(',')} />}
-      {mine && (
-        <p className="mb-3 text-sm">
-          In your squad:{' '}
-          <Link to={`/squad/${mine.id}`} className="text-accent underline">
-            open player page
-          </Link>
-        </p>
-      )}
 
-      <dl className="my-5 grid grid-cols-2 gap-2 text-sm sm:grid-cols-4">
-        {info.map(([label, value]) => (
-          <div key={label} className="rounded-lg border border-border bg-surface px-3 py-2">
-            <dt className="text-xs text-muted">{label}</dt>
-            <dd className="truncate font-medium">{value ?? '–'}</dd>
-          </div>
-        ))}
-      </dl>
-
-      <RoleFitPanel attributes={p.attributes} positions={p.positions} />
-
-      <div className="grid gap-x-5 gap-y-4 md:grid-cols-2 xl:grid-cols-3">
-        {columns.map((col, ci) => (
-          <div key={ci} className="grid content-start gap-4">
-            {col.map((section, si) => (
-              <section key={si}>
-                <h2 className="mb-1 border-b border-border pb-1 text-xs font-semibold text-muted">
-                  {section.label}
-                </h2>
-                <ul className="text-sm">
-                  {section.attributes.map((n) => (
-                    <li
-                      key={n}
-                      className="flex min-h-9 items-center justify-between gap-2 px-3 odd:bg-surface even:bg-surface/40"
-                    >
-                      <span>{attributeLabel(config, n)}</span>
-                      <span
-                        className={`w-10 rounded bg-surface-2 py-0.5 text-center font-semibold tabular-nums ${attrColor(p.attributes[n])}`}
-                      >
-                        {formatAttr(p.attributes[n])}
-                      </span>
-                    </li>
-                  ))}
-                </ul>
-              </section>
-            ))}
-          </div>
-        ))}
+      <div className="mb-3 flex items-center gap-3">
+        <div className="min-w-0 flex-1">
+          <h1 className="text-xl font-bold tracking-tight lg:text-2xl">{p.name}</h1>
+          <p className="text-sm text-muted">
+            {[
+              p.positions,
+              p.age && `${p.age} years`,
+              [p.nation, p.secondNation].filter(Boolean).join(' / '),
+              p.club,
+            ]
+              .filter(Boolean)
+              .join(' · ')}
+          </p>
+          {mine && (
+            <p className="text-sm">
+              In your squad:{' '}
+              <Link to={`/squad/${mine.id}`} className="text-accent underline">
+                open player page
+              </Link>
+            </p>
+          )}
+        </div>
+        {mine && (
+          <button
+            type="button"
+            onClick={() => navigate(compareUrlWith(mine.id))}
+            className="inline-flex min-h-11 shrink-0 items-center gap-2 rounded-lg border border-border px-3 text-sm font-semibold hover:bg-surface-2"
+          >
+            <Scale className="size-4" aria-hidden />{' '}
+            <span className="hidden sm:inline">Compare</span>
+          </button>
+        )}
       </div>
 
-      {config.showHidden && Object.keys(p.hidden).length > 0 && (
-        <section className="mt-5">
-          <h2 className="mb-1 border-b border-border pb-1 text-xs font-semibold text-muted">
-            Hidden attributes
-          </h2>
-          <dl className="grid grid-cols-2 gap-2 text-sm sm:grid-cols-5">
-            {Object.entries(p.hidden).map(([k, v]) => (
-              <div key={k} className="rounded-lg border border-border bg-surface px-3 py-2">
-                <dt className="text-xs text-muted">{k}</dt>
-                <dd className={`font-medium ${valueColor(k, v)}`}>{v}</dd>
-              </div>
-            ))}
-          </dl>
-        </section>
+      <ProfileStrip data={profile} />
+      <ProfileTabs tabs={tabs} value={tab} onChange={setTab} />
+
+      {tab === 'profile' && <ProfileTab data={profile} />}
+
+      {tab === 'contract' && (
+        <dl className="grid grid-cols-2 gap-2 text-sm sm:grid-cols-4">
+          <Info label="Club" value={p.club ?? 'Free agent'} />
+          <Info label="Value" value={eur(p.value)} />
+          <Info label="Wage" value={eurWagePerYear(p.wage)} />
+          <Info label="Contract until" value={p.expires} />
+          <Info label="Transfer listed" value={p.listed ? 'Yes' : 'No'} />
+        </dl>
       )}
+
+      {tab === 'notes' && <NotesPanel scope={{ kind: 'world', id: String(p.id), name: p.name }} />}
     </>
   )
 }

@@ -79,9 +79,26 @@ export function sortNotes(notes: NoteRow[]): NoteRow[] {
   )
 }
 
-/** What a note can be linked to: a player, a staff member or a match. */
+/**
+ * What a note can be linked to: a player, a staff member, a match, or a player from the
+ * world database (kept by FM id, with the name, in the match_key column: "world:<id>|<name>").
+ */
 export type NoteLink =
-  { kind: 'player'; id: string } | { kind: 'staff'; id: string } | { kind: 'match'; id: string }
+  | { kind: 'player'; id: string }
+  | { kind: 'staff'; id: string }
+  | { kind: 'match'; id: string }
+  | { kind: 'world'; id: string; name: string }
+
+const WORLD_PREFIX = 'world:'
+const worldKey = (id: string, name: string) => `${WORLD_PREFIX}${id}|${name}`
+function parseWorldKey(key: string): NoteLink | null {
+  if (!key.startsWith(WORLD_PREFIX)) return null
+  const rest = key.slice(WORLD_PREFIX.length)
+  const bar = rest.indexOf('|')
+  return bar < 0
+    ? { kind: 'world', id: rest, name: '' }
+    : { kind: 'world', id: rest.slice(0, bar), name: rest.slice(bar + 1) }
+}
 
 /** A match's link key: competition database id, fixture key and season, e.g. "32|2026-08-22_1129_1179|2026". */
 export const matchLinkKey = (dbId: number | null, fixtureKey: string, season: number | null) =>
@@ -101,19 +118,23 @@ export const linkOf = (
     : n.staff_id
       ? { kind: 'staff', id: n.staff_id }
       : n.match_key
-        ? { kind: 'match', id: n.match_key }
+        ? (parseWorldKey(n.match_key) ?? { kind: 'match', id: n.match_key })
         : null
 
 /** The note columns for a link (the other two cleared). */
 export const linkColumns = (link: NoteLink | null) => ({
   player_id: link?.kind === 'player' ? link.id : null,
   staff_id: link?.kind === 'staff' ? link.id : null,
-  match_key: link?.kind === 'match' ? link.id : null,
+  match_key:
+    link?.kind === 'match' ? link.id : link?.kind === 'world' ? worldKey(link.id, link.name) : null,
 })
 
 /** "player:<id>" and back, for pickers. */
-export const linkValue = (link: NoteLink | null) => (link ? `${link.kind}:${link.id}` : '')
+export const linkValue = (link: NoteLink | null) =>
+  !link ? '' : link.kind === 'world' ? worldKey(link.id, link.name) : `${link.kind}:${link.id}`
 export function parseLinkValue(v: string): NoteLink | null {
+  const world = parseWorldKey(v)
+  if (world) return world
   const i = v.indexOf(':')
   if (i < 0) return null
   const kind = v.slice(0, i) as NoteLink['kind']

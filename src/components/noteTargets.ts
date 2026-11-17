@@ -46,6 +46,8 @@ export function useNoteTargets() {
 
   // Links to someone or something no longer listed still show, with what is known
   const describe = (link: NoteLink): LinkTarget => {
+    if (link.kind === 'world')
+      return { link, label: link.name || 'World player', href: `/world/${link.id}` }
     const list =
       link.kind === 'player' ? playerTargets : link.kind === 'staff' ? staffTargets : matchTargets
     const found = list.find((t) => t.link.id === link.id)
