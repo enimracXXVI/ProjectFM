@@ -1,4 +1,5 @@
 import { clsx } from 'clsx'
+import { pairSubs } from '../competitions/subs'
 import { ArrowLeft } from 'lucide-react'
 import { Link, useParams, useSearchParams } from 'react-router-dom'
 import { HeadToHead } from '../components/HeadToHead'
@@ -210,13 +211,12 @@ function Lineup({
   players: ReportPlayer[]
   squadId: Map<number | null, string>
 }) {
-  const groups: [string, ReportPlayer[]][] = [
-    ['Starting XI', players.filter((p) => p.start)],
-    [
-      'Substitutes',
-      players.filter((p) => !p.start && p.on).sort((a, b) => (a.on ?? 0) - (b.on ?? 0)),
-    ],
-    ['Unused substitutes', players.filter((p) => !p.start && !p.on)],
+  // The save pairs subs for your team only; other teams' are paired by minute where possible
+  const all = pairSubs(players)
+  const groups: [string, typeof all][] = [
+    ['Starting XI', all.filter((p) => p.start)],
+    ['Substitutes', all.filter((p) => !p.start && p.on).sort((a, b) => (a.on ?? 0) - (b.on ?? 0))],
+    ['Unused substitutes', all.filter((p) => !p.start && !p.on)],
   ]
   return (
     <Card className="min-w-0">
@@ -268,21 +268,35 @@ function Lineup({
                           {p.on && (
                             <span
                               className="shrink-0 text-xs whitespace-nowrap text-emerald-400"
-                              title={p.for ? `Came on for ${p.for}` : 'Came on'}
+                              title={
+                                p.for
+                                  ? `Came on for ${p.for}`
+                                  : p.together
+                                    ? `Came on with others at ${p.on}′ for one of ${p.together.join(', ')} (the save does not say which)`
+                                    : 'Came on'
+                              }
                             >
                               ↑{p.on}′
                               {p.for && <span className="text-muted"> for {lastName(p.for)}</span>}
+                              {p.together && <span className="text-muted"> (?)</span>}
                             </span>
                           )}
                           {p.off && (
                             <span
                               className="shrink-0 text-xs whitespace-nowrap text-red-400"
-                              title={p.replacedBy ? `Replaced by ${p.replacedBy}` : 'Went off'}
+                              title={
+                                p.replacedBy
+                                  ? `Replaced by ${p.replacedBy}`
+                                  : p.together
+                                    ? `Went off with others at ${p.off}′, replaced by one of ${p.together.join(', ')} (the save does not say which)`
+                                    : 'Went off'
+                              }
                             >
                               ↓{p.off}′
                               {p.replacedBy && (
                                 <span className="text-muted"> {lastName(p.replacedBy)}</span>
                               )}
+                              {p.together && !p.on && <span className="text-muted"> (?)</span>}
                             </span>
                           )}
                           {p.yellow > 0 && (
