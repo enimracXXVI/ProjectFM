@@ -8,12 +8,15 @@ import { useConfig } from '../lib/config'
 import { useChecks } from '../lib/useChecks'
 import { useSaveConfig } from '../lib/useSaveConfig'
 import { setPassword, signOut } from '../lib/authActions'
+import { SETTINGS_GROUPS } from './settings/sections'
 
 export function SettingsPage() {
   const checks = useChecks()
   const { session } = useAuth()
   const [password, setValue] = useState('')
   const [confirm, setConfirm] = useState('')
+  const [query, setQuery] = useState('')
+  const q = query.trim().toLowerCase()
   const [state, setState] = useState<{ busy?: boolean; done?: boolean; error?: unknown }>({})
 
   const submit = async (e: FormEvent) => {
@@ -33,158 +36,55 @@ export function SettingsPage() {
   return (
     <>
       <PageHeader title="Settings" />
+      <div className="mb-4 flex flex-wrap items-center gap-3">
+        <input
+          type="search"
+          placeholder="Find a setting"
+          aria-label="Find a setting"
+          value={query}
+          onChange={(e) => setQuery(e.target.value)}
+          className="min-h-11 w-full rounded-lg border border-border bg-surface px-3 text-base sm:max-w-xs md:text-sm"
+        />
+        <Link to="/settings/guide" className="text-sm font-semibold text-accent">
+          What is each setting for?
+        </Link>
+      </div>
       {/* Cards flow into columns side by side on wide screens, in reading order */}
       <div className="gap-4 lg:columns-2 2xl:columns-3 [&>*]:mb-4 [&>*]:break-inside-avoid">
         <HiddenValuesCard />
 
-        <Card>
-          <h2 className="mb-2 font-semibold">Import and help</h2>
-          <ul className="grid">
-            {[
-              ['/import', 'Import', 'Your FM save (.fm)'],
-              ['/settings/database', 'Database', 'Every table and file, and what an import does'],
-              ['/settings/colours', 'Colours', 'Every colour of the app, with HEX and RGB codes'],
-              [
-                '/check',
-                checks.total ? `Check in game (${checks.total})` : 'Check in game',
-                'What the app could not work out, for you to look up',
-              ],
-              ['/explain', 'How it works', 'How each calculated value is worked out'],
-            ].map(([to, label, hint]) => (
-              <li key={to}>
-                <Link
-                  to={to}
-                  className="-mx-2 flex min-h-12 items-center gap-3 rounded-lg px-2 hover:bg-surface-2"
-                >
-                  <span className="flex-1">
-                    <span className="block text-sm font-medium">{label}</span>
-                    <span className="block text-xs text-muted">{hint}</span>
-                  </span>
-                  <ChevronRight className="size-4 text-muted" aria-hidden />
-                </Link>
-              </li>
-            ))}
-          </ul>
-        </Card>
-
-        <Card>
-          <h2 className="mb-2 font-semibold">Customise</h2>
-          <ul className="grid">
-            {[
-              [
-                '/settings/statuses',
-                'Statuses',
-                'Meaning, description and colours of FM status codes',
-              ],
-              ['/settings/attributes', 'Attributes', 'Names, short headers and descriptions'],
-              ['/settings/layout', 'Layout', 'Grouping and order of attributes'],
-              [
-                '/settings/columns',
-                'Contract & Stats',
-                'Columns, groups, order, names and tooltips',
-              ],
-              ['/settings/pictures', 'Pictures', 'Faces, club crests and flags from sortitoutsi'],
-              [
-                '/settings/roles',
-                'Roles',
-                'Roles, positions, attributes, FM codes and instructions',
-              ],
-              ['/settings/older-roles', 'Older roles', 'Roles from older FMs, hidden unless shown'],
-              ['/settings/traits', 'Player traits', "Names of FM's player traits"],
-              ['/settings/trait-guide', 'Trait guide', 'What suits each player trait'],
-              ['/settings/tactics', 'Tactics', 'What the tactic briefing flags'],
-              [
-                '/settings/tactical-styles',
-                'Tactical styles',
-                "FM's styles, their mentality and team instructions",
-              ],
-              [
-                '/settings/match-data',
-                'FM match data',
-                'Match rating points by role, tactical training',
-              ],
-              [
-                '/settings/training-sessions',
-                'Training sessions',
-                "FM's sessions, codes and descriptions for schedules",
-              ],
-              [
-                '/settings/training-focuses',
-                'Training focuses',
-                "FM's individual focuses and the attributes they train",
-              ],
-              [
-                '/settings/role-warnings',
-                'Role warnings',
-                "FM's warnings about role combinations, with their limits",
-              ],
-              [
-                '/settings/instructions',
-                'Team instructions',
-                'Every instruction, its options and the codes FM stores',
-              ],
-              [
-                '/settings/player-instructions',
-                'Player instructions',
-                'Every player instruction, its options and codes',
-              ],
-              [
-                '/settings/fm-codes',
-                'FM codes',
-                'Mentalities, positions and role numbers in saves and tactic files',
-              ],
-              [
-                '/settings/role-weights',
-                'Role weights',
-                'Importance tiers and factors for role scores',
-              ],
-              ['/settings/regions', 'Regions', 'Scouting regions, countries and borders'],
-              [
-                '/settings/staff-ratings',
-                'Staff ratings',
-                'Rating words and knowledge levels, with their numbers',
-              ],
-              [
-                '/settings/staff-attributes',
-                'Staff attributes',
-                'Staff profile tabs and Key Attributes for each job',
-              ],
-              [
-                '/settings/names',
-                'FM names and words',
-                'Morale words, competitions, cup rounds, staff job codes',
-              ],
-              [
-                '/settings/personality',
-                'Personality and feet',
-                'Personality ranges and overlap rules, foot strength words',
-              ],
-              [
-                '/settings/note-categories',
-                'Note categories',
-                'Categories for your Dashboard notes, with colours',
-              ],
-              [
-                '/settings/bottom-bar',
-                'Phone bottom bar',
-                'Which sections sit at the bottom on phones',
-              ],
-            ].map(([to, label, hint]) => (
-              <li key={to}>
-                <Link
-                  to={to}
-                  className="-mx-2 flex min-h-12 items-center gap-3 rounded-lg px-2 hover:bg-surface-2"
-                >
-                  <span className="flex-1">
-                    <span className="block text-sm font-medium">{label}</span>
-                    <span className="block text-xs text-muted">{hint}</span>
-                  </span>
-                  <ChevronRight className="size-4 text-muted" aria-hidden />
-                </Link>
-              </li>
-            ))}
-          </ul>
-        </Card>
+        {SETTINGS_GROUPS.map((g) => {
+          const items = g.items.filter(
+            (it) => !q || `${g.title} ${it.label} ${it.hint} ${it.about}`.toLowerCase().includes(q),
+          )
+          if (!items.length) return null
+          return (
+            <Card key={g.title}>
+              <h2 className="font-semibold">{g.title}</h2>
+              <p className="mb-2 text-xs text-muted">{g.intro}</p>
+              <ul className="grid">
+                {items.map((it) => (
+                  <li key={it.to}>
+                    <Link
+                      to={it.to}
+                      className="-mx-2 flex min-h-12 items-center gap-3 rounded-lg px-2 hover:bg-surface-2"
+                    >
+                      <span className="flex-1">
+                        <span className="block text-sm font-medium">
+                          {it.to === '/check' && checks.total
+                            ? `${it.label} (${checks.total})`
+                            : it.label}
+                        </span>
+                        <span className="block text-xs text-muted">{it.hint}</span>
+                      </span>
+                      <ChevronRight className="size-4 text-muted" aria-hidden />
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </Card>
+          )
+        })}
 
         <Card>
           <p className="text-sm text-muted">Signed in as</p>

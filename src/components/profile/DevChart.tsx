@@ -1,4 +1,5 @@
 import { clsx } from 'clsx'
+import { HIDDEN_NAMES } from '../../data/attributeInfo'
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { attributeLabel } from '../../data/config'
 import type { SnapshotRow } from '../../data/db'
@@ -38,7 +39,10 @@ export function DevChart({
         .sort((a, b) => a.created_at.localeCompare(b.created_at)),
     [snapshots],
   )
-  const sections = config.layout[goalkeeper ? 'goalkeepers' : 'outfield'].flat()
+  // Hidden values are not stored with each import, so their sections are left out
+  const sections = config.layout[goalkeeper ? 'goalkeepers' : 'outfield']
+    .flat()
+    .filter((s) => !s.attributes.every((a) => HIDDEN_NAMES.has(a)))
   const hasCA = config.showHidden && list.some((s) => s.extra?.CA)
   const [metric, setMetric] = useState('total')
 

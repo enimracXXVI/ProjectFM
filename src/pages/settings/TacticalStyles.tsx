@@ -34,7 +34,7 @@ export function TacticalStylesSettings() {
   return (
     <SettingsShell
       title="Tactical styles"
-      subtitle="FM's tactical styles: the mentality and team instructions each one sets, and the code FM stores with a tactic. Read from FM27's match data; change them after a game update or for a new FM."
+      subtitle="FM's tactical styles: the mentality and team instructions each one sets, and the code FM stores with a tactic. Clean Slate is what a tactic has when no other style is picked. Read from FM27's match data; change them after a game update or for a new FM."
       dirty={JSON.stringify(form) !== prev}
       saving={save.isPending || reset.isPending}
       saved={save.isSuccess}

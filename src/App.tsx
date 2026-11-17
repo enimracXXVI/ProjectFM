@@ -1,4 +1,4 @@
-import { Route, Routes } from 'react-router-dom'
+import { Navigate, Route, Routes } from 'react-router-dom'
 import { Layout } from './components/Layout'
 import { Splash } from './components/Splash'
 import { ErrorText } from './components/form'
@@ -16,13 +16,12 @@ import { Scouting } from './pages/Scouting'
 import { ScoutingRegion } from './pages/ScoutingRegion'
 import { StaffEdit } from './pages/StaffEdit'
 import { SettingsPage } from './pages/Settings'
-import { AttributesSettings } from './pages/settings/Attributes'
+import { AttributesHub } from './pages/settings/Attributes'
 import { ColumnsSettings } from './pages/settings/Columns'
 import { RegionsSettings } from './pages/settings/Regions'
 import { RoleWeightsSettings } from './pages/settings/RoleWeights'
 import { RolesSettings } from './pages/settings/Roles'
 import { StaffRatingsSettings } from './pages/settings/StaffRatings'
-import { LayoutSettings } from './pages/settings/Layout'
 import { StatusesSettings } from './pages/settings/Statuses'
 import { NotFound } from './pages/Simple'
 import { Achievements } from './pages/Achievements'
@@ -42,8 +41,8 @@ import { TacticalStylesSettings } from './pages/settings/TacticalStyles'
 import { MatchDataSettings } from './pages/settings/MatchData'
 import { OlderRolesSettings } from './pages/settings/OlderRoles'
 import { PicturesSettings } from './pages/settings/Pictures'
-import { TraitNamesSettings } from './pages/settings/TraitNames'
-import { TraitGuideSettings } from './pages/settings/TraitGuide'
+import { SettingsGuide } from './pages/settings/Guide'
+import { TraitsSettings } from './pages/settings/TraitNames'
 import { Training } from './pages/Training'
 import { RoleWarningsSettings, TacticsSettings } from './pages/settings/TacticsSettings'
 import { InstructionsSettings, PlayerInstructionsSettings } from './pages/settings/Instructions'
@@ -103,8 +102,11 @@ function SignedIn() {
         <Route path="explain" element={<Explain />} />
         <Route path="settings" element={<SettingsPage />} />
         <Route path="settings/statuses" element={<StatusesSettings />} />
-        <Route path="settings/attributes" element={<AttributesSettings />} />
-        <Route path="settings/layout" element={<LayoutSettings />} />
+        <Route path="settings/attributes" element={<AttributesHub />} />
+        <Route
+          path="settings/layout"
+          element={<Navigate to="/settings/attributes?tab=layout" replace />}
+        />
         <Route path="settings/columns" element={<ColumnsSettings />} />
         <Route path="settings/regions" element={<RegionsSettings />} />
         <Route path="settings/roles" element={<RolesSettings />} />
@@ -124,8 +126,9 @@ function SignedIn() {
         <Route path="settings/match-data" element={<MatchDataSettings />} />
         <Route path="settings/older-roles" element={<OlderRolesSettings />} />
         <Route path="settings/pictures" element={<PicturesSettings />} />
-        <Route path="settings/traits" element={<TraitNamesSettings />} />
-        <Route path="settings/trait-guide" element={<TraitGuideSettings />} />
+        <Route path="settings/guide" element={<SettingsGuide />} />
+        <Route path="settings/traits" element={<TraitsSettings />} />
+        <Route path="settings/trait-guide" element={<Navigate to="/settings/traits" replace />} />
         <Route path="settings/role-warnings" element={<RoleWarningsSettings />} />
         <Route path="settings/database" element={<DatabaseSettings />} />
         <Route path="settings/colours" element={<ColoursSettings />} />

@@ -16,6 +16,7 @@ export function SettingsShell({
   error,
   onSave,
   onReset,
+  tabs,
   children,
 }: {
   title: string
@@ -26,6 +27,8 @@ export function SettingsShell({
   error: unknown
   onSave: () => void
   onReset: () => void
+  /** Tabs between pages that share one settings entry (shown under the title). */
+  tabs?: ReactNode
   children: ReactNode
 }) {
   const confirm = useConfirm()
@@ -38,6 +41,7 @@ export function SettingsShell({
         <ArrowLeft className="size-4" aria-hidden /> Settings
       </Link>
       <PageHeader title={title} subtitle={subtitle} />
+      {tabs}
       {children}
       {/* Pinned to the bottom only while there is something to save */}
       <div

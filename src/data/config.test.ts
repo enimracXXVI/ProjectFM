@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest'
-import { DEFAULT_CONFIG, mergeConfig } from './config'
+import { DEFAULT_CONFIG, mergeConfig, withHiddenColumn } from './config'
 
 vi.mock('../lib/supabase', () => ({ supabase: {} }))
 
@@ -42,5 +42,19 @@ describe('older roles', () => {
     expect(shown.roles.filter((r) => r.id.startsWith('old-')).map((r) => r.name)).toEqual([
       'Regista',
     ])
+  })
+})
+
+describe('hidden values column', () => {
+  it('adds the Hidden column to layouts saved before it existed', () => {
+    const old = {
+      outfield: [[{ label: 'Technical', attributes: ['Crossing'] }]],
+      goalkeepers: [[{ label: 'Goalkeeping', attributes: ['Handling'] }]],
+    }
+    const out = withHiddenColumn(old)
+    expect(out.outfield).toHaveLength(2)
+    expect(out.outfield[1][0].attributes).toContain('Consistency')
+    // Left alone once hidden values are placed somewhere
+    expect(withHiddenColumn(out).outfield).toHaveLength(2)
   })
 })

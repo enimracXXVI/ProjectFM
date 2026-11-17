@@ -274,8 +274,45 @@ const GK_TECHNICAL = ['Free Kick Taking', 'Penalty Taking', 'Technique']
 export type Role = 'outfield' | 'goalkeepers'
 
 /**
- * FM player attributes screen: three columns, each with one or more sections.
- * The squad table uses the same sections, left to right.
+ * Values FM keeps hidden: hidden attributes and the personality values behind a
+ * personality. Shown only with Settings → Show hidden values.
+ */
+export const HIDDEN_INFO: Record<string, AttributeInfo> = {
+  Consistency: { abbr: 'Cns', description: 'How often the player performs to his ability.' },
+  'Important Matches': {
+    abbr: 'Imp',
+    description: 'How well the player performs in big matches.',
+  },
+  'Injury Proneness': {
+    abbr: 'Inj',
+    description: 'How likely the player is to get injured. Lower is better.',
+  },
+  Versatility: { abbr: 'Ver', description: 'How easily the player adapts to other positions.' },
+  Dirtiness: {
+    abbr: 'Dir',
+    description: 'How likely the player is to commit unfair or dirty fouls. Lower is better.',
+  },
+  Adaptability: { abbr: 'Ada', description: 'How quickly the player settles in another country.' },
+  Ambition: { abbr: 'Amb', description: 'How much the player wants to achieve in his career.' },
+  Loyalty: { abbr: 'Loy', description: 'How loyal the player is to his club.' },
+  Pressure: { abbr: 'Pre', description: 'How well the player copes with pressure.' },
+  Professionalism: {
+    abbr: 'Pro',
+    description: 'How professional the player is in training and off the pitch.',
+  },
+  Sportsmanship: { abbr: 'Spo', description: 'How fair and sporting the player is.' },
+  Temperament: { abbr: 'Tem', description: 'How well the player keeps his temper.' },
+  Controversy: {
+    abbr: 'Ctv',
+    description: 'How likely the player is to cause controversy. Lower is better.',
+  },
+}
+export const HIDDEN_NAMES = new Set(Object.keys(HIDDEN_INFO))
+const HIDDEN = Object.keys(HIDDEN_INFO)
+
+/**
+ * FM player attributes screen: columns, each with one or more sections, and a fourth for
+ * hidden values. The squad table uses the same sections, left to right.
  */
 export const PROFILE_COLUMNS: Record<Role, AttributeSection[][]> = {
   outfield: [
@@ -285,6 +322,7 @@ export const PROFILE_COLUMNS: Record<Role, AttributeSection[][]> = {
     ],
     [{ label: 'Mental', attributes: MENTAL }],
     [{ label: 'Physical', attributes: PHYSICAL }],
+    [{ label: 'Hidden', attributes: HIDDEN }],
   ],
   goalkeepers: [
     [{ label: 'Goalkeeping', attributes: GOALKEEPING }],
@@ -293,6 +331,7 @@ export const PROFILE_COLUMNS: Record<Role, AttributeSection[][]> = {
       { label: 'Physical', attributes: PHYSICAL },
       { label: 'Technical', attributes: GK_TECHNICAL },
     ],
+    [{ label: 'Hidden', attributes: HIDDEN }],
   ],
 }
 

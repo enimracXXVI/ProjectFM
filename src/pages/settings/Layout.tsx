@@ -9,7 +9,7 @@ import {
   Plus,
   Trash2,
 } from 'lucide-react'
-import { useState } from 'react'
+import { useState, type ReactNode } from 'react'
 import { SettingsShell } from '../../components/SettingsShell'
 import { SettingsSection } from '../../components/SettingsSection'
 import type { Role } from '../../data/attributeInfo'
@@ -34,7 +34,7 @@ const ALL = Object.keys(DEFAULT_CONFIG.attributes)
 const iconBtn =
   'grid size-10 shrink-0 place-items-center rounded-lg text-muted hover:bg-surface-2 hover:text-text disabled:opacity-30 disabled:hover:bg-transparent'
 
-export function LayoutSettings() {
+export function LayoutSettings({ tabs }: { tabs?: ReactNode }) {
   const config = useConfig()
   const { save, reset } = useSaveConfig('layout')
   const [layout, setLayout] = useState<Layout>(config.layout)
@@ -51,7 +51,7 @@ export function LayoutSettings() {
   const hidden = hiddenAttributes(columns, ALL)
   const dirty = JSON.stringify(layout) !== JSON.stringify(config.layout)
 
-  // "Move to" choices: every section, plus hidden
+  // "Move to" choices: every section, plus "not shown"
   const targets = columns.flatMap((column, col) =>
     column.map((s, sec) => ({ value: `${col}:${sec}`, label: s.label || 'Untitled' })),
   )
@@ -62,8 +62,9 @@ export function LayoutSettings() {
 
   return (
     <SettingsShell
-      title="Layout"
-      subtitle="Sections, order and grouping of attributes on the squad table and player screen."
+      title="Attributes"
+      subtitle="Columns, sections and order of attributes and hidden values on the player screen and squad table."
+      tabs={tabs}
       dirty={dirty}
       saving={save.isPending || reset.isPending}
       saved={save.isSuccess || reset.isSuccess}
@@ -106,8 +107,9 @@ export function LayoutSettings() {
         </button>
       </div>
       <p className="mb-4 text-sm text-muted">
-        The squad table shows these sections left to right, column by column. Empty sections and
-        attributes without data are hidden automatically.
+        The player screen shows these columns side by side; the squad table shows the sections left
+        to right. Hidden values (consistency, ambition…) appear only with Show hidden values on.
+        Empty sections and attributes without data are left out automatically.
       </p>
 
       <div className="grid grid-cols-[repeat(auto-fill,minmax(min(100%,22rem),1fr))] gap-4">
@@ -177,7 +179,7 @@ export function LayoutSettings() {
                   <button
                     type="button"
                     className={iconBtn}
-                    aria-label="Delete section (its attributes become hidden)"
+                    aria-label="Delete section (its attributes are no longer shown)"
                     onClick={() => set(removeSection(columns, col, sec))}
                   >
                     <Trash2 className="size-4" aria-hidden />
@@ -222,7 +224,7 @@ export function LayoutSettings() {
                             {t.label}
                           </option>
                         ))}
-                        <option value="hidden">Hidden</option>
+                        <option value="hidden">Not shown</option>
                       </select>
                     </li>
                   ))}
@@ -248,12 +250,12 @@ export function LayoutSettings() {
 
       <SettingsSection
         id="layout/hidden"
-        title={<>Hidden ({hidden.length})</>}
+        title={<>Not shown ({hidden.length})</>}
         variant="dashed"
         className="mt-6"
       >
         {hidden.length === 0 ? (
-          <p className="text-xs text-muted">Every attribute is shown.</p>
+          <p className="text-xs text-muted">Every attribute and hidden value is shown.</p>
         ) : (
           <ul className="grid gap-1 sm:grid-cols-2 lg:grid-cols-3">
             {hidden.map((a) => (

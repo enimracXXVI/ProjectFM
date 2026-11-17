@@ -1,4 +1,5 @@
 import { ChevronDown, ChevronUp, Plus, Trash2 } from 'lucide-react'
+import { HIDDEN_NAMES } from '../../data/attributeInfo'
 import { clsx } from 'clsx'
 import { useState } from 'react'
 import { SettingsShell } from '../../components/SettingsShell'
@@ -33,7 +34,8 @@ export function TrainingFocusesSettings() {
     setForm(n)
     setOpen(k)
   }
-  const attributes = Object.keys(config.attributes)
+  // Training works on attributes, not on hidden values
+  const attributes = Object.keys(config.attributes).filter((a) => !HIDDEN_NAMES.has(a))
   const whoLabel = (w: FocusWho) => FOCUS_WHO.find(([x]) => x === w)?.[1] ?? w
 
   return (

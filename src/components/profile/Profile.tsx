@@ -1,7 +1,7 @@
 import { clsx } from 'clsx'
 import { ChevronRight, Dumbbell } from 'lucide-react'
 import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
-import type { AttributeSection } from '../../data/attributeInfo'
+import { HIDDEN_NAMES } from '../../data/attributeInfo'
 import { attributeLabel } from '../../data/config'
 import { guideFor } from '../../data/traitGuide'
 import { traitNames } from '../../data/traits'
@@ -43,16 +43,6 @@ export interface ProfileData {
   sections: { title: string; body: ReactNode }[]
   goalkeeper: boolean
 }
-
-/** Three-letter names for hidden values (Consistency and Controversy would clash). */
-const HIDDEN_ABBR: Record<string, string> = {
-  Consistency: 'Cns',
-  Controversy: 'Ctv',
-  'Important Matches': 'Imp',
-  'Injury Proneness': 'Inj',
-}
-const hiddenAbbr = (set: string | undefined, name: string) =>
-  set || HIDDEN_ABBR[name] || name.slice(0, 3)
 
 const heading = 'mb-1.5 text-[11px] font-semibold tracking-wide text-muted uppercase'
 
@@ -446,20 +436,49 @@ function Details({ data, withFeet }: { data: ProfileData; withFeet: boolean }) {
   )
 }
 
-/** The attribute columns from Settings → Layout, plus the hidden column. */
-function useColumns(data: ProfileData): { sections: AttributeSection[] }[] {
+interface Section {
+  label: string
+  /** CA / PA rows shown first (in the section that holds the hidden values). */
+  pinned: { label: string; value: number | string | null }[]
+  attributes: string[]
+}
+
+/**
+ * The attribute columns from Settings → Attributes → Layout. Hidden values (only when shown)
+ * sit wherever the layout puts them, with CA and PA leading their section.
+ */
+function useColumns(data: ProfileData): { sections: Section[] }[] {
   const config = useConfig()
-  return config.layout[data.goalkeeper ? 'goalkeepers' : 'outfield']
+  const hidden = new Map((data.hidden ?? []).map((h) => [h.label, h.value]))
+  const layout = config.layout[data.goalkeeper ? 'goalkeepers' : 'outfield']
+  // CA and PA lead the first section holding hidden values
+  const first = layout
+    .flat()
+    .find((s) => data.hidden !== null && s.attributes.some((n) => HIDDEN_NAMES.has(n)))
+  const pins = (data.hidden ?? []).filter((h) => h.strong && h.value !== null)
+  return layout
     .map((col) => ({
       sections: col
         .map((s) => ({
-          ...s,
-          attributes: s.attributes.filter((n) => data.attributes[n] !== undefined),
+          label: s.label,
+          attributes: s.attributes.filter(
+            (n) => data.attributes[n] !== undefined || (hidden.get(n) ?? null) !== null,
+          ),
+          pinned: s === first ? pins : [],
         }))
-        .filter((s) => s.attributes.length > 0),
+        .filter((s) => s.attributes.length > 0 || s.pinned.length > 0),
     }))
     .filter((c) => c.sections.length > 0)
 }
+
+/** A value from the attributes, or a hidden value. */
+function valueOf(data: ProfileData, n: string): AttributeValue | undefined {
+  if (data.attributes[n] !== undefined) return data.attributes[n]
+  const h = data.hidden?.find((x) => x.label === n)?.value
+  return h === null || h === undefined ? undefined : Number(h)
+}
+const colorOf = (n: string, v: AttributeValue | undefined) =>
+  HIDDEN_NAMES.has(n) ? valueColor(n, v) : attrColor(v)
 
 const diffOf = (data: ProfileData, n: string) => {
   const now = attrNumber(data.attributes[n])
@@ -476,11 +495,11 @@ function Diff({ d }: { d: number }) {
   )
 }
 
-/** Desktop: full names, one column per layout column, hidden values in a fourth. */
+/** Desktop: full names, one column per layout column. */
 function AttributesWide({ data }: { data: ProfileData }) {
   const config = useConfig()
   const columns = useColumns(data)
-  const cols = columns.length + (data.hidden ? 1 : 0)
+  const cols = columns.length
   return (
     <div
       className={clsx(
@@ -498,8 +517,18 @@ function AttributesWide({ data }: { data: ProfileData }) {
             <section key={section.label}>
               <h2 className={heading}>{section.label}</h2>
               <ul className="text-sm">
+                {section.pinned.map((h) => (
+                  <li
+                    key={h.label}
+                    className="flex min-h-7 items-center justify-between gap-2 rounded px-2 font-semibold odd:bg-surface-2/40"
+                  >
+                    <span>{h.label}</span>
+                    <span className="tabular-nums">{h.value}</span>
+                  </li>
+                ))}
                 {section.attributes.map((n) => {
                   const trained = data.trained?.includes(n)
+                  const v = valueOf(data, n)
                   return (
                     <li
                       key={n}
@@ -529,13 +558,8 @@ function AttributesWide({ data }: { data: ProfileData }) {
                       </Tooltip>
                       <span className="flex items-center gap-1.5 tabular-nums">
                         <Diff d={diffOf(data, n)} />
-                        <span
-                          className={clsx(
-                            'w-6 text-right font-semibold',
-                            attrColor(data.attributes[n]),
-                          )}
-                        >
-                          {formatAttr(data.attributes[n])}
+                        <span className={clsx('w-6 text-right font-semibold', colorOf(n, v))}>
+                          {formatAttr(v)}
                         </span>
                       </span>
                     </li>
@@ -546,34 +570,6 @@ function AttributesWide({ data }: { data: ProfileData }) {
           ))}
         </div>
       ))}
-      {data.hidden && (
-        <section>
-          <h2 className={heading}>Hidden</h2>
-          <ul className="text-sm">
-            {data.hidden.map((h) => (
-              <li
-                key={h.label}
-                className={clsx(
-                  'flex min-h-7 items-center justify-between gap-2 rounded px-2 odd:bg-surface-2/40',
-                  h.strong && 'font-semibold',
-                )}
-              >
-                <span className="truncate">{h.label}</span>
-                <span
-                  className={clsx(
-                    'text-right font-semibold tabular-nums',
-                    h.strong
-                      ? 'text-text'
-                      : valueColor(h.label, h.value === null ? undefined : Number(h.value)),
-                  )}
-                >
-                  {h.value ?? '–'}
-                </span>
-              </li>
-            ))}
-          </ul>
-        </section>
-      )}
     </div>
   )
 }
@@ -616,23 +612,23 @@ function AttributesCompact({ data }: { data: ProfileData }) {
   return (
     <div
       className="grid items-start gap-1.5"
-      style={{
-        gridTemplateColumns: `repeat(${columns.length + (data.hidden ? 1 : 0)}, minmax(0, 1fr))`,
-      }}
+      style={{ gridTemplateColumns: `repeat(${columns.length}, minmax(0, 1fr))` }}
     >
       {columns.map((col, ci) => (
         <div key={ci} className="grid min-w-0">
           {col.sections.map((s) => (
             <div key={s.label} className="grid">
               {label(s.label)}
+              {s.pinned.map((h) => cell(h.label, h.label, h.label, h.value, 'text-text'))}
               {s.attributes.map((n) => {
                 const d = diffOf(data, n)
+                const v = valueOf(data, n)
                 return cell(
                   n,
                   attributeLabel(config, n),
                   abbr(n),
-                  formatAttr(data.attributes[n]),
-                  attrColor(data.attributes[n]),
+                  formatAttr(v),
+                  colorOf(n, v),
                   d ? (
                     <span
                       className={clsx(
@@ -650,22 +646,6 @@ function AttributesCompact({ data }: { data: ProfileData }) {
           ))}
         </div>
       ))}
-      {data.hidden && (
-        <div className="grid min-w-0">
-          {label('Hidden')}
-          {data.hidden.map((h) =>
-            cell(
-              h.label,
-              h.label,
-              h.strong ? h.label : hiddenAbbr(config.attributes[h.label]?.abbr, h.label),
-              h.value ?? '–',
-              h.strong
-                ? 'text-text'
-                : valueColor(h.label, h.value === null ? undefined : Number(h.value)),
-            ),
-          )}
-        </div>
-      )}
     </div>
   )
 }

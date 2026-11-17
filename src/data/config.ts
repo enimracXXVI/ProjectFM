@@ -1,6 +1,8 @@
 import { supabase } from '../lib/supabase'
 import {
   ATTRIBUTE_INFO,
+  HIDDEN_INFO,
+  HIDDEN_NAMES,
   PROFILE_COLUMNS,
   type AttributeInfo,
   type AttributeSection,
@@ -152,7 +154,7 @@ export type ConfigKey = keyof AppConfig
 
 export const DEFAULT_CONFIG: AppConfig = {
   statuses: DEFAULT_STATUSES,
-  attributes: ATTRIBUTE_INFO,
+  attributes: { ...ATTRIBUTE_INFO, ...HIDDEN_INFO },
   layout: PROFILE_COLUMNS,
   views: DEFAULT_VIEWS,
   regions: DEFAULT_REGIONS,
@@ -216,7 +218,7 @@ export function mergeConfig(stored: Stored): AppConfig {
         { ...v, ...stored.attributes?.[k] },
       ]),
     ),
-    layout: stored.layout ?? DEFAULT_CONFIG.layout,
+    layout: withHiddenColumn(stored.layout ?? DEFAULT_CONFIG.layout),
     views: { ...DEFAULT_CONFIG.views, ...stored.views },
     regions: stored.regions ?? DEFAULT_CONFIG.regions,
     staffScale: stored.staffScale ?? DEFAULT_CONFIG.staffScale,
@@ -289,6 +291,16 @@ export async function saveConfig<K extends ConfigKey>(key: K, value: AppConfig[K
 export async function resetConfig(key: ConfigKey): Promise<void> {
   const { error } = await supabase.from('app_settings').delete().eq('key', key)
   if (error) throw new Error(error.message)
+}
+
+/** Layouts saved before hidden values had a column get the default Hidden column. */
+export function withHiddenColumn(layout: Layout): Layout {
+  const out = { ...layout }
+  for (const role of Object.keys(out) as Role[]) {
+    const used = out[role].flat().some((s) => s.attributes.some((a) => HIDDEN_NAMES.has(a)))
+    if (!used) out[role] = [...out[role], [{ label: 'Hidden', attributes: [...HIDDEN_NAMES] }]]
+  }
+  return out
 }
 
 /** Table columns: the layout's sections, left to right. */

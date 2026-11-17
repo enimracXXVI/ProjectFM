@@ -285,10 +285,19 @@ function TacticEditor({ tactic }: { tactic: TacticRow }) {
     setForm({ ...form, instructions: { ...form.instructions, team: codes } })
   // FM's style: picking one sets its mentality and instructions; changing them makes it "Custom"
   const style = styleOf(form.style, config.tacticalStyles)
+  // No style picked is FM's Clean Slate
+  const cleanSlate = config.tacticalStyles.find((x) => x.code === 'NULL') ?? null
   const styleNow = style ? styleText(style, form.mentality, team) : form.style
   const pickStyle = (code: string) => {
     const s = config.tacticalStyles.find((x) => x.code === code && x.code !== '')
-    if (!s) return setForm({ ...form, style: null })
+    // Clean Slate is no style: FM stores no style name, mentality Balanced, no instructions set
+    if (!s || s.code === 'NULL')
+      return setForm({
+        ...form,
+        style: null,
+        mentality: s?.mentality ?? form.mentality,
+        instructions: { ...form.instructions, team: defaultTeamCodes(config.teamInstructions) },
+      })
     setForm({
       ...form,
       style: s.name,
@@ -543,11 +552,12 @@ function TacticEditor({ tactic }: { tactic: TacticRow }) {
           <label className="grid min-w-0 gap-1 text-sm">
             <span className="text-muted">Style</span>
             <select
-              value={style?.code ?? ''}
+              value={style?.code ?? (form.style ? '' : 'NULL')}
               onChange={(e) => pickStyle(e.target.value)}
               className={field}
             >
-              <option value="">{form.style && !style ? form.style : 'No style'}</option>
+              {/* A style name from a file that is none of FM's styles */}
+              {form.style && !style && <option value="">{form.style}</option>}
               {config.tacticalStyles.map((x) => (
                 <option key={x.code + x.name} value={x.code}>
                   {x.name}
@@ -573,7 +583,14 @@ function TacticEditor({ tactic }: { tactic: TacticRow }) {
           </label>
         </div>
         {form.mentality && <FmAboutLine about={config.fmCodes.mentalityTexts[form.mentality]} />}
-        {style && <StyleInfo style={style} current={styleNow} slots={form.slots} />}
+        {style ? (
+          <StyleInfo style={style} current={styleNow} slots={form.slots} />
+        ) : (
+          !form.style &&
+          cleanSlate && (
+            <StyleInfo style={cleanSlate} current={cleanSlate.name} slots={form.slots} />
+          )
+        )}
         <ComplexityInfo slots={form.slots} team={team} />
         <label className="grid gap-1 text-sm">
           <span className="text-muted">
