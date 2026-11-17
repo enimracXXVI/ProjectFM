@@ -45,7 +45,7 @@ def _plain(v):
 
 
 # Raised whenever extract() returns new data, so the app can spot an outdated copy
-READER_VERSION = 18
+READER_VERSION = 19
 
 JOB_SCOUT, JOB_CHIEF_SCOUT = 14, 44
 _FF8 = b"\xff" * 8
@@ -675,6 +675,52 @@ def _injuries(save, club_uid):
     return out
 
 
+# Season stats kept for every player in the game (the World stats), by competition kind
+_WORLD_STAT_KINDS = ("overall", "league", "cup", "continental")
+_WORLD_STAT_SKIP = {
+    "player_uid", "player_name", "kind", "team_id", "club_uid", "club_name",
+    "club_short_name", "team_slot", "minutes_since_last_goal",
+}
+
+
+def _world_stats(save, rows):
+    """Every player's season stats in a compact table: field names once, then one row per
+    player and competition kind ([unique id, kind index, values in field order]). Rows of
+    one player at several clubs (a transfer or loan this season) are added together; the
+    average rating is weighted by rated appearances."""
+    from dataclasses import fields
+
+    if not rows:
+        return None
+    names = [f.name for f in fields(rows[0]) if f.name not in _WORLD_STAT_SKIP
+             and f.name not in set(getattr(type(rows[0]), "COMPUTED_FIELDS", ()) or ())]
+    unique = {p.uid: p.unique_id for p in save.players()}
+    acc = {}
+    for r in rows:
+        kind = _plain(r.kind)
+        if kind not in _WORLD_STAT_KINDS:
+            continue
+        uid = unique.get(r.player_uid)
+        if uid is None or not r.minutes:
+            continue
+        key = (uid, _WORLD_STAT_KINDS.index(kind))
+        vals = [getattr(r, n, None) for n in names]
+        vals = [v if isinstance(v, (int, float)) and v == v else 0 for v in vals]
+        if key in acc:
+            old = acc[key]
+            ra, rb = old[names.index("rated_appearances")], vals[names.index("rated_appearances")]
+            i = names.index("average_rating")
+            rating = (old[i] * ra + vals[i] * rb) / (ra + rb) if ra + rb else 0
+            acc[key] = [a + b for a, b in zip(old, vals)]
+            acc[key][i] = rating
+        else:
+            acc[key] = vals
+    out = []
+    for (uid, k), vals in acc.items():
+        out.append([uid, k, *[round(v, 2) if isinstance(v, float) else v for v in vals]])
+    return {"kinds": list(_WORLD_STAT_KINDS), "fields": names, "rows": out}
+
+
 def extract(path):
     with fmsave.open(path) as save:
         # First, so the contract records are noted the one time fmsave reads them
@@ -733,6 +779,11 @@ def extract(path):
         except Exception as e:
             season_stats = []
             out["statsError"] = str(e)
+        try:
+            out["worldStats"] = _world_stats(save, season_stats)
+        except Exception as e:  # a bonus: never lose the import over it
+            out["worldStats"] = None
+            out["worldStatsError"] = str(e)
         for st in season_stats:
             uid = uid_to_unique.get(st.player_uid)
             # This season's rows for your players at your club (not earlier clubs)

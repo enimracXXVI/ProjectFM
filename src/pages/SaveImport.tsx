@@ -17,7 +17,7 @@ import { seasonText } from '../data/seasons'
 import type { DumpSummary } from '../import/dump'
 import { READER_VERSION, type SaveData } from '../import/save'
 import { useCareer, useCurrentCareer } from '../lib/career'
-import { uploadWorld } from '../world/storage'
+import { uploadSeasonStats, uploadWorld } from '../world/storage'
 
 const sameClub = (a: string, b: string) =>
   a.toLowerCase().includes(b.toLowerCase()) || b.toLowerCase().includes(a.toLowerCase())
@@ -30,6 +30,8 @@ export function SaveImport({
   data,
   summary,
   world,
+  stats,
+  statsPlayers,
   fileName,
   onDone,
   onBusy,
@@ -37,6 +39,9 @@ export function SaveImport({
   data: SaveData
   summary: DumpSummary
   world: Blob
+  /** Every player's season stats (gzipped), stored per season. */
+  stats: Blob | null
+  statsPlayers: number
   fileName: string
   onDone: () => void
   /** True while the save is being written into the app (the page shows the progress). */
@@ -54,6 +59,13 @@ export function SaveImport({
         target = await updateCareer(target.id, { club: data.club })
       const result = await importFmSave({ career: target, data, summary, fileName })
       await uploadWorld(target.id, world)
+      // This season's stats of every player, replacing the season's earlier copy
+      const season = data.competitions?.season ?? null
+      if (stats && season !== null) {
+        await uploadSeasonStats(target.id, season, stats)
+        await qc.invalidateQueries({ queryKey: ['statsSeasons', target.id] })
+        await qc.invalidateQueries({ queryKey: ['seasonStats', target.id, season] })
+      }
       let competitions = 0
       if (data.competitions) {
         await uploadCompetitions(target.id, { version: 1, ...data.competitions })
@@ -149,6 +161,11 @@ export function SaveImport({
               : `Competitions: not read${data.competitionsError ? ` (${data.competitionsError})` : ''}`}
           </li>
           <li>World: {summary.totalPlayers.toLocaleString()} players</li>
+          <li className={statsPlayers ? '' : 'text-amber-300'}>
+            {statsPlayers
+              ? `Season stats: ${statsPlayers.toLocaleString()} players`
+              : `Season stats: not read${data.worldStatsError ? ` (${data.worldStatsError})` : ''}`}
+          </li>
           {(
             [
               ['Contracts', data.contractsError],

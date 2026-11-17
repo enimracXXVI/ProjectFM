@@ -1,4 +1,15 @@
 import { clsx } from 'clsx'
+import { useSeasonStats, useStatsSeasons } from '../world/hooks'
+import { seasonText } from '../data/seasons'
+import {
+  METRICS,
+  STAT_GROUPS,
+  STAT_KINDS,
+  formatMetric,
+  metricValue,
+  statsIndex,
+  type StatKind,
+} from '../world/stats'
 import { ClubCrest, Face, Flag } from '../components/Pictures'
 import { ChevronDown, ChevronUp, SlidersHorizontal } from 'lucide-react'
 import { useDeferredValue, useMemo } from 'react'
@@ -35,7 +46,7 @@ const PAGE = 100
 
 const input = 'min-h-11 w-full rounded-lg border border-border bg-surface px-3 text-base md:text-sm'
 
-type SortCol = 'name' | 'age' | 'role' | 'ca' | 'pa' | 'value'
+type SortCol = 'name' | 'age' | 'role' | 'ca' | 'pa' | 'value' | 'stat'
 
 export function World() {
   const career = useCurrentCareer()
@@ -56,6 +67,10 @@ export function World() {
   const [caMin, setCaMin] = useUrlState('caMin', '', TEXT)
   const [paMin, setPaMin] = useUrlState('paMin', '', TEXT)
   const [hideMine, setHideMine] = useUrlState('hideMine', true, BOOL)
+  // Season stats of every player (latest season stored): rank by a figure, minimum minutes
+  const [statKey, setStatKey] = useUrlState('stat', '', TEXT)
+  const [statKind, setStatKind] = useUrlState<StatKind>('statKind', 'overall', TEXT as never)
+  const [minMinutes, setMinMinutes] = useUrlState('minMin', '', TEXT)
   const [showFilters, setShowFilters] = useUrlState('filters', false, BOOL)
   const [sort, setSort] = useUrlState<{ col: SortCol; asc: boolean } | null>('sort', null)
   const [limit, setLimit] = useUrlState('shown', PAGE, NUM)
@@ -73,7 +88,22 @@ export function World() {
     caMin,
     paMin,
     hideMine,
+    statKey,
+    statKind,
+    minMinutes,
   })
+  const { data: seasons } = useStatsSeasons(career.id)
+  const statsSeason = seasons?.[0] ?? null
+  const wantStats = !!(filters.statKey || filters.minMinutes)
+  const { data: statsFile, isPending: statsLoading } = useSeasonStats(
+    career.id,
+    wantStats ? statsSeason : null,
+  )
+  const stats = useMemo(
+    () => (statsFile ? statsIndex(statsFile, filters.statKind) : null),
+    [statsFile, filters.statKind],
+  )
+  const metric = METRICS.find((m) => m.key === filters.statKey) ?? null
 
   const regionOf = useMemo(() => regionLookup(config.regions), [config.regions])
   const role = config.roles.find((r) => r.id === filters.roleId)
@@ -105,7 +135,8 @@ export function World() {
     const wantedTraits = f.traits.map(Number)
     const myClub = file.meta.myClub
 
-    const out: { row: WorldRow; score: number | null }[] = []
+    const minMin = f.minMinutes ? Number(f.minMinutes) : null
+    const out: { row: WorldRow; score: number | null; stat: number | null }[] = []
     for (const r of file.rows) {
       if (f.hideMine && r[5] && r[5] === myClub) continue
       if (amin !== null && (r[2] ?? 0) < amin) continue
@@ -118,27 +149,35 @@ export function World() {
       if (clubQ && !searchKey(`${r[5] ?? ''} ${r[6] ?? ''}`).includes(clubQ)) continue
       if (wanted.size && !parsePositions(r[7]).some((p) => wanted.has(p))) continue
       if (wantedTraits.length && !wantedTraits.every((b) => r[20]?.includes(b))) continue
-      out.push({ row: r, score: null })
+      if (minMin !== null && stats && (stats.get(r[0])?.minutes ?? 0) < minMin) continue
+      out.push({
+        row: r,
+        score: null,
+        stat: metric && stats ? metricValue(stats.get(r[0]), metric.key) : null,
+      })
     }
     if (role) {
       for (const o of out) {
         o.score = roleScore(rowToPlayer(file, o.row).attributes, role, config.roleWeights)
       }
     }
-    const col: SortCol = sort?.col ?? (role ? 'role' : config.showHidden ? 'ca' : 'name')
+    const col: SortCol =
+      sort?.col ?? (metric ? 'stat' : role ? 'role' : config.showHidden ? 'ca' : 'name')
     const asc = sort?.asc ?? col === 'name'
     const val = (o: (typeof out)[number]): number | string | null =>
       col === 'name'
         ? o.row[1]
         : col === 'age'
           ? o.row[2]
-          : col === 'role'
-            ? o.score
-            : col === 'ca'
-              ? o.row[9]
-              : col === 'pa'
-                ? o.row[10]
-                : o.row[11]
+          : col === 'stat'
+            ? o.stat
+            : col === 'role'
+              ? o.score
+              : col === 'ca'
+                ? o.row[9]
+                : col === 'pa'
+                  ? o.row[10]
+                  : o.row[11]
     return out.sort((a, b) => {
       if (col === 'name')
         return asc
@@ -152,7 +191,7 @@ export function World() {
         typeof x === 'number' && typeof y === 'number' ? x - y : String(x).localeCompare(String(y))
       return asc ? d : -d
     })
-  }, [data, filters, role, config.roleWeights, config.showHidden, regionOf, sort])
+  }, [data, filters, role, config.roleWeights, config.showHidden, regionOf, sort, stats, metric])
 
   if (isPending)
     return (
@@ -179,7 +218,7 @@ export function World() {
   const toggleSort = (col: SortCol) =>
     setSort((s) => (s?.col === col ? { col, asc: !s.asc } : { col, asc: col === 'name' }))
   const sortIcon = (col: SortCol): typeof ChevronUp | null =>
-    (sort?.col ?? (role ? 'role' : config.showHidden ? 'ca' : 'name')) === col
+    (sort?.col ?? (metric ? 'stat' : role ? 'role' : config.showHidden ? 'ca' : 'name')) === col
       ? (sort?.asc ?? col === 'name')
         ? ChevronUp
         : ChevronDown
@@ -222,6 +261,23 @@ export function World() {
                       {r.name}
                     </option>
                   ))}
+              </optgroup>
+            ))}
+          </select>
+          <select
+            aria-label="Rank by stat"
+            value={statKey}
+            onChange={(e) => (setStatKey(e.target.value), setSort(null))}
+            className={`${input} sm:w-64`}
+          >
+            <option value="">Rank by stat…</option>
+            {STAT_GROUPS.map((g) => (
+              <optgroup key={g} label={g}>
+                {METRICS.filter((m) => m.group === g).map((m) => (
+                  <option key={m.key} value={m.key}>
+                    {m.label}
+                  </option>
+                ))}
               </optgroup>
             ))}
           </select>
@@ -292,6 +348,28 @@ export function World() {
                 ))}
               </div>
             )}
+            <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-6">
+              <select
+                aria-label="Stats from"
+                value={statKind}
+                onChange={(e) => setStatKind(e.target.value as StatKind)}
+                className={input}
+              >
+                {STAT_KINDS.map(([k, label]) => (
+                  <option key={k} value={k}>
+                    Stats: {label}
+                  </option>
+                ))}
+              </select>
+              <input
+                aria-label="Minimum minutes played"
+                placeholder="Minutes from"
+                inputMode="numeric"
+                value={minMinutes}
+                onChange={(e) => setMinMinutes(e.target.value)}
+                className={input}
+              />
+            </div>
             <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-6">
               <input
                 aria-label="Minimum age"
@@ -380,6 +458,15 @@ export function World() {
           for players your scouts have not watched. Money in € at FM's rate; loanees show their full
           wage.
         </p>
+        {wantStats && (
+          <p className="mt-1 text-xs text-muted">
+            {statsSeason === null
+              ? 'No season stats yet: they are stored for every player from the next save import on.'
+              : statsLoading
+                ? 'Opening the season stats…'
+                : `Stats: season ${seasonText(statsSeason)} up to the last import${filters.minMinutes ? `, at least ${filters.minMinutes} minutes` : ''}.`}
+          </p>
+        )}
       </Card>
 
       {/* Phones */}
@@ -414,7 +501,7 @@ export function World() {
           layout === 'table' && 'hidden',
         )}
       >
-        {shown.map(({ row, score }) => (
+        {shown.map(({ row, score, stat }) => (
           <li key={row[0]}>
             <Link
               to={`/world/${row[0]}`}
@@ -423,6 +510,11 @@ export function World() {
               <div className="flex items-center gap-2">
                 <span className="min-w-0 flex-1 truncate font-semibold">{row[1]}</span>
                 {score !== null && <span className="font-semibold tabular-nums">{score}</span>}
+                {metric && (
+                  <span className="font-semibold tabular-nums" title={metric.label}>
+                    {formatMetric(metric.key, stat)}
+                  </span>
+                )}
                 <span className="text-sm text-muted">{row[2]}</span>
               </div>
               <p className="truncate text-xs text-muted">
@@ -450,6 +542,13 @@ export function World() {
                 onClick={() => toggleSort('name')}
                 className="sticky left-0 z-[1] bg-surface-2 px-4 shadow-[inset_-1px_0_0_var(--color-border)]"
               />
+              {metric && (
+                <SortTh
+                  label={metric.label}
+                  icon={sortIcon('stat')}
+                  onClick={() => toggleSort('stat')}
+                />
+              )}
               {role && (
                 <SortTh
                   label={role.name}
@@ -475,7 +574,7 @@ export function World() {
             </tr>
           </thead>
           <tbody className="divide-y divide-border bg-surface tabular-nums">
-            {shown.map(({ row, score }) => (
+            {shown.map(({ row, score, stat }) => (
               <tr key={row[0]} className="group hover:bg-surface-2">
                 <td className="sticky left-0 z-[1] bg-surface px-4 py-2 whitespace-nowrap shadow-[inset_-1px_0_0_var(--color-border)] group-hover:bg-surface-2">
                   <Link
@@ -486,6 +585,9 @@ export function World() {
                     {row[1]}
                   </Link>
                 </td>
+                {metric && (
+                  <td className="px-3 py-2 font-semibold">{formatMetric(metric.key, stat)}</td>
+                )}
                 {role && (
                   <td className="px-3 py-2">
                     {score === null ? (

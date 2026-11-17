@@ -12,6 +12,7 @@ import { ClubCrest, Face, Flag } from '../components/Pictures'
 import { InfoCard } from '../components/profile/InfoCard'
 import { isoDate } from '../lib/format'
 import { mediaHandling } from '../lib/mediaHandling'
+import { SeasonStatsPanel } from '../components/profile/SeasonStatsPanel'
 import { Placeholder } from '../components/ui'
 import { isGoalkeeper } from '../data/attributeInfo'
 import { usePlayers } from '../data/hooks'
@@ -24,7 +25,7 @@ import { useWorld } from '../world/hooks'
 import { rowToPlayer } from '../world/world'
 import { ReachLines } from './PlayerDetail'
 
-type Tab = 'profile' | 'contract' | 'notes'
+type Tab = 'profile' | 'stats' | 'contract' | 'notes'
 
 export function WorldPlayer() {
   const { id = '' } = useParams()
@@ -92,6 +93,7 @@ export function WorldPlayer() {
 
   const tabs: [Tab, string][] = [
     ['profile', 'Profile'],
+    ['stats', 'Stats'],
     ['contract', 'Contract'],
     ['notes', 'Notes'],
   ]
@@ -206,6 +208,8 @@ export function WorldPlayer() {
           />
         </div>
       )}
+
+      {tab === 'stats' && <SeasonStatsPanel uid={p.id} />}
 
       {tab === 'notes' && <NotesPanel scope={{ kind: 'world', id: String(p.id), name: p.name }} />}
     </>

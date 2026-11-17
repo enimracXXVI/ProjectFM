@@ -91,11 +91,16 @@ self.onmessage = async (
     const dump = dumpFromSave(data)
     delete data.dump
     const summary = summarizeDump(dump, e.data.knownUids)
-    const json = new Blob([JSON.stringify(buildWorld(dump))])
-    const world = await new Response(
-      json.stream().pipeThrough(new CompressionStream('gzip')),
-    ).blob()
-    self.postMessage({ ok: true, data, summary, world })
+    const gzip = (value: unknown) =>
+      new Response(
+        new Blob([JSON.stringify(value)]).stream().pipeThrough(new CompressionStream('gzip')),
+      ).blob()
+    const world = await gzip(buildWorld(dump))
+    // Every player's season stats: stored as their own file, not kept in memory
+    const stats = data.worldStats ? await gzip(data.worldStats) : null
+    const statsPlayers = data.worldStats ? new Set(data.worldStats.rows.map((r) => r[0])).size : 0
+    delete data.worldStats
+    self.postMessage({ ok: true, data, summary, world, stats, statsPlayers })
   } catch (err) {
     self.postMessage({ ok: false, error: err instanceof Error ? err.message : String(err) })
   }

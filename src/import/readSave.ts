@@ -7,6 +7,9 @@ export interface ReadSaveResult {
   summary: DumpSummary
   /** Gzipped world file (all players). */
   world: Blob
+  /** Gzipped season stats of every player, and how many players have stats. */
+  stats: Blob | null
+  statsPlayers: number
 }
 
 /**
@@ -25,7 +28,14 @@ export function readSave(
     ) => {
       if (e.data.stage) return onStage(e.data.stage)
       worker.terminate()
-      if (e.data.ok) resolve({ data: e.data.data!, summary: e.data.summary!, world: e.data.world! })
+      if (e.data.ok)
+        resolve({
+          data: e.data.data!,
+          summary: e.data.summary!,
+          world: e.data.world!,
+          stats: e.data.stats ?? null,
+          statsPlayers: e.data.statsPlayers ?? 0,
+        })
       else reject(new Error(e.data.error))
     }
     worker.onerror = (e) => {

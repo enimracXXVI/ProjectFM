@@ -4,6 +4,7 @@
  * feet, and personality values.
  */
 import type { CompetitionsFile } from '../competitions/types'
+import type { SeasonStatsFile } from '../world/stats'
 import type { SaveTactics } from '../tactics/types'
 import fmNations from '../data/fmNations.json'
 import { personalityName, type PersonalityRule } from '../lib/personality'
@@ -22,7 +23,7 @@ import {
 export type StatsKind = 'overall' | 'league' | 'cup' | 'non_competitive'
 
 /** Version of public/fmsave/extract.py this app expects. */
-export const READER_VERSION = 18
+export const READER_VERSION = 19
 
 export interface SaveData {
   /** Version of the save reader that produced this (absent before version 3). */
@@ -33,6 +34,9 @@ export interface SaveData {
   statsError?: string
   staffError?: string
   scoutsError?: string
+  /** Every player's season stats (reader 19; removed once read). */
+  worldStats?: SeasonStatsFile | null
+  worldStatsError?: string
   club: string
   gameDate: string | null
   players: {

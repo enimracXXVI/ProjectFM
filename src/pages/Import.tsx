@@ -117,6 +117,8 @@ export function Import() {
           data={save.data}
           summary={save.summary}
           world={save.world}
+          stats={save.stats}
+          statsPlayers={save.statsPlayers}
           fileName={save.name}
           onDone={() => setSave(null)}
           onBusy={(busy) => setStage((s) => (busy ? 'saving' : s === 'saving' ? null : s))}

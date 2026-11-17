@@ -1,5 +1,6 @@
 import { supabase } from '../lib/supabase'
 import { deleteCachedWorld, getCachedWorld, setCachedWorld } from './cache'
+import type { SeasonStatsFile } from './stats'
 import type { WorldFile } from './world'
 
 const BUCKET = 'world-data'
@@ -21,10 +22,14 @@ export async function uploadWorld(careerId: string, blob: Blob): Promise<void> {
   if (error) throw new Error(error.message)
 }
 
-function unpack(blob: Blob): Promise<WorldFile> {
+function unpack(blob: Blob): Promise<WorldFile>
+function unpack(blob: Blob, kind: 'stats'): Promise<SeasonStatsFile>
+function unpack(blob: Blob, kind?: 'stats'): Promise<WorldFile | SeasonStatsFile> {
   return new Promise((resolve, reject) => {
     const worker = new Worker(new URL('./world.worker.ts', import.meta.url), { type: 'module' })
-    worker.onmessage = (e: MessageEvent<{ ok: boolean; file?: WorldFile; error?: string }>) => {
+    worker.onmessage = (
+      e: MessageEvent<{ ok: boolean; file?: WorldFile | SeasonStatsFile; error?: string }>,
+    ) => {
       worker.terminate()
       if (e.data.ok) resolve(e.data.file!)
       else reject(new Error(e.data.error))
@@ -33,7 +38,7 @@ function unpack(blob: Blob): Promise<WorldFile> {
       worker.terminate()
       reject(new Error(e.message || 'Could not open the world database.'))
     }
-    worker.postMessage(blob)
+    worker.postMessage(kind ? { blob, kind } : blob)
   })
 }
 
@@ -75,10 +80,69 @@ export async function loadWorld(careerId: string): Promise<LoadedWorld | null> {
   return { file: await unpack(blob), updatedAt: remoteUpdated, fromCache: false }
 }
 
-/** Removes the career's world database from Supabase and from this device. */
+/** Removes the career's world database and season stats from Supabase and this device. */
 export async function deleteWorld(careerId: string): Promise<void> {
-  const path = `${await folder(careerId)}/${NAME}`
-  const { error } = await supabase.storage.from(BUCKET).remove([path])
+  const dir = await folder(careerId)
+  const seasons = await listStatsSeasons(careerId).catch(() => [] as number[])
+  const { error } = await supabase.storage
+    .from(BUCKET)
+    .remove([`${dir}/${NAME}`, ...seasons.map((s) => `${dir}/${statsName(s)}`)])
   if (error) throw new Error(error.message)
   await deleteCachedWorld(careerId)
+  for (const s of seasons) await deleteCachedWorld(`${careerId}:${statsName(s)}`)
+}
+
+// --- Season stats of every player (one file per season, replaced at each import) ---
+
+const statsName = (season: number) => `stats-${season}.json.gz`
+
+export async function uploadSeasonStats(
+  careerId: string,
+  season: number,
+  blob: Blob,
+): Promise<void> {
+  const path = `${await folder(careerId)}/${statsName(season)}`
+  const { error } = await supabase.storage
+    .from(BUCKET)
+    .upload(path, blob, { upsert: true, contentType: 'application/gzip', cacheControl: '0' })
+  if (error) throw new Error(error.message)
+}
+
+/** Seasons (start years) with stats stored, newest first. */
+export async function listStatsSeasons(careerId: string): Promise<number[]> {
+  const { data, error } = await supabase.storage.from(BUCKET).list(await folder(careerId))
+  if (error) throw new Error(error.message)
+  return (data ?? [])
+    .map((f) => f.name.match(/^stats-(\d+)\.json\.gz$/)?.[1])
+    .filter((x): x is string => !!x)
+    .map(Number)
+    .sort((a, b) => b - a)
+}
+
+/** One season's stats: from this device when current (or offline), else downloaded. */
+export async function loadSeasonStats(
+  careerId: string,
+  season: number,
+): Promise<SeasonStatsFile | null> {
+  const name = statsName(season)
+  const key = `${careerId}:${name}`
+  const cached = await getCachedWorld(key)
+  let updated = ''
+  let dir = ''
+  try {
+    dir = await folder(careerId)
+    const { data, error } = await supabase.storage.from(BUCKET).list(dir)
+    if (error) throw error
+    const entry = data?.find((f) => f.name === name)
+    if (!entry) return null
+    updated = entry.updated_at ?? entry.created_at ?? ''
+  } catch {
+    if (cached) return unpack(cached.blob, 'stats')
+    throw new Error('These season stats are not on this device yet and could not be downloaded.')
+  }
+  if (cached && cached.updatedAt === updated) return unpack(cached.blob, 'stats')
+  const { data: blob, error } = await supabase.storage.from(BUCKET).download(`${dir}/${name}`)
+  if (error || !blob) throw new Error(error?.message ?? 'Download failed')
+  await setCachedWorld(key, { updatedAt: updated, blob })
+  return unpack(blob, 'stats')
 }
