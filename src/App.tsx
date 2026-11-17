@@ -42,6 +42,7 @@ import { MatchDataSettings } from './pages/settings/MatchData'
 import { OlderRolesSettings } from './pages/settings/OlderRoles'
 import { PicturesSettings } from './pages/settings/Pictures'
 import { SettingsGuide } from './pages/settings/Guide'
+import { MediaHandlingSettings } from './pages/settings/MediaHandling'
 import { TraitsSettings } from './pages/settings/TraitNames'
 import { Training } from './pages/Training'
 import { RoleWarningsSettings, TacticsSettings } from './pages/settings/TacticsSettings'
@@ -127,6 +128,7 @@ function SignedIn() {
         <Route path="settings/older-roles" element={<OlderRolesSettings />} />
         <Route path="settings/pictures" element={<PicturesSettings />} />
         <Route path="settings/guide" element={<SettingsGuide />} />
+        <Route path="settings/media-handling" element={<MediaHandlingSettings />} />
         <Route path="settings/traits" element={<TraitsSettings />} />
         <Route path="settings/trait-guide" element={<Navigate to="/settings/traits" replace />} />
         <Route path="settings/role-warnings" element={<RoleWarningsSettings />} />

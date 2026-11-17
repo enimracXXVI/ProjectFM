@@ -113,6 +113,13 @@ export const SETTINGS_GROUPS: SettingsGroup[] = [
           'Every trait by the number the save stores it under: its name, FM27’s description and what suits it. Traits named (?) are not confirmed yet.',
       },
       {
+        to: '/settings/media-handling',
+        label: 'Media handling',
+        hint: 'Rules that give the media handling style from hidden values',
+        about:
+          'The hidden-value ranges behind each media handling style (Evasive, Reserved, Outspoken…), found by matching 93 players in FM27 with the save. Level-headed and Media-friendly cannot be told apart from the save, so those players show both.',
+      },
+      {
         to: '/settings/statuses',
         label: 'Statuses',
         hint: 'Meaning, description and colours of FM status codes',

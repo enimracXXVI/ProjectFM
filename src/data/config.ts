@@ -1,4 +1,5 @@
 import { supabase } from '../lib/supabase'
+import { DEFAULT_MEDIA_RULES, type MediaRule } from '../lib/mediaHandling'
 import {
   ATTRIBUTE_INFO,
   HIDDEN_INFO,
@@ -97,6 +98,8 @@ export interface AppConfig {
   showHidden: boolean
   /** Faces, club crests and flags from an online picture database, by FM Unique ID. */
   pictures: Pictures
+  /** Rules that give FM's media handling style from the hidden personality values. */
+  mediaHandling: MediaRule[]
   /** FM words the user taught for values the app could not name (value → word). */
   learned: Learned
   /** Competitions by FM database id: name and type. */
@@ -172,6 +175,7 @@ export const DEFAULT_CONFIG: AppConfig = {
   roleWeights: DEFAULT_ROLE_WEIGHTS,
   showHidden: false,
   pictures: DEFAULT_PICTURES,
+  mediaHandling: DEFAULT_MEDIA_RULES,
   learned: { morale: {}, knowledge: {}, rounds: {} },
   // Confirmed by the user from FM
   competitions: {
@@ -241,6 +245,7 @@ export function mergeConfig(stored: Stored): AppConfig {
     roleWeights: { ...DEFAULT_CONFIG.roleWeights, ...stored.roleWeights },
     showHidden: stored.showHidden ?? DEFAULT_CONFIG.showHidden,
     pictures: { ...DEFAULT_CONFIG.pictures, ...stored.pictures },
+    mediaHandling: stored.mediaHandling ?? DEFAULT_CONFIG.mediaHandling,
     learned: { ...DEFAULT_CONFIG.learned, ...stored.learned },
     competitions: { ...DEFAULT_CONFIG.competitions, ...stored.competitions },
     mobileBar: stored.mobileBar ?? DEFAULT_CONFIG.mobileBar,

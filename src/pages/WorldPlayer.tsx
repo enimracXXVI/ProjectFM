@@ -11,6 +11,7 @@ import {
 import { ClubCrest, Face, Flag } from '../components/Pictures'
 import { InfoCard } from '../components/profile/InfoCard'
 import { isoDate } from '../lib/format'
+import { mediaHandling } from '../lib/mediaHandling'
 import { Placeholder } from '../components/ui'
 import { isGoalkeeper } from '../data/attributeInfo'
 import { usePlayers } from '../data/hooks'
@@ -178,6 +179,10 @@ export function WorldPlayer() {
                 ),
               },
               { label: 'Personality', value: p.personality },
+              {
+                label: 'Media handling',
+                value: mediaHandling((k) => p.hidden[k] ?? null, config.mediaHandling),
+              },
               { label: 'Height', value: p.height ? `${p.height} cm` : null },
             ]}
           />

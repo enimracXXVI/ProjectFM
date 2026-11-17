@@ -18,6 +18,7 @@ import { isoDate } from '../lib/format'
 import { Placeholder } from '../components/ui'
 import { statGroup } from '../data/columns'
 import { eur } from '../lib/money'
+import { mediaHandling } from '../lib/mediaHandling'
 import { isGoalkeeper } from '../data/attributeInfo'
 import { attributeLabel } from '../data/config'
 import type { PlayerRow } from '../data/db'
@@ -240,6 +241,10 @@ function ContractAndStats({
       ),
     },
     { label: 'Personality', value: p.personality },
+    {
+      label: 'Media handling',
+      value: mediaHandling((k) => Number(p.extra[k]) || null, config.mediaHandling),
+    },
     { label: 'Height', value: p.height_cm ? `${p.height_cm} cm` : null },
   ]
   // Stats in boxes (General, Attacking…), as set in Settings → Contract & Stats
