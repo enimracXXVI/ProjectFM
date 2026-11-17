@@ -45,7 +45,7 @@ def _plain(v):
 
 
 # Raised whenever extract() returns new data, so the app can spot an outdated copy
-READER_VERSION = 17
+READER_VERSION = 18
 
 JOB_SCOUT, JOB_CHIEF_SCOUT = 14, 44
 _FF8 = b"\xff" * 8
@@ -468,10 +468,17 @@ def _matchday_squads(save, club_uid, fixtures):
     """
     import re
     from fmsave.readers import team_match_stats as T
-    from fmsave._layouts.fm27_27_0_0 import MATCH_REPORTS as layout
+    from fmsave._layouts import MatchReportLayout, find_layout
+    from fmsave.readers._common import MATCH_REPORTS_SECTION
 
     if save.info.game != "FM27":
         return []
+    # The report layout of this save's build (or the closest earlier one with the same schema)
+    info = save._context.info
+    schema = info.section_schemas.get(MATCH_REPORTS_SECTION)
+    if schema is None:
+        return []
+    layout = find_layout(MatchReportLayout, MATCH_REPORTS_SECTION, schema, info.build).layout
     by_key = {}
     for f in fixtures:
         if f.played:
@@ -623,9 +630,8 @@ def _fixture_events(save):
     return out
 
 
-# Team match stats with fmsave's own FM27 27.0.0 report layout. fmsave only enables it for
-# that exact build; ProjectFM checked it on the user's 27.0.1 saves (every number it reads
-# matched FM's match stats screens for Venezia and Ravenna), and each block is only used
+# Team match stats as the save reader reads them (checked on the user's 27.0.1 saves: every
+# number matched FM's match stats screens for Venezia and Ravenna); each block is only used
 # when its passes agree with ProjectFM's own reading of the same report.
 _NAMED_STATS = (
     "shots", "shots_on_target", "blocked_shots", "shots_outside_box", "clear_cut_chances",
@@ -639,17 +645,9 @@ _NAMED_STATS = (
 
 
 def _named_team_stats(save):
-    import fmsave._save as S
-    from fmsave._layouts.fm27_27_0_0 import MATCH_REPORTS as fm27_reports
-
     if save.info.game != "FM27":
         return {}
-    find = S.find_match_report_layout
-    S.find_match_report_layout = lambda *a, **k: fm27_reports
-    try:
-        rows = list(save.team_match_stats())
-    finally:
-        S.find_match_report_layout = find
+    rows = list(save.team_match_stats())
     out = {}
     for r in rows:
         d = {}
@@ -709,7 +707,12 @@ def extract(path):
                 "traits": [t.raw for t in (getattr(p, "traits", None) or ())],
             })
         # By player, not by the contract's club: that is empty on some contracts
-        for c in save.contracts():
+        try:
+            contracts = list(save.contracts())
+        except Exception as e:  # never lose the squad import over one part of the save
+            contracts = []
+            out["contractsError"] = str(e)
+        for c in contracts:
             uid = uid_to_unique.get(c.player_uid)
             if uid is None:
                 continue
@@ -725,7 +728,12 @@ def extract(path):
                     {"kind": cl.kind, "value": getattr(cl, "value", None)} for cl in (c.clauses or ())
                 ],
             })
-        for st in save.player_season_stats():
+        try:
+            season_stats = list(save.player_season_stats())
+        except Exception as e:
+            season_stats = []
+            out["statsError"] = str(e)
+        for st in season_stats:
             uid = uid_to_unique.get(st.player_uid)
             # This season's rows for your players at your club (not earlier clubs)
             if uid is None or st.club_uid not in (club_uid, None):

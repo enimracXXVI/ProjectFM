@@ -1,5 +1,6 @@
 /// <reference lib="webworker" />
-// Reads an FM save in this worker with Pyodide (Python in the browser) and fmsave (MIT).
+// Reads an FM save in this worker with Pyodide (Python in the browser) and ProjectFM's own
+// save reader (savereader/, started from fmsave, MIT).
 // The file is mounted read-only with WORKERFS: its bytes are read as needed and never
 // leave the computer. Pyodide and fmsave are served by ProjectFM itself.
 import { buildWorld } from '../world/world'
@@ -16,7 +17,7 @@ interface PyodideLike {
     filesystems: { WORKERFS: { stream_ops: { read: (...a: unknown[]) => unknown } } }
     ErrnoError: new (code: number) => Error
   }
-  unpackArchive(buffer: ArrayBuffer, format: string): void
+  unpackArchive(buffer: ArrayBuffer, format: string, options?: { extractDir?: string }): void
   runPython(code: string): unknown
   pyimport(name: string): { extract: (path: string) => string }
 }
@@ -40,10 +41,11 @@ async function boot(base: string): Promise<PyodideLike> {
       throw new py.FS.ErrnoError(29)
     }
   }
-  const wheel = await (
-    await fetch(new URL('fmsave/fmsave-0.12.1-py3-none-any.whl', base))
+  // ProjectFM's own save reader (savereader/, packed at build time)
+  const reader = await (
+    await fetch(new URL('fmsave/savereader.tar', base), { cache: 'no-store' })
   ).arrayBuffer()
-  py.unpackArchive(wheel, 'wheel')
+  py.unpackArchive(reader, 'tar', { extractDir: '/home/pyodide' })
   py.FS.writeFile(
     '/home/pyodide/extract.py',
     // Never a cached copy: an old reader would silently miss newer data

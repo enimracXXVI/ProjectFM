@@ -149,6 +149,20 @@ export function SaveImport({
               : `Competitions: not read${data.competitionsError ? ` (${data.competitionsError})` : ''}`}
           </li>
           <li>World: {summary.totalPlayers.toLocaleString()} players</li>
+          {(
+            [
+              ['Contracts', data.contractsError],
+              ['Season stats', data.statsError],
+              ['Staff', data.staffError],
+              ['Scouts', data.scoutsError],
+            ] as const
+          )
+            .filter(([, e]) => e)
+            .map(([part, e]) => (
+              <li key={part} className="text-amber-300">
+                {part}: not read ({e})
+              </li>
+            ))}
         </ul>
         <div className="mt-2 flex flex-wrap gap-4 text-sm font-semibold text-accent">
           <Link to="/squad" className="underline">

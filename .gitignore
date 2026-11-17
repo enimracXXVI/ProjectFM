@@ -28,3 +28,7 @@ reader/scanner/bin/
 reader/scanner/obj/
 reader/scanner/dist/
 public/pyodide/
+
+# Save reader, packed from savereader/ before dev and build
+public/fmsave/savereader.tar
+__pycache__/

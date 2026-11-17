@@ -22,12 +22,17 @@ import {
 export type StatsKind = 'overall' | 'league' | 'cup' | 'non_competitive'
 
 /** Version of public/fmsave/extract.py this app expects. */
-export const READER_VERSION = 17
+export const READER_VERSION = 18
 
 export interface SaveData {
   /** Version of the save reader that produced this (absent before version 3). */
   reader?: number
   competitionsError?: string
+  /** Parts of the save the reader could not read (the rest is still imported). */
+  contractsError?: string
+  statsError?: string
+  staffError?: string
+  scoutsError?: string
   club: string
   gameDate: string | null
   players: {
