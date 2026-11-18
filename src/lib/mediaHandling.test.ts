@@ -19,13 +19,20 @@ describe('media handling', () => {
         DEFAULT_MEDIA_RULES,
       ),
     ).toBe('Outspoken')
-    // Arthur Atta: Level-headed (no rule tells it from Media-friendly)
+    // Arthur Atta: Level-headed (Loyalty 12: cannot be told from Media-friendly)
     expect(
       mediaHandling(
-        of({ Pressure: 13, Professionalism: 15, Temperament: 13, Controversy: 6 }),
+        of({ Pressure: 13, Professionalism: 15, Temperament: 13, Controversy: 6, Loyalty: 12 }),
         DEFAULT_MEDIA_RULES,
       ),
     ).toBe(MEDIA_FALLBACK)
+    // Franco Mastantuono: Media-friendly (Loyalty 9: Level-headed needs 11+)
+    expect(
+      mediaHandling(
+        of({ Pressure: 12, Professionalism: 14, Temperament: 12, Controversy: 6, Loyalty: 9 }),
+        DEFAULT_MEDIA_RULES,
+      ),
+    ).toBe('Media-friendly')
     // Harry Amass: Unflappable, from one player only
     expect(
       mediaHandling(

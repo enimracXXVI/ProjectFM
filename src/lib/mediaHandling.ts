@@ -2,8 +2,8 @@
  * FM's media handling style, worked out from the hidden personality values. Rules found by
  * matching 93 players' styles in FM27 (the user's squad and 65 others, Nov 2026) with their
  * values in the save. Each rule that fits adds a style (FM can show two).
- * Level-headed and Media-friendly could not be told apart from the save's values (FM uses
- * something the save does not show), so players matching no rule get both names.
+ * Level-headed and Media-friendly: Level-headed needs Loyalty 11+, so a player matching no
+ * rule with Loyalty 10 or less is Media-friendly; above that the save cannot tell them apart.
  * Editable in Settings > Media handling.
  */
 export const MEDIA_KEYS = [
@@ -53,8 +53,14 @@ export const DEFAULT_MEDIA_RULES: MediaRule[] = [
   { name: 'Unflappable', ranges: { pressure: [15, 20], temperament: [15, 20] }, confirmed: false },
 ]
 
-/** Shown when no rule fits. */
+/** Shown when no rule fits and Loyalty does not settle it. */
 export const MEDIA_FALLBACK = 'Level-headed or Media-friendly'
+
+/**
+ * Level-headed needs Loyalty 11 or more (all 36 Level-headed players of the 93 checked, and
+ * the Steam guide's FM26 ranges): with no rule fitting, Loyalty 10 or less means Media-friendly.
+ */
+export const LEVEL_HEADED_MIN_LOYALTY = 11
 
 /**
  * The player's style(s), from his hidden values by name ("Pressure" → 15).
@@ -76,5 +82,8 @@ export function mediaHandling(
       }),
     )
     .map((r) => (r.confirmed ? r.name : `${r.name} (?)`))
-  return styles.length ? styles.join(', ') : MEDIA_FALLBACK
+  if (styles.length) return styles.join(', ')
+  return v.loyalty !== null && v.loyalty < LEVEL_HEADED_MIN_LOYALTY
+    ? 'Media-friendly'
+    : MEDIA_FALLBACK
 }

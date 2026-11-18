@@ -60,7 +60,7 @@ export function MediaHandlingSettings() {
   return (
     <SettingsShell
       title="Media handling"
-      subtitle={`FM's media handling style, worked out from the hidden personality values (1–20). A player gets every style whose ranges he meets (FM can show two). Blank = any value; "15-20" or "18". Players meeting no rule show "${MEDIA_FALLBACK}": FM decides between those two with something the save does not show. Unconfirmed rules show with (?).`}
+      subtitle={`FM's media handling style, worked out from the hidden personality values (1–20). A player gets every style whose ranges he meets (FM can show two). Blank = any value; "15-20" or "18". Players meeting no rule are Media-friendly with Loyalty 10 or less (Level-headed needs 11+), otherwise "${MEDIA_FALLBACK}": the save cannot tell those two apart. Unconfirmed rules show with (?).`}
       dirty={JSON.stringify(rules) !== prev}
       saving={save.isPending || reset.isPending}
       saved={save.isSuccess}
