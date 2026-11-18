@@ -14,6 +14,7 @@ import {
 } from '../../world/stats'
 
 const select = 'min-h-10 rounded-lg border border-border bg-surface-2 px-2 text-sm'
+const slug = (t: string) => t.toLowerCase().replace(/[^a-z]+/g, '-')
 
 /** A player's season stats from the save imports: every figure, in boxes, with per 90. */
 export function SeasonStatsPanel({ uid }: { uid: number }) {
@@ -24,6 +25,36 @@ export function SeasonStatsPanel({ uid }: { uid: number }) {
   const [kind, setKind] = useState<StatKind>('overall')
   const { data: file, isPending, error } = useSeasonStats(career.id, season)
   const s = useMemo(() => (file ? statsIndex(file, kind).get(uid) : undefined), [file, kind, uid])
+  // Boxes of rows: totals (with per 90 where it means something), then shares
+  const groups = useMemo(() => {
+    if (!s) return []
+    return STAT_GROUPS.map((name) => {
+      const totals = Object.entries(STAT_INFO).filter(([, i]) => i.group === name)
+      const shares = METRICS.filter(
+        (m) => m.group === name && !(m.key in STAT_INFO) && !m.key.endsWith('/90'),
+      )
+      return {
+        name,
+        per90: totals.some(([, i]) => i.per90),
+        rows: [
+          ...totals.map(([key, i]) => ({
+            key,
+            label: i.label,
+            total: formatMetric(key, metricValue(s, key)),
+            per90: i.per90 ? formatMetric(`${key}/90`, metricValue(s, `${key}/90`)) : '',
+          })),
+          ...shares.map((m) => ({
+            key: m.key,
+            label: m.label,
+            total: formatMetric(m.key, metricValue(s, m.key)),
+            per90: '',
+          })),
+        ],
+        // Goalkeeping only for players with goalkeeping figures
+        empty: totals.every(([key]) => !s[key]),
+      }
+    }).filter((g) => !(g.name === 'Goalkeeping' && g.empty))
+  }, [s])
 
   if (listing) return <p className="text-sm text-muted">Loading…</p>
   if (!seasons?.length)
@@ -67,55 +98,54 @@ export function SeasonStatsPanel({ uid }: { uid: number }) {
       ) : !s ? (
         <p className="text-sm text-muted">No minutes in these competitions this season.</p>
       ) : (
-        <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
-          {STAT_GROUPS.map((g) => {
-            const rows = Object.entries(STAT_INFO).filter(([, i]) => i.group === g)
-            const shares = METRICS.filter(
-              (m) => m.group === g && !(m.key in STAT_INFO) && !m.key.endsWith('/90'),
-            )
-            if (rows.every(([k]) => !s[k]) && g === 'Goalkeeping') return null
-            return (
-              <section
-                key={g}
-                className="self-start rounded-xl border border-border bg-surface p-4"
+        <>
+          {/* Jump to a box */}
+          <nav className="flex flex-wrap gap-1.5" aria-label="Stat boxes">
+            {groups.map((g) => (
+              <a
+                key={g.name}
+                href={`#stats-${slug(g.name)}`}
+                onClick={(e) => {
+                  e.preventDefault()
+                  document
+                    .getElementById(`stats-${slug(g.name)}`)
+                    ?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+                }}
+                className="min-h-8 rounded-full border border-border px-3 py-1 text-xs text-muted hover:text-text"
               >
-                <h2 className="mb-1.5 flex justify-between text-[11px] font-semibold tracking-wide text-muted uppercase">
-                  {g}
-                  <span>Total · per 90</span>
-                </h2>
-                <dl className="grid text-sm">
-                  {rows.map(([k, info]) => (
-                    <div
-                      key={k}
-                      className="flex min-h-8 items-center justify-between gap-3 border-b border-border/40 last:border-0"
-                    >
-                      <dt className="text-muted">{info.label}</dt>
-                      <dd className="flex gap-3 text-right tabular-nums">
-                        <span className="font-medium">{formatMetric(k, metricValue(s, k))}</span>
-                        {info.per90 && (
-                          <span className="w-12 text-muted">
-                            {formatMetric(`${k}/90`, metricValue(s, `${k}/90`))}
-                          </span>
-                        )}
-                      </dd>
-                    </div>
-                  ))}
-                  {shares.map((m) => (
-                    <div
-                      key={m.key}
-                      className="flex min-h-8 items-center justify-between gap-3 border-b border-border/40 last:border-0"
-                    >
-                      <dt className="text-muted">{m.label}</dt>
-                      <dd className="font-medium tabular-nums">
-                        {formatMetric(m.key, metricValue(s, m.key))}
-                      </dd>
-                    </div>
-                  ))}
-                </dl>
+                {g.name}
+              </a>
+            ))}
+          </nav>
+          <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+            {groups.map((g) => (
+              <section
+                key={g.name}
+                id={`stats-${slug(g.name)}`}
+                className="min-w-0 scroll-mt-24 self-start rounded-xl border border-border bg-surface p-4"
+              >
+                <table className="w-full text-sm tabular-nums">
+                  <thead>
+                    <tr className="text-[11px] tracking-wide text-muted uppercase">
+                      <th className="pb-1.5 text-left font-semibold">{g.name}</th>
+                      <th className="w-16 pb-1.5 text-right font-semibold">Total</th>
+                      {g.per90 && <th className="w-16 pb-1.5 text-right font-semibold">Per 90</th>}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {g.rows.map((r) => (
+                      <tr key={r.key} className="border-t border-border/40">
+                        <td className="py-1.5 pr-2 text-muted">{r.label}</td>
+                        <td className="py-1.5 text-right font-medium">{r.total}</td>
+                        {g.per90 && <td className="py-1.5 text-right text-muted">{r.per90}</td>}
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
               </section>
-            )
-          })}
-        </div>
+            ))}
+          </div>
+        </>
       )}
     </div>
   )

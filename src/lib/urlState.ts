@@ -1,3 +1,4 @@
+import { useEffect, useRef, useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
 
 /**
@@ -54,4 +55,33 @@ export const SORT = {
     return { col: s.slice(0, i), asc: s.slice(i + 1) !== 'desc' }
   },
   format: (v: { col: string; asc: boolean }) => `${v.col}-${v.asc ? 'asc' : 'desc'}`,
+}
+
+/**
+ * Text typed into a box that is also kept in the address (search, filters). The box shows
+ * what is typed straight away; the address (and whatever filters on it) follows once typing
+ * pauses, so fast typing never loses letters.
+ */
+export function useUrlText(key: string, wait = 250): [string, (value: string) => void, string] {
+  const [stored, setStored] = useUrlState(key, '', TEXT)
+  const [text, setText] = useState(stored)
+  const [prev, setPrev] = useState(stored)
+  const [typing, setTyping] = useState(false)
+  const timer = useRef<number | undefined>(undefined)
+  // The address changed elsewhere (back button, a link, a reset): show that
+  if (stored !== prev) {
+    setPrev(stored)
+    if (!typing) setText(stored)
+  }
+  useEffect(() => () => window.clearTimeout(timer.current), [])
+  const set = (value: string) => {
+    setText(value)
+    setTyping(true)
+    window.clearTimeout(timer.current)
+    timer.current = window.setTimeout(() => {
+      setTyping(false)
+      setStored(value)
+    }, wait)
+  }
+  return [text, set, stored]
 }

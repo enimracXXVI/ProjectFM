@@ -45,7 +45,7 @@ def _plain(v):
 
 
 # Raised whenever extract() returns new data, so the app can spot an outdated copy
-READER_VERSION = 19
+READER_VERSION = 20
 
 JOB_SCOUT, JOB_CHIEF_SCOUT = 14, 44
 _FF8 = b"\xff" * 8
@@ -159,17 +159,71 @@ def _squad_numbers_and_morale(save):
     return out
 
 
+def _leagues(save, clubs):
+    """Each club's domestic league and every league's strength.
+
+    A club's league is the largest league table it is in whose clubs mostly (80%+) come from
+    one nation, so continental league phases and groups do not count. A league's strength is
+    the average reputation of its clubs (the save stores no league reputation).
+    League ids are FM's competition database ids (32 = Serie A).
+    Returns ({club uid: league id}, {league id: {name, nation (FM database id), clubs, rep}}).
+    """
+    nation = {c.uid: c.nation_id for c in clubs}
+    rep = {c.uid: c.reputation for c in clubs}
+    nation_db = {n.nation_id: n.database_id for n in save.nations()}
+    try:
+        comp_name = {c.id: c.name for c in save.competitions()}
+        comp_db = {c.id: c.database_id for c in save.competitions()}
+    except Exception:
+        comp_name, comp_db = {}, {}
+    best = {}
+    for t in save.league_tables():
+        uids = [r.club_uid for r in t.rows if r.club_uid is not None and not r.team_slot]
+        if len(uids) < 4 or t.competition_id is None:
+            continue
+        counts = {}
+        for u in uids:
+            counts[nation.get(u)] = counts.get(nation.get(u), 0) + 1
+        if max(counts.values()) < 0.8 * len(uids):
+            continue
+        for u in uids:
+            if u not in best or len(uids) > best[u][1]:
+                best[u] = (t, len(uids))
+    league_of, leagues = {}, {}
+    for u, (t, _) in best.items():
+        lid = comp_db.get(t.competition_id) or t.competition_id
+        league_of[u] = lid
+        if lid not in leagues:
+            members = [r.club_uid for r in t.rows if r.club_uid is not None and not r.team_slot]
+            reps = [rep.get(m) for m in members if rep.get(m)]
+            nats = [nation.get(m) for m in members]
+            main = max(set(nats), key=nats.count) if nats else None
+            leagues[lid] = {
+                "nation": nation_db.get(main),
+                "name": t.competition_name or comp_name.get(t.competition_id),
+                "clubs": len(members),
+                "rep": round(sum(reps) / len(reps)) if reps else None,
+            }
+    return league_of, {str(k): v for k, v in leagues.items()}
+
+
 def _dump(save, club_uid, club_name, extras):
     """Every player in the same shape as a ProjectFM Reader dump.json (players only).
 
     Nations are FM database ids (`natDb`); the app turns them into names.
     """
     nation_db_ids = {n.nation_id: n.database_id for n in save.nations()}
-    # Club Unique IDs (the game database ids, as picture sites use them)
+    # Club Unique IDs (the game database ids, as picture sites use them) and reputations
     try:
-        club_ids = {c.uid: c.unique_id for c in save.clubs()}
+        clubs = list(save.clubs())
+        club_ids = {c.uid: c.unique_id for c in clubs}
+        club_rep = {c.uid: c.reputation for c in clubs}
     except Exception:
-        club_ids = {}
+        clubs, club_ids, club_rep = [], {}, {}
+    try:
+        league_of, leagues = _leagues(save, clubs)
+    except Exception:
+        league_of, leagues = {}, {}
     contracts = {}
     for c in save.contracts():
         contracts.setdefault(c.player_uid, c)
@@ -194,6 +248,8 @@ def _dump(save, club_uid, club_name, extras):
             "natDb": [nation_db_ids.get(n) for n in nats if n is not None],
             "club": p.club_name,
             "clubId": club_ids.get(p.club_uid) if p.club_uid is not None else None,
+            "clubRep": club_rep.get(p.club_uid) if p.club_uid is not None else None,
+            "league": league_of.get(p.club_uid) if p.club_uid is not None else None,
             "dob": p.birth_date.isoformat() if p.birth_date else None,
             "ca": p.ability.current if p.ability else None,
             "pa": p.ability.potential if p.ability else None,
@@ -224,6 +280,7 @@ def _dump(save, club_uid, club_name, extras):
             row["traits"] = traits
         players.append(row)
     return {
+        "leagues": leagues,
         "meta": {
             "game": "FM27",
             "gameDate": save.info.game_date,

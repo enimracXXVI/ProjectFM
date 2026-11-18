@@ -12,6 +12,7 @@ import {
   type Dump,
   type DumpMeta,
   type DumpPerson,
+  type LeagueInfo,
 } from '../import/dump'
 import type { AttributeValue } from '../import/types'
 
@@ -76,6 +77,9 @@ export type WorldRow = [
   ratings?: number[] | null,
   squadNo?: number | null,
   dob?: string | null,
+  /** Club reputation (0–10000) and league (FM competition database id). */
+  clubRep?: number | null,
+  league?: number | null,
 ]
 
 export interface WorldFile {
@@ -84,6 +88,8 @@ export interface WorldFile {
   attrs: string[]
   hidden: string[]
   rows: WorldRow[]
+  /** Leagues by FM competition database id (files built from saves, reader 20). */
+  leagues?: Record<string, LeagueInfo>
 }
 
 /** FM's "not set" marker for reputation. */
@@ -138,9 +144,18 @@ export function buildWorld(dump: Dump): WorldFile {
       p.posRatings ? WORLD_POSITIONS.map((k) => ratingOf(p.posRatings!, k)) : null,
       p.squadNo || null,
       p.dob || null,
+      p.clubRep || null,
+      p.league || null,
     ]
   })
-  return { version: WORLD_VERSION, meta: dump.meta, attrs: WORLD_ATTRS, hidden: WORLD_HIDDEN, rows }
+  return {
+    version: WORLD_VERSION,
+    meta: dump.meta,
+    attrs: WORLD_ATTRS,
+    hidden: WORLD_HIDDEN,
+    rows,
+    leagues: dump.leagues,
+  }
 }
 
 export interface WorldPlayer {
@@ -174,6 +189,8 @@ export interface WorldPlayer {
   ratings: Record<string, number>
   squadNo: number | null
   dob: string | null
+  clubRep: number | null
+  league: number | null
 }
 
 /** Expands a row into a player object (done on demand: the file holds tens of thousands). */
@@ -199,6 +216,8 @@ export function rowToPlayer(file: WorldFile, r: WorldRow): WorldPlayer {
     ),
     squadNo: r[25] ?? null,
     dob: r[26] ?? null,
+    clubRep: r[27] ?? null,
+    league: r[28] ?? null,
     id: r[0],
     name: r[1],
     age: r[2],

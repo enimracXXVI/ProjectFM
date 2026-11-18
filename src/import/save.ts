@@ -18,6 +18,7 @@ import {
   type Dump,
   type DumpMeta,
   type DumpPerson,
+  type LeagueInfo,
 } from './dump'
 
 export type StatsKind = 'overall' | 'league' | 'cup' | 'non_competitive'
@@ -79,7 +80,12 @@ export interface SaveData {
   /** This season's competitions (uploaded separately, removed once read). */
   competitions?: Omit<CompetitionsFile, 'version'> | null
   /** Every player in Reader dump shape, nations as FM database ids (removed once read). */
-  dump?: { meta: DumpMeta; players: (DumpPerson & { natDb?: number[] })[]; staff: [] }
+  dump?: {
+    meta: DumpMeta
+    players: (DumpPerson & { natDb?: number[] })[]
+    staff: []
+    leagues?: Record<string, LeagueInfo>
+  }
   /** The club's scouts (absent in saves read before scouts were added). */
   scouts?: {
     uniqueId: number
@@ -339,7 +345,7 @@ export function dumpFromSave(data: SaveData): Dump {
     ...p,
     nat: (natDb ?? []).map(fmNation),
   }))
-  return { meta: data.dump.meta, players, staff: [] }
+  return { meta: data.dump.meta, players, staff: [], leagues: data.dump.leagues }
 }
 
 /** True for a dump made from an FM save. */

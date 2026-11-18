@@ -1,29 +1,14 @@
 import { clsx } from 'clsx'
-import { Search, Settings, Upload } from 'lucide-react'
-import { useEffect, useRef } from 'react'
+import { Settings, Upload } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import { useCareer } from '../lib/career'
 import { Crest } from './Crest'
+import { GlobalSearch } from './GlobalSearch'
 import { Logo } from './Logo'
 
 export function TopBar() {
   const { careers, current, setCurrentId } = useCareer()
   const currentId = current?.id ?? ''
-  const searchRef = useRef<HTMLInputElement>(null)
-
-  // Desktop shortcut: "/" focuses global search
-  useEffect(() => {
-    const onKey = (e: KeyboardEvent) => {
-      const target = e.target as HTMLElement
-      const typing = ['INPUT', 'TEXTAREA', 'SELECT'].includes(target.tagName)
-      if (e.key === '/' && !typing) {
-        e.preventDefault()
-        searchRef.current?.focus()
-      }
-    }
-    window.addEventListener('keydown', onKey)
-    return () => window.removeEventListener('keydown', onKey)
-  }, [])
 
   return (
     <header className="sticky top-0 z-10 border-b border-border bg-bg/95 pt-safe backdrop-blur">
@@ -50,22 +35,7 @@ export function TopBar() {
           ))}
         </select>
 
-        <div className="relative ml-auto hidden flex-1 md:block md:max-w-sm">
-          <Search
-            className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted"
-            aria-hidden
-          />
-          <input
-            ref={searchRef}
-            type="search"
-            placeholder="Search players, staff…"
-            aria-label="Search"
-            className="min-h-11 w-full rounded-lg border border-border bg-surface pr-10 pl-9 text-sm placeholder:text-muted"
-          />
-          <kbd className="absolute top-1/2 right-3 -translate-y-1/2 rounded border border-border px-1.5 text-xs text-muted">
-            /
-          </kbd>
-        </div>
+        <GlobalSearch />
 
         <div className="ml-auto flex items-center gap-1 md:ml-0">
           <Link

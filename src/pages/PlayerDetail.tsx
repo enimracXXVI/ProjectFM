@@ -98,7 +98,11 @@ export function PlayerDetail() {
                 {focus.attributes.map((a) => attributeLabel(config, a)).join(', ')}
               </span>
             )}
-            <ReachLines height={p.height_cm} attributes={p.attributes} />
+            <ReachLines
+              height={p.height_cm}
+              attributes={p.attributes}
+              goalkeeper={isGoalkeeper(p.positions)}
+            />
           </div>
         ),
       },
@@ -207,7 +211,9 @@ function ContractAndStats({
       value: (
         <>
           <ClubCrest id={p.extra['Club ID']} />
-          {club}
+          <span className="truncate" title={club}>
+            {club}
+          </span>
         </>
       ),
     },
@@ -227,7 +233,7 @@ function ContractAndStats({
       value: p.nation && (
         <>
           <Flag nation={p.nation} />
-          {p.nation}
+          <span className="truncate">{p.nation}</span>
         </>
       ),
     },
@@ -236,7 +242,7 @@ function ContractAndStats({
       value: p.second_nation && (
         <>
           <Flag nation={p.second_nation} />
-          {p.second_nation}
+          <span className="truncate">{p.second_nation}</span>
         </>
       ),
     },
@@ -289,14 +295,17 @@ function ContractAndStats({
 export function ReachLines({
   height,
   attributes,
+  goalkeeper,
 }: {
   height: number | null
   attributes: Record<string, AttributeValue>
+  /** Aerial Reach is a goalkeeping attribute: only shown for keepers. */
+  goalkeeper: boolean
 }) {
   const rows = (
     [
       ['jumping', 'Jumping Reach'],
-      ['aerial', 'Aerial Reach'],
+      ...(goalkeeper ? ([['aerial', 'Aerial Reach']] as const) : []),
     ] as const
   )
     .map(([kind, name]) => {

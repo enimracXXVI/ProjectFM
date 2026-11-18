@@ -397,9 +397,18 @@ function InfoRows({ info }: { info: ProfileData['info'] }) {
   return (
     <dl className="grid text-sm">
       {info.map((r) => (
-        <div key={r.label} className="flex min-h-7 items-center justify-between gap-3">
-          <dt className="text-muted">{r.label}</dt>
-          <dd className="min-w-0 truncate text-right">{r.value ?? '–'}</dd>
+        <div key={r.label} className="flex min-h-7 min-w-0 items-center justify-between gap-3">
+          <dt className="shrink-0 text-muted">{r.label}</dt>
+          <dd
+            className="flex min-w-0 items-center justify-end gap-1.5 text-right"
+            title={typeof r.value === 'string' ? r.value : undefined}
+          >
+            {typeof r.value === 'string' || typeof r.value === 'number' ? (
+              <span className="truncate">{r.value}</span>
+            ) : (
+              (r.value ?? '–')
+            )}
+          </dd>
         </div>
       ))}
     </dl>
@@ -692,7 +701,7 @@ export function ProfileTab({ data, footer }: { data: ProfileData; footer?: React
   return (
     <>
       <div className="hidden gap-4 lg:grid lg:grid-cols-[16rem_minmax(0,1fr)]">
-        <div className="grid content-start gap-4 self-start rounded-xl border border-border bg-surface p-4">
+        <div className="grid min-w-0 grid-cols-[minmax(0,1fr)] content-start gap-4 self-start overflow-hidden rounded-xl border border-border bg-surface p-4">
           <PositionsPitch data={data} />
           <Details data={data} withFeet />
         </div>
@@ -706,7 +715,7 @@ export function ProfileTab({ data, footer }: { data: ProfileData; footer?: React
           <AttributesCompact data={data} />
           {footer && <div className="mt-2 text-xs text-muted">{footer}</div>}
         </div>
-        <div className="rounded-xl border border-border bg-surface p-4">
+        <div className="min-w-0 overflow-hidden rounded-xl border border-border bg-surface p-4">
           <Details data={data} withFeet={false} />
         </div>
       </div>

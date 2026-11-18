@@ -1,4 +1,5 @@
 import { ArrowLeft, Scale } from 'lucide-react'
+import { leagueName, levelOf } from '../world/leagues'
 import { useMemo } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import { NotesPanel } from '../components/NotesPanel'
@@ -46,6 +47,8 @@ export function WorldPlayer() {
   if (!p) return <Placeholder>Player not found in the world database.</Placeholder>
 
   const mine = squad?.find((s) => s.fm_uid === p.id)
+  const row = data?.file.rows.find((r) => r[0] === p.id)
+  const level = row ? levelOf(row, data?.file.leagues) : null
   const hasReach = p.height !== null && p.attributes['Jumping Reach'] !== undefined
 
   const profile: ProfileData = {
@@ -57,11 +60,24 @@ export function WorldPlayer() {
       {
         label: 'Club',
         value: (
-          <span className="inline-flex items-center gap-1.5">
+          <>
             <ClubCrest id={p.clubId} />
-            {p.club ?? 'Free agent'}
-          </span>
+            <span className="truncate" title={p.club ?? undefined}>
+              {p.club ?? 'Free agent'}
+            </span>
+          </>
         ),
+      },
+      {
+        label: 'League',
+        value:
+          p.league != null
+            ? leagueName(p.league, data?.file.leagues?.[String(p.league)], config.competitions)
+            : null,
+      },
+      {
+        label: 'Level',
+        value: level ? `${level.from === 'club' ? '≈' : ''}${level.level} / 100` : null,
       },
       { label: 'Height', value: p.height ? `${p.height} cm` : null },
       { label: 'Personality', value: p.personality },
@@ -82,7 +98,11 @@ export function WorldPlayer() {
             title: 'Reach',
             body: (
               <div className="grid gap-1">
-                <ReachLines height={p.height} attributes={p.attributes} />
+                <ReachLines
+                  height={p.height}
+                  attributes={p.attributes}
+                  goalkeeper={isGoalkeeper(p.positions)}
+                />
               </div>
             ),
           },
@@ -167,7 +187,7 @@ export function WorldPlayer() {
                 value: p.nation && (
                   <>
                     <Flag nation={p.nation} />
-                    {p.nation}
+                    <span className="truncate">{p.nation}</span>
                   </>
                 ),
               },
@@ -176,7 +196,7 @@ export function WorldPlayer() {
                 value: p.secondNation && (
                   <>
                     <Flag nation={p.secondNation} />
-                    {p.secondNation}
+                    <span className="truncate">{p.secondNation}</span>
                   </>
                 ),
               },
@@ -196,7 +216,9 @@ export function WorldPlayer() {
                 value: (
                   <>
                     <ClubCrest id={p.clubId} />
-                    {p.club ?? 'Free agent'}
+                    <span className="truncate" title={p.club ?? undefined}>
+                      {p.club ?? 'Free agent'}
+                    </span>
                   </>
                 ),
               },

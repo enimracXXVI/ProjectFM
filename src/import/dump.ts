@@ -46,6 +46,9 @@ export interface DumpPerson {
   dob?: string | null
   /** Transfer value in the dump's currency (GBP). */
   value?: number | null
+  /** Club reputation and the club's league (FM competition database id), reader 20. */
+  clubRep?: number | null
+  league?: number | null
   lastName?: string | null
   commonName?: string | null
   job?: string
@@ -61,10 +64,21 @@ export interface DumpPerson {
   staffAttrs?: Record<string, number>
 }
 
+/** A league's size and strength (average reputation of its clubs, 0–10000). */
+export interface LeagueInfo {
+  name: string | null
+  /** FM database id of the league's nation. */
+  nation?: number | null
+  clubs: number
+  rep: number | null
+}
+
 export interface Dump {
   meta: DumpMeta
   players: DumpPerson[]
   staff: DumpPerson[]
+  /** Leagues by FM competition database id (save imports, reader 20). */
+  leagues?: Record<string, LeagueInfo>
 }
 
 /** Dump attribute key → ProjectFM attribute name (only where they differ by more than spacing). */

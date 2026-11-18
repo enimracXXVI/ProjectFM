@@ -2,7 +2,7 @@ import { clsx } from 'clsx'
 import { Face } from '../components/Pictures'
 import { ChevronDown, ChevronUp, Scale, TrendingUp, Trophy } from 'lucide-react'
 import { useMemo } from 'react'
-import { SORT, TEXT, useUrlState } from '../lib/urlState'
+import { SORT, TEXT, useUrlState, useUrlText } from '../lib/urlState'
 import { seasonText, seasonYear, useSquadSeason, useSquadSeasons } from '../data/seasons'
 import { Link } from 'react-router-dom'
 import { StatusChip } from '../components/StatusChip'
@@ -73,7 +73,7 @@ export function Squad() {
   // Phones: cards, or the full table (scrolls sideways, names stay in place)
   const [layout, setLayout] = useUrlState<'cards' | 'table'>('layout', 'cards', TEXT as never)
   const [role, setRole] = useUrlState<Role>('role', 'outfield', TEXT as never)
-  const [filter, setFilter] = useUrlState('q', '', TEXT)
+  const [filterInput, setFilter, filter] = useUrlText('q')
   const [team, setTeam] = useUrlState<'all' | Team>('team', 'all', TEXT as never)
   const [sort, setSort] = useUrlState<SortKey>(
     'sort',
@@ -210,7 +210,7 @@ export function Squad() {
               type="search"
               placeholder="Filter by name or position"
               aria-label="Filter players"
-              value={filter}
+              value={filterInput}
               onChange={(e) => setFilter(e.target.value)}
               className="min-h-11 flex-1 rounded-lg border border-border bg-surface px-3 text-base md:max-w-xs md:text-sm"
             />

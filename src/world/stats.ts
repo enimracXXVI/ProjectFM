@@ -170,5 +170,6 @@ export function metricValue(s: PlayerStats | undefined, key: string): number | n
 export function formatMetric(key: string, v: number | null): string {
   if (v === null) return '–'
   if (key in RATIOS) return `${Math.round(v)}%`
+  if (key.endsWith('/90')) return v.toFixed(2)
   return Number.isInteger(v) ? String(v) : v.toFixed(2)
 }

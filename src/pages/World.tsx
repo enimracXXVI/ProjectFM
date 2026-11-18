@@ -1,9 +1,10 @@
 import { clsx } from 'clsx'
+import { PickList } from '../components/PickList'
+import { leagueName, levelOf, topLevel } from '../world/leagues'
 import { useSeasonStats, useStatsSeasons } from '../world/hooks'
 import { seasonText } from '../data/seasons'
 import {
   METRICS,
-  STAT_GROUPS,
   STAT_KINDS,
   formatMetric,
   metricValue,
@@ -13,7 +14,7 @@ import {
 import { ClubCrest, Face, Flag } from '../components/Pictures'
 import { ChevronDown, ChevronUp, SlidersHorizontal } from 'lucide-react'
 import { useDeferredValue, useMemo } from 'react'
-import { BOOL, NUM, TEXT, useUrlState } from '../lib/urlState'
+import { BOOL, NUM, TEXT, useUrlState, useUrlText } from '../lib/urlState'
 import { Link } from 'react-router-dom'
 import { Card, PageHeader, Placeholder } from '../components/ui'
 import { useCurrentCareer } from '../lib/career'
@@ -46,31 +47,35 @@ const PAGE = 100
 
 const input = 'min-h-11 w-full rounded-lg border border-border bg-surface px-3 text-base md:text-sm'
 
-type SortCol = 'name' | 'age' | 'role' | 'ca' | 'pa' | 'value' | 'stat'
+type SortCol = 'name' | 'age' | 'role' | 'ca' | 'pa' | 'value' | 'stat' | 'level'
 
 export function World() {
   const career = useCurrentCareer()
   const config = useConfig()
   const { data, isPending, error } = useWorld(career.id)
 
-  const [name, setName] = useUrlState('q', '', TEXT)
+  const [nameInput, setName, name] = useUrlText('q')
   // Phones: cards, or the table (scrolls both ways, header and names stay in place)
   const [layout, setLayout] = useUrlState<'cards' | 'table'>('layout', 'cards', TEXT as never)
   const [positions, setPositions] = useUrlState<string[]>('pos', [])
   const [traits, setTraits] = useUrlState<string[]>('traits', [])
-  const [ageMin, setAgeMin] = useUrlState('ageMin', '', TEXT)
-  const [ageMax, setAgeMax] = useUrlState('ageMax', '', TEXT)
+  const [ageMinInput, setAgeMin, ageMin] = useUrlText('ageMin')
+  const [ageMaxInput, setAgeMax, ageMax] = useUrlText('ageMax')
   const [regionId, setRegionId] = useUrlState('region', '', TEXT)
-  const [nation, setNation] = useUrlState('nation', '', TEXT)
-  const [club, setClub] = useUrlState('club', '', TEXT)
+  const [nationInput, setNation, nation] = useUrlText('nation')
+  const [clubInput, setClub, club] = useUrlText('club')
   const [roleId, setRoleId] = useUrlState('roleId', '', TEXT)
-  const [caMin, setCaMin] = useUrlState('caMin', '', TEXT)
-  const [paMin, setPaMin] = useUrlState('paMin', '', TEXT)
+  const [caMinInput, setCaMin, caMin] = useUrlText('caMin')
+  const [paMinInput, setPaMin, paMin] = useUrlText('paMin')
   const [hideMine, setHideMine] = useUrlState('hideMine', true, BOOL)
   // Season stats of every player (latest season stored): rank by a figure, minimum minutes
   const [statKey, setStatKey] = useUrlState('stat', '', TEXT)
   const [statKind, setStatKind] = useUrlState<StatKind>('statKind', 'overall', TEXT as never)
-  const [minMinutes, setMinMinutes] = useUrlState('minMin', '', TEXT)
+  // League and level: compare players across leagues of different strength
+  const [league, setLeague] = useUrlState('league', '', TEXT)
+  const [minLevelInput, setMinLevel, minLevel] = useUrlText('minLevel')
+  const [weigh, setWeigh] = useUrlState('weigh', false, BOOL)
+  const [minMinutesInput, setMinMinutes, minMinutes] = useUrlText('minMin')
   const [showFilters, setShowFilters] = useUrlState('filters', false, BOOL)
   const [sort, setSort] = useUrlState<{ col: SortCol; asc: boolean } | null>('sort', null)
   const [limit, setLimit] = useUrlState('shown', PAGE, NUM)
@@ -91,6 +96,9 @@ export function World() {
     statKey,
     statKind,
     minMinutes,
+    league,
+    minLevel,
+    weigh,
   })
   const { data: seasons } = useStatsSeasons(career.id)
   const statsSeason = seasons?.[0] ?? null
@@ -120,6 +128,18 @@ export function World() {
     [data],
   )
 
+  // Leagues the save keeps tables for, strongest first
+  const leagueOptions = useMemo(
+    () =>
+      Object.entries(data?.file.leagues ?? {})
+        .sort(([, a], [, b]) => (b.rep ?? 0) - (a.rep ?? 0))
+        .map(([id, l]) => ({
+          value: id,
+          label: `${leagueName(id, l, config.competitions)} · level ${Math.round((l.rep ?? 0) / 100)}`,
+        })),
+    [data, config.competitions],
+  )
+
   const results = useMemo(() => {
     if (!data) return []
     const file = data.file
@@ -136,7 +156,14 @@ export function World() {
     const myClub = file.meta.myClub
 
     const minMin = f.minMinutes ? Number(f.minMinutes) : null
-    const out: { row: WorldRow; score: number | null; stat: number | null }[] = []
+    const lvlMin = f.minLevel ? Number(f.minLevel) : null
+    const top = topLevel(file)
+    const out: {
+      row: WorldRow
+      score: number | null
+      stat: number | null
+      level: ReturnType<typeof levelOf>
+    }[] = []
     for (const r of file.rows) {
       if (f.hideMine && r[5] && r[5] === myClub) continue
       if (amin !== null && (r[2] ?? 0) < amin) continue
@@ -150,34 +177,45 @@ export function World() {
       if (wanted.size && !parsePositions(r[7]).some((p) => wanted.has(p))) continue
       if (wantedTraits.length && !wantedTraits.every((b) => r[20]?.includes(b))) continue
       if (minMin !== null && stats && (stats.get(r[0])?.minutes ?? 0) < minMin) continue
+      if (f.league && String(r[28] ?? '') !== f.league) continue
+      const level = levelOf(r, file.leagues)
+      if (lvlMin !== null && (level?.level ?? 0) < lvlMin) continue
+      const stat = metric && stats ? metricValue(stats.get(r[0]), metric.key) : null
       out.push({
         row: r,
         score: null,
-        stat: metric && stats ? metricValue(stats.get(r[0]), metric.key) : null,
+        // Weighed: the figure times the player's level against the strongest league's
+        stat: f.weigh && stat !== null ? stat * Math.min(1, (level?.level ?? 0) / top) : stat,
+        level,
       })
     }
     if (role) {
       for (const o of out) {
-        o.score = roleScore(rowToPlayer(file, o.row).attributes, role, config.roleWeights)
+        const score = roleScore(rowToPlayer(file, o.row).attributes, role, config.roleWeights)
+        o.score =
+          f.weigh && score !== null
+            ? Math.round(score * Math.min(1, (o.level?.level ?? 0) / top))
+            : score
       }
     }
-    const col: SortCol =
-      sort?.col ?? (metric ? 'stat' : role ? 'role' : config.showHidden ? 'ca' : 'name')
+    const col: SortCol = sort?.col ?? (metric ? 'stat' : role ? 'role' : 'value')
     const asc = sort?.asc ?? col === 'name'
     const val = (o: (typeof out)[number]): number | string | null =>
       col === 'name'
         ? o.row[1]
         : col === 'age'
           ? o.row[2]
-          : col === 'stat'
-            ? o.stat
-            : col === 'role'
-              ? o.score
-              : col === 'ca'
-                ? o.row[9]
-                : col === 'pa'
-                  ? o.row[10]
-                  : o.row[11]
+          : col === 'level'
+            ? (o.level?.level ?? null)
+            : col === 'stat'
+              ? o.stat
+              : col === 'role'
+                ? o.score
+                : col === 'ca'
+                  ? o.row[9]
+                  : col === 'pa'
+                    ? o.row[10]
+                    : o.row[11]
     return out.sort((a, b) => {
       if (col === 'name')
         return asc
@@ -218,13 +256,35 @@ export function World() {
   const toggleSort = (col: SortCol) =>
     setSort((s) => (s?.col === col ? { col, asc: !s.asc } : { col, asc: col === 'name' }))
   const sortIcon = (col: SortCol): typeof ChevronUp | null =>
-    (sort?.col ?? (metric ? 'stat' : role ? 'role' : config.showHidden ? 'ca' : 'name')) === col
+    (sort?.col ?? (metric ? 'stat' : role ? 'role' : 'value')) === col
       ? (sort?.asc ?? col === 'name')
         ? ChevronUp
         : ChevronDown
       : null
 
   const shown = results.slice(0, limit)
+  const leagueText = (row: WorldRow) =>
+    row[28] != null
+      ? leagueName(row[28], data.file.leagues?.[String(row[28])], config.competitions)
+      : null
+  const leagueCell = (row: WorldRow, level: ReturnType<typeof levelOf>) => (
+    <span
+      className="inline-flex max-w-56 items-center gap-1.5"
+      title={
+        level?.from === 'club'
+          ? 'No table for this league in the save: level from the club’s reputation'
+          : 'Level: average reputation of the league’s clubs'
+      }
+    >
+      <span className="truncate">{leagueText(row) ?? '–'}</span>
+      {level && (
+        <span className="shrink-0 tabular-nums">
+          {level.from === 'club' ? '≈' : ''}
+          {level.level}
+        </span>
+      )}
+    </span>
+  )
 
   return (
     <>
@@ -241,46 +301,28 @@ export function World() {
             type="search"
             placeholder="Search name"
             aria-label="Search name"
-            value={name}
+            value={nameInput}
             onChange={(e) => (setName(e.target.value), setLimit(PAGE))}
             className={`${input} flex-1 sm:max-w-xs`}
           />
-          <select
-            aria-label="Rank by role"
+          <PickList
             value={roleId}
-            onChange={(e) => (setRoleId(e.target.value), setSort(null))}
-            className={`${input} sm:w-64`}
-          >
-            <option value="">Rank by role…</option>
-            {(['ip', 'oop'] as const).map((phase) => (
-              <optgroup key={phase} label={phase === 'ip' ? 'In possession' : 'Out of possession'}>
-                {config.roles
-                  .filter((r) => r.phase === phase)
-                  .map((r) => (
-                    <option key={r.id} value={r.id}>
-                      {r.name}
-                    </option>
-                  ))}
-              </optgroup>
-            ))}
-          </select>
-          <select
-            aria-label="Rank by stat"
+            placeholder="Rank by role"
+            onChange={(v) => (setRoleId(v), setSort(null))}
+            options={config.roles.map((r) => ({
+              value: r.id,
+              label: r.name,
+              group: r.phase === 'ip' ? 'In possession' : 'Out of possession',
+            }))}
+            className="w-full sm:w-64"
+          />
+          <PickList
             value={statKey}
-            onChange={(e) => (setStatKey(e.target.value), setSort(null))}
-            className={`${input} sm:w-64`}
-          >
-            <option value="">Rank by stat…</option>
-            {STAT_GROUPS.map((g) => (
-              <optgroup key={g} label={g}>
-                {METRICS.filter((m) => m.group === g).map((m) => (
-                  <option key={m.key} value={m.key}>
-                    {m.label}
-                  </option>
-                ))}
-              </optgroup>
-            ))}
-          </select>
+            placeholder="Rank by stat"
+            onChange={(v) => (setStatKey(v), setSort(null))}
+            options={METRICS.map((m) => ({ value: m.key, label: m.label, group: m.group }))}
+            className="w-full sm:w-64"
+          />
           <button
             type="button"
             aria-expanded={showFilters}
@@ -365,17 +407,44 @@ export function World() {
                 aria-label="Minimum minutes played"
                 placeholder="Minutes from"
                 inputMode="numeric"
-                value={minMinutes}
+                value={minMinutesInput}
                 onChange={(e) => setMinMinutes(e.target.value)}
                 className={input}
               />
+              <PickList
+                value={league}
+                placeholder="Any league"
+                onChange={setLeague}
+                options={leagueOptions}
+                className="col-span-2"
+              />
+              <input
+                aria-label="Minimum level"
+                title="Level 0–100: the league's strength (average reputation of its clubs), or the club's reputation where the save has no table for its league"
+                placeholder="Level from"
+                inputMode="numeric"
+                value={minLevelInput}
+                onChange={(e) => setMinLevel(e.target.value)}
+                className={input}
+              />
+              <label
+                className="flex min-h-11 items-center gap-2 text-sm"
+                title="Role scores and stats are multiplied by the player's level against the strongest league's, so the same numbers count for less in a weaker league"
+              >
+                <input
+                  type="checkbox"
+                  checked={weigh}
+                  onChange={(e) => setWeigh(e.target.checked)}
+                />
+                Weigh by level
+              </label>
             </div>
             <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-6">
               <input
                 aria-label="Minimum age"
                 placeholder="Age from"
                 inputMode="numeric"
-                value={ageMin}
+                value={ageMinInput}
                 onChange={(e) => setAgeMin(e.target.value)}
                 className={input}
               />
@@ -383,7 +452,7 @@ export function World() {
                 aria-label="Maximum age"
                 placeholder="Age to"
                 inputMode="numeric"
-                value={ageMax}
+                value={ageMaxInput}
                 onChange={(e) => setAgeMax(e.target.value)}
                 className={input}
               />
@@ -404,14 +473,14 @@ export function World() {
                 aria-label="Nationality"
                 placeholder="Nationality"
                 list="world-nations"
-                value={nation}
+                value={nationInput}
                 onChange={(e) => setNation(e.target.value)}
                 className={input}
               />
               <input
                 aria-label="Club or division"
                 placeholder="Club or division"
-                value={club}
+                value={clubInput}
                 onChange={(e) => setClub(e.target.value)}
                 className={input}
               />
@@ -421,7 +490,7 @@ export function World() {
                     aria-label="Minimum CA"
                     placeholder="CA ≥"
                     inputMode="numeric"
-                    value={caMin}
+                    value={caMinInput}
                     onChange={(e) => setCaMin(e.target.value)}
                     className={input}
                   />
@@ -429,7 +498,7 @@ export function World() {
                     aria-label="Minimum PA"
                     placeholder="PA ≥"
                     inputMode="numeric"
-                    value={paMin}
+                    value={paMinInput}
                     onChange={(e) => setPaMin(e.target.value)}
                     className={input}
                   />
@@ -518,7 +587,9 @@ export function World() {
                 <span className="text-sm text-muted">{row[2]}</span>
               </div>
               <p className="truncate text-xs text-muted">
-                {[row[7], row[3], row[5] ?? 'Free agent'].filter(Boolean).join(' · ')}
+                {[row[7], row[3], row[5] ?? 'Free agent', leagueText(row)]
+                  .filter(Boolean)
+                  .join(' · ')}
                 {config.showHidden && row[9] ? ` · CA ${row[9]}/${row[10]}` : ''}
               </p>
             </Link>
@@ -560,6 +631,11 @@ export function World() {
               <th className="px-3 uppercase">Position</th>
               <th className="px-3 uppercase">Nation</th>
               <th className="px-3 uppercase">Club</th>
+              <SortTh
+                label={'League'}
+                icon={sortIcon('level')}
+                onClick={() => toggleSort('level')}
+              />
               {config.showHidden && (
                 <SortTh label={'CA'} icon={sortIcon('ca')} onClick={() => toggleSort('ca')} />
               )}
@@ -574,7 +650,7 @@ export function World() {
             </tr>
           </thead>
           <tbody className="divide-y divide-border bg-surface tabular-nums">
-            {shown.map(({ row, score, stat }) => (
+            {shown.map(({ row, score, stat, level }) => (
               <tr key={row[0]} className="group hover:bg-surface-2">
                 <td className="sticky left-0 z-[1] bg-surface px-4 py-2 whitespace-nowrap shadow-[inset_-1px_0_0_var(--color-border)] group-hover:bg-surface-2">
                   <Link
@@ -620,6 +696,9 @@ export function World() {
                     <ClubCrest id={row[23]} />
                     {row[5] ?? 'Free agent'}
                   </span>
+                </td>
+                <td className="max-w-56 px-3 py-2 whitespace-nowrap text-muted">
+                  {leagueCell(row, level)}
                 </td>
                 {config.showHidden && <td className="px-3 py-2">{row[9] ?? '–'}</td>}
                 {config.showHidden && <td className="px-3 py-2">{row[10] ?? '–'}</td>}
