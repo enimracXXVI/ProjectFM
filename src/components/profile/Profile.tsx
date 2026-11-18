@@ -701,7 +701,7 @@ export function ProfileTab({ data, footer }: { data: ProfileData; footer?: React
   return (
     <>
       <div className="hidden gap-4 lg:grid lg:grid-cols-[16rem_minmax(0,1fr)]">
-        <div className="grid min-w-0 grid-cols-[minmax(0,1fr)] content-start gap-4 self-start overflow-hidden rounded-xl border border-border bg-surface p-4">
+        <div className="grid min-w-0 grid-cols-[minmax(0,1fr)] content-start gap-4 self-start rounded-xl border border-border bg-surface p-4">
           <PositionsPitch data={data} />
           <Details data={data} withFeet />
         </div>
@@ -715,7 +715,7 @@ export function ProfileTab({ data, footer }: { data: ProfileData; footer?: React
           <AttributesCompact data={data} />
           {footer && <div className="mt-2 text-xs text-muted">{footer}</div>}
         </div>
-        <div className="min-w-0 overflow-hidden rounded-xl border border-border bg-surface p-4">
+        <div className="min-w-0 rounded-xl border border-border bg-surface p-4">
           <Details data={data} withFeet={false} />
         </div>
       </div>

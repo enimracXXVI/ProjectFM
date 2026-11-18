@@ -7,6 +7,8 @@ export interface PickOption {
   value: string
   label: string
   group?: string
+  /** Shown in a second column (e.g. the positions that can play a role). */
+  detail?: string
 }
 
 /**
@@ -50,7 +52,7 @@ export function PickList({
   const groups = useMemo(() => {
     const words = fold(q).split(/\s+/).filter(Boolean)
     const hit = options.filter((o) => {
-      const t = fold(`${o.label} ${o.group ?? ''}`)
+      const t = fold(`${o.label} ${o.group ?? ''} ${o.detail ?? ''}`)
       return words.every((w) => t.includes(w))
     })
     const out = new Map<string, PickOption[]>()
@@ -92,7 +94,7 @@ export function PickList({
         )}
       </div>
       {open && (
-        <div className="absolute top-full left-0 z-30 mt-1 w-full min-w-72 rounded-xl border border-border bg-surface p-2 shadow-2xl shadow-black/50">
+        <div className="absolute top-full left-0 z-30 mt-1 w-full min-w-80 rounded-xl border border-border bg-surface p-2 shadow-2xl shadow-black/50 sm:min-w-[28rem]">
           <div className="relative mb-2">
             <Search
               className="pointer-events-none absolute top-1/2 left-2.5 size-4 -translate-y-1/2 text-muted"
@@ -130,11 +132,17 @@ export function PickList({
                         aria-selected={o.value === value}
                         onClick={() => pick(o.value)}
                         className={clsx(
-                          'flex min-h-9 w-full items-center rounded-md px-2 text-left hover:bg-surface-2',
+                          'grid min-h-9 w-full items-center gap-3 rounded-md px-2 text-left hover:bg-surface-2',
+                          o.detail !== undefined && 'grid-cols-[minmax(0,1fr)_minmax(0,1fr)]',
                           o.value === value && 'bg-accent/15 text-accent',
                         )}
                       >
-                        {o.label}
+                        <span className="truncate">{o.label}</span>
+                        {o.detail !== undefined && (
+                          <span className="truncate text-xs text-muted" title={o.detail}>
+                            {o.detail}
+                          </span>
+                        )}
                       </button>
                     </li>
                   ))}

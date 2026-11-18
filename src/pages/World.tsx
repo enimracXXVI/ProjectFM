@@ -77,6 +77,8 @@ export function World() {
   const [league, setLeague] = useUrlState('league', '', TEXT)
   const [minLevelInput, setMinLevel, minLevel] = useUrlText('minLevel')
   const [weigh, setWeigh] = useUrlState('weigh', false, BOOL)
+  // Ranking by role: only players who can play one of the role's positions
+  const [roleNatural, setRoleNatural] = useUrlState('roleNatural', true, BOOL)
   const [minMinutesInput, setMinMinutes, minMinutes] = useUrlText('minMin')
   const [showFilters, setShowFilters] = useUrlState('filters', false, BOOL)
   const [sort, setSort] = useUrlState<{ col: SortCol; asc: boolean } | null>('sort', null)
@@ -95,6 +97,7 @@ export function World() {
     caMin,
     paMin,
     hideMine,
+    roleNatural,
     statKey,
     profileId,
     statKind,
@@ -192,6 +195,8 @@ export function World() {
       if (clubQ && !searchKey(`${r[5] ?? ''} ${r[6] ?? ''}`).includes(clubQ)) continue
       if (wanted.size && !parsePositions(r[7]).some((p) => wanted.has(p))) continue
       if (wantedTraits.length && !wantedTraits.every((b) => r[20]?.includes(b))) continue
+      if (role && f.roleNatural && !parsePositions(r[7]).some((p) => role.positions.includes(p)))
+        continue
       if (minMin !== null && stats && (stats.get(r[0])?.minutes ?? 0) < minMin) continue
       if (f.league && String(r[28] ?? '') !== f.league) continue
       const level = levelOf(r, file.leagues)
@@ -349,9 +354,23 @@ export function World() {
               value: r.id,
               label: r.name,
               group: r.phase === 'ip' ? 'In possession' : 'Out of possession',
+              detail: r.positions.join(', ') || '–',
             }))}
             className="w-full sm:w-64"
           />
+          {role && (
+            <label
+              className="flex min-h-11 items-center gap-2 text-sm"
+              title={`Only players who can play ${role.positions.join(', ')}`}
+            >
+              <input
+                type="checkbox"
+                checked={roleNatural}
+                onChange={(e) => setRoleNatural(e.target.checked)}
+              />
+              Can play the role
+            </label>
+          )}
           <PickList
             value={profileId}
             placeholder="Rank by stat profile"
