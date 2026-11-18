@@ -120,6 +120,13 @@ export const SETTINGS_GROUPS: SettingsGroup[] = [
           'The hidden-value ranges behind each media handling style (Evasive, Reserved, Outspoken…), found by matching 93 players in FM27 with the save. Level-headed and Media-friendly cannot be told apart from the save, so those players show both.',
       },
       {
+        to: '/settings/stat-profiles',
+        label: 'Stat profiles',
+        hint: 'The stats that matter for each role and position',
+        about:
+          'For each role and each position, the season stats that matter (xG, progressive passes, tackles won…). World ranks players by a profile: 0–100, the average of their percentiles against the players who play that position.',
+      },
+      {
         to: '/settings/statuses',
         label: 'Statuses',
         hint: 'Meaning, description and colours of FM status codes',

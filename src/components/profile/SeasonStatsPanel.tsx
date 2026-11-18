@@ -1,4 +1,9 @@
+import { clsx } from 'clsx'
 import { useMemo, useState } from 'react'
+import { scoreTextColor } from '../../lib/attributes'
+import { useConfig } from '../../lib/config'
+import { scoreColor } from '../../lib/roleFit'
+import { DEFAULT_PROFILE_MINUTES, fitsProfile, profileScores } from '../../world/profiles'
 import { useCurrentCareer } from '../../lib/career'
 import { seasonText } from '../../data/seasons'
 import { useSeasonStats, useStatsSeasons } from '../../world/hooks'
@@ -14,10 +19,22 @@ import {
 } from '../../world/stats'
 
 const select = 'min-h-10 rounded-lg border border-border bg-surface-2 px-2 text-sm'
+const metricLabel = (key: string) => METRICS.find((m) => m.key === key)?.label ?? key
 const slug = (t: string) => t.toLowerCase().replace(/[^a-z]+/g, '-')
 
 /** A player's season stats from the save imports: every figure, in boxes, with per 90. */
-export function SeasonStatsPanel({ uid }: { uid: number }) {
+export function SeasonStatsPanel({
+  uid,
+  positions,
+  pool,
+}: {
+  uid: number
+  /** The player's FM positions, for the stat profiles that compare him. */
+  positions?: string | null
+  /** Every player (id and positions) the profiles compare against. */
+  pool?: { id: number; positions: string | null }[]
+}) {
+  const config = useConfig()
   const career = useCurrentCareer()
   const { data: seasons, isPending: listing } = useStatsSeasons(career.id)
   const [picked, setPicked] = useState<number | null>(null)
@@ -25,6 +42,14 @@ export function SeasonStatsPanel({ uid }: { uid: number }) {
   const [kind, setKind] = useState<StatKind>('overall')
   const { data: file, isPending, error } = useSeasonStats(career.id, season)
   const s = useMemo(() => (file ? statsIndex(file, kind).get(uid) : undefined), [file, kind, uid])
+  // His stat profiles (roles and positions he plays): percentiles against that pool
+  const profiles = useMemo(() => {
+    if (!file || !pool || !s) return []
+    const index = statsIndex(file, kind)
+    return config.statProfiles
+      .filter((p) => fitsProfile(p, positions ?? null))
+      .map((p) => ({ p, score: profileScores(p, pool, index, DEFAULT_PROFILE_MINUTES).get(uid) }))
+  }, [file, pool, s, kind, config.statProfiles, positions, uid])
   // Boxes of rows: totals (with per 90 where it means something), then shares
   const groups = useMemo(() => {
     if (!s) return []
@@ -117,6 +142,59 @@ export function SeasonStatsPanel({ uid }: { uid: number }) {
               </a>
             ))}
           </nav>
+          {profiles.length > 0 && (
+            <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+              {profiles.map(({ p, score }) => (
+                <section
+                  key={p.id}
+                  className="min-w-0 self-start rounded-xl border border-border bg-surface p-4"
+                >
+                  <h2 className="mb-1.5 flex items-baseline justify-between gap-2 text-[11px] font-semibold tracking-wide text-muted uppercase">
+                    <span className="truncate">
+                      {p.kind === 'position' ? 'Position' : 'Role'} · {p.name}
+                    </span>
+                    {score && (
+                      <span className={clsx('text-base', scoreTextColor(score.score))}>
+                        {score.score}
+                      </span>
+                    )}
+                  </h2>
+                  {!score ? (
+                    <p className="text-sm text-muted">
+                      Fewer than {DEFAULT_PROFILE_MINUTES} minutes: not compared yet.
+                    </p>
+                  ) : (
+                    <table className="w-full text-sm tabular-nums">
+                      <tbody>
+                        {score.parts.map((x) => (
+                          <tr key={x.key} className="border-t border-border/40">
+                            <td className="py-1.5 pr-2 text-muted">{metricLabel(x.key)}</td>
+                            <td className="py-1.5 text-right">{formatMetric(x.key, x.value)}</td>
+                            <td className="w-24 py-1.5 pl-2">
+                              {x.pct !== null && (
+                                <span className="flex items-center gap-1.5">
+                                  <span className="h-1.5 flex-1 overflow-hidden rounded-full bg-surface-2">
+                                    <span
+                                      className={clsx(
+                                        'block h-full rounded-full',
+                                        scoreColor(x.pct),
+                                      )}
+                                      style={{ width: `${x.pct}%` }}
+                                    />
+                                  </span>
+                                  <span className="w-6 text-right text-xs text-muted">{x.pct}</span>
+                                </span>
+                              )}
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  )}
+                </section>
+              ))}
+            </div>
+          )}
           <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
             {groups.map((g) => (
               <section

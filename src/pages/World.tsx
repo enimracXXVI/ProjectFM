@@ -1,4 +1,5 @@
 import { clsx } from 'clsx'
+import { DEFAULT_PROFILE_MINUTES, profileScores } from '../world/profiles'
 import { PickList } from '../components/PickList'
 import { leagueName, levelOf, topLevel } from '../world/leagues'
 import { useSeasonStats, useStatsSeasons } from '../world/hooks'
@@ -47,7 +48,7 @@ const PAGE = 100
 
 const input = 'min-h-11 w-full rounded-lg border border-border bg-surface px-3 text-base md:text-sm'
 
-type SortCol = 'name' | 'age' | 'role' | 'ca' | 'pa' | 'value' | 'stat' | 'level'
+type SortCol = 'name' | 'age' | 'role' | 'ca' | 'pa' | 'value' | 'stat' | 'level' | 'profile'
 
 export function World() {
   const career = useCurrentCareer()
@@ -70,6 +71,7 @@ export function World() {
   const [hideMine, setHideMine] = useUrlState('hideMine', true, BOOL)
   // Season stats of every player (latest season stored): rank by a figure, minimum minutes
   const [statKey, setStatKey] = useUrlState('stat', '', TEXT)
+  const [profileId, setProfileId] = useUrlState('profile', '', TEXT)
   const [statKind, setStatKind] = useUrlState<StatKind>('statKind', 'overall', TEXT as never)
   // League and level: compare players across leagues of different strength
   const [league, setLeague] = useUrlState('league', '', TEXT)
@@ -94,6 +96,7 @@ export function World() {
     paMin,
     hideMine,
     statKey,
+    profileId,
     statKind,
     minMinutes,
     league,
@@ -102,7 +105,7 @@ export function World() {
   })
   const { data: seasons } = useStatsSeasons(career.id)
   const statsSeason = seasons?.[0] ?? null
-  const wantStats = !!(filters.statKey || filters.minMinutes)
+  const wantStats = !!(filters.statKey || filters.minMinutes || filters.profileId)
   const { data: statsFile, isPending: statsLoading } = useSeasonStats(
     career.id,
     wantStats ? statsSeason : null,
@@ -112,6 +115,18 @@ export function World() {
     [statsFile, filters.statKind],
   )
   const metric = METRICS.find((m) => m.key === filters.statKey) ?? null
+  const profile = config.statProfiles.find((p) => p.id === filters.profileId) ?? null
+  // Percentile scores against everyone who plays the profile's positions
+  const profileScoreMap = useMemo(() => {
+    if (!profile || !stats || !data) return null
+    const minMin = filters.minMinutes ? Number(filters.minMinutes) : DEFAULT_PROFILE_MINUTES
+    return profileScores(
+      profile,
+      data.file.rows.map((r) => ({ id: r[0], positions: r[7] })),
+      stats,
+      minMin,
+    )
+  }, [profile, stats, data, filters.minMinutes])
 
   const regionOf = useMemo(() => regionLookup(config.regions), [config.regions])
   const role = config.roles.find((r) => r.id === filters.roleId)
@@ -163,6 +178,7 @@ export function World() {
       score: number | null
       stat: number | null
       level: ReturnType<typeof levelOf>
+      prof: number | null
     }[] = []
     for (const r of file.rows) {
       if (f.hideMine && r[5] && r[5] === myClub) continue
@@ -181,7 +197,12 @@ export function World() {
       const level = levelOf(r, file.leagues)
       if (lvlMin !== null && (level?.level ?? 0) < lvlMin) continue
       const stat = metric && stats ? metricValue(stats.get(r[0]), metric.key) : null
+      // A stat profile only ranks the players it compares
+      const ps = profileScoreMap ? profileScoreMap.get(r[0]) : undefined
+      if (profileScoreMap && !ps) continue
+      const factor = Math.min(1, (level?.level ?? 0) / top)
       out.push({
+        prof: ps ? (f.weigh ? Math.round(ps.score * factor) : ps.score) : null,
         row: r,
         score: null,
         // Weighed: the figure times the player's level against the strongest league's
@@ -198,24 +219,27 @@ export function World() {
             : score
       }
     }
-    const col: SortCol = sort?.col ?? (metric ? 'stat' : role ? 'role' : 'value')
+    const col: SortCol =
+      sort?.col ?? (profile ? 'profile' : metric ? 'stat' : role ? 'role' : 'value')
     const asc = sort?.asc ?? col === 'name'
     const val = (o: (typeof out)[number]): number | string | null =>
       col === 'name'
         ? o.row[1]
         : col === 'age'
           ? o.row[2]
-          : col === 'level'
-            ? (o.level?.level ?? null)
-            : col === 'stat'
-              ? o.stat
-              : col === 'role'
-                ? o.score
-                : col === 'ca'
-                  ? o.row[9]
-                  : col === 'pa'
-                    ? o.row[10]
-                    : o.row[11]
+          : col === 'profile'
+            ? o.prof
+            : col === 'level'
+              ? (o.level?.level ?? null)
+              : col === 'stat'
+                ? o.stat
+                : col === 'role'
+                  ? o.score
+                  : col === 'ca'
+                    ? o.row[9]
+                    : col === 'pa'
+                      ? o.row[10]
+                      : o.row[11]
     return out.sort((a, b) => {
       if (col === 'name')
         return asc
@@ -229,7 +253,19 @@ export function World() {
         typeof x === 'number' && typeof y === 'number' ? x - y : String(x).localeCompare(String(y))
       return asc ? d : -d
     })
-  }, [data, filters, role, config.roleWeights, config.showHidden, regionOf, sort, stats, metric])
+  }, [
+    data,
+    filters,
+    role,
+    config.roleWeights,
+    config.showHidden,
+    regionOf,
+    sort,
+    stats,
+    metric,
+    profileScoreMap,
+    profile,
+  ])
 
   if (isPending)
     return (
@@ -256,7 +292,7 @@ export function World() {
   const toggleSort = (col: SortCol) =>
     setSort((s) => (s?.col === col ? { col, asc: !s.asc } : { col, asc: col === 'name' }))
   const sortIcon = (col: SortCol): typeof ChevronUp | null =>
-    (sort?.col ?? (metric ? 'stat' : role ? 'role' : 'value')) === col
+    (sort?.col ?? (profile ? 'profile' : metric ? 'stat' : role ? 'role' : 'value')) === col
       ? (sort?.asc ?? col === 'name')
         ? ChevronUp
         : ChevronDown
@@ -313,6 +349,17 @@ export function World() {
               value: r.id,
               label: r.name,
               group: r.phase === 'ip' ? 'In possession' : 'Out of possession',
+            }))}
+            className="w-full sm:w-64"
+          />
+          <PickList
+            value={profileId}
+            placeholder="Rank by stat profile"
+            onChange={(v) => (setProfileId(v), setSort(null))}
+            options={config.statProfiles.map((p) => ({
+              value: p.id,
+              label: p.name,
+              group: p.kind === 'role' ? 'Roles' : 'Positions',
             }))}
             className="w-full sm:w-64"
           />
@@ -570,7 +617,7 @@ export function World() {
           layout === 'table' && 'hidden',
         )}
       >
-        {shown.map(({ row, score, stat }) => (
+        {shown.map(({ row, score, stat, prof }) => (
           <li key={row[0]}>
             <Link
               to={`/world/${row[0]}`}
@@ -579,6 +626,14 @@ export function World() {
               <div className="flex items-center gap-2">
                 <span className="min-w-0 flex-1 truncate font-semibold">{row[1]}</span>
                 {score !== null && <span className="font-semibold tabular-nums">{score}</span>}
+                {prof !== null && (
+                  <span
+                    className={clsx('font-semibold tabular-nums', scoreTextColor(prof))}
+                    title={profile?.name}
+                  >
+                    {prof}
+                  </span>
+                )}
                 {metric && (
                   <span className="font-semibold tabular-nums" title={metric.label}>
                     {formatMetric(metric.key, stat)}
@@ -613,6 +668,13 @@ export function World() {
                 onClick={() => toggleSort('name')}
                 className="sticky left-0 z-[1] bg-surface-2 px-4 shadow-[inset_-1px_0_0_var(--color-border)]"
               />
+              {profile && (
+                <SortTh
+                  label={profile.name}
+                  icon={sortIcon('profile')}
+                  onClick={() => toggleSort('profile')}
+                />
+              )}
               {metric && (
                 <SortTh
                   label={metric.label}
@@ -650,7 +712,7 @@ export function World() {
             </tr>
           </thead>
           <tbody className="divide-y divide-border bg-surface tabular-nums">
-            {shown.map(({ row, score, stat, level }) => (
+            {shown.map(({ row, score, stat, level, prof }) => (
               <tr key={row[0]} className="group hover:bg-surface-2">
                 <td className="sticky left-0 z-[1] bg-surface px-4 py-2 whitespace-nowrap shadow-[inset_-1px_0_0_var(--color-border)] group-hover:bg-surface-2">
                   <Link
@@ -661,6 +723,23 @@ export function World() {
                     {row[1]}
                   </Link>
                 </td>
+                {profile && (
+                  <td className="px-3 py-2">
+                    {prof === null ? (
+                      <span className="text-muted">–</span>
+                    ) : (
+                      <span className="inline-flex items-center gap-2">
+                        <span className="inline-block h-1.5 w-12 overflow-hidden rounded-full bg-surface-2">
+                          <span
+                            className={clsx('block h-full rounded-full', scoreColor(prof))}
+                            style={{ width: `${prof}%` }}
+                          />
+                        </span>
+                        <span className={clsx('font-semibold', scoreTextColor(prof))}>{prof}</span>
+                      </span>
+                    )}
+                  </td>
+                )}
                 {metric && (
                   <td className="px-3 py-2 font-semibold">{formatMetric(metric.key, stat)}</td>
                 )}

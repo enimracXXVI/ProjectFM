@@ -41,6 +41,11 @@ export function WorldPlayer() {
     const row = data?.file.rows.find((r) => String(r[0]) === id)
     return row && data ? rowToPlayer(data.file, row) : null
   }, [data, id])
+  // Everyone the stat profiles compare him with
+  const pool = useMemo(
+    () => data?.file.rows.map((r) => ({ id: r[0], positions: r[7] })) ?? [],
+    [data],
+  )
 
   if (isPending) return <p className="text-sm text-muted">Opening the world database…</p>
   if (error) return <Placeholder>{error.message}</Placeholder>
@@ -231,7 +236,7 @@ export function WorldPlayer() {
         </div>
       )}
 
-      {tab === 'stats' && <SeasonStatsPanel uid={p.id} />}
+      {tab === 'stats' && <SeasonStatsPanel uid={p.id} positions={p.positions} pool={pool} />}
 
       {tab === 'notes' && <NotesPanel scope={{ kind: 'world', id: String(p.id), name: p.name }} />}
     </>

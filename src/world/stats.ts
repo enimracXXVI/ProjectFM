@@ -89,7 +89,7 @@ export const STAT_INFO: Record<string, { label: string; group: string; per90?: b
   blocks: { label: 'Blocks', group: 'Defending', per90: true },
   shots_blocked: { label: 'Shots blocked', group: 'Defending', per90: true },
   clearances: { label: 'Clearances', group: 'Defending', per90: true },
-  mistakes_leading_to_goal: { label: 'Mistakes leading to goal', group: 'Defending' },
+  mistakes_leading_to_goal: { label: 'Mistakes leading to goal', group: 'Defending', per90: true },
   aerial_challenges_attempted: { label: 'Aerial challenges', group: 'Aerial', per90: true },
   headers_won: { label: 'Headers won', group: 'Aerial', per90: true },
   key_headers: { label: 'Key headers', group: 'Aerial', per90: true },
@@ -98,7 +98,7 @@ export const STAT_INFO: Record<string, { label: string; group: string; per90?: b
   fouls_made: { label: 'Fouls made', group: 'Discipline', per90: true },
   yellow_cards: { label: 'Yellow cards', group: 'Discipline' },
   red_cards: { label: 'Red cards', group: 'Discipline' },
-  clean_sheets: { label: 'Clean sheets', group: 'Goalkeeping' },
+  clean_sheets: { label: 'Clean sheets', group: 'Goalkeeping', per90: true },
   goals_allowed: { label: 'Goals conceded', group: 'Goalkeeping', per90: true },
   shots_on_target_faced: { label: 'Shots on target faced', group: 'Goalkeeping', per90: true },
   saves_held: { label: 'Saves held', group: 'Goalkeeping', per90: true },
@@ -123,6 +123,17 @@ const RATIOS: Record<string, [string, string, string, string]> = {
   header_pct: ['Headers won %', 'Aerial', 'headers_won', 'aerial_challenges_attempted'],
 }
 const XG_PER_SHOT = 'xg_per_shot'
+
+/** Totals worked out from others: [label, box, value]. They also get a per-90 figure. */
+const DERIVED: Record<string, [string, string, (s: PlayerStats) => number]> = {
+  goals_minus_xg: ['Goals minus xG', 'Shooting', (s) => (s.goals ?? 0) - (s.expected_goals ?? 0)],
+  saves: [
+    'Saves',
+    'Goalkeeping',
+    (s) => (s.saves_held ?? 0) + (s.saves_parried ?? 0) + (s.saves_tipped ?? 0),
+  ],
+}
+const SAVE_PCT = 'save_pct'
 
 export const STAT_GROUPS = [
   'General',
@@ -151,16 +162,25 @@ export const METRICS: Metric[] = [
   ]),
   ...Object.entries(RATIOS).map(([key, [label, group]]) => ({ key, label, group })),
   { key: XG_PER_SHOT, label: 'xG per shot', group: 'Shooting' },
+  { key: SAVE_PCT, label: 'Save %', group: 'Goalkeeping' },
+  ...Object.entries(DERIVED).flatMap(([key, [label, group]]) => [
+    { key, label, group },
+    { key: `${key}/90`, label: `${label} per 90`, group },
+  ]),
 ].sort((a, b) => STAT_GROUPS.indexOf(a.group) - STAT_GROUPS.indexOf(b.group))
 
 /** A figure for a player: a total, "<total>/90", or a share. Null when it cannot be worked out. */
 export function metricValue(s: PlayerStats | undefined, key: string): number | null {
   if (!s) return null
   if (key.endsWith('/90')) {
-    const v = s[key.slice(0, -3)]
+    const base = key.slice(0, -3)
+    const v = DERIVED[base] ? DERIVED[base][2](s) : s[base]
     return v === undefined || !s.minutes ? null : (v / s.minutes) * 90
   }
+  if (DERIVED[key]) return DERIVED[key][2](s)
   if (key === XG_PER_SHOT) return s.shots ? s.expected_goals / s.shots : null
+  if (key === SAVE_PCT)
+    return s.shots_on_target_faced ? (DERIVED.saves[2](s) / s.shots_on_target_faced) * 100 : null
   const r = RATIOS[key]
   if (r) return s[r[3]] ? (s[r[2]] / s[r[3]]) * 100 : null
   return s[key] ?? null
@@ -169,7 +189,7 @@ export function metricValue(s: PlayerStats | undefined, key: string): number | n
 /** A figure as text: whole numbers as they are, others to 2 decimals, shares with %. */
 export function formatMetric(key: string, v: number | null): string {
   if (v === null) return '–'
-  if (key in RATIOS) return `${Math.round(v)}%`
+  if (key in RATIOS || key === SAVE_PCT) return `${Math.round(v)}%`
   if (key.endsWith('/90')) return v.toFixed(2)
   return Number.isInteger(v) ? String(v) : v.toFixed(2)
 }
