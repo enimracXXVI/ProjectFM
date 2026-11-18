@@ -29,6 +29,7 @@ reader/scanner/obj/
 reader/scanner/dist/
 public/pyodide/
 
-# Save reader, packed from savereader/ before dev and build
-public/fmsave/savereader.tar
+# Newest fmsave, downloaded before dev and build
+public/fmsave/fmsave-latest.whl
+public/fmsave/fmsave-latest.json
 __pycache__/

@@ -118,6 +118,7 @@ export function Import() {
           summary={save.summary}
           world={save.world}
           stats={save.stats}
+          reader={save.reader}
           statsPlayers={save.statsPlayers}
           fileName={save.name}
           onDone={() => setSave(null)}

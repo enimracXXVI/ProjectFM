@@ -1,6 +1,6 @@
 /// <reference lib="webworker" />
-// Reads an FM save in this worker with Pyodide (Python in the browser) and ProjectFM's own
-// save reader (savereader/, started from fmsave, MIT).
+// Reads an FM save in this worker with Pyodide (Python in the browser) and fmsave (MIT): the
+// newest release (downloaded at each build) or, when that fails, the known-good copy.
 // The file is mounted read-only with WORKERFS: its bytes are read as needed and never
 // leave the computer. Pyodide and fmsave are served by ProjectFM itself.
 import { buildWorld } from '../world/world'
@@ -17,14 +17,16 @@ interface PyodideLike {
     filesystems: { WORKERFS: { stream_ops: { read: (...a: unknown[]) => unknown } } }
     ErrnoError: new (code: number) => Error
   }
-  unpackArchive(buffer: ArrayBuffer, format: string, options?: { extractDir?: string }): void
+  unpackArchive(buffer: ArrayBuffer, format: string): void
   runPython(code: string): unknown
   pyimport(name: string): { extract: (path: string) => string }
 }
 
 let ready: Promise<PyodideLike> | null = null
 
-async function boot(base: string): Promise<PyodideLike> {
+export type ReaderCopy = 'latest' | 'known-good'
+
+async function boot(base: string, copy: ReaderCopy): Promise<PyodideLike> {
   const indexURL = new URL('pyodide/', base).href
   const { loadPyodide } = (await import(/* @vite-ignore */ indexURL + 'pyodide.mjs')) as {
     loadPyodide: (o: { indexURL: string }) => Promise<PyodideLike>
@@ -41,11 +43,11 @@ async function boot(base: string): Promise<PyodideLike> {
       throw new py.FS.ErrnoError(29)
     }
   }
-  // ProjectFM's own save reader (savereader/, packed at build time)
-  const reader = await (
-    await fetch(new URL('fmsave/savereader.tar', base), { cache: 'no-store' })
+  // fmsave: the newest release (downloaded at build time) or the known-good copy
+  const wheel = await (
+    await fetch(new URL(`fmsave/fmsave-${copy}.whl`, base), { cache: 'no-store' })
   ).arrayBuffer()
-  py.unpackArchive(reader, 'tar', { extractDir: '/home/pyodide' })
+  py.unpackArchive(wheel, 'wheel')
   py.FS.writeFile(
     '/home/pyodide/extract.py',
     // Never a cached copy: an old reader would silently miss newer data
@@ -56,10 +58,16 @@ async function boot(base: string): Promise<PyodideLike> {
 }
 
 self.onmessage = async (
-  e: MessageEvent<{ file: File; base: string; knownUids: number[]; zstd?: Uint8Array }>,
+  e: MessageEvent<{
+    file: File
+    base: string
+    knownUids: number[]
+    zstd?: Uint8Array
+    copy?: ReaderCopy
+  }>,
 ) => {
   try {
-    ready ??= boot(e.data.base)
+    ready ??= boot(e.data.base, e.data.copy ?? 'latest')
     const py = await ready
     // A Zstandard frame to unpack (FM tactic files), with the save reader's own Zstandard
     if (e.data.zstd) {
@@ -100,7 +108,8 @@ self.onmessage = async (
     const stats = data.worldStats ? await gzip(data.worldStats) : null
     const statsPlayers = data.worldStats ? new Set(data.worldStats.rows.map((r) => r[0])).size : 0
     delete data.worldStats
-    self.postMessage({ ok: true, data, summary, world, stats, statsPlayers })
+    const readerVersion = String(py.runPython('import fmsave; fmsave.__version__'))
+    self.postMessage({ ok: true, data, summary, world, stats, statsPlayers, readerVersion })
   } catch (err) {
     self.postMessage({ ok: false, error: err instanceof Error ? err.message : String(err) })
   }

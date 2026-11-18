@@ -18,6 +18,7 @@ import type { DumpSummary } from '../import/dump'
 import { READER_VERSION, type SaveData } from '../import/save'
 import { useCareer, useCurrentCareer } from '../lib/career'
 import { uploadSeasonStats, uploadWorld } from '../world/storage'
+import type { ReadSaveResult } from '../import/readSave'
 
 const sameClub = (a: string, b: string) =>
   a.toLowerCase().includes(b.toLowerCase()) || b.toLowerCase().includes(a.toLowerCase())
@@ -32,6 +33,7 @@ export function SaveImport({
   world,
   stats,
   statsPlayers,
+  reader,
   fileName,
   onDone,
   onBusy,
@@ -42,6 +44,8 @@ export function SaveImport({
   /** Every player's season stats (gzipped), stored per season. */
   stats: Blob | null
   statsPlayers: number
+  /** The fmsave version that read the save (and why the newest was not used). */
+  reader?: ReadSaveResult['reader']
   fileName: string
   onDone: () => void
   /** True while the save is being written into the app (the page shows the progress). */
@@ -161,6 +165,13 @@ export function SaveImport({
               : `Competitions: not read${data.competitionsError ? ` (${data.competitionsError})` : ''}`}
           </li>
           <li>World: {summary.totalPlayers.toLocaleString()} players</li>
+          {reader && (
+            <li className={reader.latestError ? 'text-amber-300' : 'text-muted'}>
+              {reader.latestError
+                ? `Save reader: the newest fmsave (${reader.latestVersion ?? '?'}) could not read this save (${reader.latestError}); read with the known-good ${reader.version}`
+                : `Save reader: fmsave ${reader.version}`}
+            </li>
+          )}
           <li className={statsPlayers ? '' : 'text-amber-300'}>
             {statsPlayers
               ? `Season stats: ${statsPlayers.toLocaleString()} players`
