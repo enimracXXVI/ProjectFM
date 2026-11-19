@@ -29,6 +29,12 @@
     height: 100%;
   }
 
+  /* Grid items may shrink below their content (CSS's default is the width of their longest
+     unbreakable text), so long names truncate or wrap instead of pushing out of their box */
+  :where(.grid, .inline-grid) > * {
+    min-width: 0;
+  }
+
   body {
     background: var(--color-bg);
     color: var(--color-text);
