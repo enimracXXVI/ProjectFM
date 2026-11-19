@@ -68,6 +68,8 @@ async function readerVersions(): Promise<{ version: string; fallback: string } |
       'fmsave/fmsave-latest.json',
       new URL(import.meta.env.BASE_URL, location.href),
     )
+    // Never an old copy from GitHub's CDN
+    url.searchParams.set('t', String(Date.now()))
     return (await (await fetch(url, { cache: 'no-store' })).json()) as {
       version: string
       fallback: string

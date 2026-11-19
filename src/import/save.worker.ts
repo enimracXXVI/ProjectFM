@@ -44,14 +44,19 @@ async function boot(base: string, copy: ReaderCopy): Promise<PyodideLike> {
     }
   }
   // fmsave: the newest release (downloaded at build time) or the known-good copy
-  const wheel = await (
-    await fetch(new URL(`fmsave/fmsave-${copy}.whl`, base), { cache: 'no-store' })
-  ).arrayBuffer()
+  // The address changes every time, so neither the browser nor GitHub's CDN (which keeps
+  // files up to 10 minutes after a deploy) can hand back an old copy
+  const fresh = (path: string) => {
+    const url = new URL(path, base)
+    url.searchParams.set('t', String(Date.now()))
+    return fetch(url, { cache: 'no-store' })
+  }
+  const wheel = await (await fresh(`fmsave/fmsave-${copy}.whl`)).arrayBuffer()
   py.unpackArchive(wheel, 'wheel')
   py.FS.writeFile(
     '/home/pyodide/extract.py',
     // Never a cached copy: an old reader would silently miss newer data
-    await (await fetch(new URL('fmsave/extract.py', base), { cache: 'no-store' })).text(),
+    await (await fresh('fmsave/extract.py')).text(),
   )
   py.runPython('import sys; sys.path.insert(0, "/home/pyodide")')
   return py

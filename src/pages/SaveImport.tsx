@@ -164,12 +164,27 @@ export function SaveImport({
               ? `Competitions: ${r.competitions} this season`
               : `Competitions: not read${data.competitionsError ? ` (${data.competitionsError})` : ''}`}
           </li>
+          {data.competitions &&
+            (() => {
+              const c = data.competitions
+              const mine = (c.squads ?? []).filter((x) => x.home === c.club || x.away === c.club)
+              const last = mine
+                .map((x) => x.date)
+                .sort()
+                .at(-1)
+              return (
+                <li className={mine.length ? '' : 'text-amber-300'}>
+                  Match reports: {mine.length} of your matches with line-ups
+                  {last ? ` (latest ${last})` : ''}
+                </li>
+              )
+            })()}
           <li>World: {summary.totalPlayers.toLocaleString()} players</li>
           {reader && (
             <li className={reader.latestError ? 'text-amber-300' : 'text-muted'}>
               {reader.latestError
                 ? `Save reader: the newest fmsave (${reader.latestVersion ?? '?'}) could not read this save (${reader.latestError}); read with the known-good ${reader.version}`
-                : `Save reader: fmsave ${reader.version}`}
+                : `Save reader: fmsave ${reader.version} · ProjectFM reader ${data.reader ?? '?'}`}
             </li>
           )}
           <li className={statsPlayers ? '' : 'text-amber-300'}>
