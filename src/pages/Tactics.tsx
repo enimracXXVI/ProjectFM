@@ -415,8 +415,8 @@ function TacticEditor({ tactic }: { tactic: TacticRow }) {
   const [open, setOpen] = useState({ team: false, brief: false, fit: false })
 
   return (
-    <div className="grid gap-4 lg:grid-cols-[minmax(0,26rem)_1fr]">
-      <Card className="grid content-start gap-3">
+    <div className="grid gap-4 lg:grid-cols-[26rem_minmax(0,1fr)]">
+      <Card className="grid min-w-0 grid-cols-[minmax(0,1fr)] content-start gap-3">
         <div className="flex items-center gap-1">
           <div className="flex flex-1 rounded-lg border border-border p-1" role="tablist">
             {(
@@ -463,7 +463,6 @@ function TacticEditor({ tactic }: { tactic: TacticRow }) {
         </div>
         {/* Pitch: attack at the top */}
         <div className="relative mx-auto aspect-[3/4] w-full max-w-md overflow-hidden rounded-xl border border-emerald-900/60 bg-emerald-950/40">
-          {' '}
           <div className="absolute inset-x-[20%] top-0 h-[12%] border-x border-b border-emerald-800/50" />
           <div className="absolute inset-x-[20%] bottom-0 h-[12%] border-x border-t border-emerald-800/50" />
           <div className="absolute inset-x-0 top-1/2 border-t border-emerald-800/50" />
@@ -678,7 +677,7 @@ function TacticEditor({ tactic }: { tactic: TacticRow }) {
         </div>
       </Card>
 
-      <div className="grid content-start gap-4">
+      <div className="grid min-w-0 content-start gap-4">
         {active !== null && form.slots[active] && (
           <SlotPanel
             key={active}

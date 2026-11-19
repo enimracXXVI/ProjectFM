@@ -179,9 +179,9 @@ export const SETTINGS_GROUPS: SettingsGroup[] = [
       {
         to: '/settings/tactic-rules',
         label: 'Tactic assistant',
-        hint: 'Rules of thumb the assistant applies to team instructions',
+        hint: 'Rules of thumb for team and player instructions',
         about:
-          'The tactic assistant builds from FM27’s styles and template tactics and your squad; these rules of thumb then adjust team instructions to your players (slow centre-backs: no high line…). Switch off any you disagree with.',
+          'The tactic assistant builds shape, XI and roles from your squad (roles FM offers, FM’s role warnings); these rules of thumb then set team and player instructions from your players’ attributes (slow centre-backs: lower line; Long Shots 15+: shoot more…). Switch off any you disagree with.',
       },
       {
         to: '/settings/tactical-styles',
