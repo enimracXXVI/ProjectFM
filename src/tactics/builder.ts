@@ -28,7 +28,8 @@ import {
   type FmInstruction,
 } from './fm'
 import { FORMATIONS, POSITION_TEXT, formationLabel } from './positions'
-import { matchRoles, type TacticalStyle } from './styles'
+import type { TacticalStyle } from './styles'
+import { lineOf, needValue, ROLE_LINKS, type GameIdea, type Line } from './ideas'
 import { FM_TEMPLATES, templateTactic } from './templates'
 import type { PositionCode, TacticSlot } from './types'
 import { roleWarnings, type RoleWarning } from './warnings'
@@ -39,8 +40,10 @@ export interface BuildContext {
   weights: RoleWeights
   codes: FmCodes
   warnings: RoleWarning[]
-  /** Optional style: its preferred roles get a small bonus. */
-  style: TacticalStyle | null
+  /** The game idea: its roles get a bonus, its needs weigh in picking players. */
+  idea?: GameIdea | null
+  /** Role pairings switched off in Settings (id → false). */
+  enabled?: Record<string, boolean>
   /** Players who must be in the XI. */
   mustPlay?: Set<string>
 }
@@ -95,6 +98,16 @@ export function candidateShapes(
   return [...out.values()]
 }
 
+/** The formations a game idea uses, as shapes to build. */
+export function ideaShapes(idea: GameIdea): ShapeCandidate[] {
+  return idea.shapes.flatMap((name) => {
+    const list = FORMATIONS[name]
+    if (!list) return []
+    const slots = list.map((position) => ({ position, positionOop: position }))
+    return [{ key: shapeKey(slots), label: name, from: `Suits ${idea.name}`, slots }]
+  })
+}
+
 /* ------------------------------------------------------------------ build */
 
 export interface SlotPick {
@@ -110,6 +123,8 @@ export interface BuiltTactic {
   picks: SlotPick[]
   /** Average role fit of the XI. */
   fit: number
+  /** 0–100: the XI against what the idea needs from each line (null without an idea). */
+  ideaMatch: number | null
   /** Average fit of the best player left on the bench for each position. */
   depth: number
   outOfPosition: number
@@ -117,7 +132,9 @@ export interface BuiltTactic {
   rank: number
   /** FM's warnings left (none could be removed without a big loss). */
   warnings: string[]
-  /** Role changes made to avoid FM warnings. */
+  /** Role pairings still not met. */
+  unpaired: string[]
+  /** Role changes made for the pairings and to avoid FM warnings, with the reason. */
   changes: string[]
   /** The squad's best players (by their best role) who are not in this XI. */
   leftOut: { player: PlayerRow; score: number }[]
@@ -136,14 +153,15 @@ export function scoreTable(ctx: BuildContext) {
 }
 type Scorer = ReturnType<typeof scoreTable>
 
-function preferredIds(ctx: BuildContext) {
-  return new Set(
-    ctx.style
-      ? matchRoles(ctx.style, ctx.roles)
-          .flatMap((m) => m.roles)
-          .map((r) => r.id)
-      : [],
-  )
+/** Bonus for the idea's roles at a line, best first. */
+function ideaBonus(ctx: BuildContext, pos: PositionCode | null | undefined, phase: 'ip' | 'oop') {
+  const line = lineOf(pos)
+  const r = ctx.idea?.roles.find((x) => x.line === line)
+  const list = r ? r[phase] : []
+  return (id: string) => {
+    const k = list.indexOf(id)
+    return k < 0 ? 0 : 8 - k * 2
+  }
 }
 
 /** Roles FM offers at each slot in each phase. */
@@ -153,37 +171,50 @@ function slotRoles(slots: TacticSlot[], ctx: BuildContext) {
   const fmOop = fmPositions(slots, 'oop', ctx.codes)
   const shIp = shapeOf(slots, 'ip')
   const shOop = shapeOf(slots, 'oop')
-  return slots.map((_, i) => ({
+  return slots.map((s, i) => ({
     ip: rolesAt(ctx.roles, 'ip', fmIp[i], shIp, text),
     oop: rolesAt(ctx.roles, 'oop', fmOop[i], shOop, text),
+    bonusIp: ideaBonus(ctx, s.position, 'ip'),
+    bonusOop: ideaBonus(ctx, s.positionOop ?? s.position, 'oop'),
   }))
 }
 
-const BONUS = 3
-
-/** Roles ranked for a player: score, plus a small bonus for the style's preferred roles. */
-function ranked(p: PlayerRow, list: RoleDef[], score: Scorer, preferred: Set<string>) {
+/** Roles ranked for a player: his fit, plus a bonus for the roles the idea wants there. */
+function ranked(p: PlayerRow, list: RoleDef[], score: Scorer, bonus: (id: string) => number) {
   return list
-    .map((r) => ({ r, s: score(p, r), v: (score(p, r) ?? 0) + (preferred.has(r.id) ? BONUS : 0) }))
+    .map((r) => ({ r, s: score(p, r), v: (score(p, r) ?? 0) + bonus(r.id) }))
     .filter((x) => x.s !== null)
     .sort((a, b) => b.v - a.v)
 }
 
-/** Fill a shape with the squad: XI, roles, then fewer FM warnings. */
+/** 0–100: the player against what the idea needs from his line. */
+function needScore(ctx: BuildContext, p: PlayerRow, pos: PositionCode | null | undefined) {
+  const line = lineOf(pos)
+  const needs = ctx.idea?.needs.filter((n) => line && n.lines.includes(line)) ?? []
+  const v = needs.map((n) => needValue(p, n.attributes)).filter((x): x is number => x !== null)
+  return v.length ? ((avg(v) - 1) / 19) * 100 : null
+}
+
+/** Fill a shape with the squad: XI, roles, then the idea's role pairings and FM's warnings. */
 export function buildShape(
   shape: ShapeCandidate,
   ctx: BuildContext,
   score: Scorer,
-  fixWarnings = true,
+  fix = true,
 ): BuiltTactic {
-  const preferred = preferredIds(ctx)
   const options = slotRoles(shape.slots, ctx)
   const squad = ctx.squad
-  const value = (p: PlayerRow, i: number) => {
-    const a = ranked(p, options[i].ip, score, preferred)[0]
-    const b = ranked(p, options[i].oop, score, preferred)[0]
+  const roleValue = (p: PlayerRow, i: number) => {
+    const a = ranked(p, options[i].ip, score, options[i].bonusIp)[0]
+    const b = ranked(p, options[i].oop, score, options[i].bonusOop)[0]
     const v = [a?.s, b?.s].filter((x): x is number => x != null)
     return v.length ? avg(v) : 0
+  }
+  // A player's value in a slot: his role fit, and what the idea needs from that line
+  const value = (p: PlayerRow, i: number) => {
+    const role = roleValue(p, i)
+    const need = needScore(ctx, p, shape.slots[i].position)
+    return need === null ? role : role * 0.6 + need * 0.4
   }
   const values = squad.map((p) => shape.slots.map((_, i) => value(p, i)))
   const plays = squad.map((p) => shape.slots.map((s) => playsPosition(p, s.position)))
@@ -206,56 +237,103 @@ export function buildShape(
   )
   const xi = chosenCols.map((j) => (j >= 0 && j < squad.length ? squad[j] : null))
 
-  // Best roles for each player
+  // Each player in the role the idea wants there, if he suits it
   let slots: TacticSlot[] = shape.slots.map((s, i) => {
     const p = xi[i]
     return {
       ...s,
       player: p?.id ?? null,
-      role: p ? (ranked(p, options[i].ip, score, preferred)[0]?.r.id ?? null) : null,
-      roleOop: p ? (ranked(p, options[i].oop, score, preferred)[0]?.r.id ?? null) : null,
+      role: p ? (ranked(p, options[i].ip, score, options[i].bonusIp)[0]?.r.id ?? null) : null,
+      roleOop: p ? (ranked(p, options[i].oop, score, options[i].bonusOop)[0]?.r.id ?? null) : null,
     }
   })
 
-  // Fewer FM warnings: the role change that removes most warnings for the least fit
   const changes: string[] = []
-  const count = (ss: TacticSlot[]) => roleWarnings(ss, ctx.roles, ctx.warnings, ctx.codes).length
   const roleName = (id: string | null | undefined) =>
     ctx.roles.find((r) => r.id === id)?.name ?? id ?? '–'
-  let warn = fixWarnings ? count(slots) : 0
-  for (let step = 0; warn > 0 && step < 12; step++) {
-    let best: { slots: TacticSlot[]; warn: number; loss: number; text: string } | null = null
-    slots.forEach((s, i) => {
-      const p = xi[i]
-      if (!p) return
-      for (const phase of ['ip', 'oop'] as const) {
-        const list = ranked(p, phase === 'ip' ? options[i].ip : options[i].oop, score, preferred)
-        const current = list.find((x) => x.r.id === (phase === 'ip' ? s.role : s.roleOop))
-        for (const alt of list.slice(0, 8)) {
-          if (alt.r.id === current?.r.id) continue
+  const warnCount = (ss: TacticSlot[]) =>
+    roleWarnings(ss, ctx.roles, ctx.warnings, ctx.codes).length
+  const links = ROLE_LINKS.filter((l) => ctx.enabled?.[l.id] !== false)
+  const broken = (ss: TacticSlot[]) => links.filter((l) => l.check(ss))
+  const roleSet = (ss: TacticSlot[], i: number, phase: 'ip' | 'oop', id: string) =>
+    ss.map((x, j) => (j === i ? { ...x, [phase === 'ip' ? 'role' : 'roleOop']: id } : x))
+
+  if (fix) {
+    // Role pairings: the change that mends a pairing for the least fit
+    for (let step = 0; step < 10; step++) {
+      const link = broken(slots)[0]
+      const hit = link?.check(slots)
+      if (!link || !hit) break
+      let best: { slots: TacticSlot[]; loss: number; text: string } | null = null
+      const before = broken(slots).length
+      for (const i of hit.slots) {
+        const p = xi[i]
+        if (!p) continue
+        const list = ranked(
+          p,
+          hit.phase === 'ip' ? options[i].ip : options[i].oop,
+          score,
+          hit.phase === 'ip' ? options[i].bonusIp : options[i].bonusOop,
+        )
+        const current = list.find(
+          (x) => x.r.id === (hit.phase === 'ip' ? slots[i].role : slots[i].roleOop),
+        )
+        for (const alt of list.filter((x) => hit.allowed.includes(x.r.id))) {
+          const trial = roleSet(slots, i, hit.phase, alt.r.id)
+          if (broken(trial).length >= before || warnCount(trial) > warnCount(slots)) continue
           const loss = (current?.s ?? 0) - (alt.s ?? 0)
-          if (loss > 12) continue
-          const trial = slots.map((x, j) =>
-            j === i ? { ...x, [phase === 'ip' ? 'role' : 'roleOop']: alt.r.id } : x,
-          )
-          const w = count(trial)
-          if (w >= warn) continue
-          const better = !best || w < best.warn || (w === best.warn && loss < best.loss)
-          if (better)
+          if (!best || loss < best.loss)
             best = {
               slots: trial,
-              warn: w,
               loss,
-              text: `${p.name}: ${roleName(current?.r.id)} → ${alt.r.name} (FM would warn about the combination)`,
+              text: `${p.name}: ${roleName(current?.r.id)} → ${alt.r.name}. ${hit.why}`,
             }
         }
       }
-    })
-    if (!best) break
-    const b: { slots: TacticSlot[]; warn: number; text: string } = best
-    slots = b.slots
-    warn = b.warn
-    changes.push(b.text)
+      if (!best) break
+      slots = best.slots
+      changes.push(best.text)
+    }
+
+    // Fewer FM warnings, without breaking a pairing
+    let warn = warnCount(slots)
+    for (let step = 0; warn > 0 && step < 12; step++) {
+      let best: { slots: TacticSlot[]; warn: number; loss: number; text: string } | null = null
+      const linksBefore = broken(slots).length
+      slots.forEach((s, i) => {
+        const p = xi[i]
+        if (!p) return
+        for (const phase of ['ip', 'oop'] as const) {
+          const list = ranked(
+            p,
+            phase === 'ip' ? options[i].ip : options[i].oop,
+            score,
+            phase === 'ip' ? options[i].bonusIp : options[i].bonusOop,
+          )
+          const current = list.find((x) => x.r.id === (phase === 'ip' ? s.role : s.roleOop))
+          for (const alt of list.slice(0, 8)) {
+            if (alt.r.id === current?.r.id) continue
+            const loss = (current?.s ?? 0) - (alt.s ?? 0)
+            if (loss > 12) continue
+            const trial = roleSet(slots, i, phase, alt.r.id)
+            const w = warnCount(trial)
+            if (w >= warn || broken(trial).length > linksBefore) continue
+            if (!best || w < best.warn || (w === best.warn && loss < best.loss))
+              best = {
+                slots: trial,
+                warn: w,
+                loss,
+                text: `${p.name}: ${roleName(current?.r.id)} → ${alt.r.name}. FM would warn about the combination.`,
+              }
+          }
+        }
+      })
+      if (!best) break
+      const b: { slots: TacticSlot[]; warn: number; text: string } = best
+      slots = b.slots
+      warn = b.warn
+      changes.push(b.text)
+    }
   }
 
   const picks: SlotPick[] = slots.map((s, i) => {
@@ -273,6 +351,12 @@ export function buildShape(
     }
   })
   const fit = Math.round(avg(picks.filter((x) => x.score !== null).map((x) => x.score!)))
+  const needs = slots.flatMap((s, i) => {
+    const p = xi[i]
+    const n = p ? needScore(ctx, p, s.position) : null
+    return n === null ? [] : [n]
+  })
+  const ideaMatch = needs.length ? Math.round(avg(needs)) : null
   const inXi = new Set(xi.filter(Boolean).map((p) => p!.id))
   const depth = Math.round(
     avg(
@@ -288,15 +372,24 @@ export function buildShape(
   const leftOut = bestPlayers(ctx, score)
     .filter((x) => !inXi.has(x.player.id))
     .slice(0, 3)
+  const warnings = fix ? roleWarnings(slots, ctx.roles, ctx.warnings, ctx.codes) : []
+  const unpaired = fix ? broken(slots).map((l) => l.name) : []
   return {
     shape,
     slots,
     picks,
     fit,
+    ideaMatch,
     depth,
     outOfPosition,
-    rank: fit * 0.85 + depth * 0.15 - outOfPosition * 6 - (fixWarnings ? warn * 2 : 0),
-    warnings: fixWarnings ? roleWarnings(slots, ctx.roles, ctx.warnings, ctx.codes) : [],
+    rank:
+      (ideaMatch === null ? fit * 0.85 : fit * 0.5 + ideaMatch * 0.35) +
+      depth * 0.15 -
+      outOfPosition * 6 -
+      warnings.length * 2 -
+      unpaired.length * 3,
+    warnings,
+    unpaired,
     changes,
     leftOut,
   }
@@ -904,12 +997,21 @@ export interface PlayerRule {
   instruction: string
   name: string
   about: string
-  check: (p: PlayerRow, pos: PositionCode, feet: Feet) => { to: string; why: string } | null
+  check: (
+    p: PlayerRow,
+    pos: PositionCode,
+    feet: Feet,
+    role: string | null,
+  ) => { to: string; why: string } | null
 }
 /** Foot strength as steps (0 weakest), when known. */
 export type Feet = { left: number | null; right: number | null }
 
 const ATTACKING: PositionCode[] = ['MC', 'ML', 'MR', 'AML', 'AMC', 'AMR', 'ST']
+const SHOOTERS: PositionCode[] = ['DM', ...ATTACKING]
+/** Roles that cut inside, and roles that stay wide. */
+const INSIDE_ROLES = ['if', 'iw', 'pw', 'ifb', 'iwb']
+const WIDE_ROLES = ['w-ip', 'wm', 'wb-ip', 'awb', 'wfd', 'fb-ip']
 const a = (p: PlayerRow, n: string) => attr(p, n) ?? 0
 
 export const PLAYER_RULES: PlayerRule[] = [
@@ -918,8 +1020,9 @@ export const PLAYER_RULES: PlayerRule[] = [
     instruction: 'Shooting',
     name: 'Shoot more with good long shots',
     about:
-      'Long Shots 15+ and Finishing 12+: Shoot more often. Midfielders and attackers with Long Shots 8 or less: Shoot less often.',
+      'Midfielders and attackers with Long Shots 15+ and Finishing 12+: Shoot more often; with Long Shots 8 or less: Shoot less often. Never for defenders.',
     check: (p, pos) => {
+      if (!SHOOTERS.includes(pos)) return null
       if (a(p, 'Long Shots') >= 15 && a(p, 'Finishing') >= 12)
         return {
           to: 'Shoot more often',
@@ -935,8 +1038,9 @@ export const PLAYER_RULES: PlayerRule[] = [
     instruction: 'Dribbling frequency',
     name: 'Dribble more with good dribblers',
     about:
-      'Dribbling 15+ and Flair 13+: Dribble more. Midfielders and attackers with Dribbling 9 or less: Dribble less.',
+      'Dribbling 15+ and Flair 13+: Dribble more (never for centre-backs). Midfielders and attackers with Dribbling 9 or less: Dribble less.',
     check: (p, pos) => {
+      if (pos === 'DC') return null
       if (a(p, 'Dribbling') >= 15 && a(p, 'Flair') >= 13)
         return {
           to: 'Dribble more',
@@ -952,12 +1056,15 @@ export const PLAYER_RULES: PlayerRule[] = [
     instruction: 'Dribbling direction',
     name: 'Cut inside on the wrong foot, go wide on the right one',
     about:
-      'Wide players with Dribbling 13+: cut inside when their stronger foot is the inside one, run wide when it is the outside one and Crossing is 14+.',
-    check: (p, pos, feet) => {
+      'Wide players with Dribbling 13+: cut inside when their stronger foot is the inside one, run wide when it is the outside one and Crossing is 14+. Never against the role: no cutting inside for a Winger or Wing-Back, no running wide for an Inside Forward or Inside Full-Back.',
+    check: (p, pos, feet, role) => {
       const left = LEFT.includes(pos)
       if ((!left && !RIGHT.includes(pos)) || a(p, 'Dribbling') < 13) return null
       if (feet.left === null || feet.right === null || feet.left === feet.right) return null
       const inside = left ? feet.right > feet.left : feet.left > feet.right
+      // The role decides first: no running wide for a role that cuts in, and the opposite
+      if (inside && WIDE_ROLES.includes(role ?? '')) return null
+      if (!inside && INSIDE_ROLES.includes(role ?? '')) return null
       if (inside)
         return {
           to: 'Cut inside with ball',
@@ -976,9 +1083,10 @@ export const PLAYER_RULES: PlayerRule[] = [
     instruction: 'Passing risk',
     name: 'More risks for passers with vision',
     about:
-      'Vision and Passing 15+: Take more risks. Vision or Decisions 9 or less: Take fewer risks.',
-    check: (p) => {
-      if (a(p, 'Vision') >= 15 && a(p, 'Passing') >= 15)
+      'Midfielders and attackers (and a Ball-Playing Centre-Back) with Vision and Passing 15+: Take more risks. Anyone with Vision or Decisions 9 or less: Take fewer risks.',
+    check: (p, pos, _feet, role) => {
+      const risky = !['DC', 'DL', 'DR', 'WBL', 'WBR'].includes(pos) || role === 'bcb'
+      if (risky && a(p, 'Vision') >= 15 && a(p, 'Passing') >= 15)
         return {
           to: 'Take more risks',
           why: `Vision ${a(p, 'Vision')}, Passing ${a(p, 'Passing')}.`,
@@ -1094,6 +1202,52 @@ export const PLAYER_RULES: PlayerRule[] = [
           }
         : null,
   },
+  {
+    id: 'pi-box-depth',
+    instruction: 'Attack box – depth',
+    name: 'Run in behind or arrive late',
+    about:
+      'Where FM offers it: Off the Ball 15+ with Pace and Acceleration 14+: Attack defensive line. Midfielders with Off the Ball 13+, Stamina 13+ and Long Shots or Finishing 14+: Arrive from deep.',
+    check: (p, pos) => {
+      if (a(p, 'Off The Ball') >= 15 && (a(p, 'Pace') + a(p, 'Acceleration')) / 2 >= 14)
+        return {
+          to: 'Attack defensive line',
+          why: `Off the Ball ${a(p, 'Off The Ball')}, Pace ${a(p, 'Pace')}, Acceleration ${a(p, 'Acceleration')}.`,
+        }
+      if (
+        ['DM', 'MC', 'AMC'].includes(pos) &&
+        a(p, 'Off The Ball') >= 13 &&
+        a(p, 'Stamina') >= 13 &&
+        Math.max(a(p, 'Long Shots'), a(p, 'Finishing')) >= 14
+      )
+        return {
+          to: 'Arrive from deep',
+          why: `Off the Ball ${a(p, 'Off The Ball')}, Stamina ${a(p, 'Stamina')}, Long Shots ${a(p, 'Long Shots')}, Finishing ${a(p, 'Finishing')}.`,
+        }
+      return null
+    },
+  },
+  {
+    id: 'pi-box-side',
+    instruction: 'Attack box – side',
+    name: 'Near post for the quick finisher, far post for the header',
+    about:
+      'Strikers where FM offers it: Heading and Jumping Reach 15+: Far post (crosses come over to him). Pace, Acceleration and Finishing 15+: Near post (first to the ball).',
+    check: (p, pos) => {
+      if (pos !== 'ST') return null
+      if (Math.min(a(p, 'Heading'), a(p, 'Jumping Reach')) >= 15)
+        return {
+          to: 'Far post',
+          why: `Heading ${a(p, 'Heading')}, Jumping Reach ${a(p, 'Jumping Reach')}.`,
+        }
+      if (Math.min(a(p, 'Pace'), a(p, 'Acceleration'), a(p, 'Finishing')) >= 15)
+        return {
+          to: 'Near post',
+          why: `Pace ${a(p, 'Pace')}, Acceleration ${a(p, 'Acceleration')}, Finishing ${a(p, 'Finishing')}.`,
+        }
+      return null
+    },
+  },
 ]
 
 export interface PlayerSuggestion {
@@ -1119,22 +1273,41 @@ export function playerSuggestions(
   defs: FmInstruction[],
   enabled: Record<string, boolean>,
   feet: (p: PlayerRow) => Feet,
+  idea: GameIdea | null = null,
 ): PlayerSuggestion[] {
   const fm = { ip: fmPositions(slots, 'ip', codes), oop: fmPositions(slots, 'oop', codes) }
+  const avoided = (instruction: string, option: string) =>
+    !!idea?.avoid.some((x) => x.instruction === instruction && x.option === option)
+  // The idea's own player instructions first, then the attribute rules
+  const ideaRules: PlayerRule[] = (idea?.players ?? []).map((x, k) => ({
+    id: `idea-${k}`,
+    instruction: x.instruction,
+    name: x.why,
+    about: x.why,
+    check: (_p, pos) =>
+      x.lines.includes(lineOf(pos) as Line)
+        ? { to: x.option, why: `${idea!.name}: ${x.why}` }
+        : null,
+  }))
   return slots.flatMap((s, i) => {
     const p = squad.find((x) => x.id === s.player)
     if (!p || !s.position) return []
-    return PLAYER_RULES.filter((r) => enabled[r.id] !== false).flatMap((r) => {
+    const done = new Set<string>()
+    // Goalkeepers get no outfield instructions from attributes
+    const rules = s.position === 'GK' ? [] : PLAYER_RULES.filter((r) => enabled[r.id] !== false)
+    return [...ideaRules, ...rules].flatMap((r) => {
       const d = defs.find((x) => x.name === r.instruction)
-      if (!d) return []
+      if (!d || done.has(d.name)) return []
       const phase = d.phase
       const pos = phase === 'ip' ? s.position! : (s.positionOop ?? s.position!)
-      const hit = r.check(p, pos, feet(p))
-      if (!hit) return []
-      const role = roles.find((x) => x.id === (phase === 'ip' ? s.role : s.roleOop)) ?? null
+      const roleId = (phase === 'ip' ? s.role : s.roleOop) ?? null
+      const hit = r.check(p, pos, feet(p), roleId)
+      if (!hit || avoided(d.name, hit.to)) return []
+      const role = roles.find((x) => x.id === roleId) ?? null
       const { options, forced } = playerChoices(d, role, fm[phase][i])
       const option = options.find((o) => o.label === hit.to)
       if (forced || !option || !option.code) return []
+      done.add(d.name)
       return [
         {
           slot: i,

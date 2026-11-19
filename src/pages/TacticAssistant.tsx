@@ -1,7 +1,7 @@
 import { useQueryClient } from '@tanstack/react-query'
 import { clsx } from 'clsx'
 import { ArrowLeft, X } from 'lucide-react'
-import { useMemo, useState, type ReactNode } from 'react'
+import { useMemo, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { PickList } from '../components/PickList'
 import { Card, PageHeader, Placeholder } from '../components/ui'
@@ -21,25 +21,33 @@ import {
   withPlayer,
   type FitContext,
 } from '../tactics/analysis'
-import { firstTeam, slotPosition, styleFits } from '../tactics/assistant'
+import { firstTeam, slotPosition } from '../tactics/assistant'
 import {
   applyPlayers,
-  applyTeam,
   buildAll,
-  candidateShapes,
+  ideaShapes,
   playerSuggestions,
   teamSuggestions,
   type BuiltTactic,
 } from '../tactics/builder'
 import { defaultTeamCodes, fmPositions, rolesAt, shapeOf } from '../tactics/fm'
+import {
+  applyCodes,
+  ideaFit,
+  ideaTeam,
+  LINE_NAMES,
+  ROLE_LINKS,
+  squadCheck,
+  teamConflicts,
+  type GameIdea,
+} from '../tactics/ideas'
 import { POSITION_TEXT, formationLabel } from '../tactics/positions'
-import { matchRoles, styleText, type TacticalStyle } from '../tactics/styles'
 import type { TacticSlot } from '../tactics/types'
 import { roleWarnings } from '../tactics/warnings'
 
-type Step = 'start' | 'shape' | 'roles' | 'team' | 'players' | 'save'
+type Step = 'idea' | 'shape' | 'roles' | 'team' | 'players' | 'save'
 const STEPS: [Step, string][] = [
-  ['start', 'Start'],
+  ['idea', 'Game idea'],
   ['shape', 'Shape'],
   ['roles', 'Players and roles'],
   ['team', 'Team instructions'],
@@ -48,6 +56,11 @@ const STEPS: [Step, string][] = [
 ]
 const field = 'min-h-10 w-full min-w-0 rounded-lg border border-border bg-surface-2 px-2 text-sm'
 const next = 'min-h-11 rounded-lg bg-accent px-4 text-sm font-semibold text-black'
+const VERDICT = {
+  good: 'text-emerald-400',
+  fair: 'text-amber-300',
+  weak: 'text-red-400',
+}
 
 const Tag = ({ fm }: { fm: boolean }) => (
   <span
@@ -61,10 +74,12 @@ const Tag = ({ fm }: { fm: boolean }) => (
 )
 
 const formationOf = (slots: TacticSlot[]) => formationLabel(slots.map((s) => s.position))
+const r1 = (x: number | null) => (x === null ? '–' : Math.round(x * 10) / 10)
 
 /**
- * Tactic assistant: builds tactics around the squad. Every shape is filled with the best XI
- * and the roles each player suits; team and player instructions follow from the players.
+ * Tactic assistant: starts from a game idea (what the team wants to do), checks the squad
+ * against it, builds the shape, XI and roles the idea needs, then the team instructions that
+ * go together, adjusted to the players, and player instructions from each player.
  */
 export function TacticAssistant() {
   const career = useCurrentCareer()
@@ -77,48 +92,89 @@ export function TacticAssistant() {
     () => ({ roles: config.roles, weights: config.roleWeights, fmCodes: config.fmCodes }),
     [config],
   )
-  const [step, setStepState] = useState<Step>('start')
+  const [step, setStepState] = useState<Step>('idea')
   const setStep = (s: Step) => {
     setStepState(s)
     window.scrollTo({ top: 0 })
   }
-  const [style, setStyle] = useState<TacticalStyle | null>(null)
+  const [idea, setIdea] = useState<GameIdea | null>(null)
   const [mustPlay, setMustPlay] = useState<string[]>([])
   const [built, setBuilt] = useState<BuiltTactic[] | null>(null)
   const [pick, setPick] = useState<BuiltTactic | null>(null)
   const [slots, setSlots] = useState<TacticSlot[]>([])
   const [mentality, setMentality] = useState('Balanced')
+  const [offIdea, setOffIdea] = useState<Set<string>>(new Set())
   const [offTeam, setOffTeam] = useState<Set<string>>(new Set())
   const [offPlayer, setOffPlayer] = useState<Set<string>>(new Set())
   const [name, setName] = useState('')
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
-  const fits = useMemo(() => styleFits(config.tacticalStyles, squad), [config, squad])
-  const base = useMemo(
-    () => style?.team ?? defaultTeamCodes(config.teamInstructions),
-    [style, config.teamInstructions],
+  const checks = useMemo(
+    () =>
+      config.gameIdeas
+        .map((x) => {
+          const c = squadCheck(x, squad)
+          return { idea: x, checks: c, fit: ideaFit(c) }
+        })
+        .sort((a, b) => b.fit - a.fit),
+    [config.gameIdeas, squad],
   )
   const preferred = useMemo(
-    () =>
-      new Set(
-        style
-          ? matchRoles(style, config.roles)
-              .flatMap((m) => m.roles)
-              .map((r) => r.id)
-          : [],
-      ),
-    [style, config.roles],
+    () => new Set(idea?.roles.flatMap((r) => [...r.ip, ...r.oop]) ?? []),
+    [idea],
   )
   const grade = useMemo(() => gradeTactic(slots, squad, ctx), [slots, squad, ctx])
   const warnings = useMemo(
     () => roleWarnings(slots, config.roles, config.roleWarnings, config.fmCodes),
     [slots, config],
   )
-  const teamTips = useMemo(
-    () => teamSuggestions(slots, squad, base, config.teamInstructions, config.tacticRules),
-    [slots, squad, base, config],
+  const unpaired = useMemo(
+    () =>
+      ROLE_LINKS.filter((l) => config.tacticRules[l.id] !== false).flatMap((l) => {
+        const hit = l.check(slots)
+        return hit ? [`${l.name}. ${hit.why}`] : []
+      }),
+    [slots, config.tacticRules],
   )
+
+  // Team instructions: the idea's, then the squad's on the rest
+  const base = useMemo(() => defaultTeamCodes(config.teamInstructions), [config])
+  const ideaItems = useMemo(
+    () => (idea ? ideaTeam(idea, base, config.teamInstructions) : []),
+    [idea, base, config.teamInstructions],
+  )
+  const ideaOn = ideaItems.filter((t) => !offIdea.has(t.instruction))
+  const afterIdea = applyCodes(base, ideaOn, config.teamInstructions)
+  const squadTips = useMemo(
+    () => teamSuggestions(slots, squad, afterIdea, config.teamInstructions, config.tacticRules),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [slots, squad, afterIdea.join(','), config],
+  )
+  const ideaNames = new Set(ideaOn.map((t) => t.instruction))
+  const squadAgainst = squadTips.filter((t) => ideaNames.has(t.instruction))
+  // The squad's suggestions on what the idea leaves open, unless they clash with the idea
+  const squadOpen: typeof squadTips = []
+  const squadClash: { tip: (typeof squadTips)[number]; text: string }[] = []
+  {
+    let codes = afterIdea
+    for (const t of squadTips.filter((x) => !ideaNames.has(x.instruction))) {
+      const trial = applyCodes(codes, [t], config.teamInstructions)
+      const before = teamConflicts(codes, config.teamInstructions, config.tacticRules)
+      const added = teamConflicts(trial, config.teamInstructions, config.tacticRules).filter(
+        (x) => !before.some((y) => y.id === x.id),
+      )
+      if (added.length) squadClash.push({ tip: t, text: added.map((x) => x.text).join(' ') })
+      else {
+        squadOpen.push(t)
+        codes = trial
+      }
+    }
+  }
+  const squadOn = squadOpen.filter((t) => !offTeam.has(t.rule))
+  const finalTeam = applyCodes(afterIdea, squadOn, config.teamInstructions)
+  const conflicts = teamConflicts(finalTeam, config.teamInstructions, config.tacticRules)
+
   const feet = useMemo(
     () => (p: PlayerRow) => ({
       left: footLevel(p.left_foot, config.footWords, config.footMins)?.level ?? null,
@@ -136,25 +192,29 @@ export function TacticAssistant() {
         config.playerInstructions,
         config.tacticRules,
         feet,
+        idea,
       ),
-    [slots, squad, config, feet],
+    [slots, squad, config, feet, idea],
   )
   const tipKey = (t: { slot: number; instruction: string }) => `${t.slot}|${t.instruction}`
+  const playerOn = playerTips.filter((t) => !offPlayer.has(tipKey(t)))
+  const finalSlots = applyPlayers(slots, playerOn, config.playerInstructions)
 
   if (isPending) return <p className="text-sm text-muted">Loading…</p>
   if (!squad.length)
     return <Placeholder>Import your save first: the assistant builds from your squad.</Placeholder>
 
   const build = () => {
-    const shapes = candidateShapes(config.tacticalStyles, config.roles, config.fmCodes)
+    if (!idea) return
     setBuilt(
-      buildAll(shapes, {
+      buildAll(ideaShapes(idea), {
         squad,
         roles: config.roles,
         weights: config.roleWeights,
         codes: config.fmCodes,
         warnings: config.roleWarnings,
-        style,
+        idea,
+        enabled: config.tacticRules,
         mustPlay: new Set(mustPlay),
       }),
     )
@@ -164,10 +224,11 @@ export function TacticAssistant() {
   const choose = (b: BuiltTactic) => {
     setPick(b)
     setSlots(b.slots)
-    setMentality(style?.mentality ?? 'Balanced')
+    setMentality(idea?.mentality ?? 'Balanced')
+    setOffIdea(new Set())
     setOffTeam(new Set())
     setOffPlayer(new Set())
-    setName(`${style ? `${style.name} ` : ''}${formationOf(b.slots)}`)
+    setName(`${idea?.name ?? ''} ${formationOf(b.slots)}`.trim())
     setStep('roles')
   }
   const setSlot = (i: number, patch: Partial<TacticSlot>) =>
@@ -178,23 +239,18 @@ export function TacticAssistant() {
     return r ? roleShort(r) : '–'
   }
 
-  const teamOn = teamTips.filter((t) => !offTeam.has(t.rule))
-  const playerOn = playerTips.filter((t) => !offPlayer.has(tipKey(t)))
-  const finalTeam = applyTeam(base, teamOn, config.teamInstructions)
-  const finalSlots = applyPlayers(slots, playerOn, config.playerInstructions)
-
   const save = async () => {
-    if (!pick) return
+    if (!pick || !idea) return
     setSaving(true)
     setError(null)
     try {
       const t = await saveTactic(career.id, null, {
         name: name.trim() || pick.shape.label,
-        style: style ? styleText(style, mentality, finalTeam) : null,
+        style: null,
         mentality,
         slots: finalSlots,
         instructions: { team: finalTeam },
-        notes: `Built with the tactic assistant around your squad (${pick.shape.label}).`,
+        notes: `Built with the tactic assistant: ${idea.name}. ${idea.about}`,
       })
       await qc.invalidateQueries({ queryKey: ['tactics', career.id] })
       navigate(`/tactics?tactic=${t.id}`)
@@ -204,10 +260,7 @@ export function TacticAssistant() {
     }
   }
 
-  // One option per in-possession formation: the best of its out-of-possession variants
-  const options = (built ?? []).filter(
-    (b, i, all) => all.findIndex((x) => formationOf(x.slots) === formationOf(b.slots)) === i,
-  )
+  const chosenCheck = checks.find((c) => c.idea.id === idea?.id)
   const reached = pick ? STEPS.length - 1 : built ? 1 : 0
 
   return (
@@ -220,7 +273,7 @@ export function TacticAssistant() {
       </Link>
       <PageHeader
         title="Tactic assistant"
-        subtitle="Builds tactics around your squad: every shape filled with your best XI and the role each player suits, then team and player instructions from your players' attributes. Everything stays editable afterwards on the Tactics page."
+        subtitle="Start from how you want to play. The assistant checks your squad against it, builds the shapes, XI and roles that idea needs, then team instructions that go together and player instructions for each player. Everything stays editable afterwards on the Tactics page."
       />
       <ol className="mb-4 flex flex-wrap gap-1.5 text-sm">
         {STEPS.map(([s, label], i) => (
@@ -244,43 +297,81 @@ export function TacticAssistant() {
         ))}
       </ol>
 
-      {step === 'start' && (
+      {step === 'idea' && (
         <Card className="grid gap-4">
           <section className="grid gap-2">
             <h2 className="flex items-center gap-2 font-semibold">
-              Style (optional) <Tag fm />
+              How do you want to play? <Tag fm={false} />
             </h2>
             <p className="text-sm text-muted">
-              Without a style the tactic starts from FM&apos;s standard instructions and is built
-              only from your players. A style gives its mentality and instructions as the starting
-              point, and a small bonus to the roles FM says it prefers. The number is your
-              squad&apos;s average in the attributes FM says the style favours.
+              Each idea says what it needs from each line of the team. The number is how well your
+              squad has it (0–100): the best players for each line in the attributes that idea
+              needs. Edit the ideas in Settings → Game ideas.
             </p>
-            <ul className="grid gap-2 md:grid-cols-2 xl:grid-cols-3">
-              <li>
-                <StyleButton active={!style} onClick={() => setStyle(null)} title="No style">
-                  Built only from your players
-                </StyleButton>
-              </li>
-              {fits.map(({ style: s, score }) => (
-                <li key={s.code}>
-                  <StyleButton
-                    active={style?.code === s.code}
-                    onClick={() => setStyle(s)}
-                    title={s.name}
-                    score={score}
+            <ul className="grid gap-2 md:grid-cols-2 xl:grid-cols-4">
+              {checks.map(({ idea: x, fit }) => (
+                <li key={x.id}>
+                  <button
+                    type="button"
+                    onClick={() => setIdea(x)}
+                    aria-pressed={idea?.id === x.id}
+                    className={clsx(
+                      'grid h-full w-full content-start gap-1 rounded-xl border p-3 text-left',
+                      idea?.id === x.id
+                        ? 'border-accent bg-accent/10'
+                        : 'border-border bg-surface hover:border-accent',
+                    )}
                   >
-                    {s.summary.join(' · ')}
-                  </StyleButton>
+                    <span className="flex items-center justify-between gap-2">
+                      <span className="font-semibold">{x.name}</span>
+                      <span className={clsx('font-semibold tabular-nums', scoreTextColor(fit))}>
+                        {fit}
+                      </span>
+                    </span>
+                    <span className="text-xs text-muted">{x.about}</span>
+                  </button>
                 </li>
               ))}
             </ul>
           </section>
+
+          {idea && chosenCheck && (
+            <section className="grid gap-2">
+              <h2 className="font-semibold">Your squad for {idea.name}</h2>
+              <ul className="grid gap-2 md:grid-cols-2">
+                {chosenCheck.checks.map((c, k) => (
+                  <li key={k} className="grid gap-1 rounded-lg border border-border p-3 text-sm">
+                    <span className="flex items-start justify-between gap-2">
+                      <span className="font-semibold">
+                        {c.need.lines.map((l) => LINE_NAMES[l]).join(', ')}
+                      </span>
+                      <span className={clsx('shrink-0 font-semibold', VERDICT[c.verdict])}>
+                        {c.verdict === 'good' ? 'Good' : c.verdict === 'fair' ? 'Fair' : 'Weak'}{' '}
+                        {r1(c.value)}
+                      </span>
+                    </span>
+                    <span className="text-xs text-muted">
+                      {c.need.attributes.join(', ')}. {c.need.why}
+                    </span>
+                    <span className="text-xs">
+                      {c.best.length
+                        ? `Best: ${c.best.map((b) => `${b.player.name} ${r1(b.value)}`).join(', ')}`
+                        : 'Nobody in the squad plays here.'}
+                    </span>
+                  </li>
+                ))}
+              </ul>
+              {chosenCheck.checks.some((c) => c.verdict === 'weak') && (
+                <p className="text-sm text-amber-300">
+                  Weak lines are where this idea will struggle: a target for the transfer window, or
+                  a reason to pick another idea.
+                </p>
+              )}
+            </section>
+          )}
+
           <section className="grid gap-2">
             <h2 className="font-semibold">Players who must play (optional)</h2>
-            <p className="text-sm text-muted">
-              Your key players: every shape is built with them in the XI.
-            </p>
             <div className="flex flex-wrap items-center gap-1.5">
               {mustPlay.map((id) => (
                 <span
@@ -316,24 +407,31 @@ export function TacticAssistant() {
             </div>
           </section>
           <div className="flex justify-end">
-            <button type="button" onClick={build} className={next}>
-              Build tactics
+            <button
+              type="button"
+              disabled={!idea}
+              onClick={build}
+              className={clsx(next, 'disabled:opacity-40')}
+            >
+              {idea ? `Build ${idea.name}` : 'Pick an idea first'}
             </button>
           </div>
         </Card>
       )}
 
-      {step === 'shape' && built && (
+      {step === 'shape' && built && idea && (
         <Card>
-          <h2 className="mb-1 font-semibold">Which shape?</h2>
+          <h2 className="mb-1 flex items-center gap-2 font-semibold">
+            Which shape for {idea.name}? <Tag fm={false} />
+          </h2>
           <p className="mb-3 text-sm text-muted">
-            Common formations and every shape FM27&apos;s templates use (with their
-            out-of-possession shape), each built for your squad: best XI in positions they can play,
-            each player in the role he suits best where FM offers it, changed only where FM would
-            warn about the combination. Ranked by role fit, then cover on the bench.
+            The formations that suit {idea.name}, each with the XI that fits it best: players picked
+            for their role fit and for what the idea needs from their line, in the roles the idea
+            wants where they suit them, then roles paired so they cover each other and FM&apos;s
+            warnings avoided. &ldquo;Idea&rdquo; is how well the XI has what the idea needs (0–100).
           </p>
           <ul className="grid gap-2">
-            {options.slice(0, 10).map((b) => (
+            {built.map((b) => (
               <li key={b.shape.key}>
                 <button
                   type="button"
@@ -341,10 +439,7 @@ export function TacticAssistant() {
                   className="grid w-full gap-2 rounded-xl border border-border bg-surface p-3 text-left hover:border-accent"
                 >
                   <span className="flex flex-wrap items-center justify-between gap-2">
-                    <span className="min-w-0">
-                      <span className="block font-semibold">{b.shape.label}</span>
-                      <span className="block text-xs text-muted">{b.shape.from}</span>
-                    </span>
+                    <span className="font-semibold">{b.shape.label}</span>
                     <span className="flex items-center gap-3 text-sm tabular-nums">
                       {b.outOfPosition > 0 && (
                         <span className="text-amber-300">{b.outOfPosition} out of position</span>
@@ -352,6 +447,11 @@ export function TacticAssistant() {
                       <span title="Average fit of the best bench player for each position">
                         Bench {b.depth}
                       </span>
+                      {b.ideaMatch !== null && (
+                        <span className={clsx('font-semibold', scoreTextColor(b.ideaMatch))}>
+                          Idea {b.ideaMatch}
+                        </span>
+                      )}
                       <span className={clsx('font-semibold', scoreTextColor(b.fit))}>
                         Fit {b.fit}
                       </span>
@@ -380,6 +480,13 @@ export function TacticAssistant() {
                       )
                     })}
                   </span>
+                  {b.changes.length > 0 && (
+                    <span className="grid gap-0.5 text-xs text-muted">
+                      {b.changes.map((x) => (
+                        <span key={x}>{x}</span>
+                      ))}
+                    </span>
+                  )}
                   {b.leftOut.length > 0 && (
                     <span className="text-xs text-muted">
                       Leaves out:{' '}
@@ -388,12 +495,11 @@ export function TacticAssistant() {
                         .join(', ')}
                     </span>
                   )}
-                  {b.changes.length > 0 && (
-                    <span className="text-xs text-muted">Changed: {b.changes.join('; ')}</span>
-                  )}
-                  {b.warnings.length > 0 && (
-                    <span className="text-xs text-amber-300">FM warns: {b.warnings.join(' ')}</span>
-                  )}
+                  {[...b.unpaired, ...b.warnings].map((w) => (
+                    <span key={w} className="text-xs text-amber-300">
+                      {w}
+                    </span>
+                  ))}
                 </button>
               </li>
             ))}
@@ -413,12 +519,15 @@ export function TacticAssistant() {
           </h2>
           <p className="mb-3 text-sm text-muted">
             Change any player or role. Role lists show only the roles FM offers at that position,
-            with the player&apos;s fit{style ? `; ★ marks roles ${style.name} prefers` : ''}.{' '}
-            {formationOf(slots)} in possession,{' '}
-            {formationLabel(slots.map((s) => s.positionOop ?? s.position))} out of possession.
+            with the player&apos;s fit; ★ marks the roles {idea?.name} wants. {formationOf(slots)}{' '}
+            in possession, {formationLabel(slots.map((s) => s.positionOop ?? s.position))} out of
+            possession.
           </p>
-          {warnings.length > 0 && (
+          {(warnings.length > 0 || unpaired.length > 0) && (
             <ul className="mb-3 grid gap-1 rounded-lg border border-amber-400/40 p-2 text-sm text-amber-200">
+              {unpaired.map((w) => (
+                <li key={w}>{w}</li>
+              ))}
               {warnings.map((w) => (
                 <li key={w}>FM warns: {w}</li>
               ))}
@@ -513,18 +622,12 @@ export function TacticAssistant() {
         </Card>
       )}
 
-      {step === 'team' && pick && (
-        <Card className="grid gap-3">
-          <h2 className="flex items-center gap-2 font-semibold">
-            Team instructions <Tag fm={false} />
-          </h2>
-          <p className="text-sm text-muted">
-            Worked out from the attributes of the XI you picked. Starting point:{' '}
-            {style ? `${style.name}'s instructions (FM27 data)` : "FM's standard instructions"}.
-            Untick any you disagree with; switch rules off for good in Settings → Tactic assistant.
-          </p>
+      {step === 'team' && pick && idea && (
+        <Card className="grid gap-4">
           <label className="grid max-w-xs gap-1 text-sm">
-            <span className="text-muted">Mentality (pick it for the opponent)</span>
+            <span className="text-muted">
+              Mentality ({idea.name} suggests {idea.mentality})
+            </span>
             <select
               value={mentality}
               onChange={(e) => setMentality(e.target.value)}
@@ -535,18 +638,63 @@ export function TacticAssistant() {
               ))}
             </select>
           </label>
-          {teamTips.length === 0 ? (
-            <p className="text-sm text-muted">Nothing to change for this XI.</p>
-          ) : (
+
+          <section className="grid gap-2">
+            <h2 className="flex items-center gap-2 font-semibold">
+              What {idea.name} asks for <Tag fm={false} />
+            </h2>
             <ul className="grid gap-2 md:grid-cols-2">
-              {teamTips.map((t) => (
+              {ideaItems.map((t) => (
                 <Tip
-                  key={t.rule}
-                  on={!offTeam.has(t.rule)}
-                  onToggle={(on) => setOffTeam(toggle(offTeam, t.rule, !on))}
-                  title={`${t.instruction}: ${t.from} → ${t.to}`}
-                  text={`${t.name}. ${t.why}`}
+                  key={t.instruction}
+                  on={!offIdea.has(t.instruction)}
+                  onToggle={(on) => setOffIdea(toggle(offIdea, t.instruction, !on))}
+                  title={`${t.instruction}: ${t.to}`}
+                  text={t.why}
                 />
+              ))}
+            </ul>
+            {squadAgainst.map((t) => (
+              <p key={t.rule} className="text-sm text-amber-300">
+                Your players: {t.instruction} would be {t.to}, not {t.from}. {t.why} Keep it in
+                mind, or untick the idea&apos;s choice above.
+              </p>
+            ))}
+          </section>
+
+          <section className="grid gap-2">
+            <h2 className="flex items-center gap-2 font-semibold">
+              From your players <Tag fm={false} />
+            </h2>
+            <p className="text-sm text-muted">
+              Instructions the idea leaves open, worked out from the XI&apos;s attributes.
+            </p>
+            {squadOpen.length === 0 ? (
+              <p className="text-sm text-muted">Nothing to add.</p>
+            ) : (
+              <ul className="grid gap-2 md:grid-cols-2">
+                {squadOpen.map((t) => (
+                  <Tip
+                    key={t.rule}
+                    on={!offTeam.has(t.rule)}
+                    onToggle={(on) => setOffTeam(toggle(offTeam, t.rule, !on))}
+                    title={`${t.instruction}: ${t.from} → ${t.to}`}
+                    text={`${t.name}. ${t.why}`}
+                  />
+                ))}
+              </ul>
+            )}
+            {squadClash.map(({ tip, text }) => (
+              <p key={tip.rule} className="text-sm text-muted">
+                Left out: {tip.instruction} {tip.to} ({tip.why}) would not fit the idea. {text}
+              </p>
+            ))}
+          </section>
+
+          {conflicts.length > 0 && (
+            <ul className="grid gap-1 rounded-lg border border-red-400/40 p-2 text-sm text-red-300">
+              {conflicts.map((x) => (
+                <li key={x.id}>Does not fit together: {x.text}</li>
               ))}
             </ul>
           )}
@@ -564,8 +712,9 @@ export function TacticAssistant() {
             Player instructions <Tag fm={false} />
           </h2>
           <p className="text-sm text-muted">
-            From each player&apos;s attributes, only where FM offers the instruction for his role at
-            that position <Tag fm />. Untick any you disagree with.
+            From each player&apos;s attributes and what {idea?.name} asks, never against his role or
+            the idea, and only where FM offers the instruction for his role at that position{' '}
+            <Tag fm />. Untick any you disagree with.
           </p>
           {playerTips.length === 0 ? (
             <p className="text-sm text-muted">Nothing to suggest for this XI.</p>
@@ -614,15 +763,20 @@ export function TacticAssistant() {
             <input value={name} onChange={(e) => setName(e.target.value)} className={field} />
           </label>
           <p className="text-sm text-muted">
-            {style ? styleText(style, mentality, finalTeam) : 'No style'} · {mentality} ·{' '}
-            {formationOf(slots)} · team fit {grade.team ?? '–'} · {teamOn.length} team and{' '}
-            {playerOn.length} player instructions set
+            {idea?.name} · {mentality} · {formationOf(slots)} · team fit {grade.team ?? '–'} ·{' '}
+            {ideaOn.length + squadOn.length} team and {playerOn.length} player instructions
             {grade.fits.some((f) => f.outOfPosition) &&
               ` · out of position: ${grade.fits
                 .filter((f) => f.outOfPosition)
                 .map((f) => f.player?.name)
                 .join(', ')}`}
           </p>
+          {conflicts.length > 0 && (
+            <p className="text-sm text-red-300">
+              {conflicts.length} team instruction{conflicts.length > 1 ? 's do' : ' does'} not fit
+              together (see Team instructions).
+            </p>
+          )}
           <p className="text-sm text-muted">
             It opens on the Tactics page, with the briefing, best XI and FM file export.
           </p>
@@ -648,38 +802,6 @@ const toggle = (set: Set<string>, key: string, on: boolean) => {
   if (on) out.add(key)
   else out.delete(key)
   return out
-}
-
-function StyleButton({
-  active,
-  onClick,
-  title,
-  score,
-  children,
-}: {
-  active: boolean
-  onClick: () => void
-  title: string
-  score?: number | null
-  children: ReactNode
-}) {
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      aria-pressed={active}
-      className={clsx(
-        'grid h-full w-full content-start gap-1 rounded-xl border p-3 text-left',
-        active ? 'border-accent bg-accent/10' : 'border-border bg-surface hover:border-accent',
-      )}
-    >
-      <span className="flex items-center justify-between gap-2">
-        <span className="font-semibold">{title}</span>
-        {score != null && <span className="tabular-nums">{Math.round(score * 10) / 10}</span>}
-      </span>
-      <span className="text-xs text-muted">{children}</span>
-    </button>
-  )
 }
 
 function Tip({

@@ -39,6 +39,7 @@ import {
 import { DEFAULT_ROLE_WARNINGS, type RoleWarning } from '../tactics/warnings'
 import { DEFAULT_TACTICAL_STYLES, type TacticalStyle } from '../tactics/styles'
 import { DEFAULT_MATCH_DATA, type MatchData } from '../tactics/matchData'
+import { DEFAULT_GAME_IDEAS, type GameIdea } from '../tactics/ideas'
 import { DEFAULT_OLDER_ROLES, shownOlderRoles, type OlderRole } from './olderRoles'
 import { DEFAULT_TRAIT_NAMES } from './traits'
 import { DEFAULT_TRAIT_GUIDE, type TraitGuideEntry } from './traitGuide'
@@ -105,6 +106,8 @@ export interface AppConfig {
   statProfiles: StatProfile[]
   /** Tactic assistant: rules of thumb switched on (true) or off (false), by id. */
   tacticRules: Record<string, boolean>
+  /** Tactic assistant: game ideas (needs, roles, team instructions). */
+  gameIdeas: GameIdea[]
   /** FM words the user taught for values the app could not name (value → word). */
   learned: Learned
   /** Competitions by FM database id: name and type. */
@@ -183,6 +186,7 @@ export const DEFAULT_CONFIG: AppConfig = {
   mediaHandling: DEFAULT_MEDIA_RULES,
   statProfiles: DEFAULT_STAT_PROFILES,
   tacticRules: {},
+  gameIdeas: DEFAULT_GAME_IDEAS,
   learned: { morale: {}, knowledge: {}, rounds: {} },
   // Confirmed by the user from FM
   competitions: {
@@ -255,6 +259,7 @@ export function mergeConfig(stored: Stored): AppConfig {
     mediaHandling: stored.mediaHandling ?? DEFAULT_CONFIG.mediaHandling,
     statProfiles: stored.statProfiles ?? DEFAULT_CONFIG.statProfiles,
     tacticRules: { ...DEFAULT_CONFIG.tacticRules, ...stored.tacticRules },
+    gameIdeas: stored.gameIdeas ?? DEFAULT_CONFIG.gameIdeas,
     learned: { ...DEFAULT_CONFIG.learned, ...stored.learned },
     competitions: { ...DEFAULT_CONFIG.competitions, ...stored.competitions },
     mobileBar: stored.mobileBar ?? DEFAULT_CONFIG.mobileBar,

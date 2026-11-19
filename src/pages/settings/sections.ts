@@ -177,11 +177,18 @@ export const SETTINGS_GROUPS: SettingsGroup[] = [
         about: 'What the briefing on the Tactics page checks and warns about.',
       },
       {
-        to: '/settings/tactic-rules',
-        label: 'Tactic assistant',
-        hint: 'Rules of thumb for team and player instructions',
+        to: '/settings/game-ideas',
+        label: 'Game ideas',
+        hint: 'How the tactic assistant thinks: Counter-attack, Possession, Catenaccio…',
         about:
-          'The tactic assistant builds shape, XI and roles from your squad (roles FM offers, FM’s role warnings); these rules of thumb then set team and player instructions from your players’ attributes (slow centre-backs: lower line; Long Shots 15+: shoot more…). Switch off any you disagree with.',
+          'Each way of playing the tactic assistant offers: what it needs from each line of the team, the roles that carry it out, the team instructions that go together, and player instructions it adds or never suggests. Change any of it, or add your own idea.',
+      },
+      {
+        to: '/settings/tactic-rules',
+        label: 'Tactic assistant rules',
+        hint: 'Role pairings, instructions that clash, instructions from attributes',
+        about:
+          'Rules of thumb the assistant (and the Tactics page briefing) uses: roles that need a partner (a winger cutting inside needs a full-back who gives width…), team instructions that work against each other (direct passing at a low tempo…), and team and player instructions worked out from attributes. Switch off any you disagree with.',
       },
       {
         to: '/settings/tactical-styles',

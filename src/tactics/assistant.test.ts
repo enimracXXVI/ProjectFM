@@ -3,10 +3,19 @@ import { DEFAULT_CONFIG } from '../data/config'
 import type { PlayerRow } from '../data/db'
 import { styleFits } from './assistant'
 import {
+  applyCodes,
+  DEFAULT_GAME_IDEAS,
+  ideaFit,
+  ideaTeam,
+  squadCheck,
+  teamConflicts,
+} from './ideas'
+import {
   applyPlayers,
   applyTeam,
   buildAll,
   candidateShapes,
+  ideaShapes,
   playerSuggestions,
   PLAYER_RULES,
   TEAM_RULES,
@@ -48,7 +57,6 @@ const bctx = {
   weights: DEFAULT_CONFIG.roleWeights,
   codes: DEFAULT_CONFIG.fmCodes,
   warnings: DEFAULT_CONFIG.roleWarnings,
-  style: null,
 }
 
 describe('tactic assistant', () => {
@@ -124,5 +132,81 @@ describe('tactic assistant', () => {
       const slot = applied[s.slot]
       expect((s.phase === 'ip' ? slot.pi : slot.piOop) ?? []).toContain(s.code)
     }
+  })
+
+  it('builds a game idea: its shapes, its roles where players suit them, pairings met', () => {
+    const idea = DEFAULT_GAME_IDEAS.find((x) => x.id === 'counter')!
+    const built = buildAll(ideaShapes(idea), { ...bctx, idea })
+    expect(built.length).toBe(idea.shapes.length)
+    for (const b of built) {
+      expect(idea.shapes).toContain(b.shape.label)
+      expect(b.ideaMatch).not.toBeNull()
+      expect(b.unpaired).toEqual([])
+    }
+  })
+
+  it('flags team instructions that do not fit together', () => {
+    const defs = DEFAULT_CONFIG.teamInstructions
+    const pd = defs.find((d) => d.name === 'Passing directness')!
+    const tempo = defs.find((d) => d.name === 'Tempo')!
+    const codes = [
+      pd.options.find((o) => o.label === 'Much more direct passes')!.code,
+      tempo.options.find((o) => o.label === 'Much lower')!.code,
+    ]
+    expect(teamConflicts(codes, defs).map((x) => x.id)).toContain('conflict-direct-tempo')
+    expect(teamConflicts(codes, defs, { 'conflict-direct-tempo': false })).toHaveLength(0)
+  })
+
+  it("every idea's instructions exist in FM and do not conflict with each other", () => {
+    const defs = DEFAULT_CONFIG.teamInstructions
+    for (const idea of DEFAULT_GAME_IDEAS) {
+      const items = ideaTeam(idea, defaultTeamCodes(defs), defs)
+      expect(items.length, idea.id).toBe(idea.team.length)
+      expect(teamConflicts(applyCodes(defaultTeamCodes(defs), items, defs), defs), idea.id).toEqual(
+        [],
+      )
+      for (const name of idea.shapes) expect(FORMATIONS[name], name).toBeDefined()
+      const ids = new Set(DEFAULT_CONFIG.roles.map((r) => r.id))
+      for (const r of idea.roles)
+        for (const id of [...r.ip, ...r.oop]) expect(ids.has(id), id).toBe(true)
+      for (const x of [...idea.players, ...idea.avoid]) {
+        const d = DEFAULT_CONFIG.playerInstructions.find((y) => y.name === x.instruction)
+        expect(
+          d?.options.some((o) => o.label === x.option),
+          `${x.instruction} ${x.option}`,
+        ).toBe(true)
+      }
+    }
+  })
+
+  it('checks the squad against an idea', () => {
+    const idea = DEFAULT_GAME_IDEAS.find((x) => x.id === 'catenaccio')!
+    const checks = squadCheck(idea, squad)
+    expect(checks).toHaveLength(idea.needs.length)
+    expect(ideaFit(checks)).toBeGreaterThan(0)
+  })
+
+  it('never runs an inside forward wide, and keeps out what the idea avoids', () => {
+    const slots = [{ position: 'AML' as const, player: 'aml', role: 'if' }]
+    const sq = [
+      {
+        ...squad.find((p) => p.id === 'aml')!,
+        attributes: {
+          ...squad.find((p) => p.id === 'aml')!.attributes,
+          Dribbling: 18,
+          Crossing: 18,
+        },
+      },
+    ]
+    const out = playerSuggestions(
+      slots,
+      sq,
+      DEFAULT_CONFIG.roles,
+      DEFAULT_CONFIG.fmCodes,
+      DEFAULT_CONFIG.playerInstructions,
+      {},
+      () => ({ left: 3, right: 1 }),
+    )
+    expect(out.some((x) => x.to === 'Run wide with ball')).toBe(false)
   })
 })

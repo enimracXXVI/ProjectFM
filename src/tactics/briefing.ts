@@ -12,6 +12,7 @@ import { chosen, fmPositions, playerChoices, posOf, roleIdOf, teamCodes } from '
 import { formationLabel } from './positions'
 import type { TacticRow } from './types'
 import { roleWarnings } from './warnings'
+import { teamConflicts } from './ideas'
 
 type Config = Pick<
   AppConfig,
@@ -22,6 +23,7 @@ type Config = Pick<
   | 'playerInstructions'
   | 'briefingLowFit'
   | 'roleWarnings'
+  | 'tacticRules'
 >
 
 export interface BriefingSlot {
@@ -108,6 +110,12 @@ export function buildBriefing(t: TacticRow, squad: PlayerRow[], config: Config):
 
   // FM's own warnings about the role combination
   watch.unshift(...roleWarnings(t.slots, config.roles, config.roleWarnings, config.fmCodes))
+  // Team instructions that work against each other (rules of thumb, Settings > Tactic assistant)
+  watch.unshift(
+    ...teamConflicts(codes, config.teamInstructions, config.tacticRules).map(
+      (x) => `Does not fit together: ${x.text}`,
+    ),
+  )
   return {
     title: [t.name, t.mentality].filter(Boolean).join(' · '),
     shape: `${formationLabel(t.slots.map((s) => posOf(s, 'ip')))} in possession, ${formationLabel(t.slots.map((s) => posOf(s, 'oop')))} out of possession`,
