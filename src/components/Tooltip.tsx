@@ -59,7 +59,7 @@ export function Tooltip({
     <span
       ref={ref}
       aria-describedby={pos ? id : undefined}
-      className="inline-flex"
+      className="inline-flex max-w-full min-w-0"
       onPointerEnter={(e) => e.pointerType === 'mouse' && show()}
       onPointerLeave={(e) => e.pointerType === 'mouse' && hide()}
       onFocus={show}

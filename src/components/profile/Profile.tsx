@@ -552,11 +552,8 @@ function AttributesWide({ data }: { data: ProfileData }) {
                         title={attributeLabel(config, n)}
                         text={config.attributes[n]?.description || attributeLabel(config, n)}
                       >
-                        <span
-                          tabIndex={0}
-                          className="flex min-w-0 cursor-help items-center gap-1 truncate"
-                        >
-                          {attributeLabel(config, n)}
+                        <span tabIndex={0} className="flex min-w-0 cursor-help items-center gap-1">
+                          <span className="truncate">{attributeLabel(config, n)}</span>
                           {trained && (
                             <Dumbbell
                               className="size-3 shrink-0 text-accent"
@@ -565,7 +562,7 @@ function AttributesWide({ data }: { data: ProfileData }) {
                           )}
                         </span>
                       </Tooltip>
-                      <span className="flex items-center gap-1.5 tabular-nums">
+                      <span className="flex shrink-0 items-center gap-1.5 tabular-nums">
                         <Diff d={diffOf(data, n)} />
                         <span className={clsx('w-6 text-right font-semibold', colorOf(n, v))}>
                           {formatAttr(v)}

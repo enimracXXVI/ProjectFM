@@ -35,7 +35,15 @@ export function useUrlState<T>(
 }
 
 const JSON_CODEC = {
-  parse: (s: string) => JSON.parse(s) as unknown,
+  // Links written by hand (?tactic=<id>) are plain text, not JSON
+  parse: (s: string) => {
+    try {
+      return JSON.parse(s) as unknown
+    } catch {
+      if (!s) throw new Error('empty')
+      return s
+    }
+  },
   format: (v: unknown) => JSON.stringify(v),
 }
 

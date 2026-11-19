@@ -2,7 +2,15 @@ import { describe, expect, it } from 'vitest'
 import type { PlayerRow } from '../data/db'
 import { DEFAULT_ROLES } from '../data/roles'
 import { DEFAULT_ROLE_WEIGHTS } from '../lib/roleFit'
-import { assign, benchCover, bestXi, gradeTactic, playsPosition, suggestions } from './analysis'
+import {
+  assign,
+  benchCover,
+  bestXi,
+  gradeTactic,
+  playsPosition,
+  suggestions,
+  withPlayer,
+} from './analysis'
 import type { TacticSlot } from './types'
 
 const ctx = { roles: DEFAULT_ROLES, weights: DEFAULT_ROLE_WEIGHTS }
@@ -64,5 +72,18 @@ describe('tactic analysis', () => {
       true,
     )
     expect(benchCover(xi, squad, ctx)[1]?.player.id).toBe('star')
+  })
+})
+
+describe('withPlayer', () => {
+  it('swaps when the player is already in another slot', () => {
+    const slots = [
+      { position: 'ST' as const, player: 'a' },
+      { position: 'DC' as const, player: 'b' },
+      { position: 'GK' as const, player: null },
+    ]
+    expect(withPlayer(slots, 0, 'b').map((s) => s.player)).toEqual(['b', 'a', null])
+    expect(withPlayer(slots, 2, 'a').map((s) => s.player)).toEqual([null, 'b', 'a'])
+    expect(withPlayer(slots, 1, 'c').map((s) => s.player)).toEqual(['a', 'c', null])
   })
 })

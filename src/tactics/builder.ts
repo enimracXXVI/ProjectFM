@@ -414,7 +414,7 @@ export const TEAM_RULES: TeamRule[] = [
   {
     id: 'line-behaviour',
     instruction: 'Defensive line behaviour',
-    name: 'Slow but smart defenders drop off',
+    name: 'Step up or drop off from the centre-backs’ pace and reading of the game',
     about:
       'Centre-backs under 11 in Pace and Acceleration but 13+ in Anticipation and Positioning drop off rather than step up; 14+ in pace and reading the game, they step up.',
     check: (c) => {

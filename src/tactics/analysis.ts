@@ -226,3 +226,14 @@ export function benchCover(slots: TacticSlot[], squad: PlayerRow[], ctx: FitCont
     return best
   })
 }
+
+/**
+ * Puts a player in a slot. A player can only be in one slot: if he is already in another,
+ * the two slots swap players.
+ */
+export function withPlayer(slots: TacticSlot[], i: number, player: string | null): TacticSlot[] {
+  const from = player ? slots.findIndex((s, j) => j !== i && s.player === player) : -1
+  return slots.map((s, j) =>
+    j === i ? { ...s, player } : j === from ? { ...s, player: slots[i].player ?? null } : s,
+  )
+}

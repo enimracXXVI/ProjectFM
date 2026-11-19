@@ -14,7 +14,13 @@ import { useCurrentCareer } from '../lib/career'
 import { useConfig } from '../lib/config'
 import { shortName } from '../lib/names'
 import { footLevel } from '../lib/profile'
-import { gradeTactic, playsPosition, slotScore, type FitContext } from '../tactics/analysis'
+import {
+  gradeTactic,
+  playsPosition,
+  slotScore,
+  withPlayer,
+  type FitContext,
+} from '../tactics/analysis'
 import { firstTeam, slotPosition, styleFits } from '../tactics/assistant'
 import {
   applyPlayers,
@@ -71,7 +77,11 @@ export function TacticAssistant() {
     () => ({ roles: config.roles, weights: config.roleWeights, fmCodes: config.fmCodes }),
     [config],
   )
-  const [step, setStep] = useState<Step>('start')
+  const [step, setStepState] = useState<Step>('start')
+  const setStep = (s: Step) => {
+    setStepState(s)
+    window.scrollTo({ top: 0 })
+  }
   const [style, setStyle] = useState<TacticalStyle | null>(null)
   const [mustPlay, setMustPlay] = useState<string[]>([])
   const [built, setBuilt] = useState<BuiltTactic[] | null>(null)
@@ -415,6 +425,13 @@ export function TacticAssistant() {
             </ul>
           )}
           <div className="grid gap-2">
+            <div className="hidden gap-2 px-2 text-xs text-muted md:grid md:grid-cols-[5rem_minmax(0,1fr)_minmax(0,1fr)_minmax(0,1fr)_3rem]">
+              <span>Position</span>
+              <span>Player</span>
+              <span>In possession</span>
+              <span>Out of possession</span>
+              <span className="text-right">Fit</span>
+            </div>
             {slots.map((s, i) => {
               const player = byId(s.player)
               const fit = player ? slotScore(player, s, ctx) : null
@@ -431,28 +448,33 @@ export function TacticAssistant() {
                       </span>
                     )}
                   </span>
-                  <select
-                    aria-label={`Player at ${slotPosition(s)}`}
-                    value={s.player ?? ''}
-                    onChange={(e) => setSlot(i, { player: e.target.value || null })}
-                    className={field}
-                  >
-                    <option value="">No player</option>
-                    {[...squad]
-                      .map((p) => ({
-                        p,
-                        sc: slotScore(p, s, ctx),
-                        ok: playsPosition(p, s.position),
-                      }))
-                      .sort((a, b) => Number(b.ok) - Number(a.ok) || (b.sc ?? 0) - (a.sc ?? 0))
-                      .map(({ p, sc, ok }) => (
-                        <option key={p.id} value={p.id}>
-                          {p.name} · {sc ?? '–'}
-                          {ok ? '' : ' (out of position)'}
-                          {slots.some((x, j) => j !== i && x.player === p.id) ? ' (in XI)' : ''}
-                        </option>
-                      ))}
-                  </select>
+                  <label className="grid gap-0.5">
+                    <span className="text-xs text-muted md:hidden">Player</span>
+                    <select
+                      aria-label={`Player at ${slotPosition(s)}`}
+                      value={s.player ?? ''}
+                      onChange={(e) => setSlots(withPlayer(slots, i, e.target.value || null))}
+                      className={field}
+                    >
+                      <option value="">No player</option>
+                      {[...squad]
+                        .map((p) => ({
+                          p,
+                          sc: slotScore(p, s, ctx),
+                          ok: playsPosition(p, s.position),
+                        }))
+                        .sort((a, b) => Number(b.ok) - Number(a.ok) || (b.sc ?? 0) - (a.sc ?? 0))
+                        .map(({ p, sc, ok }) => (
+                          <option key={p.id} value={p.id}>
+                            {p.name} · {sc ?? '–'}
+                            {ok ? '' : ' (out of position)'}
+                            {slots.some((x, j) => j !== i && x.player === p.id)
+                              ? ' (in XI: swaps)'
+                              : ''}
+                          </option>
+                        ))}
+                    </select>
+                  </label>
                   <RolePick
                     label="In possession"
                     phase="ip"
@@ -724,23 +746,26 @@ function RolePick({
     .sort((a, b) => (b.sc ?? 0) - (a.sc ?? 0))
   const value = (phase === 'ip' ? slot.role : slot.roleOop) ?? ''
   return (
-    <select
-      aria-label={`${label} role`}
-      title={label}
-      value={value}
-      onChange={(e) => onChange(e.target.value || null)}
-      className={field}
-    >
-      <option value="">{label}: no role</option>
-      {value && !options.some((o) => o.r.id === value) && (
-        <option value={value}>{config.roles.find((r) => r.id === value)?.name ?? value}</option>
-      )}
-      {options.map(({ r, sc }) => (
-        <option key={r.id} value={r.id}>
-          {preferred.has(r.id) ? '★ ' : ''}
-          {r.name} · {sc ?? '–'}
-        </option>
-      ))}
-    </select>
+    <label className="grid gap-0.5">
+      <span className="text-xs text-muted md:hidden">{label}</span>
+      <select
+        aria-label={`${label} role`}
+        title={label}
+        value={value}
+        onChange={(e) => onChange(e.target.value || null)}
+        className={field}
+      >
+        <option value="">{label}: no role</option>
+        {value && !options.some((o) => o.r.id === value) && (
+          <option value={value}>{config.roles.find((r) => r.id === value)?.name ?? value}</option>
+        )}
+        {options.map(({ r, sc }) => (
+          <option key={r.id} value={r.id}>
+            {preferred.has(r.id) ? '★ ' : ''}
+            {r.name} · {sc ?? '–'}
+          </option>
+        ))}
+      </select>
+    </label>
   )
 }

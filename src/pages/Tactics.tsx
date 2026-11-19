@@ -29,7 +29,7 @@ import { attributeLabel } from '../data/config'
 import { FmAboutLine } from '../components/FmAboutBox'
 import { useConfig } from '../lib/config'
 import { roleScore } from '../lib/roleFit'
-import { benchCover, bestXi, gradeTactic, suggestions } from '../tactics/analysis'
+import { benchCover, bestXi, gradeTactic, suggestions, withPlayer } from '../tactics/analysis'
 import {
   FORMATIONS,
   POSITION_CODES,
@@ -341,8 +341,11 @@ function TacticEditor({ tactic }: { tactic: TacticRow }) {
   }
   const remove = useMutation({ mutationFn: () => deleteTactic(tactic.id), onSuccess: done })
 
-  const setSlot = (i: number, patch: Partial<TacticSlot>) =>
-    setForm({ ...form, slots: form.slots.map((s, j) => (j === i ? { ...s, ...patch } : s)) })
+  const setSlot = (i: number, patch: Partial<TacticSlot>) => {
+    const { player, ...rest } = patch
+    const slots = 'player' in patch ? withPlayer(form.slots, i, player ?? null) : form.slots
+    setForm({ ...form, slots: slots.map((s, j) => (j === i ? { ...s, ...rest } : s)) })
+  }
   /** Swaps the players of two slots (positions and roles stay with the slots). */
   const swap = (a: number, b: number) => {
     if (a === b) return
@@ -1092,7 +1095,7 @@ function SlotPanel({
                 <span className="min-w-0 flex-1 truncate">
                   {p.name}
                   {used.has(p.id) && slot.player !== p.id && (
-                    <span className="ml-1 text-xs text-muted">(in XI)</span>
+                    <span className="ml-1 text-xs text-muted">(in XI: swaps)</span>
                   )}
                 </span>
                 <span className="text-xs text-muted">{p.positions}</span>
@@ -1409,13 +1412,9 @@ function SquadFit({
                         type="button"
                         onClick={() =>
                           onSlots(
-                            slots.map((x, j) =>
-                              j !== i
-                                ? x
-                                : tip.kind === 'role'
-                                  ? { ...x, role: tip.value }
-                                  : { ...x, player: tip.value },
-                            ),
+                            tip.kind === 'role'
+                              ? slots.map((x, j) => (j === i ? { ...x, role: tip.value } : x))
+                              : withPlayer(slots, i, tip.value),
                           )
                         }
                         className="text-left text-accent hover:underline"
