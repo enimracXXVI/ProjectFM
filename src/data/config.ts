@@ -94,6 +94,8 @@ export interface AppConfig {
   staffShort: Record<string, string>
   /** Scouting knowledge levels, lowest to highest. */
   knowledgeLevels: string[]
+  /** Lowest save value (0–100) of each knowledge level; empty: worked out from values seen in FM. */
+  knowledgeMins: (number | null)[]
   roles: RoleDef[]
   roleWeights: RoleWeights
   /** Show values FM keeps hidden (CA/PA, hidden attributes, personality values). */
@@ -181,6 +183,7 @@ export const DEFAULT_CONFIG: AppConfig = {
   staffGroups: DEFAULT_JOB_GROUPS,
   staffShort: DEFAULT_STAFF_SHORT,
   knowledgeLevels: DEFAULT_KNOWLEDGE_LEVELS,
+  knowledgeMins: [],
   roles: DEFAULT_ROLES,
   roleWeights: DEFAULT_ROLE_WEIGHTS,
   showHidden: false,
@@ -246,6 +249,7 @@ export function mergeConfig(stored: Stored): AppConfig {
     staffGroups: { ...DEFAULT_CONFIG.staffGroups, ...stored.staffGroups },
     staffShort: { ...DEFAULT_CONFIG.staffShort, ...stored.staffShort },
     knowledgeLevels: withOutstanding(stored.knowledgeLevels) ?? DEFAULT_CONFIG.knowledgeLevels,
+    knowledgeMins: stored.knowledgeMins ?? DEFAULT_CONFIG.knowledgeMins,
     // Older roles switched on in Settings join the roles the app uses
     roles: [
       ...(stored.roles ? withFmCodes(stored.roles) : DEFAULT_CONFIG.roles).filter(

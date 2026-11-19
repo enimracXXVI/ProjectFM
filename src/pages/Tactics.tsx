@@ -29,6 +29,8 @@ import { useCurrentCareer } from '../lib/career'
 import { attributeLabel } from '../data/config'
 import { FmAboutLine } from '../components/FmAboutBox'
 import { useConfig } from '../lib/config'
+import { RoleAttributes } from '../components/RoleAttributes'
+import { useFoot } from '../lib/useFoot'
 import { roleScore } from '../lib/roleFit'
 import {
   benchCover,
@@ -91,6 +93,7 @@ const field =
 
 export function Tactics() {
   const career = useCurrentCareer()
+  const foot = useFoot()
   const { data: tactics, error, isPending } = useTactics(career.id)
   const [selected, setSelected] = useUrlState<string | null>('tactic', null)
   const qc = useQueryClient()
@@ -120,7 +123,12 @@ export function Tactics() {
         config.fmCodes,
       )
       const squad = (players ?? []).filter((p) => p.in_squad && !p.extra.team)
-      const ctx = { roles: config.roles, weights: config.roleWeights, fmCodes: config.fmCodes }
+      const ctx = {
+        roles: config.roles,
+        weights: config.roleWeights,
+        fmCodes: config.fmCodes,
+        foot,
+      }
       const xi = bestXi(t.slots, squad, ctx, new Set())
       return saveTactic(career.id, null, {
         name: t.name,
@@ -145,7 +153,12 @@ export function Tactics() {
       setVersionNote(await learnVersion(bytes))
       const read = fromSave(t, config.roles, config.fmCodes)
       const squad = (players ?? []).filter((p) => p.in_squad && !p.extra.team)
-      const ctx = { roles: config.roles, weights: config.roleWeights, fmCodes: config.fmCodes }
+      const ctx = {
+        roles: config.roles,
+        weights: config.roleWeights,
+        fmCodes: config.fmCodes,
+        foot,
+      }
       const xi = bestXi(read.slots, squad, ctx, new Set())
       return saveTactic(career.id, null, {
         name: t.name || file.name.replace(/\.fmf$/i, ''),
@@ -261,6 +274,7 @@ export function Tactics() {
 }
 
 function TacticEditor({ tactic }: { tactic: TacticRow }) {
+  const foot = useFoot()
   const career = useCurrentCareer()
   const config = useConfig()
   const confirm = useConfirm()
@@ -433,7 +447,7 @@ function TacticEditor({ tactic }: { tactic: TacticRow }) {
   const used = new Set(form.slots.map((s) => s.player).filter(Boolean))
 
   // Squad fit of the XI as set, and of the best XI (shown on the pitch corners)
-  const fitCtx = { roles: config.roles, weights: config.roleWeights, fmCodes: config.fmCodes }
+  const fitCtx = { roles: config.roles, weights: config.roleWeights, fmCodes: config.fmCodes, foot }
   const fitNow = gradeTactic(form.slots, squad, fitCtx).team
   const bestPick = bestXi(form.slots, squad, fitCtx, locked)
   const fitBest = gradeTactic(
@@ -1021,9 +1035,10 @@ function SlotPanel({
         (b.score ?? -1) - (a.score ?? -1) ||
         byLastName(a.p, b.p),
     )
+  const current = squad.find((p) => p.id === slot.player) ?? null
   return (
     <Section
-      title={`${posOf(slot, phase) ?? 'Position'} · ${squad.find((p) => p.id === slot.player)?.name ?? 'no player'}`}
+      title={`${posOf(slot, phase) ?? 'Position'} · ${current?.name ?? 'no player'}`}
       open={open}
       onToggle={() => setOpen(!open)}
       className="border-accent/50"
@@ -1033,7 +1048,7 @@ function SlotPanel({
         </button>
       }
     >
-      <div className="grid gap-3 sm:grid-cols-2">
+      <div className="grid gap-3 sm:grid-cols-3">
         <label className="grid gap-1 text-sm">
           <span className="text-muted">
             Position {phase === 'ip' ? 'in possession' : 'out of possession'}
@@ -1086,7 +1101,38 @@ function SlotPanel({
             ))}
           </select>
         </label>
+        <label className="grid gap-1 text-sm">
+          <span className="text-muted">Player</span>
+          <select
+            value={slot.player ?? ''}
+            onChange={(e) => onChange({ player: e.target.value || null })}
+            className={field}
+          >
+            <option value="">No player</option>
+            {(
+              [
+                [`Rated ${config.positionMin}+ at ${pos ?? 'this position'}`, true],
+                [`Rated under ${config.positionMin}`, false],
+              ] as const
+            ).map(([label, able]) => {
+              const group = ranked.filter((x) => x.able === able)
+              return group.length ? (
+                <optgroup key={label} label={label}>
+                  {group.map(({ p, score, rating }) => (
+                    <option key={p.id} value={p.id}>
+                      {p.name}
+                      {rating !== null ? ` · rated ${rating}` : ''}
+                      {score !== null ? ` · fit ${score}` : ''}
+                      {used.has(p.id) && slot.player !== p.id ? ' (in XI: swaps)' : ''}
+                    </option>
+                  ))}
+                </optgroup>
+              ) : null
+            })}
+          </select>
+        </label>
       </div>
+      {role && current && <RoleAttributes role={role} attributes={current.attributes} />}
       {role && (role.about || role.tags?.length) && <RoleAbout role={role} />}
       <RatingGuide
         role={config.roles.find((r) => r.id === slot.role) ?? null}
@@ -1116,62 +1162,6 @@ function SlotPanel({
             ))}
         </select>
       </label>
-      <div>
-        <p className="mb-1 text-sm text-muted">
-          Preferred player: those rated {config.positionMin}+ at {pos ?? 'this position'} first
-          {role ? ', then by fit for the role' : ''}
-        </p>
-        <ul className="grid max-h-72 gap-0.5 overflow-y-auto">
-          {ranked.map(({ p, score, rating, able }, k) => (
-            <li key={p.id}>
-              {!able && (k === 0 || ranked[k - 1].able) && (
-                <p className="mt-1 border-t border-border px-2 pt-2 text-xs text-muted">
-                  Rated under {config.positionMin} at {pos ?? 'this position'}
-                </p>
-              )}
-              <button
-                type="button"
-                onClick={() => onChange({ player: p.id })}
-                className={clsx(
-                  'flex min-h-10 w-full items-center gap-2 rounded-lg px-2 text-left text-sm',
-                  slot.player === p.id
-                    ? 'bg-accent/15 font-semibold text-accent'
-                    : 'hover:bg-surface-2',
-                )}
-              >
-                <span className="min-w-0 flex-1 truncate">
-                  {p.name}
-                  {used.has(p.id) && slot.player !== p.id && (
-                    <span className="ml-1 text-xs text-muted">(in XI: swaps)</span>
-                  )}
-                </span>
-                <span className="text-xs text-muted">{p.positions}</span>
-                {rating !== null && (
-                  <span
-                    title={`FM rating at ${pos}`}
-                    className={clsx(
-                      'w-6 text-right text-xs tabular-nums',
-                      able ? 'text-text' : 'text-muted',
-                    )}
-                  >
-                    {rating}
-                  </span>
-                )}
-                {score !== null && (
-                  <span
-                    className={clsx(
-                      'w-8 text-right font-semibold tabular-nums',
-                      scoreTextColor(score),
-                    )}
-                  >
-                    {score}
-                  </span>
-                )}
-              </button>
-            </li>
-          ))}
-        </ul>
-      </div>
     </Section>
   )
 }
@@ -1197,10 +1187,14 @@ function PlayerInstructions({
   const defs = config.playerInstructions.filter((d) => d.phase === phase)
   const set = (next: number[]) => onChange(phase === 'ip' ? { pi: next } : { piOop: next })
   if (!role) return null
-  const rows = defs
-    .map((d) => ({ d, ...playerChoices(d, role, fmPosition) }))
-    .filter((r) => r.options.length > 1 || r.forced)
-  if (!rows.length)
+  // Every instruction, as FM shows them: the ones the role cannot change are locked
+  const all = defs.map((d) => ({ d, ...playerChoices(d, role, fmPosition) }))
+  const rows = all.map((r) =>
+    r.options.length > 1 || r.forced
+      ? { ...r, locked: false }
+      : { ...r, locked: true, options: r.d.options.filter((o) => o.code === 0).slice(0, 1) },
+  )
+  if (!all.some((r) => r.options.length > 1 || r.forced))
     return (
       <p className="text-xs text-muted">
         No player instructions for {role.name} here (Settings &gt; Roles sets them).
@@ -1216,15 +1210,21 @@ function PlayerInstructions({
         Player instructions {phase === 'ip' ? 'in possession' : 'out of possession'}
       </h3>
       <ul className="grid grid-cols-2 gap-x-2 gap-y-1">
-        {rows.map(({ d, options, forced }) => {
-          const current = forced ? options[0] : chosen(d, codes)
+        {rows.map(({ d, options, forced, locked }) => {
+          const current = forced || locked ? options[0] : chosen(d, codes)
           return (
             <li key={d.name} className="grid content-start gap-0.5 text-xs">
               <span className="truncate text-muted">{d.name}</span>
               <select
                 value={current?.code ?? 0}
-                disabled={forced}
-                title={forced ? `${role.name} always does this` : undefined}
+                disabled={forced || locked}
+                title={
+                  forced
+                    ? `${role.name} always does this`
+                    : locked
+                      ? `FM does not let ${role.name} change this here`
+                      : undefined
+                }
                 onChange={(e) => set(choose(d, codes, Number(e.target.value)))}
                 className="min-h-10 min-w-0 rounded-lg border border-border bg-surface-2 px-2 text-sm disabled:opacity-70"
               >
@@ -1233,6 +1233,7 @@ function PlayerInstructions({
                     {o.label}
                     {o.target === 'player' ? ' (set in FM for a match)' : ''}
                     {forced ? ' (role)' : ''}
+                    {locked ? ' (locked)' : ''}
                   </option>
                 ))}
               </select>

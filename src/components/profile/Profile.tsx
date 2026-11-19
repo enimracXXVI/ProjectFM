@@ -46,6 +46,81 @@ export interface ProfileData {
 
 const heading = 'mb-1.5 text-[11px] font-semibold tracking-wide text-muted uppercase'
 
+/** A role picked to highlight its key and preferred attributes. */
+type Highlight = { key: Set<string>; preferred: Set<string> } | null
+
+/** Highlight style of an attribute row: key, preferred, or dimmed when a role is picked. */
+function highlightClass(h: Highlight, n: string) {
+  if (!h) return null
+  if (h.key.has(n)) return 'bg-sky-400/20 font-semibold shadow-[inset_3px_0_0_var(--color-sky-400)]'
+  if (h.preferred.has(n)) return 'bg-sky-400/10 shadow-[inset_3px_0_0_rgb(56_189_248/0.45)]'
+  return 'opacity-45'
+}
+
+/** Pick a role: its key and preferred attributes light up, the rest dim. */
+function RolePicker({
+  data,
+  value,
+  onChange,
+}: {
+  data: ProfileData
+  value: string
+  onChange: (id: string) => void
+}) {
+  const { roles, roleWeights } = useConfig()
+  const fits = useMemo(
+    () => allRoleFits(data.attributes, data.positions, roles, roleWeights),
+    [data.attributes, data.positions, roles, roleWeights],
+  )
+  const phase = (p: string) => (p === 'ip' ? 'in possession' : 'out of possession')
+  const fit = fits.find((f) => f.role.id === value)
+  return (
+    <section className="grid gap-1.5">
+      <h2 className={heading}>Highlight a role</h2>
+      <select
+        aria-label="Highlight a role"
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        className="min-h-10 w-full min-w-0 rounded-lg border border-border bg-surface-2 px-2 text-sm"
+      >
+        <option value="">None</option>
+        {[true, false].map((natural) => (
+          <optgroup key={String(natural)} label={natural ? 'His positions' : 'Other positions'}>
+            {fits
+              .filter((f) => f.natural === natural)
+              .map((f) => (
+                <option key={f.role.id} value={f.role.id}>
+                  {f.role.name} ({phase(f.role.phase)}) · {f.score ?? '–'}
+                </option>
+              ))}
+          </optgroup>
+        ))}
+      </select>
+      {fit && (
+        <p className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-muted">
+          <span className={clsx('font-semibold', fit.score !== null && scoreTextColor(fit.score))}>
+            Fit {fit.score ?? '–'}
+          </span>
+          <span className="inline-flex items-center gap-1">
+            <span className="size-2.5 rounded-sm bg-sky-400/60" /> Key
+          </span>
+          <span className="inline-flex items-center gap-1">
+            <span className="size-2.5 rounded-sm bg-sky-400/25" /> Preferred
+          </span>
+        </p>
+      )}
+    </section>
+  )
+}
+
+function useHighlight(id: string): Highlight {
+  const { roles } = useConfig()
+  return useMemo(() => {
+    const r = roles.find((x) => x.id === id)
+    return r ? { key: new Set(r.key), preferred: new Set(r.preferred) } : null
+  }, [roles, id])
+}
+
 /** Closes a popover on an outside tap or Escape. */
 function usePopover() {
   const [open, setOpen] = useState(false)
@@ -505,7 +580,7 @@ function Diff({ d }: { d: number }) {
 }
 
 /** Desktop: full names, one column per layout column. */
-function AttributesWide({ data }: { data: ProfileData }) {
+function AttributesWide({ data, highlight }: { data: ProfileData; highlight: Highlight }) {
   const config = useConfig()
   const columns = useColumns(data)
   const cols = columns.length
@@ -543,9 +618,10 @@ function AttributesWide({ data }: { data: ProfileData }) {
                       key={n}
                       className={clsx(
                         'flex min-h-7 items-center justify-between gap-2 rounded px-2',
-                        trained
-                          ? 'bg-accent/15 shadow-[inset_3px_0_0_var(--color-accent)]'
-                          : 'odd:bg-surface-2/40',
+                        highlightClass(highlight, n) ??
+                          (trained
+                            ? 'bg-accent/15 shadow-[inset_3px_0_0_var(--color-accent)]'
+                            : 'odd:bg-surface-2/40'),
                       )}
                     >
                       <Tooltip
@@ -581,7 +657,7 @@ function AttributesWide({ data }: { data: ProfileData }) {
 }
 
 /** Mobile: the same columns with FM's three-letter names, so all fit on one screen. */
-function AttributesCompact({ data }: { data: ProfileData }) {
+function AttributesCompact({ data, highlight }: { data: ProfileData; highlight: Highlight }) {
   const config = useConfig()
   const columns = useColumns(data)
   const abbr = (n: string) => config.attributes[n]?.abbr || n.slice(0, 3)
@@ -604,7 +680,10 @@ function AttributesCompact({ data }: { data: ProfileData }) {
         tabIndex={0}
         className={clsx(
           'mb-0.5 flex w-full items-center justify-between gap-0.5 rounded px-1 py-0.5 text-xs',
-          trained ? 'bg-accent/15 shadow-[inset_2px_0_0_var(--color-accent)]' : 'bg-surface-2/40',
+          highlightClass(highlight, key) ??
+            (trained
+              ? 'bg-accent/15 shadow-[inset_2px_0_0_var(--color-accent)]'
+              : 'bg-surface-2/40'),
         )}
       >
         <span className="min-w-0 truncate">
@@ -695,21 +774,27 @@ export function ProfileStrip({ data }: { data: ProfileData }) {
 
 /** The Profile tab: desktop side card + attribute columns; mobile compact grid + details. */
 export function ProfileTab({ data, footer }: { data: ProfileData; footer?: ReactNode }) {
+  const [roleId, setRoleId] = useState('')
+  const highlight = useHighlight(roleId)
   return (
     <>
       <div className="hidden gap-4 lg:grid lg:grid-cols-[16rem_minmax(0,1fr)]">
         <div className="grid min-w-0 grid-cols-[minmax(0,1fr)] content-start gap-4 self-start rounded-xl border border-border bg-surface p-4">
           <PositionsPitch data={data} />
+          <RolePicker data={data} value={roleId} onChange={setRoleId} />
           <Details data={data} withFeet />
         </div>
         <div className="self-start rounded-xl border border-border bg-surface p-4">
-          <AttributesWide data={data} />
+          <AttributesWide data={data} highlight={highlight} />
           {footer && <div className="mt-3 text-xs text-muted">{footer}</div>}
         </div>
       </div>
       <div className="grid gap-3 lg:hidden">
+        <div className="rounded-xl border border-border bg-surface p-3">
+          <RolePicker data={data} value={roleId} onChange={setRoleId} />
+        </div>
         <div className="rounded-xl border border-border bg-surface p-2">
-          <AttributesCompact data={data} />
+          <AttributesCompact data={data} highlight={highlight} />
           {footer && <div className="mt-2 text-xs text-muted">{footer}</div>}
         </div>
         <div className="min-w-0 rounded-xl border border-border bg-surface p-4">

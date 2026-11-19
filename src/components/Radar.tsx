@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, type ReactNode } from 'react'
 
 export interface RadarSeries {
   name: string
@@ -27,26 +27,41 @@ export function Radar({
   title,
   axes,
   series,
+  action,
 }: {
-  title: string
+  title: ReactNode
   axes: string[]
   series: RadarSeries[]
+  /** Shown at the top right (a picker for what the chart shows). */
+  action?: ReactNode
 }) {
   const [active, setActive] = useState<number | null>(null)
   const n = axes.length
-  if (n < 3) return null
+  if (n < 3)
+    return (
+      <figure className="flex h-full flex-col rounded-xl border border-border bg-surface p-3">
+        <figcaption className="mb-1 flex min-h-10 flex-wrap items-center justify-between gap-2 text-sm font-semibold">
+          <span className="min-w-0">{title}</span>
+          {action}
+        </figcaption>
+        <p className="text-sm text-muted">Not enough attributes to draw a chart.</p>
+      </figure>
+    )
 
   const ring = (v: number) => axes.map((_, i) => point(i, n, v).join(',')).join(' ')
 
   return (
-    <figure className="rounded-xl border border-border bg-surface p-3">
-      <figcaption className="mb-1 text-sm font-semibold">{title}</figcaption>
+    <figure className="flex h-full flex-col rounded-xl border border-border bg-surface p-3">
+      <figcaption className="mb-1 flex min-h-10 flex-wrap items-center justify-between gap-2 text-sm font-semibold">
+        <span className="min-w-0">{title}</span>
+        {action}
+      </figcaption>
       <div className="relative mx-auto max-w-[340px]">
         <svg
           viewBox={`0 0 ${SIZE} ${SIZE}`}
           className="w-full overflow-visible"
           role="img"
-          aria-label={`${title}: ${series.map((s) => s.name).join(', ')}`}
+          aria-label={`${typeof title === 'string' ? title : 'Chart'}: ${series.map((s) => s.name).join(', ')}`}
           onPointerLeave={() => setActive(null)}
         >
           {/* Recessive grid */}

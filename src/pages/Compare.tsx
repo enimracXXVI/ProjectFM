@@ -159,7 +159,7 @@ export function Compare() {
         <Placeholder>Pick players above, or use “Compare” on a player's page.</Placeholder>
       ) : (
         <>
-          <div className="mb-6 grid gap-4 lg:grid-cols-2">
+          <div className="mb-6 grid items-stretch gap-4 lg:grid-cols-2">
             <Radar
               title="Attribute areas (average)"
               axes={sections.map((s) => s.label)}
@@ -169,13 +169,14 @@ export function Compare() {
                 values: sections.map((sec) => avg(s.player, sec.attributes)),
               }))}
             />
-            <div className="grid content-start gap-2">
-              <label className="flex flex-wrap items-center gap-2 text-sm">
-                <span className="text-muted">Key attributes for</span>
+            <Radar
+              title="Key attributes"
+              action={
                 <select
+                  aria-label="Key attributes for"
                   value={role?.id ?? ''}
                   onChange={(e) => setRoleChoice(e.target.value)}
-                  className="min-h-11 rounded-lg border border-border bg-surface px-3 text-base md:text-sm"
+                  className="min-h-9 max-w-full min-w-0 rounded-lg border border-border bg-surface-2 px-2 text-sm font-normal"
                 >
                   {(['ip', 'oop'] as const).map((phase) => (
                     <optgroup
@@ -192,21 +193,28 @@ export function Compare() {
                     </optgroup>
                   ))}
                 </select>
-              </label>
-              {role && (
-                <Radar
-                  title={role.name}
-                  axes={role.key.map((a) => attributeLabel(config, a))}
-                  series={series.map((s) => ({
-                    name: s.name,
-                    color: s.color,
-                    values: role.key.map((a) => attrNumber(s.player.attributes[a])),
-                  }))}
-                />
-              )}
-            </div>
+              }
+              axes={(role?.key ?? []).map((a) => attributeLabel(config, a))}
+              series={series.map((s) => ({
+                name: s.name,
+                color: s.color,
+                values: (role?.key ?? []).map((a) => attrNumber(s.player.attributes[a])),
+              }))}
+            />
           </div>
 
+          {role && (
+            <p className="mb-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-muted">
+              Attributes for {role.name}:
+              <span className="inline-flex items-center gap-1">
+                <span className="size-2.5 rounded-sm bg-sky-400/60" /> Key
+              </span>
+              <span className="inline-flex items-center gap-1">
+                <span className="size-2.5 rounded-sm bg-sky-400/25" /> Preferred
+              </span>
+              <span>▲ best · = all the same</span>
+            </p>
+          )}
           <CompareRows rows={rows} series={series} />
         </>
       )}
@@ -214,8 +222,10 @@ export function Compare() {
   )
 }
 
-type Cell = { text: string; className?: string; best?: boolean }
-type Row = { type: 'group'; label: string } | { type: 'row'; label: string; cells: Cell[] }
+type Cell = { text: string; className?: string; best?: boolean; equal?: boolean }
+type Row =
+  | { type: 'group'; label: string }
+  | { type: 'row'; label: string; cells: Cell[]; mark?: 'key' | 'preferred' }
 
 const textCells = (values: (string | null | undefined)[]): Cell[] =>
   values.map((v) => ({ text: v ?? '–' }))
@@ -237,13 +247,17 @@ function numCells(
         ? Math.max(...known)
         : Math.min(...known)
       : null
+  // Everyone the same: an equal sign, not a "best" on each
+  const equal =
+    known.length > 1 && known.length === values.length && known.every((v) => v === known[0])
   return values.map((v) =>
     v === null
       ? { text: '–', className: 'text-muted' }
       : {
           text: opts.format ? opts.format(v) : String(v),
           className: opts.color?.(v),
-          best: v === top,
+          best: !equal && v === top,
+          equal: equal && best !== 'none',
         },
   )
 }
@@ -256,7 +270,8 @@ function buildRows(
 ): Row[] {
   const rows: Row[] = []
   const group = (label: string) => rows.push({ type: 'group', label })
-  const row = (label: string, cells: Cell[]) => rows.push({ type: 'row', label, cells })
+  const row = (label: string, cells: Cell[], mark?: 'key' | 'preferred') =>
+    rows.push({ type: 'row', label, cells, mark })
 
   group('Profile')
   row('Position', textCells(players.map((p) => p.positions)))
@@ -322,6 +337,7 @@ function buildRows(
           players.map((p) => attrNumber(p.attributes[a])),
           { color: (v) => attrColor(v), format: (v) => String(v) },
         ).map((c, i) => ({ ...c, text: formatAttr(players[i].attributes[a]) })),
+        role?.key.includes(a) ? 'key' : role?.preferred.includes(a) ? 'preferred' : undefined,
       )
   }
 
@@ -385,6 +401,20 @@ const Best = () => (
     ▲
   </span>
 )
+const Equal = () => (
+  <span className="ml-1 text-xs text-muted" aria-label="all the same">
+    =
+  </span>
+)
+/** Sticky first column: keeps its solid background, so only text and the side bar change. */
+const MARK_LABEL = {
+  key: 'font-semibold text-sky-300 shadow-[inset_3px_0_0_var(--color-sky-400)]',
+  preferred: 'text-sky-200/80 shadow-[inset_3px_0_0_rgb(56_189_248/0.45)]',
+}
+const MARK = {
+  key: 'bg-sky-400/20 font-semibold text-text shadow-[inset_3px_0_0_var(--color-sky-400)]',
+  preferred: 'bg-sky-400/10 text-text shadow-[inset_3px_0_0_rgb(56_189_248/0.45)]',
+}
 
 /** Phones: names stay on top, every row shows all players side by side. Wider: a table. */
 function CompareRows({ rows, series }: { rows: Row[]; series: Series[] }) {
@@ -419,13 +449,17 @@ function CompareRows({ rows, series }: { rows: Row[]; series: Series[] }) {
               {r.label}
             </h3>
           ) : (
-            <div key={i} className="border-b border-border/60 py-1.5">
+            <div
+              key={i}
+              className={clsx('border-b border-border/60 px-1 py-1.5', r.mark && MARK[r.mark])}
+            >
               <div className="text-xs text-muted">{r.label}</div>
               <div className="grid gap-1 text-center text-sm tabular-nums" style={cols}>
                 {r.cells.map((c, j) => (
                   <span key={j} className={clsx('truncate', c.className, c.best && 'font-bold')}>
                     {c.text}
                     {c.best && <Best />}
+                    {c.equal && <Equal />}
                   </span>
                 ))}
               </div>
@@ -466,10 +500,20 @@ function CompareRows({ rows, series }: { rows: Row[]; series: Series[] }) {
                   </th>
                 </tr>
               ) : (
-                <tr key={i} className="border-t border-border">
+                <tr
+                  key={i}
+                  className={clsx(
+                    'border-t border-border',
+                    r.type === 'row' && r.mark === 'key' && 'bg-sky-400/10',
+                    r.type === 'row' && r.mark === 'preferred' && 'bg-sky-400/5',
+                  )}
+                >
                   <th
                     scope="row"
-                    className="sticky left-0 z-[1] bg-surface px-4 py-2 text-left font-normal whitespace-nowrap text-muted shadow-[inset_-1px_0_0_var(--color-border)]"
+                    className={clsx(
+                      'sticky left-0 z-[1] bg-surface px-4 py-2 text-left font-normal whitespace-nowrap text-muted shadow-[inset_-1px_0_0_var(--color-border)]',
+                      r.mark && MARK_LABEL[r.mark],
+                    )}
                   >
                     {r.label}
                   </th>
@@ -484,6 +528,7 @@ function CompareRows({ rows, series }: { rows: Row[]; series: Series[] }) {
                     >
                       {c.text}
                       {c.best && <Best />}
+                      {c.equal && <Equal />}
                     </td>
                   ))}
                 </tr>

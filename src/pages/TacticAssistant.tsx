@@ -13,7 +13,7 @@ import { scoreTextColor } from '../lib/attributes'
 import { useCurrentCareer } from '../lib/career'
 import { useConfig } from '../lib/config'
 import { shortName } from '../lib/names'
-import { footLevel } from '../lib/profile'
+import { useFoot } from '../lib/useFoot'
 import {
   canPlay,
   gradeTactic,
@@ -96,7 +96,8 @@ export function TacticAssistant() {
   const [step, setStepState] = useState<Step>('idea')
   const setStep = (s: Step) => {
     setStepState(s)
-    window.scrollTo({ top: 0 })
+    // The page scrolls inside <main>
+    document.querySelector('main')?.scrollTo({ top: 0 })
   }
   const [idea, setIdea] = useState<GameIdea | null>(null)
   const [mustPlay, setMustPlay] = useState<string[]>([])
@@ -176,13 +177,7 @@ export function TacticAssistant() {
   const finalTeam = applyCodes(afterIdea, squadOn, config.teamInstructions)
   const conflicts = teamConflicts(finalTeam, config.teamInstructions, config.tacticRules)
 
-  const feet = useMemo(
-    () => (p: PlayerRow) => ({
-      left: footLevel(p.left_foot, config.footWords, config.footMins)?.level ?? null,
-      right: footLevel(p.right_foot, config.footWords, config.footMins)?.level ?? null,
-    }),
-    [config],
-  )
+  const feet = useFoot()
   const playerTips = useMemo(
     () =>
       playerSuggestions(
@@ -217,6 +212,7 @@ export function TacticAssistant() {
         idea,
         enabled: config.tacticRules,
         mustPlay: new Set(mustPlay),
+        foot: feet,
       }),
     )
     setPick(null)

@@ -1,5 +1,5 @@
 import { clsx } from 'clsx'
-import { PanelLeftClose, PanelLeftOpen } from 'lucide-react'
+import { ArrowUp, PanelLeftClose, PanelLeftOpen } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
 import { NavLink, Outlet, useLocation } from 'react-router-dom'
 import { useConfig } from '../lib/config'
@@ -26,6 +26,8 @@ export function Layout() {
   useEffect(() => {
     if (mainRef.current) mainRef.current.scrollTop = 0
   }, [pathname])
+  // "Back to top" once the page has been scrolled a screen down
+  const [scrolled, setScrolled] = useState(false)
   const checks = useChecks()
   const { mobileBar } = useConfig()
   const barItems = mobileBar
@@ -135,10 +137,22 @@ export function Layout() {
         {/* Never wider than the screen; a new page starts at the top */}
         <main
           ref={mainRef}
+          onScroll={(e) => setScrolled(e.currentTarget.scrollTop > 400)}
           className="flex-1 overflow-x-clip overflow-y-auto px-4 py-4 pb-24 md:px-8 md:py-6 md:pb-8"
         >
           <Outlet />
         </main>
+        {scrolled && (
+          <button
+            type="button"
+            aria-label="Back to top"
+            title="Back to top"
+            onClick={() => mainRef.current?.scrollTo({ top: 0, behavior: 'smooth' })}
+            className="fixed right-4 bottom-20 z-30 grid size-12 place-items-center rounded-full border border-border bg-surface/95 text-text shadow-lg backdrop-blur hover:border-accent hover:text-accent md:right-8 md:bottom-8"
+          >
+            <ArrowUp className="size-5" aria-hidden />
+          </button>
+        )}
       </div>
 
       {/* Mobile bottom bar */}

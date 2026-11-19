@@ -16,7 +16,7 @@ import type { PlayerRow } from '../data/db'
 import type { RoleDef } from '../data/roles'
 import { attrNumber } from '../lib/attributes'
 import { roleScore, type RoleWeights } from '../lib/roleFit'
-import { assign, playsPosition } from './analysis'
+import { assign, footSides, playsPosition, type Feet } from './analysis'
 import {
   choose,
   chosen,
@@ -46,6 +46,8 @@ export interface BuildContext {
   enabled?: Record<string, boolean>
   /** Players who must be in the XI. */
   mustPlay?: Set<string>
+  /** Foot strength: the more left-footed of a pair plays on the left. */
+  foot?: (p: PlayerRow) => Feet
 }
 
 /* ------------------------------------------------------------------ shapes */
@@ -235,7 +237,17 @@ export function buildShape(
   const chosenCols = assign(
     cost.map((row) => [...row, ...new Array(width - row.length).fill(9000)]),
   )
-  const xi = chosenCols.map((j) => (j >= 0 && j < squad.length ? squad[j] : null))
+  let xi = chosenCols.map((j) => (j >= 0 && j < squad.length ? squad[j] : null))
+  // Left-footed on the left of a pair (roles are picked for each player after this)
+  if (ctx.foot) {
+    const ids = footSides(
+      shape.slots,
+      xi.map((p) => p?.id ?? null),
+      squad,
+      ctx.foot,
+    )
+    xi = ids.map((id) => squad.find((p) => p.id === id) ?? null)
+  }
 
   // Each player in the role the idea wants there, if he suits it
   let slots: TacticSlot[] = shape.slots.map((s, i) => {
@@ -1004,8 +1016,7 @@ export interface PlayerRule {
     role: string | null,
   ) => { to: string; why: string } | null
 }
-/** Foot strength as steps (0 weakest), when known. */
-export type Feet = { left: number | null; right: number | null }
+export type { Feet }
 
 const ATTACKING: PositionCode[] = ['MC', 'ML', 'MR', 'AML', 'AMC', 'AMR', 'ST']
 const SHOOTERS: PositionCode[] = ['DM', ...ATTACKING]

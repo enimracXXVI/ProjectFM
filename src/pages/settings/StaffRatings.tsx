@@ -2,9 +2,8 @@ import { ChevronDown, ChevronUp, Plus, Trash2 } from 'lucide-react'
 import { useState } from 'react'
 import { SettingsShell } from '../../components/SettingsShell'
 import { SettingsSection } from '../../components/SettingsSection'
-import { saveConfig } from '../../data/config'
 import { ratingColor, scaleRanges } from '../../data/staffInfo'
-import { KNOWLEDGE_WORDS } from '../../import/save'
+import { knowledgeMins, knownKnowledge } from '../../lib/knowledge'
 import { useConfig } from '../../lib/config'
 import { useSaveConfig } from '../../lib/useSaveConfig'
 
@@ -13,23 +12,24 @@ const input =
 const iconBtn =
   'grid size-10 shrink-0 place-items-center rounded-lg text-muted hover:bg-surface-2 hover:text-text disabled:opacity-30'
 
-type Pair = [number, string]
-
 /** Staff rating words with their 1–20 values, and scouting knowledge levels with the save's values. */
 export function StaffRatingsSettings() {
   const config = useConfig()
   const scale = useSaveConfig('staffScale')
   const mins = useSaveConfig('staffScaleMin')
   const levels = useSaveConfig('knowledgeLevels')
-  const learned = useSaveConfig('learned')
-  const storedValues: Pair[] = Object.entries({ ...KNOWLEDGE_WORDS, ...config.learned.knowledge })
-    .map(([v, w]) => [Number(v), w] as Pair)
-    .sort((a, b) => a[0] - b[0])
+  const kMinsSave = useSaveConfig('knowledgeMins')
+  const known = knownKnowledge(config.learned.knowledge)
+  const startMins = knowledgeMins(
+    config.knowledgeLevels,
+    config.knowledgeMins,
+    config.learned.knowledge,
+  )
   const stored = {
     words: config.staffScale,
     mins: config.staffScaleMin,
     know: config.knowledgeLevels,
-    values: storedValues,
+    from: startMins.map((m) => (m === null ? '' : String(m))),
   }
   const [form, setForm] = useState(stored)
   const [prev, setPrev] = useState(JSON.stringify(stored))
@@ -38,7 +38,9 @@ export function StaffRatingsSettings() {
     setForm(stored)
   }
   const dirty = JSON.stringify(form) !== prev
-  const pending = [scale, mins, levels, learned].some((m) => m.save.isPending || m.reset.isPending)
+  const pending = [scale, mins, levels, kMinsSave].some(
+    (m) => m.save.isPending || m.reset.isPending,
+  )
 
   const rows = form.words.map((w, i) => ({ w, min: form.mins[i] ?? 0 }))
   const setRows = (next: { w: string; min: number }[]) =>
@@ -51,26 +53,23 @@ export function StaffRatingsSettings() {
       subtitle="The words FM uses for staff attributes and scouting knowledge, with the numbers behind them."
       dirty={dirty}
       saving={pending}
-      saved={[scale, mins, levels, learned].some((m) => m.save.isSuccess)}
-      error={scale.save.error ?? mins.save.error ?? levels.save.error ?? learned.save.error}
+      saved={[scale, mins, levels, kMinsSave].some((m) => m.save.isSuccess)}
+      error={scale.save.error ?? mins.save.error ?? levels.save.error ?? kMinsSave.save.error}
       onSave={() => {
         const clean = rows.filter((r) => r.w.trim())
         scale.save.mutate(clean.map((r) => r.w.trim()))
         mins.save.mutate(clean.map((r) => r.min))
-        levels.save.mutate(form.know.map((w) => w.trim()).filter(Boolean))
-        learned.save.mutate({
-          ...config.learned,
-          knowledge: Object.fromEntries(
-            form.values.filter(([, w]) => w).map(([v, w]) => [String(v), w]),
-          ),
-        })
+        const keep = form.know
+          .map((w, i) => ({ w: w.trim(), from: form.from[i] ?? '' }))
+          .filter((x) => x.w)
+        levels.save.mutate(keep.map((x) => x.w))
+        kMinsSave.save.mutate(keep.map((x) => (x.from.trim() === '' ? null : Number(x.from))))
       }}
-      onReset={async () => {
+      onReset={() => {
         scale.reset.mutate()
         mins.reset.mutate()
         levels.reset.mutate()
-        await saveConfig('learned', { ...config.learned, knowledge: {} })
-        learned.save.reset()
+        kMinsSave.reset.mutate()
       }}
     >
       <div className="grid gap-6 lg:grid-cols-2">
@@ -129,117 +128,117 @@ export function StaffRatingsSettings() {
         </SettingsSection>
 
         <SettingsSection id="staff-ratings/scouting-knowledge" title="Scouting knowledge">
-          <p className="mb-2 text-xs text-muted">Levels, lowest at the top.</p>
-          <ul className="grid gap-1">
-            {form.know.map((w, i) => (
-              <li key={i} className="flex items-center gap-1">
-                <input
-                  aria-label={`Level ${i + 1}`}
-                  value={w}
-                  onChange={(e) =>
-                    setForm({
-                      ...form,
-                      know: form.know.map((x, j) => (j === i ? e.target.value : x)),
-                    })
-                  }
-                  className={`${input} font-semibold`}
-                />
-                {(['up', 'down'] as const).map((d) => (
-                  <button
-                    key={d}
-                    type="button"
-                    className={iconBtn}
-                    aria-label={`Move ${d}`}
-                    disabled={d === 'up' ? i === 0 : i === form.know.length - 1}
-                    onClick={() => {
-                      const n = [...form.know]
-                      const k = d === 'up' ? i - 1 : i + 1
-                      ;[n[i], n[k]] = [n[k], n[i]]
-                      setForm({ ...form, know: n })
-                    }}
-                  >
-                    {d === 'up' ? (
+          <p className="mb-2 text-xs text-muted">
+            Levels, lowest at the top. The save stores knowledge as a number (0–100): each level
+            starts at its &ldquo;From&rdquo; value and runs up to the next level. &ldquo;Seen&rdquo;
+            are values checked in FM with that level; a level never seen has no start yet (?).
+          </p>
+          <ul className="grid gap-2">
+            {form.know.map((w, i) => {
+              const from = form.from[i] ?? ''
+              const next = form.from.slice(i + 1).find((x) => x.trim() !== '')
+              const seen = known.filter(([, l]) => l === w).map(([v]) => v)
+              const fromN = from.trim() === '' ? null : Number(from)
+              const nextN = next === undefined ? null : Number(next)
+              const wrong = seen.filter(
+                (v) => fromN === null || v < fromN || (nextN !== null && v >= nextN),
+              )
+              const move = (d: -1 | 1) => {
+                const k = i + d
+                const a = [...form.know]
+                const b = [...form.from]
+                ;[a[i], a[k]] = [a[k], a[i]]
+                ;[b[i], b[k]] = [b[k], b[i]]
+                setForm({ ...form, know: a, from: b })
+              }
+              return (
+                <li key={i} className="grid gap-1 rounded-lg border border-border p-2">
+                  <div className="flex items-center gap-1">
+                    <input
+                      aria-label={`Level ${i + 1}`}
+                      value={w}
+                      onChange={(e) =>
+                        setForm({
+                          ...form,
+                          know: form.know.map((x, j) => (j === i ? e.target.value : x)),
+                        })
+                      }
+                      className={`${input} font-semibold`}
+                    />
+                    <label className="flex shrink-0 items-center gap-1 text-xs text-muted">
+                      From
+                      <input
+                        aria-label={`${w} from`}
+                        inputMode="numeric"
+                        placeholder="?"
+                        value={from}
+                        onChange={(e) =>
+                          setForm({
+                            ...form,
+                            from: form.know.map((_, j) =>
+                              j === i
+                                ? e.target.value.replace(/[^0-9]/g, '')
+                                : (form.from[j] ?? ''),
+                            ),
+                          })
+                        }
+                        className="min-h-11 w-16 rounded-lg border border-border bg-surface-2 px-2 text-center text-base tabular-nums md:text-sm"
+                      />
+                    </label>
+                    <button
+                      type="button"
+                      className={iconBtn}
+                      aria-label="Move up"
+                      disabled={i === 0}
+                      onClick={() => move(-1)}
+                    >
                       <ChevronUp className="size-4" aria-hidden />
-                    ) : (
+                    </button>
+                    <button
+                      type="button"
+                      className={iconBtn}
+                      aria-label="Move down"
+                      disabled={i === form.know.length - 1}
+                      onClick={() => move(1)}
+                    >
                       <ChevronDown className="size-4" aria-hidden />
-                    )}
-                  </button>
-                ))}
-                <button
-                  type="button"
-                  className={iconBtn}
-                  aria-label={`Remove ${w}`}
-                  onClick={() => setForm({ ...form, know: form.know.filter((_, j) => j !== i) })}
-                >
-                  <Trash2 className="size-4" aria-hidden />
-                </button>
-              </li>
-            ))}
+                    </button>
+                    <button
+                      type="button"
+                      className={iconBtn}
+                      aria-label={`Remove ${w}`}
+                      onClick={() =>
+                        setForm({
+                          ...form,
+                          know: form.know.filter((_, j) => j !== i),
+                          from: form.from.filter((_, j) => j !== i),
+                        })
+                      }
+                    >
+                      <Trash2 className="size-4" aria-hidden />
+                    </button>
+                  </div>
+                  <p className="px-1 text-xs text-muted">
+                    {fromN === null
+                      ? 'No start yet (?): values only reach this level once it has one.'
+                      : `Values ${fromN}–${nextN === null ? 100 : nextN - 1}`}
+                    {seen.length > 0 && ` · seen in FM: ${seen.join(', ')}`}
+                  </p>
+                  {wrong.length > 0 && (
+                    <p className="px-1 text-xs text-amber-300">
+                      FM showed {w} for {wrong.join(', ')}, outside this range.
+                    </p>
+                  )}
+                </li>
+              )
+            })}
           </ul>
           <button
             type="button"
-            onClick={() => setForm({ ...form, know: [...form.know, ''] })}
+            onClick={() => setForm({ ...form, know: [...form.know, ''], from: [...form.from, ''] })}
             className="mt-2 inline-flex min-h-11 items-center gap-1 text-sm font-semibold text-accent"
           >
             <Plus className="size-4" aria-hidden /> Add level
-          </button>
-
-          <h3 className="mt-4 text-sm font-semibold">Values in the save (0–100)</h3>
-          <p className="mb-2 text-xs text-muted">
-            The save stores knowledge as a number; this is the level each number shows in FM.
-          </p>
-          <ul className="grid gap-1">
-            {form.values.map(([v, w], i) => (
-              <li key={i} className="flex items-center gap-2">
-                <input
-                  aria-label="Value"
-                  inputMode="numeric"
-                  value={v}
-                  onChange={(e) =>
-                    setForm({
-                      ...form,
-                      values: form.values.map((x, j) =>
-                        j === i ? [Number(e.target.value) || 0, x[1]] : x,
-                      ),
-                    })
-                  }
-                  className="min-h-11 w-20 rounded-lg border border-border bg-surface-2 px-2 text-center text-base tabular-nums md:text-sm"
-                />
-                <select
-                  aria-label={`Level for ${v}`}
-                  value={w}
-                  onChange={(e) =>
-                    setForm({
-                      ...form,
-                      values: form.values.map((x, j) => (j === i ? [x[0], e.target.value] : x)),
-                    })
-                  }
-                  className={input}
-                >
-                  {!form.know.includes(w) && <option value={w}>{w || '–'}</option>}
-                  {form.know.map((l) => (
-                    <option key={l}>{l}</option>
-                  ))}
-                </select>
-                <button
-                  type="button"
-                  className={iconBtn}
-                  aria-label={`Remove ${v}`}
-                  onClick={() =>
-                    setForm({ ...form, values: form.values.filter((_, j) => j !== i) })
-                  }
-                >
-                  <Trash2 className="size-4" aria-hidden />
-                </button>
-              </li>
-            ))}
-          </ul>
-          <button
-            type="button"
-            onClick={() => setForm({ ...form, values: [...form.values, [0, form.know[0] ?? '']] })}
-            className="mt-2 inline-flex min-h-11 items-center gap-1 text-sm font-semibold text-accent"
-          >
-            <Plus className="size-4" aria-hidden /> Add value
           </button>
         </SettingsSection>
       </div>

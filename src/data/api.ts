@@ -6,6 +6,7 @@ import { personalityName } from '../lib/personality'
 import { scaleWord } from './staffInfo'
 import { byLastName } from '../lib/names'
 import { relabel, type LearnedKind } from '../lib/learned'
+import { knowledgeMins, labelKnowledge } from '../lib/knowledge'
 import { UNKNOWN_WORD, withValue } from '../lib/valueWord'
 import { loadStoredConfig, mergeConfig, saveConfig } from './config'
 import { closeSeasonIfNew, recordLeavers } from './seasons'
@@ -652,7 +653,13 @@ export const isMissingColumn = (e: unknown) =>
 
 async function importScoutsOnly(career: Career, data: SaveData) {
   const staff = await listStaff(career.id)
-  const { learned, personalityRules } = mergeConfig(await loadStoredConfig())
+  const {
+    learned,
+    personalityRules,
+    knowledgeLevels,
+    knowledgeMins: savedMins,
+  } = mergeConfig(await loadStoredConfig())
+  const mins = knowledgeMins(knowledgeLevels, savedMins, learned.knowledge)
   let scoutsAdded = 0
   let scoutsUpdated = 0
   for (const raw of saveScouts(data, personalityRules)) {
@@ -660,7 +667,7 @@ async function importScoutsOnly(career: Career, data: SaveData) {
       ...raw,
       knowledge: raw.knowledge.map((k) => ({
         ...k,
-        level: relabel(k.level, learned.knowledge),
+        level: labelKnowledge(k.level, knowledgeLevels, mins),
       })),
     }
     const match =
@@ -703,9 +710,15 @@ async function importScoutsOnly(career: Career, data: SaveData) {
 /** Every member of staff from the save: job, team, attributes, personality, names. */
 async function importAllStaff(career: Career, data: SaveData) {
   const staff = await listStaff(career.id)
-  const { learned, staffScale, staffScaleMin, personalityRules } = mergeConfig(
-    await loadStoredConfig(),
-  )
+  const {
+    learned,
+    staffScale,
+    staffScaleMin,
+    personalityRules,
+    knowledgeLevels,
+    knowledgeMins: savedMins,
+  } = mergeConfig(await loadStoredConfig())
+  const mins = knowledgeMins(knowledgeLevels, savedMins, learned.knowledge)
   const scouts = new Map(saveScouts(data, personalityRules).map((s) => [s.fm_uid, s]))
   let added = 0
   let updated = 0
@@ -723,7 +736,7 @@ async function importAllStaff(career: Career, data: SaveData) {
     }
     const knowledge = (scout?.knowledge ?? []).map((k) => ({
       ...k,
-      level: relabel(k.level, learned.knowledge),
+      level: labelKnowledge(k.level, knowledgeLevels, mins),
     }))
     const extra: Record<string, string> = {}
     if (raw.lastName) extra['Last name'] = raw.lastName

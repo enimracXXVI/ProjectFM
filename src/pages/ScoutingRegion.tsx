@@ -10,6 +10,7 @@ import { areContiguous } from '../data/regions'
 import { SCOUT_KEY_ATTRIBUTES, ratingColor } from '../data/staffInfo'
 import { useCurrentCareer } from '../lib/career'
 import { useConfig } from '../lib/config'
+import { knowledgeMins, labelKnowledge } from '../lib/knowledge'
 import { headedRegions, isScout, useSaveScouting } from '../lib/scouting'
 
 const select =
@@ -69,11 +70,19 @@ export function ScoutingRegion() {
     (s) => !net.scouts?.[s.id] && headedRegions(net, s.id).length === 0,
   )
 
+  const kMins = knowledgeMins(
+    config.knowledgeLevels,
+    config.knowledgeMins,
+    config.learned.knowledge,
+  )
   const knowledgeOf = (country: string) =>
     (staff ?? []).flatMap((s) =>
       s.knowledge
         .filter((k) => k.nation === country)
-        .map((k) => ({ name: s.name, level: k.level })),
+        .map((k) => ({
+          name: s.name,
+          level: labelKnowledge(k.level, config.knowledgeLevels, kMins),
+        })),
     )
 
   return (

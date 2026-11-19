@@ -8,7 +8,7 @@ import type { RoleDef } from '../data/roles'
 import { parsePositions, roleScore, type RoleWeights } from '../lib/roleFit'
 import { parsePositionRatings } from '../lib/attributes'
 import { POSITION_TEXT } from './positions'
-import { fmPositions, rolesAt, shapeOf, type FmCodes } from './fm'
+import { fmPositions, rolesAt, shapeOf, slotSides, type FmCodes } from './fm'
 import type { PositionCode, TacticSlot } from './types'
 
 export interface FitContext {
@@ -16,6 +16,45 @@ export interface FitContext {
   weights: RoleWeights
   /** With FM's codes, role suggestions keep to the roles FM offers at each position. */
   fmCodes?: FmCodes
+  /** Foot strength, to put the more left-footed of a pair on the left. */
+  foot?: (p: PlayerRow) => Feet
+}
+
+/** Foot strength as steps (0 weakest), when known. */
+export type Feet = { left: number | null; right: number | null }
+
+/**
+ * Pairs of the same position (left and right centre-backs, midfielders, strikers…): the more
+ * left-footed player goes on the left. `allow` can refuse a swap (a locked slot, a big loss).
+ */
+export function footSides(
+  slots: TacticSlot[],
+  players: (string | null)[],
+  squad: PlayerRow[],
+  foot: (p: PlayerRow) => Feet,
+  allow: (l: number, r: number) => boolean = () => true,
+): (string | null)[] {
+  const out = [...players]
+  const positions = slots.map((s) => s.position)
+  const sides = slotSides(
+    positions,
+    slots.map((s) => s.side),
+  )
+  const lean = (id: string | null) => {
+    const p = id ? squad.find((x) => x.id === id) : undefined
+    const f = p ? foot(p) : null
+    return f && f.left !== null && f.right !== null ? f.left - f.right : null
+  }
+  for (const base of ['DC', 'DM', 'MC', 'AMC', 'ST'] as PositionCode[]) {
+    const l = positions.findIndex((p, i) => p === base && sides[i] === 'L')
+    const r = positions.findIndex((p, i) => p === base && sides[i] === 'R')
+    if (l < 0 || r < 0) continue
+    const a = lean(out[l])
+    const b = lean(out[r])
+    if (a === null || b === null || b <= a || !allow(l, r)) continue
+    ;[out[l], out[r]] = [out[r], out[l]]
+  }
+  return out
 }
 
 const roleById = (ctx: FitContext, id: string | null | undefined) =>
@@ -146,7 +185,18 @@ export function bestXi(
     const j = chosen[k]
     result[slot] = j >= 0 && j < pool.length ? pool[j].id : null
   })
-  return result
+  if (!ctx.foot) return result
+  // Left-footed on the left, unless it costs more than a little fit (roles stay with slots)
+  const scoreAt = (id: string | null, i: number) => {
+    const p = id ? squad.find((x) => x.id === id) : undefined
+    return p ? (slotScore(p, slots[i], ctx) ?? 50) : 0
+  }
+  return footSides(slots, result, squad, ctx.foot, (l, r) => {
+    if (locked.has(l) || locked.has(r)) return false
+    const now = scoreAt(result[l], l) + scoreAt(result[r], r)
+    const swapped = scoreAt(result[r], l) + scoreAt(result[l], r)
+    return now - swapped <= 3
+  })
 }
 
 export interface Suggestion {

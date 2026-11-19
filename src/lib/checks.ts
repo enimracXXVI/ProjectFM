@@ -8,6 +8,7 @@ import type { AppConfig } from '../data/config'
 import type { PlayerRow, StaffRow } from '../data/db'
 import type { TacticRow } from '../tactics/types'
 import { UNKNOWN_WORD, valueOf, wordOf } from './valueWord'
+import { knowledgeMins, labelKnowledge } from './knowledge'
 import { DEFAULT_TRAIT_NAMES } from '../data/traits'
 
 export interface UnknownValue {
@@ -85,9 +86,18 @@ export function findChecks(
   const morale = group(
     squad.flatMap((p) => (p.extra.Morale ? [[p.extra.Morale, p.name] as [string, string]] : [])),
   )
+  const kMins = config
+    ? knowledgeMins(config.knowledgeLevels, config.knowledgeMins, config.learned.knowledge)
+    : []
   const knowledge = group(
     staff.flatMap((s) =>
-      s.knowledge.map((k) => [k.level, `${s.name} – ${k.nation}`] as [string, string]),
+      s.knowledge.map(
+        (k) =>
+          [
+            config ? labelKnowledge(k.level, config.knowledgeLevels, kMins) : k.level,
+            `${s.name} – ${k.nation}`,
+          ] as [string, string],
+      ),
     ),
   )
   // Personality values were imported, but they fit no known personality

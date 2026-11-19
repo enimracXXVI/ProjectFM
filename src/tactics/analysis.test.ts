@@ -6,6 +6,7 @@ import {
   assign,
   benchCover,
   bestXi,
+  footSides,
   gradeTactic,
   playsPosition,
   suggestions,
@@ -85,5 +86,23 @@ describe('withPlayer', () => {
     expect(withPlayer(slots, 0, 'b').map((s) => s.player)).toEqual(['b', 'a', null])
     expect(withPlayer(slots, 2, 'a').map((s) => s.player)).toEqual([null, 'b', 'a'])
     expect(withPlayer(slots, 1, 'c').map((s) => s.player)).toEqual(['a', 'c', null])
+  })
+})
+
+describe('footSides', () => {
+  it('puts the more left-footed centre-back on the left', () => {
+    const slots = [
+      { position: 'DC' as const, player: 'a' },
+      { position: 'DC' as const, player: 'b' },
+    ]
+    const squad = [
+      { id: 'a', left_foot: 'Weak', right_foot: 'Very Strong' },
+      { id: 'b', left_foot: 'Very Strong', right_foot: 'Weak' },
+    ] as never
+    const foot = (p: { id: string }) =>
+      p.id === 'a' ? { left: 1, right: 5 } : { left: 5, right: 1 }
+    expect(footSides(slots, ['a', 'b'], squad, foot)).toEqual(['b', 'a'])
+    expect(footSides(slots, ['a', 'b'], squad, foot, () => false)).toEqual(['a', 'b'])
+    expect(footSides(slots, ['b', 'a'], squad, foot)).toEqual(['b', 'a'])
   })
 })
