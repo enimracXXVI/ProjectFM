@@ -1064,12 +1064,12 @@
       "name": "Cross from",
       "options": [
         {
-          "label": "Cross from deep",
+          "label": "Cross from byline",
           "code": 7,
           "complexity": 1
         },
         {
-          "label": "Cross from byline",
+          "label": "Cross from deep",
           "code": 8,
           "complexity": 1
         },

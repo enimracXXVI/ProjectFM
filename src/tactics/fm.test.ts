@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { DEFAULT_CONFIG } from '../data/config'
+import { DEFAULT_CONFIG, mergeConfig } from '../data/config'
 import { roleShort } from '../data/roles'
 import tactic from './fixtures/save-tactic.json'
 import {
@@ -482,5 +482,27 @@ describe('goalkeeper distribution: specific teammate', () => {
     const old = [{ ...gk, options: gk.options.filter((o) => o.code !== 41) }]
     const filled = fillAbout(old, config.teamInstructions)
     expect(filled[0].options.some((o) => o.code === 41)).toBe(true)
+  })
+})
+
+describe('player instruction codes', () => {
+  it('stores Cross from byline as 7 and Cross from deep as 8 (an FM-saved tactic)', () => {
+    const d = DEFAULT_CONFIG.playerInstructions.find((x) => x.name === 'Cross from')!
+    expect(d.options.find((o) => o.code === 7)?.label).toBe('Cross from byline')
+    expect(d.options.find((o) => o.code === 8)?.label).toBe('Cross from deep')
+    // A list saved before the fix is corrected
+    const old = [
+      {
+        ...d,
+        options: [
+          { label: 'Cross from deep', code: 7 },
+          { label: 'Cross from byline', code: 8 },
+          { label: 'Standard', code: 0 },
+        ],
+      },
+    ]
+    const merged = mergeConfig({ playerInstructions: old } as never).playerInstructions
+    const fixed = merged.find((x) => x.name === 'Cross from')!
+    expect(fixed.options.find((o) => o.code === 7)?.label).toBe('Cross from byline')
   })
 })

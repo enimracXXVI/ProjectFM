@@ -223,6 +223,28 @@ export const DEFAULT_CONFIG: AppConfig = {
 
 type Stored = Partial<{ [K in ConfigKey]: AppConfig[K] }>
 
+/**
+ * Lists saved before the fix had Cross from deep and Cross from byline the wrong way round:
+ * FM27 stores Cross from byline as 7 and Cross from deep as 8 (an FM-saved tactic with Cross
+ * from byline set, and the roles that already get to the byline offering only 8).
+ */
+function crossFromFixed(list: FmInstruction[]): FmInstruction[] {
+  return list.map((d) =>
+    d.name !== 'Cross from'
+      ? d
+      : {
+          ...d,
+          options: d.options.map((o) =>
+            o.label === 'Cross from deep' && o.code === 7
+              ? { ...o, code: 8 }
+              : o.label === 'Cross from byline' && o.code === 8
+                ? { ...o, code: 7 }
+                : o,
+          ),
+        },
+  )
+}
+
 /** Applies the user's saved settings on top of the defaults. */
 export function mergeConfig(stored: Stored): AppConfig {
   return {
@@ -278,7 +300,7 @@ export function mergeConfig(stored: Stored): AppConfig {
       ? fillAbout(stored.teamInstructions, DEFAULT_CONFIG.teamInstructions)
       : DEFAULT_CONFIG.teamInstructions,
     playerInstructions: isInstructionList(stored.playerInstructions)
-      ? fillAbout(stored.playerInstructions, DEFAULT_CONFIG.playerInstructions)
+      ? fillAbout(crossFromFixed(stored.playerInstructions), DEFAULT_CONFIG.playerInstructions)
       : DEFAULT_CONFIG.playerInstructions,
     fmCodes: { ...DEFAULT_CONFIG.fmCodes, ...stored.fmCodes },
     bestXiBaseline: stored.bestXiBaseline ?? DEFAULT_CONFIG.bestXiBaseline,
