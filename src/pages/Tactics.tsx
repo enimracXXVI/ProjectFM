@@ -2,6 +2,7 @@ import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { clsx } from 'clsx'
 import {
   ChevronDown,
+  Copy,
   Download,
   Lock,
   LockOpen,
@@ -29,7 +30,15 @@ import { attributeLabel } from '../data/config'
 import { FmAboutLine } from '../components/FmAboutBox'
 import { useConfig } from '../lib/config'
 import { roleScore } from '../lib/roleFit'
-import { benchCover, bestXi, gradeTactic, suggestions, withPlayer } from '../tactics/analysis'
+import {
+  benchCover,
+  bestXi,
+  canPlay,
+  gradeTactic,
+  positionRating,
+  suggestions,
+  withPlayer,
+} from '../tactics/analysis'
 import {
   FORMATIONS,
   POSITION_CODES,
@@ -340,6 +349,23 @@ function TacticEditor({ tactic }: { tactic: TacticRow }) {
     setTimeout(() => URL.revokeObjectURL(url), 1000)
   }
   const remove = useMutation({ mutationFn: () => deleteTactic(tactic.id), onSuccess: done })
+  // A copy of the tactic as it is on screen, as a new tactic of your own (imports leave it alone)
+  const [, setSelected] = useUrlState<string | null>('tactic', null)
+  const copy = useMutation({
+    mutationFn: () =>
+      saveTactic(career.id, null, {
+        name: `${form.name} (copy)`,
+        style: styleNow,
+        mentality: form.mentality,
+        slots: form.slots,
+        instructions: { team },
+        notes: form.notes,
+      }),
+    onSuccess: async (t) => {
+      await done()
+      setSelected(t.id)
+    },
+  })
 
   const setSlot = (i: number, patch: Partial<TacticSlot>) => {
     const { player, ...rest } = patch
@@ -653,6 +679,9 @@ function TacticEditor({ tactic }: { tactic: TacticRow }) {
           <Button onClick={() => save.mutate()} disabled={!dirty || save.isPending}>
             {save.isPending ? 'Saving…' : 'Save'}
           </Button>
+          <Button variant="ghost" onClick={() => copy.mutate()} disabled={copy.isPending}>
+            <Copy className="size-4" aria-hidden /> {copy.isPending ? 'Copying…' : 'Copy tactic'}
+          </Button>
           <Button variant="ghost" onClick={() => setForm(tactic)} disabled={!dirty}>
             Undo changes
           </Button>
@@ -676,7 +705,7 @@ function TacticEditor({ tactic }: { tactic: TacticRow }) {
           >
             <Trash2 className="size-4" aria-hidden /> Delete
           </Button>
-          <ErrorText error={save.error ?? remove.error} />
+          <ErrorText error={save.error ?? remove.error ?? copy.error} />
         </div>
       </Card>
 
@@ -977,9 +1006,21 @@ function SlotPanel({
   // Opened by tapping a position; folds on phones like the other sections
   const [open, setOpen] = useState(true)
   const role = roles.find((r) => r.id === roleIdOf(slot, phase)) ?? null
+  // Players able to play the position first (FM rating, Settings > Tactics), then by role fit
+  const pos = posOf(slot, phase)
   const ranked = squad
-    .map((p) => ({ p, score: role ? roleScore(p.attributes, role, config.roleWeights) : null }))
-    .sort((a, b) => (b.score ?? -1) - (a.score ?? -1) || byLastName(a.p, b.p))
+    .map((p) => ({
+      p,
+      score: role ? roleScore(p.attributes, role, config.roleWeights) : null,
+      rating: positionRating(p, pos),
+      able: canPlay(p, pos, config.positionMin),
+    }))
+    .sort(
+      (a, b) =>
+        Number(b.able) - Number(a.able) ||
+        (b.score ?? -1) - (a.score ?? -1) ||
+        byLastName(a.p, b.p),
+    )
   return (
     <Section
       title={`${posOf(slot, phase) ?? 'Position'} · ${squad.find((p) => p.id === slot.player)?.name ?? 'no player'}`}
@@ -1077,11 +1118,17 @@ function SlotPanel({
       </label>
       <div>
         <p className="mb-1 text-sm text-muted">
-          Preferred player {role ? '(best for the role first)' : ''}
+          Preferred player: those rated {config.positionMin}+ at {pos ?? 'this position'} first
+          {role ? ', then by fit for the role' : ''}
         </p>
         <ul className="grid max-h-72 gap-0.5 overflow-y-auto">
-          {ranked.map(({ p, score }) => (
+          {ranked.map(({ p, score, rating, able }, k) => (
             <li key={p.id}>
+              {!able && (k === 0 || ranked[k - 1].able) && (
+                <p className="mt-1 border-t border-border px-2 pt-2 text-xs text-muted">
+                  Rated under {config.positionMin} at {pos ?? 'this position'}
+                </p>
+              )}
               <button
                 type="button"
                 onClick={() => onChange({ player: p.id })}
@@ -1099,6 +1146,17 @@ function SlotPanel({
                   )}
                 </span>
                 <span className="text-xs text-muted">{p.positions}</span>
+                {rating !== null && (
+                  <span
+                    title={`FM rating at ${pos}`}
+                    className={clsx(
+                      'w-6 text-right text-xs tabular-nums',
+                      able ? 'text-text' : 'text-muted',
+                    )}
+                  >
+                    {rating}
+                  </span>
+                )}
                 {score !== null && (
                   <span
                     className={clsx(

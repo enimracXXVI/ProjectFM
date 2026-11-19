@@ -6,6 +6,7 @@
 import type { PlayerRow } from '../data/db'
 import type { RoleDef } from '../data/roles'
 import { parsePositions, roleScore, type RoleWeights } from '../lib/roleFit'
+import { parsePositionRatings } from '../lib/attributes'
 import { POSITION_TEXT } from './positions'
 import { fmPositions, rolesAt, shapeOf, type FmCodes } from './fm'
 import type { PositionCode, TacticSlot } from './types'
@@ -236,4 +237,20 @@ export function withPlayer(slots: TacticSlot[], i: number, player: string | null
   return slots.map((s, j) =>
     j === i ? { ...s, player } : j === from ? { ...s, player: slots[i].player ?? null } : s,
   )
+}
+
+/** The player's FM rating (1–20) at a position, from the save; null when not known. */
+export function positionRating(p: PlayerRow, pos: PositionCode | null | undefined): number | null {
+  if (!pos) return null
+  const v = parsePositionRatings(p.extra?.['Reader positions'])[pos]
+  return v === undefined ? null : v
+}
+
+/**
+ * Can he play there: his FM rating at the position is at least `min` (Settings > Tactics);
+ * without ratings, the positions FM lists for him.
+ */
+export function canPlay(p: PlayerRow, pos: PositionCode | null | undefined, min: number): boolean {
+  const r = positionRating(p, pos)
+  return r === null ? playsPosition(p, pos ?? null) : r >= min
 }

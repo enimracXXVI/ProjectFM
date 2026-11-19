@@ -130,6 +130,8 @@ export interface AppConfig {
   bestXiBaseline: number
   /** Tactic briefing: a player's fit for his roles below this is flagged (0–100). */
   briefingLowFit: number
+  /** Picking a player for a tactic slot: FM position rating (1–20) that counts as able to play there. */
+  positionMin: number
   /** FM's role-combination warnings the briefing checks (text, on/off, limits). */
   roleWarnings: RoleWarning[]
   /** FM's training sessions: names, codes, descriptions, whether FM schedules accept them. */
@@ -203,6 +205,7 @@ export const DEFAULT_CONFIG: AppConfig = {
   fmCodes: DEFAULT_FM_CODES,
   bestXiBaseline: 6,
   briefingLowFit: 55,
+  positionMin: 15,
   roleWarnings: DEFAULT_ROLE_WARNINGS,
   trainingSessions: DEFAULT_TRAINING_SESSIONS,
   tacticalStyles: DEFAULT_TACTICAL_STYLES,
@@ -276,6 +279,7 @@ export function mergeConfig(stored: Stored): AppConfig {
     fmCodes: { ...DEFAULT_CONFIG.fmCodes, ...stored.fmCodes },
     bestXiBaseline: stored.bestXiBaseline ?? DEFAULT_CONFIG.bestXiBaseline,
     briefingLowFit: stored.briefingLowFit ?? DEFAULT_CONFIG.briefingLowFit,
+    positionMin: stored.positionMin ?? DEFAULT_CONFIG.positionMin,
     trainingSessions: stored.trainingSessions ?? DEFAULT_CONFIG.trainingSessions,
     tacticalStyles: stored.tacticalStyles ?? DEFAULT_CONFIG.tacticalStyles,
     matchData: stored.matchData ?? DEFAULT_CONFIG.matchData,

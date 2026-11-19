@@ -8,30 +8,50 @@ import { WARNING_RULES, type RoleWarning } from '../../tactics/warnings'
 const input =
   'min-h-11 w-28 rounded-lg border border-border bg-surface-2 px-3 text-base tabular-nums md:text-sm'
 
-/** Settings for the Tactics page: the briefing's low-fit threshold. */
+/** Settings for the Tactics page: the briefing's low-fit threshold, the position rating to play. */
 export function TacticsSettings() {
-  const { briefingLowFit } = useConfig()
-  const { save, reset } = useSaveConfig('briefingLowFit')
+  const { briefingLowFit, positionMin } = useConfig()
+  const lowFit = useSaveConfig('briefingLowFit')
+  const minSave = useSaveConfig('positionMin')
+  const stored = `${briefingLowFit}|${positionMin}`
   const [value, setValue] = useState(String(briefingLowFit))
-  const [prev, setPrev] = useState(briefingLowFit)
-  if (prev !== briefingLowFit) {
-    setPrev(briefingLowFit)
+  const [min, setMin] = useState(String(positionMin))
+  const [prev, setPrev] = useState(stored)
+  if (prev !== stored) {
+    setPrev(stored)
     setValue(String(briefingLowFit))
+    setMin(String(positionMin))
   }
   const n = Number(value)
-  const valid = value.trim() !== '' && Number.isFinite(n) && n >= 0 && n <= 100
+  const m = Number(min)
+  const valid =
+    value.trim() !== '' &&
+    Number.isFinite(n) &&
+    n >= 0 &&
+    n <= 100 &&
+    min.trim() !== '' &&
+    Number.isInteger(m) &&
+    m >= 1 &&
+    m <= 20
   return (
     <SettingsShell
       title="Tactics"
       subtitle="How the Tactics page judges your tactic."
-      dirty={valid && n !== briefingLowFit}
-      saving={save.isPending || reset.isPending}
-      saved={save.isSuccess}
-      error={save.error ?? reset.error}
-      onSave={() => valid && save.mutate(n)}
-      onReset={() => reset.mutate()}
+      dirty={valid && (n !== briefingLowFit || m !== positionMin)}
+      saving={lowFit.save.isPending || minSave.save.isPending || lowFit.reset.isPending}
+      saved={lowFit.save.isSuccess || minSave.save.isSuccess}
+      error={lowFit.save.error ?? minSave.save.error ?? lowFit.reset.error ?? minSave.reset.error}
+      onSave={() => {
+        if (!valid) return
+        if (n !== briefingLowFit) lowFit.save.mutate(n)
+        if (m !== positionMin) minSave.save.mutate(m)
+      }}
+      onReset={() => {
+        lowFit.reset.mutate()
+        minSave.reset.mutate()
+      }}
     >
-      <SettingsSection id="tactics/briefing" title="Briefing">
+      <SettingsSection id="tactics/briefing" title="Briefing" className="mb-4">
         <label className="grid gap-1 text-sm">
           <span className="text-muted">
             Flag a player in the briefing&apos;s Watch list when his fit for the roles is below
@@ -43,6 +63,24 @@ export function TacticsSettings() {
             max={100}
             value={value}
             onChange={(e) => setValue(e.target.value)}
+            className={input}
+          />
+        </label>
+      </SettingsSection>
+      <SettingsSection id="tactics/position-min" title="Picking players">
+        <label className="grid gap-1 text-sm">
+          <span className="text-muted">
+            A player can play a position when his FM rating there (1–20, from your save) is at least
+            this. These players come first when you pick a player for a slot, on the Tactics page
+            and in the tactic assistant. Players without ratings use the positions FM lists for
+            them.
+          </span>
+          <input
+            type="number"
+            min={1}
+            max={20}
+            value={min}
+            onChange={(e) => setMin(e.target.value)}
             className={input}
           />
         </label>

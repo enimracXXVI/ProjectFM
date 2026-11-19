@@ -15,8 +15,9 @@ import { useConfig } from '../lib/config'
 import { shortName } from '../lib/names'
 import { footLevel } from '../lib/profile'
 import {
+  canPlay,
   gradeTactic,
-  playsPosition,
+  positionRating,
   slotScore,
   withPlayer,
   type FitContext,
@@ -570,12 +571,14 @@ export function TacticAssistant() {
                         .map((p) => ({
                           p,
                           sc: slotScore(p, s, ctx),
-                          ok: playsPosition(p, s.position),
+                          ok: canPlay(p, s.position, config.positionMin),
+                          rating: positionRating(p, s.position),
                         }))
                         .sort((a, b) => Number(b.ok) - Number(a.ok) || (b.sc ?? 0) - (a.sc ?? 0))
-                        .map(({ p, sc, ok }) => (
+                        .map(({ p, sc, ok, rating }) => (
                           <option key={p.id} value={p.id}>
                             {p.name} · {sc ?? '–'}
+                            {rating !== null ? ` · rated ${rating}` : ''}
                             {ok ? '' : ' (out of position)'}
                             {slots.some((x, j) => j !== i && x.player === p.id)
                               ? ' (in XI: swaps)'

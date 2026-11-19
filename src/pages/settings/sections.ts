@@ -172,9 +172,10 @@ export const SETTINGS_GROUPS: SettingsGroup[] = [
       },
       {
         to: '/settings/tactics',
-        label: 'Tactic briefing',
-        hint: 'What the tactic briefing flags',
-        about: 'What the briefing on the Tactics page checks and warns about.',
+        label: 'Tactics page',
+        hint: 'What the tactic briefing flags; rating needed to play a position',
+        about:
+          'What the briefing on the Tactics page checks and warns about, and the FM position rating (default 15) a player needs to count as able to play a position when you pick players for a tactic.',
       },
       {
         to: '/settings/game-ideas',
