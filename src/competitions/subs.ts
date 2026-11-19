@@ -2,31 +2,35 @@ import type { ReportPlayer } from './types'
 
 /**
  * Who replaced whom where the save does not say (it only records the pairs for your own
- * team): a player who came on is paired with the one who went off at the same minute when
- * that minute had a single change. Changes made together at one minute stay unpaired, with
- * the others of that minute listed (FM's save has no record of who replaced whom then).
+ * team). Changes at the same minute are paired by the position played (a substitute takes
+ * the position of the player he replaced), then, when one change is left, by elimination.
+ * Changes that still cannot be told apart stay unpaired, with the others of that minute listed.
+ * Checked on Fiorentina v Atalanta (6 Sep 2026): all five changes paired as in FM.
  */
 export function pairSubs(players: ReportPlayer[]): (ReportPlayer & { together?: string[] })[] {
   if (players.some((p) => p.for || p.replacedBy)) return players
-  const offAt = new Map<number, ReportPlayer[]>()
-  const onAt = new Map<number, ReportPlayer[]>()
-  for (const p of players) {
-    if (p.off) offAt.set(p.off, [...(offAt.get(p.off) ?? []), p])
-    if (p.on) onAt.set(p.on, [...(onAt.get(p.on) ?? []), p])
+  const out = players.map((p) => ({ ...p }) as ReportPlayer & { together?: string[] })
+  const minutes = new Set(out.filter((p) => p.on).map((p) => p.on!))
+  for (const minute of minutes) {
+    const offs = out.filter((p) => p.off === minute)
+    const ons = out.filter((p) => p.on === minute)
+    const pair = (off: (typeof out)[number], on: (typeof out)[number]) => {
+      on.for = off.name
+      off.replacedBy = on.name
+    }
+    // Same position first
+    for (const on of ons) {
+      const off = offs.find((o) => !o.replacedBy && o.pos && o.pos === on.pos)
+      if (off) pair(off, on)
+    }
+    // One left on each side: they belong together
+    const freeOffs = offs.filter((o) => !o.replacedBy)
+    const freeOns = ons.filter((o) => !o.for)
+    if (freeOffs.length === 1 && freeOns.length === 1) pair(freeOffs[0], freeOns[0])
+    else {
+      for (const on of freeOns) on.together = freeOffs.map((o) => o.name ?? '?')
+      for (const off of freeOffs) off.together = freeOns.map((o) => o.name ?? '?')
+    }
   }
-  return players.map((p) => {
-    if (p.on) {
-      const offs = offAt.get(p.on) ?? []
-      const ons = onAt.get(p.on) ?? []
-      if (offs.length === 1 && ons.length === 1) return { ...p, for: offs[0].name }
-      if (offs.length > 1) return { ...p, together: offs.map((x) => x.name ?? '?') }
-    }
-    if (p.off) {
-      const ons = onAt.get(p.off) ?? []
-      const offs = offAt.get(p.off) ?? []
-      if (ons.length === 1 && offs.length === 1) return { ...p, replacedBy: ons[0].name }
-      if (ons.length > 1) return { ...p, together: ons.map((x) => x.name ?? '?') }
-    }
-    return p
-  })
+  return out
 }

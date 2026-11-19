@@ -1,4 +1,5 @@
 import { clsx } from 'clsx'
+import { matchFormations } from '../competitions/formation'
 import { pairSubs } from '../competitions/subs'
 import { ArrowLeft } from 'lucide-react'
 import { Link, useParams, useSearchParams } from 'react-router-dom'
@@ -72,6 +73,8 @@ export function Match() {
   const squadId = new Map((squad ?? []).map((p) => [p.fm_uid, p.id]))
   const homeName = f.homeShort ?? f.homeName ?? ''
   const awayName = f.awayShort ?? f.awayName ?? ''
+  // Starting formations, from the positions the save records for the match
+  const shapes = matchFormations(data, comp.id, f)
 
   return (
     <>
@@ -92,6 +95,13 @@ export function Match() {
           </span>
           <span className="min-w-0 flex-1 truncate text-left">{awayName}</span>
         </div>
+        {(shapes.home || shapes.away) && (
+          <div className="mt-1 flex items-center justify-center gap-3 text-xs text-muted">
+            <span className="min-w-0 flex-1 truncate text-right">{shapes.home ?? '–'}</span>
+            <span className="text-[10px] tracking-wide uppercase">Formation</span>
+            <span className="min-w-0 flex-1 truncate text-left">{shapes.away ?? '–'}</span>
+          </div>
+        )}
         {(ht || f.pens) && (
           <p className="mt-1 text-sm text-muted tabular-nums">
             {ht && `Half time ${ht[0]} – ${ht[1]}`}
@@ -170,7 +180,12 @@ export function Match() {
 
       {isMine && (
         <div className="mt-4">
-          <MatchLogCard matchKey={key} competitionDbId={comp.databaseId} season={data.season} />
+          <MatchLogCard
+            matchKey={key}
+            competitionDbId={comp.databaseId}
+            season={data.season}
+            opponentFormation={f.home === data.club ? shapes.away : shapes.home}
+          />
         </div>
       )}
 

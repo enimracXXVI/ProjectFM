@@ -1,25 +1,39 @@
 import { useAllCompetitions } from '../competitions/hooks'
-import { allGames, recordBy, type Record3 } from '../competitions/records'
+import { matchFormations } from '../competitions/formation'
+import { allGames, recordBy, type PlayedGame, type Record3 } from '../competitions/records'
 import { useMatchLog } from '../data/hooks'
 import { useCurrentCareer } from '../lib/career'
 import { useConfig } from '../lib/config'
 import { Card } from './ui'
 
-/** Your record by opponent formation, from the match log. */
+/** Your record by formation: yours and the opponent's, from the save (or your match log). */
 export function RecordsCard() {
   const career = useCurrentCareer()
   const config = useConfig()
   const { data } = useAllCompetitions(career.id)
   const log = useMatchLog(career.id)
-  if (!log.data?.length) return null
   const games = allGames(data, config)
+  const formations = (g: PlayedGame) => {
+    const both = matchFormations(g.file, g.compId, g.f)
+    const home = g.f.home === g.file.club
+    return { mine: home ? both.home : both.away, theirs: home ? both.away : both.home }
+  }
+  const rows = log.data ?? []
   const tables: [string, [string, Record3][]][] = [
-    ['Against opponent formations', recordBy(games, log.data, (r) => r.opponent_formation)],
+    [
+      'Against opponent formations',
+      recordBy(games, rows, (r, g) => r?.opponent_formation ?? formations(g).theirs),
+    ],
+    ['With your formations', recordBy(games, rows, (_, g) => formations(g).mine)],
   ]
+  if (tables.every(([, t]) => t.length === 0)) return null
   return (
     <Card className="mt-6">
       <h2 className="mb-1 font-semibold">Your records</h2>
-      <p className="mb-3 text-xs text-muted">From the games you filled in on the match log.</p>
+      <p className="mb-3 text-xs text-muted">
+        Formations from the positions the save records for each match (or what you wrote in the
+        match log).
+      </p>
       <div className="grid gap-4 md:grid-cols-2">
         {tables.map(([title, rows]) => (
           <section key={title}>

@@ -110,6 +110,8 @@ export interface ReportPlayer {
   headersWon: number
   yellow: number
   red: number
+  /** Position played, as an FM position code (reader 21 and later). */
+  pos?: string | null
   /** Who he came on for / was replaced by (your own team's matches, reader 13). */
   for?: string | null
   replacedBy?: string | null
@@ -160,6 +162,10 @@ export interface PlayerMatch {
   assists: number | null
   rating: number | null
   position: number | null
+  /** Position played, as an FM position code (reader 21 and later). */
+  pos?: string | null
+  /** Minute he came on; empty for a starter (reader 21 and later). */
+  entered?: number | null
   passes: number | null
   passesDone: number | null
 }

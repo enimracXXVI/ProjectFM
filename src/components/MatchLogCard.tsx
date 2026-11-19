@@ -17,10 +17,13 @@ export function MatchLogCard({
   matchKey,
   competitionDbId,
   season,
+  opponentFormation,
 }: {
   matchKey: string
   competitionDbId: number | null
   season: number | null
+  /** The opponent's starting formation from the save, filled in when the log has none. */
+  opponentFormation?: string | null
 }) {
   const career = useCurrentCareer()
   const tactics = useTactics(career.id)
@@ -55,6 +58,7 @@ export function MatchLogCard({
       matchKey={matchKey}
       competitionDbId={competitionDbId}
       season={season}
+      opponentFormation={opponentFormation ?? null}
     />
   )
 }
@@ -65,18 +69,20 @@ function Editor({
   matchKey,
   competitionDbId,
   season,
+  opponentFormation,
 }: {
   row: MatchLogRow | null
   tactics: { id: string; name: string }[]
   matchKey: string
   competitionDbId: number | null
   season: number | null
+  opponentFormation: string | null
 }) {
   const career = useCurrentCareer()
   const qc = useQueryClient()
   const initial = {
     tactic_id: row?.tactic_id ?? (tactics.length === 1 ? tactics[0].id : null),
-    opponent_formation: row?.opponent_formation ?? null,
+    opponent_formation: row?.opponent_formation ?? opponentFormation,
     opponent_style: row?.opponent_style ?? null,
     opponent_mentality: row?.opponent_mentality ?? null,
     notes: row?.notes ?? null,

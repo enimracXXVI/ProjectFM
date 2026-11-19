@@ -45,7 +45,7 @@ def _plain(v):
 
 
 # Raised whenever extract() returns new data, so the app can spot an outdated copy
-READER_VERSION = 20
+READER_VERSION = 21
 
 JOB_SCOUT, JOB_CHIEF_SCOUT = 14, 44
 _FF8 = b"\xff" * 8
@@ -387,6 +387,10 @@ def _competitions(save, club_uid, club_name):
             "assists": m.assists,
             "rating": m.rating,
             "position": _raw(m.position),
+            # The position played: a one-bit mask in the same bit order as tactic positions
+            # (checked on the user's save against 1,800 rows: each bit's players play there)
+            "pos": _match_position(_raw(m.position)),
+            "entered": getattr(m, "entered_at_minute", None),
             "passes": m.passes_attempted,
             "passesDone": m.passes_completed,
         })
@@ -412,6 +416,13 @@ def _competitions(save, club_uid, club_name):
 
 # Tactic position bits (fmsave names 11 of them; 5 and 6 are the wing-backs, 10 is M (C)).
 # The app decodes the whole stored number (with its left/right flags) from Settings > FM codes.
+def _match_position(mask):
+    """FM position code of a match row's one-bit position mask, or None."""
+    if not isinstance(mask, int) or mask <= 0 or mask & (mask - 1):
+        return None
+    return _TACTIC_POSITION.get(mask.bit_length() - 1)
+
+
 _TACTIC_POSITION = {
     0: "GK", 2: "DR", 3: "DL", 4: "DC", 5: "WBR", 6: "WBL", 7: "DM", 8: "MR", 9: "ML", 10: "MC",
     11: "AMR", 12: "AML", 13: "AMC", 14: "ST",
@@ -584,6 +595,9 @@ def _matchday_squads(save, club_uid, fixtures):
             "headersWon": b(-4),
             "yellow": b(-37),
             "red": b(-36),
+            # Position played (one-bit mask at +10, starters and substitutes; checked on 800
+            # line-ups of the user's save)
+            "pos": _match_position(struct.unpack_from("<H", report, a + 10)[0]),
         }
 
     with save._context.section("match_stats_cfg") as section:

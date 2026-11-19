@@ -30,6 +30,8 @@ function add(r: Record3, f: Fixture, club: number) {
 export interface PlayedGame {
   f: Fixture
   file: CompetitionsFile
+  /** The competition's id in its season file (save-local). */
+  compId: number
   compDbId: number | null
   compName: string
 }
@@ -41,7 +43,13 @@ export function allGames(files: CompetitionsFile[], config: AppConfig): PlayedGa
       file.competitions.flatMap((c) =>
         myFixtures(file, c)
           .filter((f) => f.played && f.hg !== null)
-          .map((f) => ({ f, file, compDbId: c.databaseId, compName: compLabel(config, c) })),
+          .map((f) => ({
+            f,
+            file,
+            compId: c.id,
+            compDbId: c.databaseId,
+            compName: compLabel(config, c),
+          })),
       ),
     )
     .sort((a, b) => (b.f.date ?? '').localeCompare(a.f.date ?? ''))
@@ -55,17 +63,17 @@ export function headToHead(games: PlayedGame[], opponent: number) {
   return { record, list }
 }
 
-/** Record grouped by a key taken from each game's match log (opponent formation, your tactic). */
+/** Record grouped by a key for each game (from its match log, or worked out from the save). */
 export function recordBy(
   games: PlayedGame[],
   log: MatchLogRow[],
-  key: (row: MatchLogRow) => string | null,
+  key: (row: MatchLogRow | null, game: PlayedGame) => string | null,
 ): [string, Record3][] {
   const byKey = new Map(log.map((r) => [r.match_key, r]))
   const out = new Map<string, Record3>()
   for (const g of games) {
-    const row = byKey.get(fixtureKey(g.f))
-    const k = row ? key(row) : null
+    const row = byKey.get(fixtureKey(g.f)) ?? null
+    const k = key(row, g)
     if (!k) continue
     const r = out.get(k) ?? empty()
     add(r, g.f, g.file.club)
