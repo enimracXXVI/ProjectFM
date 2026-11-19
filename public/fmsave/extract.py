@@ -45,7 +45,7 @@ def _plain(v):
 
 
 # Raised whenever extract() returns new data, so the app can spot an outdated copy
-READER_VERSION = 21
+READER_VERSION = 22
 
 JOB_SCOUT, JOB_CHIEF_SCOUT = 14, 44
 _FF8 = b"\xff" * 8
@@ -523,6 +523,33 @@ def _substitutions(report, squads):
     return found
 
 
+# FM27 27.1.0 put 5 more bytes in each player record of a match report, right after byte +35
+# from the anchor (found by ProjectFM on the user's 27.1.0 save: records 222 -> 227 bytes, the
+# match rating moved from +36 to +41, everything before +35 unchanged; the team block before
+# each squad, read backwards from its first record, is the same). fmsave 0.14 only knows
+# the 27.0 layout, so reports are framed with it first and with it moved by 5 bytes if that
+# fails.
+_REPORT_INSERT_AT = 35
+_REPORT_INSERT = 5
+
+
+def _shifted_layout(layout, by):
+    import dataclasses
+
+    def move(o):
+        return o + by if o >= _REPORT_INSERT_AT else o
+
+    changes = {
+        "record_bytes": layout.record_bytes + by,
+        "event_count_offset": move(layout.event_count_offset),
+        "player_fields": tuple((n, t, move(o)) for n, t, o in layout.player_fields),
+    }
+    for name in ("distance_field", "progressive_passes_field"):
+        t, o = getattr(layout, name)
+        changes[name] = (t, move(o))
+    return dataclasses.replace(layout, **changes)
+
+
 def _matchday_squads(save, club_uid, fixtures):
     """Both matchday squads of every match FM keeps a report for, with each player's stats.
 
@@ -531,7 +558,7 @@ def _matchday_squads(save, club_uid, fixtures):
     -75, shots -59, on target -58, yellow -37, red -36, assists -44, minute subbed off -33
     (0 = played on), minute came on -29 (0 = started or unused), passes attempted -14 and
     completed -13, tackles -8 / won -7, aerial challenges -5 / won -4, match rating (u16,
-    x100) +36. The first eleven records of a squad are the starting XI. Checked against
+    x100) +36 (+41 from 27.1.0). The first eleven records of a squad are the starting XI. Checked against
     fmsave's own per-player match rows on 267 players (exact) and the subs on 771 team sheets.
     """
     import re
@@ -564,14 +591,16 @@ def _matchday_squads(save, club_uid, fixtures):
     except Exception:
         named = {}
     seed = re.compile(b"(?=" + re.escape(layout.anchor_run) + b")")
+    # 27.0 layout, then the 27.1 one (5 more bytes per player record)
+    layouts = [(layout, 0), (_shifted_layout(layout, _REPORT_INSERT), _REPORT_INSERT)]
     out = []
 
-    def player(report, a, starter):
+    def player(report, a, starter, shift):
         def b(o):
             return report[a + o]
 
         uid, name = person.get(struct.unpack_from("<I", report, a - 99)[0], (None, None))
-        rating = struct.unpack_from("<H", report, a + 36)[0]
+        rating = struct.unpack_from("<H", report, a + 36 + shift)[0]
         # Unused substitutes carry a default rating: they did not play
         if not starter and not report[a - 29]:
             rating = 0
@@ -609,12 +638,26 @@ def _matchday_squads(save, club_uid, fixtures):
             f = by_key.get((head.home_team_id, head.away_team_id, head.kick_off.date()))
             if f is None:
                 continue
-            squads = T._squads(report, layout, seed)
+            squads = shift = None
+            for lay, by in layouts:
+                squads = T._squads(report, lay, seed)
+                if squads is not None:
+                    shift = by
+                    break
             if squads is None:
                 continue
             sides = {}
             for side, anchors in (("home", squads.home), ("away", squads.away)):
-                sides[side] = [player(report, a, i < 11) for i, a in enumerate(anchors)]
+                sides[side] = [player(report, a, i < 11, shift) for i, a in enumerate(anchors)]
+            # Team stats: fmsave's when it framed this report, else worked out the same way
+            # with the layout that framed it (27.1 reports)
+            home_team = named.get((head.home_team_id, head.away_team_id, f.date, True))
+            away_team = named.get((head.home_team_id, head.away_team_id, f.date, False))
+            if home_team is None or away_team is None:
+                try:
+                    home_team, away_team = _team_rows(T, report, squads, lay)
+                except Exception:
+                    pass
             for team, off_slot, on_slot in _substitutions(report, squads):
                 lineup = sides["home" if team == 0 else "away"]
                 went, came = lineup[off_slot], lineup[on_slot]
@@ -624,8 +667,8 @@ def _matchday_squads(save, club_uid, fixtures):
                 "date": f.date.isoformat(),
                 "home": f.home_club_uid,
                 "away": f.away_club_uid,
-                "homeTeam": named.get((head.home_team_id, head.away_team_id, f.date, True)),
-                "awayTeam": named.get((head.home_team_id, head.away_team_id, f.date, False)),
+                "homeTeam": home_team,
+                "awayTeam": away_team,
                 "homePlayers": sides["home"],
                 "awayPlayers": sides["away"],
                 # Older app versions read these
@@ -713,6 +756,25 @@ _NAMED_STATS = (
     "final_third_passes", "progressive_passes", "possession_percent",
     "ball_distribution_percent",
 )
+
+
+def _team_rows(T, report, squads, layout):
+    """Both teams' match stats from a framed report, as fmsave's team_match_stats works them out."""
+    home = T._team_values(report, squads.home, squads.detailed, layout)
+    away = T._team_values(report, squads.away, squads.detailed, layout)
+    hp, ap = T._possession(int(home["passes_completed"] or 0), int(away["passes_completed"] or 0))
+    hb, ab = T._shares_half_up(
+        int(home.pop("ball_distribution_units") or 0), int(away.pop("ball_distribution_units") or 0)
+    )
+    rows = []
+    for values, possession, ball in ((home, hp, hb), (away, ap, ab)):
+        values = dict(values, possession_percent=possession, ball_distribution_percent=ball)
+        d = {}
+        for k in _NAMED_STATS:
+            v = values.get(k)
+            d[k] = round(v, 3) if isinstance(v, float) else v
+        rows.append(d)
+    return rows[0], rows[1]
 
 
 def _named_team_stats(save):
