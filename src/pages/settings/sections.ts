@@ -177,6 +177,13 @@ export const SETTINGS_GROUPS: SettingsGroup[] = [
         about: 'What the briefing on the Tactics page checks and warns about.',
       },
       {
+        to: '/settings/tactic-rules',
+        label: 'Tactic assistant',
+        hint: 'Rules of thumb the assistant applies to team instructions',
+        about:
+          'The tactic assistant builds from FM27’s styles and template tactics and your squad; these rules of thumb then adjust team instructions to your players (slow centre-backs: no high line…). Switch off any you disagree with.',
+      },
+      {
         to: '/settings/tactical-styles',
         label: 'Tactical styles',
         hint: "FM's styles, their mentality and team instructions",

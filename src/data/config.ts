@@ -103,6 +103,8 @@ export interface AppConfig {
   mediaHandling: MediaRule[]
   /** Figures that matter for each role and position (World stat profiles). */
   statProfiles: StatProfile[]
+  /** Tactic assistant: rules of thumb switched on (true) or off (false), by id. */
+  tacticRules: Record<string, boolean>
   /** FM words the user taught for values the app could not name (value → word). */
   learned: Learned
   /** Competitions by FM database id: name and type. */
@@ -180,6 +182,7 @@ export const DEFAULT_CONFIG: AppConfig = {
   pictures: DEFAULT_PICTURES,
   mediaHandling: DEFAULT_MEDIA_RULES,
   statProfiles: DEFAULT_STAT_PROFILES,
+  tacticRules: {},
   learned: { morale: {}, knowledge: {}, rounds: {} },
   // Confirmed by the user from FM
   competitions: {
@@ -251,6 +254,7 @@ export function mergeConfig(stored: Stored): AppConfig {
     pictures: { ...DEFAULT_CONFIG.pictures, ...stored.pictures },
     mediaHandling: stored.mediaHandling ?? DEFAULT_CONFIG.mediaHandling,
     statProfiles: stored.statProfiles ?? DEFAULT_CONFIG.statProfiles,
+    tacticRules: { ...DEFAULT_CONFIG.tacticRules, ...stored.tacticRules },
     learned: { ...DEFAULT_CONFIG.learned, ...stored.learned },
     competitions: { ...DEFAULT_CONFIG.competitions, ...stored.competitions },
     mobileBar: stored.mobileBar ?? DEFAULT_CONFIG.mobileBar,

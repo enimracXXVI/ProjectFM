@@ -13,6 +13,7 @@ import {
   Wand2,
 } from 'lucide-react'
 import { useState, type ReactNode } from 'react'
+import { Link } from 'react-router-dom'
 import { TEXT, useUrlState } from '../lib/urlState'
 import { useConfirm } from '../components/confirm'
 import { DbUpdateNotice } from '../components/DbUpdateNotice'
@@ -186,6 +187,12 @@ export function Tactics() {
         <Button variant="ghost" onClick={() => create.mutate()} disabled={create.isPending}>
           <Plus className="size-4" aria-hidden /> New tactic
         </Button>
+        <Link
+          to="/tactics/assistant"
+          className="inline-flex min-h-11 items-center gap-2 rounded-lg border border-accent px-3 text-sm font-semibold text-accent hover:bg-accent/10"
+        >
+          <Wand2 className="size-4" aria-hidden /> Build with assistant
+        </Link>
         <select
           aria-label="New tactic from an FM template"
           value=""

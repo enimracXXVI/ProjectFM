@@ -44,6 +44,8 @@ import { PicturesSettings } from './pages/settings/Pictures'
 import { SettingsGuide } from './pages/settings/Guide'
 import { MediaHandlingSettings } from './pages/settings/MediaHandling'
 import { StatProfilesSettings } from './pages/settings/StatProfiles'
+import { TacticRulesSettings } from './pages/settings/TacticRules'
+import { TacticAssistant } from './pages/TacticAssistant'
 import { TraitsSettings } from './pages/settings/TraitNames'
 import { Training } from './pages/Training'
 import { RoleWarningsSettings, TacticsSettings } from './pages/settings/TacticsSettings'
@@ -97,6 +99,7 @@ function SignedIn() {
         <Route path="check" element={<Check />} />
         <Route path="competitions" element={<Competitions />} />
         <Route path="tactics" element={<Tactics />} />
+        <Route path="tactics/assistant" element={<TacticAssistant />} />
         <Route path="training" element={<Training />} />
         <Route path="best-xi" element={<BestXI />} />
         <Route path="competitions/:dbId" element={<Competition />} />
@@ -131,6 +134,7 @@ function SignedIn() {
         <Route path="settings/guide" element={<SettingsGuide />} />
         <Route path="settings/media-handling" element={<MediaHandlingSettings />} />
         <Route path="settings/stat-profiles" element={<StatProfilesSettings />} />
+        <Route path="settings/tactic-rules" element={<TacticRulesSettings />} />
         <Route path="settings/traits" element={<TraitsSettings />} />
         <Route path="settings/trait-guide" element={<Navigate to="/settings/traits" replace />} />
         <Route path="settings/role-warnings" element={<RoleWarningsSettings />} />
