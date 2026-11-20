@@ -1,48 +1,122 @@
 import { describe, expect, it } from 'vitest'
-import { DEFAULT_MEDIA_RULES, MEDIA_FALLBACK, mediaHandling } from './mediaHandling'
+import { DEFAULT_MEDIA_THRESHOLDS, mediaHandling } from './mediaHandling'
 
-const of = (o: Record<string, number>) => (label: string) => o[label]
+/**
+ * 93 players checked in FM27 (Nov 2026): name, FM's media handling style, and Controversy,
+ * Temperament, Pressure, Professionalism, Sportsmanship, Loyalty from the save.
+ */
+const CHECKED: [string, string, number[]][] = [
+  ['Martín Tejón', 'Level-headed', [5, 11, 14, 12, 12, 14]],
+  ['Yasin Ayari', 'Evasive', [7, 14, 15, 18, 14, 14]],
+  ['Álex Marchal', 'Level-headed', [2, 12, 9, 11, 12, 12]],
+  ['Mario Rivas', 'Media-friendly', [4, 20, 11, 11, 9, 10]],
+  ['Mateus Mané', 'Level-headed', [7, 17, 12, 7, 12, 12]],
+  ['Ben Nelson', 'Level-headed', [8, 14, 14, 13, 15, 13]],
+  ['Vasilije Adžić', 'Media-friendly', [9, 12, 14, 12, 11, 12]],
+  ['Miguel Figueiredo', 'Level-headed', [10, 16, 14, 15, 16, 12]],
+  ['Omar El Hilali', 'Media-friendly, Reserved', [5, 14, 12, 15, 13, 10]],
+  ['Pharell Nash', 'Media-friendly', [4, 13, 11, 12, 10, 13]],
+  ['Harry Amass', 'Unflappable', [5, 15, 15, 14, 13, 13]],
+  ['Adam Boayar', 'Media-friendly', [2, 17, 10, 10, 8, 12]],
+  ['Seydou Sano', 'Media-friendly', [6, 13, 10, 12, 8, 10]],
+  ['Tomy Carbonell', 'Media-friendly', [8, 14, 12, 13, 12, 9]],
+  ['Julius Berthel Askou', 'Media-friendly', [6, 16, 12, 13, 9, 10]],
+  ['Findlay Curtis', 'Reserved', [5, 13, 13, 15, 14, 16]],
+  ['Matteo Cichella', 'Level-headed', [4, 14, 11, 14, 11, 12]],
+  ['Jelle Driessen', 'Media-friendly', [7, 12, 11, 11, 9, 9]],
+  ['Mamadou Coulibaly', 'Level-headed', [3, 10, 12, 13, 10, 12]],
+  ['Bae Jun-Ho', 'Reserved', [2, 12, 12, 15, 12, 11]],
+  ['Femi Seriki', 'Media-friendly', [2, 13, 10, 12, 11, 12]],
+  ['Emirhan İlkhan', 'Media-friendly', [4, 12, 8, 14, 14, 9]],
+  ['Sammy Braybrooke', 'Media-friendly', [4, 13, 12, 12, 12, 8]],
+  ['Jack Fletcher', 'Media-friendly', [5, 10, 10, 13, 11, 9]],
+  ['Jessi Da Silva', 'Media-friendly', [8, 11, 9, 10, 10, 9]],
+  ['Tyler Silsby', 'Level-headed', [3, 18, 11, 12, 12, 13]],
+  ['Rory Wilson', 'Media-friendly', [1, 16, 12, 14, 9, 9]],
+  ['Gabriel Otegbayo', 'Level-headed', [7, 15, 8, 13, 13, 14]],
+  ['Kacper Kozłowski', 'Evasive', [12, 10, 15, 15, 13, 12]],
+  ['Albert Navarro', 'Level-headed', [10, 13, 13, 13, 12, 12]],
+  ['Berat Luş', 'Reserved', [5, 14, 9, 15, 12, 13]],
+  ['Fabio Kluit', 'Level-headed', [5, 15, 11, 13, 11, 14]],
+  ['Bernt Klaverboer', 'Reserved', [1, 11, 14, 15, 13, 14]],
+  ['Jakob Napoleon Romsaas', 'Level-headed', [9, 13, 18, 14, 14, 14]],
+  ['Gabriele Calvani', 'Media-friendly', [10, 10, 10, 10, 10, 10]],
+  ['Kevin Paredes', 'Media-friendly', [12, 10, 8, 8, 10, 10]],
+  ['Kiani Inge', 'Level-headed', [4, 13, 10, 12, 12, 12]],
+  ['Lowie Piselé', 'Level-headed', [7, 13, 11, 13, 9, 15]],
+  ['Samuel Edozie', 'Media-friendly', [7, 11, 10, 12, 12, 10]],
+  ['Romeo Akachukwu', 'Media-friendly', [6, 10, 11, 12, 10, 8]],
+  ['Kevin Kers', 'Level-headed', [1, 15, 12, 9, 15, 11]],
+  ['Levi Acheampong', 'Media-friendly', [4, 11, 12, 11, 9, 12]],
+  ['Rayan Zekri', 'Level-headed', [4, 11, 11, 14, 11, 14]],
+  ['Adrian Blake', 'Media-friendly', [8, 10, 15, 11, 10, 10]],
+  ['Zakaria Ouazane', 'Media-friendly', [1, 11, 13, 12, 5, 11]],
+  ['Simo', 'Media-friendly', [3, 8, 10, 12, 9, 9]],
+  ['Bobby Pointon', 'Level-headed', [7, 12, 10, 10, 14, 11]],
+  ['Jack James', 'Media-friendly', [7, 14, 13, 11, 11, 10]],
+  ['Josh Feeney', 'Level-headed', [8, 10, 12, 13, 16, 12]],
+  ['Salvador Gomes', 'Level-headed', [4, 14, 12, 13, 12, 12]],
+  ['Paul Reverson', 'Level-headed', [7, 12, 13, 14, 14, 13]],
+  ['Miguel Patrício', 'Level-headed', [5, 18, 14, 13, 11, 12]],
+  ['Joris Boguo', 'Media-friendly', [6, 12, 10, 10, 10, 10]],
+  ['Mladen Mijajlović', 'Media-friendly', [3, 14, 10, 14, 12, 10]],
+  ['Miodrag Pivaš', 'Media-friendly', [4, 12, 13, 10, 11, 12]],
+  ['César Bonafé', 'Media-friendly', [2, 12, 12, 10, 11, 12]],
+  ['Marwin Schmitz', 'Level-headed', [8, 13, 14, 10, 12, 14]],
+  ['Joe Johnson', 'Level-headed', [5, 13, 11, 14, 15, 12]],
+  ['Tomáš Král', 'Level-headed', [6, 12, 12, 13, 13, 13]],
+  ['Homare Tokuda', 'Media-friendly', [3, 13, 11, 12, 11, 12]],
+  ['Harvey Blair', 'Level-headed', [1, 11, 10, 9, 12, 11]],
+  ['Nikola Vukić', 'Media-friendly', [3, 11, 9, 11, 12, 8]],
+  ['Jerik von der Felsen', 'Level-headed', [4, 13, 11, 13, 12, 11]],
+  ['Cauan Barros', 'Media-friendly', [11, 10, 8, 13, 10, 10]],
+  ['Tim Köhler', 'Reserved', [3, 11, 10, 16, 12, 13]],
+  ['David De Gea', 'Reserved', [5, 19, 13, 17, 18, 14]],
+  ['Radu Drăguşin', 'Level-headed', [12, 12, 13, 14, 13, 12]],
+  ['Viery', 'Level-headed', [1, 17, 10, 14, 11, 13]],
+  ['Álex Jiménez', 'Outspoken', [15, 7, 13, 13, 9, 14]],
+  ['Christ Inao Oulaï', 'Level-headed', [7, 18, 12, 15, 8, 11]],
+  ['Víctor Valdepeñas', 'Media-friendly, Reserved', [4, 14, 9, 15, 9, 9]],
+  ['Marco Brescianini', 'Reserved', [4, 14, 12, 15, 14, 16]],
+  ['Arthur Atta', 'Level-headed', [6, 13, 13, 15, 12, 12]],
+  ['Franco Mastantuono', 'Media-friendly', [6, 12, 12, 14, 13, 10]],
+  ['Alieu Njie', 'Level-headed', [1, 13, 12, 14, 11, 11]],
+  ['Beto', 'Media-friendly', [14, 10, 13, 13, 17, 5]],
+  ['Oliver Christensen', 'Media-friendly', [6, 8, 10, 15, 12, 10]],
+  ['Dodo', 'Level-headed', [6, 14, 12, 13, 7, 11]],
+  ['Marin Pongračić', 'Outspoken', [19, 5, 10, 10, 5, 5]],
+  ['Luca Ranieri', 'Level-headed', [10, 9, 12, 16, 9, 13]],
+  ['João Mário', 'Level-headed', [2, 15, 12, 14, 8, 15]],
+  ['Nicolò Fagioli', 'Media-friendly', [10, 13, 12, 8, 10, 12]],
+  ['Pote', 'Evasive', [6, 13, 16, 15, 10, 13]],
+  ['Riccardo Sottil', 'Level-headed', [4, 12, 12, 14, 9, 14]],
+  ['Wilfried Gnonto', 'Media-friendly', [13, 9, 9, 6, 6, 8]],
+  ['Luca Lezzerini', 'Level-headed', [9, 12, 12, 15, 13, 13]],
+  ['Mattia Magalotti', 'Media-friendly', [3, 19, 13, 11, 7, 11]],
+  ['Gianmaria Fei', 'Media-friendly', [4, 13, 11, 12, 11, 12]],
+  ['Giulio Orlando', 'Outspoken, Media-friendly', [4, 6, 11, 11, 11, 11]],
+  ['Nikodem Licznerski', 'Media-friendly', [6, 13, 8, 12, 10, 11]],
+  ['Lapo Zipoli', 'Evasive, Reserved', [5, 12, 15, 19, 12, 12]],
+  ['Paolo Paris', 'Media-friendly', [7, 13, 10, 12, 7, 10]],
+  ['Leonardo Cecchini', 'Media-friendly', [6, 8, 9, 10, 5, 10]],
+]
+const LABELS = [
+  'Controversy',
+  'Temperament',
+  'Pressure',
+  'Professionalism',
+  'Sportsmanship',
+  'Loyalty',
+]
 
 describe('media handling', () => {
-  it('matches the styles seen in FM27', () => {
-    // Lapo Zipoli: Evasive, Reserved
-    expect(
-      mediaHandling(
-        of({ Pressure: 15, Professionalism: 19, Temperament: 12, Controversy: 5 }),
-        DEFAULT_MEDIA_RULES,
-      ),
-    ).toBe('Evasive, Reserved')
-    // Marin Pongračić: Outspoken
-    expect(
-      mediaHandling(
-        of({ Pressure: 10, Professionalism: 10, Temperament: 5, Controversy: 19 }),
-        DEFAULT_MEDIA_RULES,
-      ),
-    ).toBe('Outspoken')
-    // Arthur Atta: Level-headed (Loyalty 12: cannot be told from Media-friendly)
-    expect(
-      mediaHandling(
-        of({ Pressure: 13, Professionalism: 15, Temperament: 13, Controversy: 6, Loyalty: 12 }),
-        DEFAULT_MEDIA_RULES,
-      ),
-    ).toBe(MEDIA_FALLBACK)
-    // Franco Mastantuono: Media-friendly (Loyalty 9: Level-headed needs 11+)
-    expect(
-      mediaHandling(
-        of({ Pressure: 12, Professionalism: 14, Temperament: 12, Controversy: 6, Loyalty: 9 }),
-        DEFAULT_MEDIA_RULES,
-      ),
-    ).toBe('Media-friendly')
-    // Harry Amass: Unflappable, from one player only
-    expect(
-      mediaHandling(
-        of({ Pressure: 15, Professionalism: 14, Temperament: 15, Controversy: 5 }),
-        DEFAULT_MEDIA_RULES,
-      ),
-    ).toBe('Unflappable (?)')
+  it('matches FM27 on all 93 players checked', () => {
+    for (const [name, fm, values] of CHECKED) {
+      const got = mediaHandling((k) => values[LABELS.indexOf(k)], DEFAULT_MEDIA_THRESHOLDS)
+      expect(new Set(got?.split(', ')), name).toEqual(new Set(fm.split(', ')))
+    }
   })
-
-  it('gives nothing without the values', () => {
-    expect(mediaHandling(() => undefined, DEFAULT_MEDIA_RULES)).toBeNull()
+  it('gives nothing when the hidden values are not known', () => {
+    expect(mediaHandling(() => null)).toBeNull()
   })
 })

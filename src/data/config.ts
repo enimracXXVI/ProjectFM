@@ -1,5 +1,9 @@
 import { supabase } from '../lib/supabase'
-import { DEFAULT_MEDIA_RULES, type MediaRule } from '../lib/mediaHandling'
+import {
+  DEFAULT_MEDIA_THRESHOLDS,
+  isMediaThresholds,
+  type MediaThresholds,
+} from '../lib/mediaHandling'
 import { DEFAULT_STAT_PROFILES, type StatProfile } from '../world/profiles'
 import {
   ATTRIBUTE_INFO,
@@ -103,7 +107,7 @@ export interface AppConfig {
   /** Faces, club crests and flags from an online picture database, by FM Unique ID. */
   pictures: Pictures
   /** Rules that give FM's media handling style from the hidden personality values. */
-  mediaHandling: MediaRule[]
+  mediaHandling: MediaThresholds
   /** Figures that matter for each role and position (World stat profiles). */
   statProfiles: StatProfile[]
   /** Tactic assistant: rules of thumb switched on (true) or off (false), by id. */
@@ -188,7 +192,7 @@ export const DEFAULT_CONFIG: AppConfig = {
   roleWeights: DEFAULT_ROLE_WEIGHTS,
   showHidden: false,
   pictures: DEFAULT_PICTURES,
-  mediaHandling: DEFAULT_MEDIA_RULES,
+  mediaHandling: DEFAULT_MEDIA_THRESHOLDS,
   statProfiles: DEFAULT_STAT_PROFILES,
   tacticRules: {},
   gameIdeas: DEFAULT_GAME_IDEAS,
@@ -285,7 +289,10 @@ export function mergeConfig(stored: Stored): AppConfig {
     roleWeights: { ...DEFAULT_CONFIG.roleWeights, ...stored.roleWeights },
     showHidden: stored.showHidden ?? DEFAULT_CONFIG.showHidden,
     pictures: { ...DEFAULT_CONFIG.pictures, ...stored.pictures },
-    mediaHandling: stored.mediaHandling ?? DEFAULT_CONFIG.mediaHandling,
+    // Rule lists saved before the thresholds give way to them
+    mediaHandling: isMediaThresholds(stored.mediaHandling)
+      ? { ...DEFAULT_CONFIG.mediaHandling, ...stored.mediaHandling }
+      : DEFAULT_CONFIG.mediaHandling,
     statProfiles: stored.statProfiles ?? DEFAULT_CONFIG.statProfiles,
     tacticRules: { ...DEFAULT_CONFIG.tacticRules, ...stored.tacticRules },
     gameIdeas: stored.gameIdeas ?? DEFAULT_CONFIG.gameIdeas,

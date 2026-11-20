@@ -1,66 +1,79 @@
 /**
- * FM's media handling style, worked out from the hidden personality values. Rules found by
- * matching 93 players' styles in FM27 (the user's squad and 65 others, Nov 2026) with their
- * values in the save. Each rule that fits adds a style (FM can show two).
- * Level-headed and Media-friendly: Level-headed needs Loyalty 11+, so a player matching no
- * rule with Loyalty 10 or less is Media-friendly; above that the save cannot tell them apart.
- * Editable in Settings > Media handling.
+ * FM's media handling style, worked out from the hidden personality values.
+ *
+ * The logic is the community "Ultimate Personality / Media Handling Guide" (SI forums, by
+ * Noxuous and JAwtunes, updated by BlueZero; the "Hidden Attribute Revealer" sheet), adapted to
+ * FM27: FM27 shows the old Volatile and Short-tempered styles as Outspoken and no longer shows
+ * Confrontational. Checked on 93 players in FM27 (the user's squad and 65 others, Nov 2026):
+ * all 93 exact.
+ *
+ * In order:
+ * 1. Controversy 15+: Outspoken (plus Unflappable with Temperament and Pressure 15+).
+ * 2. Pressure and Professionalism 15+: Evasive, plus Reserved (Controversy 5 or less and
+ *    Temperament 7–14), Unflappable (Temperament 15+), Outspoken (Temperament 6 or less).
+ * 3. Otherwise the extras: Unflappable (Temperament and Pressure 15+), Outspoken (Temperament
+ *    6 or less), Reserved (Controversy 5 or less, Professionalism 15+, Temperament 7+). A
+ *    "steady" player (Loyalty 11+ and Sportsmanship 12+ or Professionalism 13+) shows only
+ *    them; anyone else shows Media-friendly with them.
+ * 4. No extras: Level-headed when steady, else Media-friendly.
+ * Every threshold is editable in Settings > Media handling.
  */
-export const MEDIA_KEYS = [
-  'pressure',
-  'professionalism',
-  'temperament',
-  'controversy',
-  'sportsmanship',
-  'ambition',
-  'loyalty',
-  'adaptability',
-] as const
-export type MediaKey = (typeof MEDIA_KEYS)[number]
-
-/** The hidden value each key reads (as stored with players). */
-export const MEDIA_KEY_LABELS: Record<MediaKey, string> = {
-  pressure: 'Pressure',
-  professionalism: 'Professionalism',
-  temperament: 'Temperament',
-  controversy: 'Controversy',
-  sportsmanship: 'Sportsmanship',
-  ambition: 'Ambition',
-  loyalty: 'Loyalty',
-  adaptability: 'Adaptability',
+export interface MediaThresholds {
+  /** Controversy from which a player is Outspoken. */
+  outspokenControversy: number
+  /** Temperament up to which a player is (also) Outspoken (FM's old Volatile / Short-tempered). */
+  outspokenTemperament: number
+  /** Pressure and Professionalism from which a player is Evasive. */
+  evasivePressure: number
+  evasiveProfessionalism: number
+  /** Controversy up to which, with Professionalism from, a player is Reserved. */
+  reservedControversy: number
+  reservedProfessionalism: number
+  /** Temperament from which a Reserved or Level-headed player must be (below: Outspoken). */
+  calmTemperament: number
+  /** Temperament for which an Evasive player is also Reserved (up to this). */
+  evasiveReservedTemperament: number
+  /** Temperament and Pressure from which a player is Unflappable. */
+  unflappableTemperament: number
+  unflappablePressure: number
+  /** Steady (Level-headed, or the extras alone): Loyalty from, and Sportsmanship or Professionalism from. */
+  steadyLoyalty: number
+  steadySportsmanship: number
+  steadyProfessionalism: number
 }
 
-export interface MediaRule {
-  name: string
-  /** Value ranges (inclusive) the player needs; keys left out do not matter. */
-  ranges: Partial<Record<MediaKey, [number, number]>>
-  /** False while a rule rests on too few players: shown with (?). */
-  confirmed: boolean
+export const DEFAULT_MEDIA_THRESHOLDS: MediaThresholds = {
+  outspokenControversy: 15,
+  outspokenTemperament: 6,
+  evasivePressure: 15,
+  evasiveProfessionalism: 15,
+  reservedControversy: 5,
+  reservedProfessionalism: 15,
+  calmTemperament: 7,
+  evasiveReservedTemperament: 14,
+  unflappableTemperament: 15,
+  unflappablePressure: 15,
+  steadyLoyalty: 11,
+  steadySportsmanship: 12,
+  steadyProfessionalism: 13,
 }
 
-export const DEFAULT_MEDIA_RULES: MediaRule[] = [
-  // 4 of 93 players, no exceptions
-  { name: 'Evasive', ranges: { pressure: [15, 20], professionalism: [15, 20] }, confirmed: true },
-  // 10 of 93 players, no exceptions
-  {
-    name: 'Reserved',
-    ranges: { professionalism: [15, 20], controversy: [1, 5] },
-    confirmed: true,
-  },
-  // 3 of 93 players, no exceptions
-  { name: 'Outspoken', ranges: { temperament: [1, 7] }, confirmed: true },
-  // One player only (Harry Amass): needs more examples
-  { name: 'Unflappable', ranges: { pressure: [15, 20], temperament: [15, 20] }, confirmed: false },
-]
-
-/** Shown when no rule fits and Loyalty does not settle it. */
-export const MEDIA_FALLBACK = 'Level-headed or Media-friendly'
-
-/**
- * Level-headed needs Loyalty 11 or more (all 36 Level-headed players of the 93 checked, and
- * the Steam guide's FM26 ranges): with no rule fitting, Loyalty 10 or less means Media-friendly.
- */
-export const LEVEL_HEADED_MIN_LOYALTY = 11
+/** What each threshold means, for Settings. */
+export const MEDIA_THRESHOLD_TEXT: Record<keyof MediaThresholds, string> = {
+  outspokenControversy: 'Outspoken: Controversy from',
+  outspokenTemperament: 'Outspoken (FM’s old Volatile / Short-tempered): Temperament up to',
+  evasivePressure: 'Evasive: Pressure from',
+  evasiveProfessionalism: 'Evasive: Professionalism from',
+  reservedControversy: 'Reserved: Controversy up to',
+  reservedProfessionalism: 'Reserved: Professionalism from',
+  calmTemperament: 'Reserved / Level-headed: Temperament from',
+  evasiveReservedTemperament: 'Evasive and Reserved: Temperament up to',
+  unflappableTemperament: 'Unflappable: Temperament from',
+  unflappablePressure: 'Unflappable: Pressure from',
+  steadyLoyalty: 'Level-headed (steady): Loyalty from',
+  steadySportsmanship: 'Level-headed (steady): Sportsmanship from (or Professionalism below)',
+  steadyProfessionalism: 'Level-headed (steady): Professionalism from (or Sportsmanship above)',
+}
 
 /**
  * The player's style(s), from his hidden values by name ("Pressure" → 15).
@@ -68,22 +81,47 @@ export const LEVEL_HEADED_MIN_LOYALTY = 11
  */
 export function mediaHandling(
   value: (label: string) => number | null | undefined,
-  rules: MediaRule[],
+  t: MediaThresholds = DEFAULT_MEDIA_THRESHOLDS,
 ): string | null {
-  const v = Object.fromEntries(
-    MEDIA_KEYS.map((k) => [k, value(MEDIA_KEY_LABELS[k]) ?? null]),
-  ) as Record<MediaKey, number | null>
-  if (v.pressure === null && v.professionalism === null && v.temperament === null) return null
-  const styles = rules
-    .filter((r) =>
-      Object.entries(r.ranges).every(([k, range]) => {
-        const x = v[k as MediaKey]
-        return x !== null && range && x >= range[0] && x <= range[1]
-      }),
+  const get = (k: string) => value(k) ?? null
+  const con = get('Controversy')
+  const tem = get('Temperament')
+  const pre = get('Pressure')
+  const pro = get('Professionalism')
+  if (con === null || tem === null || pre === null || pro === null) return null
+  const spo = get('Sportsmanship') ?? 0
+  const loy = get('Loyalty') ?? 0
+  const unflappable = tem >= t.unflappableTemperament && pre >= t.unflappablePressure
+  const hot = tem <= t.outspokenTemperament
+
+  if (con >= t.outspokenControversy)
+    return ['Outspoken', ...(unflappable ? ['Unflappable'] : [])].join(', ')
+  if (pre >= t.evasivePressure && pro >= t.evasiveProfessionalism) {
+    const out = ['Evasive']
+    if (
+      con <= t.reservedControversy &&
+      tem >= t.calmTemperament &&
+      tem <= t.evasiveReservedTemperament
     )
-    .map((r) => (r.confirmed ? r.name : `${r.name} (?)`))
-  if (styles.length) return styles.join(', ')
-  return v.loyalty !== null && v.loyalty < LEVEL_HEADED_MIN_LOYALTY
-    ? 'Media-friendly'
-    : MEDIA_FALLBACK
+      out.push('Reserved')
+    if (tem >= t.unflappableTemperament) out.push('Unflappable')
+    if (hot) out.push('Outspoken')
+    return out.join(', ')
+  }
+  const extras = [
+    ...(unflappable ? ['Unflappable'] : []),
+    ...(hot ? ['Outspoken'] : []),
+    ...(con <= t.reservedControversy && pro >= t.reservedProfessionalism && tem >= t.calmTemperament
+      ? ['Reserved']
+      : []),
+  ]
+  const steady =
+    loy >= t.steadyLoyalty && (spo >= t.steadySportsmanship || pro >= t.steadyProfessionalism)
+  if (extras.length) return (steady ? extras : ['Media-friendly', ...extras]).join(', ')
+  return steady ? 'Level-headed' : 'Media-friendly'
+}
+
+/** Settings saved before the thresholds (a list of rules): use the defaults. */
+export function isMediaThresholds(v: unknown): v is MediaThresholds {
+  return !!v && typeof v === 'object' && !Array.isArray(v) && 'outspokenControversy' in v
 }

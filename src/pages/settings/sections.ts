@@ -115,9 +115,9 @@ export const SETTINGS_GROUPS: SettingsGroup[] = [
       {
         to: '/settings/media-handling',
         label: 'Media handling',
-        hint: 'Rules that give the media handling style from hidden values',
+        hint: 'Thresholds that give the media handling style from hidden values',
         about:
-          'The hidden-value ranges behind each media handling style (Evasive, Reserved, Outspoken…), found by matching 93 players in FM27 with the save. Level-headed and Media-friendly cannot be told apart from the save, so those players show both.',
+          'How the media handling style (Evasive, Reserved, Outspoken, Unflappable, Level-headed, Media-friendly) is worked out from the hidden values: the community Personality / Media Handling guide, adapted to FM27. It matches all 93 players checked in FM27; every threshold is editable.',
       },
       {
         to: '/settings/stat-profiles',
