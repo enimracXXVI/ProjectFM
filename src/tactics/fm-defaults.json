@@ -933,7 +933,7 @@
           "code": 0
         },
         {
-          "label": "Hold position",
+          "label": "Make fewer runs",
           "code": 23,
           "complexity": 1
         }
@@ -991,26 +991,6 @@
     },
     {
       "phase": "ip",
-      "name": "Passing strategy",
-      "options": [
-        {
-          "label": "Shorter passing",
-          "code": 1,
-          "complexity": 2
-        },
-        {
-          "label": "More direct passing",
-          "code": 2,
-          "complexity": 1
-        },
-        {
-          "label": "Standard",
-          "code": 0
-        }
-      ]
-    },
-    {
-      "phase": "ip",
       "name": "Passing risk",
       "options": [
         {
@@ -1021,6 +1001,26 @@
         {
           "label": "Take fewer risks",
           "code": 4,
+          "complexity": 1
+        },
+        {
+          "label": "Standard",
+          "code": 0
+        }
+      ]
+    },
+    {
+      "phase": "ip",
+      "name": "Passing strategy",
+      "options": [
+        {
+          "label": "Shorter passing",
+          "code": 1,
+          "complexity": 2
+        },
+        {
+          "label": "More direct passing",
+          "code": 2,
           "complexity": 1
         },
         {
@@ -1337,7 +1337,8 @@
           "forced": [22]
         }
       },
-      "complexity": 1
+      "complexity": 1,
+      "flag": 23
     },
     "pw": {
       "code": "8796093022208",
@@ -1373,7 +1374,8 @@
           "forced": [23, 24, 26, 42]
         }
       },
-      "complexity": 2
+      "complexity": 2,
+      "flag": 22
     },
     "pwb-ip": {
       "code": "36028797018963968",
@@ -1700,7 +1702,8 @@
           "forced": []
         }
       },
-      "complexity": 0
+      "complexity": 0,
+      "flag": 23
     },
     "wow": {
       "code": "2199023255552",
@@ -1841,7 +1844,8 @@
           "forced": [17]
         }
       },
-      "complexity": 1
+      "complexity": 1,
+      "flag": 23
     },
     "dlf": {
       "code": "1024",
@@ -1916,7 +1920,8 @@
           "forced": []
         }
       },
-      "complexity": 1
+      "complexity": 1,
+      "flag": 21
     },
     "bgk": {
       "code": "4096",
@@ -1931,7 +1936,8 @@
           "forced": [3]
         }
       },
-      "complexity": 2
+      "complexity": 2,
+      "flag": 22
     },
     "oam": {
       "code": "4294967296",
@@ -2011,7 +2017,8 @@
           "forced": [25]
         }
       },
-      "complexity": 1
+      "complexity": 1,
+      "flag": 22
     },
     "cm-oop": {
       "code": "1048576",
@@ -2110,7 +2117,8 @@
           "forced": [22, 41]
         }
       },
-      "complexity": 2
+      "complexity": 2,
+      "flag": 23
     },
     "pfb": {
       "code": "1024",
@@ -2205,7 +2213,8 @@
           "forced": []
         }
       },
-      "complexity": 0
+      "complexity": 0,
+      "flag": 22
     },
     "tcf": {
       "code": "8796093022208",
@@ -2442,7 +2451,8 @@
           "forced": []
         }
       },
-      "complexity": 1
+      "complexity": 1,
+      "flag": 22
     },
     "cfd-ip": {
       "code": "2048",
@@ -2471,7 +2481,8 @@
           "forced": []
         }
       },
-      "complexity": 0
+      "complexity": 0,
+      "flag": 23
     },
     "bcb": {
       "code": "16777216",
@@ -2500,7 +2511,8 @@
           "forced": [3]
         }
       },
-      "complexity": 2
+      "complexity": 2,
+      "flag": 21
     },
     "fb-oop": {
       "code": "512",
@@ -2558,7 +2570,8 @@
           "forced": [23]
         }
       },
-      "complexity": 2
+      "complexity": 2,
+      "flag": 21
     },
     "gk-oop": {
       "code": "1",
@@ -2631,7 +2644,8 @@
           "forced": []
         }
       },
-      "complexity": 0
+      "complexity": 0,
+      "flag": 22
     },
     "scb": {
       "code": "16",
@@ -2762,7 +2776,8 @@
           "forced": []
         }
       },
-      "complexity": 0
+      "complexity": 0,
+      "flag": 22
     },
     "dlp": {
       "code": "32768",
@@ -2791,7 +2806,8 @@
           "forced": [23]
         }
       },
-      "complexity": 1
+      "complexity": 1,
+      "flag": 22
     },
     "iow": {
       "code": "1099511627776",
@@ -2885,7 +2901,8 @@
           "forced": [3, 42]
         }
       },
-      "complexity": 2
+      "complexity": 2,
+      "flag": 23
     },
     "tam": {
       "code": "2147483648",
@@ -2943,7 +2960,8 @@
           "forced": [14]
         }
       },
-      "complexity": 0
+      "complexity": 0,
+      "flag": 21
     },
     "wmf": {
       "code": "34359738368",
@@ -3070,7 +3088,8 @@
           "forced": []
         }
       },
-      "complexity": 1
+      "complexity": 1,
+      "flag": 21
     },
     "acb": {
       "code": "16384",
@@ -3121,7 +3140,8 @@
           "forced": []
         }
       },
-      "complexity": 0
+      "complexity": 0,
+      "flag": 22
     },
     "lhk": {
       "code": "4",
@@ -3276,7 +3296,8 @@
           "forced": [27]
         }
       },
-      "complexity": 1
+      "complexity": 1,
+      "flag": 23
     },
     "sk": {
       "code": "2",
@@ -3320,7 +3341,8 @@
           "forced": [41]
         }
       },
-      "complexity": 1
+      "complexity": 1,
+      "flag": 23
     },
     "tw": {
       "code": "549755813888",
@@ -3364,7 +3386,8 @@
           "forced": [1, 22, 41]
         }
       },
-      "complexity": 1
+      "complexity": 1,
+      "flag": 23
     }
   },
   "complexity": {

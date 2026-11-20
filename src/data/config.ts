@@ -37,6 +37,7 @@ import {
   DEFAULT_PLAYER_INSTRUCTIONS,
   DEFAULT_TEAM_INSTRUCTIONS,
   fillAbout,
+  inFmOrder,
   isInstructionList,
   type FmCodes,
   type FmInstruction,
@@ -311,7 +312,10 @@ export function mergeConfig(stored: Stored): AppConfig {
       ? fillAbout(stored.teamInstructions, DEFAULT_CONFIG.teamInstructions)
       : DEFAULT_CONFIG.teamInstructions,
     playerInstructions: isInstructionList(stored.playerInstructions)
-      ? fillAbout(crossFromFixed(stored.playerInstructions), DEFAULT_CONFIG.playerInstructions)
+      ? inFmOrder(
+          fillAbout(crossFromFixed(stored.playerInstructions), DEFAULT_CONFIG.playerInstructions),
+          DEFAULT_CONFIG.playerInstructions,
+        )
       : DEFAULT_CONFIG.playerInstructions,
     fmCodes: { ...DEFAULT_CONFIG.fmCodes, ...stored.fmCodes },
     bestXiBaseline: stored.bestXiBaseline ?? DEFAULT_CONFIG.bestXiBaseline,

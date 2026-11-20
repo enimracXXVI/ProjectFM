@@ -1149,7 +1149,7 @@ export const PLAYER_RULES: PlayerRule[] = [
     instruction: 'Forward runs',
     name: 'Forward runs from the legs and the movement',
     about:
-      'Off the Ball 15+ and Stamina 13+: Make more runs. Defenders and midfielders with Stamina 9 or less: Hold position.',
+      'Off the Ball 15+ and Stamina 13+: Make more runs. Defenders and midfielders with Stamina 9 or less: Make fewer runs.',
     check: (p, pos) => {
       if (pos === 'GK') return null
       if (a(p, 'Off The Ball') >= 15 && a(p, 'Stamina') >= 13)
@@ -1158,7 +1158,7 @@ export const PLAYER_RULES: PlayerRule[] = [
           why: `Off the Ball ${a(p, 'Off The Ball')}, Stamina ${a(p, 'Stamina')}.`,
         }
       if (!FRONT.includes(pos) && a(p, 'Stamina') <= 9)
-        return { to: 'Hold position', why: `Stamina ${a(p, 'Stamina')}.` }
+        return { to: 'Make fewer runs', why: `Stamina ${a(p, 'Stamina')}.` }
       return null
     },
   },

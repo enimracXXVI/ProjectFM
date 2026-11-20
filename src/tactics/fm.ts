@@ -68,6 +68,12 @@ export interface RoleFm {
   instructions?: Record<string, { allowed: number[]; forced: number[] }>
   /** Points the role adds to a player's tactical complexity (FM's match data). */
   complexity?: number
+  /**
+   * The flag bit (21, 22 or 23) FM adds to the in-possession role number in its tactic files.
+   * Always the same for a role in every file FM saved; it looks like the old duty (21 defend,
+   * 22 support, 23 attack) (?).
+   */
+  flag?: number
 }
 
 /** Game-wide codes: mentalities (in code order 1, 2, …), positions and role code mask. */
@@ -170,6 +176,21 @@ export const DEFAULT_PLAYER_INSTRUCTIONS: FmInstruction[] = withTexts(
 )
 
 /**
+ * A saved instruction list in FM's order (as in the defaults); ones the defaults do not have
+ * keep their place at the end.
+ */
+export function inFmOrder(list: FmInstruction[], defaults: FmInstruction[]): FmInstruction[] {
+  const at = (d: FmInstruction) => {
+    const i = defaults.findIndex((x) => x.name === d.name && x.phase === d.phase)
+    return i < 0 ? defaults.length : i
+  }
+  return list
+    .map((d, i) => ({ d, i }))
+    .sort((a, b) => at(a.d) - at(b.d) || a.i - b.i)
+    .map((x) => x.d)
+}
+
+/**
  * A saved instruction list with FM's explanations filled in where an option has none
  * (lists saved before the texts existed): matched by instruction name and option code.
  */
@@ -193,10 +214,15 @@ export function fillAbout(list: FmInstruction[], defaults: FmInstruction[]): FmI
     return {
       ...d,
       options: d.options.map((o) => {
-        // FM27 names some unset options Balanced (seen in game), not Standard / Mixed crosses
+        // FM27 names some unset options Balanced (seen in game), not Standard / Mixed crosses;
+        // and calls Forward runs' 23 Make fewer runs, not Hold position (seen in game)
         const fm = def?.options.find((x) => x.code === o.code)
         const label =
-          o.code === 0 && fm && /^(Standard|Mixed crosses)$/.test(o.label) ? fm.label : o.label
+          fm &&
+          ((o.code === 0 && /^(Standard|Mixed crosses)$/.test(o.label)) ||
+            (d.name === 'Forward runs' && o.label === 'Hold position'))
+            ? fm.label
+            : o.label
         return {
           ...o,
           label,
@@ -316,6 +342,43 @@ export function rolesAt(
       return r.fm.where.some((w) => w.pos === position.id && meets(w.when, shape))
     return r.positions.includes(text(position.position))
   })
+}
+
+/** FM's order for listing positions: goalkeeper up to the strikers, right to left in each line. */
+export const FM_ORDER = [
+  'GK',
+  'DR',
+  'DCR',
+  'DC',
+  'DCL',
+  'DL',
+  'WBR',
+  'DMR',
+  'DMC',
+  'DML',
+  'WBL',
+  'MR',
+  'MCR',
+  'MC',
+  'MCL',
+  'ML',
+  'AMR',
+  'AMCR',
+  'AMC',
+  'AMCL',
+  'AML',
+  'STR',
+  'ST',
+  'STL',
+]
+
+/** Slot numbers in FM's order of their FM positions (unknown positions last). */
+export function inFmPositionOrder(at: (FmPosition | null)[]): number[] {
+  const rank = (i: number) => {
+    const k = FM_ORDER.indexOf(at[i]?.id ?? '')
+    return k < 0 ? FM_ORDER.length : k
+  }
+  return at.map((_, i) => i).sort((a, b) => rank(a) - rank(b) || a - b)
 }
 
 /**
@@ -456,16 +519,32 @@ export function choose(def: FmInstruction, codes: number[] | undefined, code: nu
 export const defaultTeamCodes = (defs: FmInstruction[]) =>
   defs.flatMap((d) => (d.default ? [d.default] : []))
 
+/**
+ * The option a role is locked to on one instruction: one it is forced to do, or the only one
+ * it may pick of an instruction with two or more (FM then shows it fixed: centre-backs on Make
+ * fewer runs, Deep-Lying Playmakers on Take more risks, seen in game).
+ */
+export function lockedOption(
+  def: FmInstruction,
+  rule: { allowed: number[]; forced: number[] },
+): { option: FmOption; only: boolean } | null {
+  const forced = def.options.find((o) => o.code && rule.forced.includes(o.code))
+  if (forced) return { option: forced, only: false }
+  const choices = def.options.filter((o) => o.code)
+  const allowed = choices.filter((o) => rule.allowed.includes(o.code))
+  return choices.length >= 2 && allowed.length === 1 ? { option: allowed[0], only: true } : null
+}
+
 /** Player instruction options FM offers for a role at an FM position: forced ones only. */
 export function playerChoices(
   def: FmInstruction,
   role: RoleDef | null,
   position: FmPosition | null,
-): { options: FmOption[]; forced: boolean } {
+): { options: FmOption[]; forced: boolean; only?: boolean } {
   const rule = position ? role?.fm?.instructions?.[position.id] : undefined
   if (!rule) return { options: [], forced: false }
-  const forced = def.options.find((o) => o.code && rule.forced.includes(o.code))
-  if (forced) return { options: [forced], forced: true }
+  const locked = lockedOption(def, rule)
+  if (locked) return { options: [locked.option], forced: true, only: locked.only }
   return {
     options: def.options.filter((o) => o.code === 0 || rule.allowed.includes(o.code)),
     forced: false,

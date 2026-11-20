@@ -8,7 +8,15 @@ import type { PlayerRow } from '../data/db'
 import { attrNumber } from '../lib/attributes'
 import { shortName } from '../lib/names'
 import { benchCover, slotScore, type FitContext } from './analysis'
-import { chosen, fmPositions, playerChoices, posOf, roleIdOf, teamCodes } from './fm'
+import {
+  chosen,
+  fmPositions,
+  inFmPositionOrder,
+  playerChoices,
+  posOf,
+  roleIdOf,
+  teamCodes,
+} from './fm'
 import { formationLabel } from './positions'
 import type { TacticRow } from './types'
 import { roleWarnings } from './warnings'
@@ -120,7 +128,8 @@ export function buildBriefing(t: TacticRow, squad: PlayerRow[], config: Config):
     title: [t.name, t.mentality].filter(Boolean).join(' · '),
     shape: `${formationLabel(t.slots.map((s) => posOf(s, 'ip')))} in possession, ${formationLabel(t.slots.map((s) => posOf(s, 'oop')))} out of possession`,
     team: { ip: changed('ip'), oop: changed('oop') },
-    slots,
+    // FM's order: goalkeeper up to the strikers, right to left
+    slots: inFmPositionOrder(ip).map((i) => slots[i]),
     watch,
   }
 }

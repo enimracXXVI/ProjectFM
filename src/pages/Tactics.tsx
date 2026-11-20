@@ -63,6 +63,7 @@ import {
   type FmPosition,
   FM_GRID,
   moveSlot,
+  inFmPositionOrder,
   swapPlaces,
   DEFAULT_FM_CODES,
 } from '../tactics/fm'
@@ -793,8 +794,8 @@ function TacticEditor({ tactic }: { tactic: TacticRow }) {
           ) : (
             <div className="grid gap-3">
               <div className="flex flex-wrap gap-1.5" aria-label="Position">
-                {form.slots.map((s, i) => {
-                  const p = playerOf(s)
+                {inFmPositionOrder(atFm).map((i) => {
+                  const p = playerOf(form.slots[i])
                   return (
                     <button
                       key={i}
@@ -1311,7 +1312,7 @@ function PlayerInstructions({
   return (
     <section className="grid gap-2">
       <ul className="grid grid-cols-[repeat(auto-fill,minmax(10.5rem,1fr))] gap-2">
-        {all.map(({ d, options, forced }) => {
+        {all.map(({ d, options, forced, only }) => {
           const locked = !forced && options.length <= 1
           // Standard (no instruction) first, then FM's options in its order
           const shown = locked
@@ -1327,7 +1328,9 @@ function PlayerInstructions({
                 disabled={forced || locked}
                 note={
                   forced
-                    ? `${role.name} always does this`
+                    ? only
+                      ? `The only option FM gives ${role.name} here, so it is fixed (?)`
+                      : `${role.name} always does this`
                     : locked
                       ? `FM does not let ${role.name} change this here`
                       : undefined
@@ -1508,7 +1511,8 @@ function SquadFit({
             </tr>
           </thead>
           <tbody>
-            {slots.map((s, i) => {
+            {inFmPositionOrder(fmPositions(slots, 'ip', config.fmCodes)).map((i) => {
+              const s = slots[i]
               const f = fits[i]
               const tip =
                 tips.find((t) => t.slot === i && t.kind === 'role') ??

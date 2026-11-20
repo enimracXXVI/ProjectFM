@@ -31,7 +31,7 @@ import {
   teamSuggestions,
   type BuiltTactic,
 } from '../tactics/builder'
-import { defaultTeamCodes, fmPositions, rolesAt, shapeOf } from '../tactics/fm'
+import { defaultTeamCodes, fmPositions, inFmPositionOrder, rolesAt, shapeOf } from '../tactics/fm'
 import {
   applyCodes,
   ideaFit,
@@ -455,7 +455,8 @@ export function TacticAssistant() {
                     </span>
                   </span>
                   <span className="flex flex-wrap gap-1">
-                    {b.slots.map((s, i) => {
+                    {inFmPositionOrder(fmPositions(b.slots, 'ip', config.fmCodes)).map((i) => {
+                      const s = b.slots[i]
                       const p = byId(s.player)
                       const sc = b.picks[i].score
                       return (
@@ -538,7 +539,8 @@ export function TacticAssistant() {
               <span>Out of possession</span>
               <span className="text-right">Fit</span>
             </div>
-            {slots.map((s, i) => {
+            {inFmPositionOrder(fmPositions(slots, 'ip', config.fmCodes)).map((i) => {
+              const s = slots[i]
               const player = byId(s.player)
               const fit = player ? slotScore(player, s, ctx) : null
               return (
@@ -719,7 +721,8 @@ export function TacticAssistant() {
             <p className="text-sm text-muted">Nothing to suggest for this XI.</p>
           ) : (
             <div className="grid gap-3 md:grid-cols-2">
-              {slots.map((s, i) => {
+              {inFmPositionOrder(fmPositions(slots, 'ip', config.fmCodes)).map((i) => {
+                const s = slots[i]
                 const tips = playerTips.filter((t) => t.slot === i)
                 if (!tips.length) return null
                 return (

@@ -1464,7 +1464,7 @@
         "pros": ["Provides a balance between forward runs and holding position."],
         "cons": ["Could benefit more from a tailored strategy."]
       },
-      "Hold position": {
+      "Make fewer runs": {
         "short": ["Stick to position more."],
         "text": "Discourages the player from making as many forward runs into space, instead sticking more to their expected position.",
         "pros": [

@@ -18,6 +18,7 @@ import {
   shapeOf,
   teamCodes,
   type FmPosition,
+  lockedOption,
 } from './fm'
 import { POSITION_TEXT, formationLabel } from './positions'
 import type { TacticRow, TacticSlot } from './types'
@@ -48,6 +49,10 @@ interface PhaseSlot {
   code: bigint
   bits: bigint
   mark: number
+  /** Codes of every role FM offers at the position in this phase. */
+  offered: bigint[]
+  /** FM's flag bit on the role number (in possession), 0 when not known. */
+  flag: bigint
 }
 
 /** What stops a tactic from being exported, in plain words (empty when it can be). */
@@ -109,7 +114,14 @@ function build(t: TacticRow, config: Config) {
       if (!role.fm?.code)
         return void problems.push(`${role.name} has no save code (Settings > Roles).`)
       const instr = playerBits(s, ph, role, position, config, problems, name)
-      out.push({ position, role, code: BigInt(role.fm.code), ...instr })
+      // Every role FM has at the position, whatever the shape (FM's own files list them all)
+      const offered = config.roles.flatMap((r) =>
+        r.phase === ph && r.fm?.code && r.fm.where?.some((w) => w.pos === position.id)
+          ? [BigInt(r.fm.code)]
+          : [],
+      )
+      const flag = ph === 'ip' && role.fm.flag ? 1n << BigInt(role.fm.flag) : 0n
+      out.push({ position, role, code: BigInt(role.fm.code), ...instr, offered, flag })
     })
     return out.length === 11 ? out : null
   }
@@ -137,9 +149,8 @@ function build(t: TacticRow, config: Config) {
     w.bytes(new TextEncoder().encode([...code].reverse().join('')))
     for (let i = 0; i < 11; i++) {
       // A plain goalkeeper needs no role entry of its own
-      const override = !(i === 0 && ip[i].code === LEGACY_IP[0])
-      slot(w, ip[i], LEGACY_IP[i], override)
-      slot(w, oop[PHASE_ORDER.indexOf(i)], LEGACY_OOP[i], true)
+      slot(w, ip[i], LEGACY_IP[i], true)
+      slot(w, oop[PHASE_ORDER.indexOf(i)], LEGACY_OOP[i], false)
       w.u8(PHASE_ORDER[i])
     }
     w.bytes(PREFERENCES)
@@ -163,8 +174,13 @@ function playerBits(
   let bits = 0n
   let mark = 0
   for (const c of picked) {
-    // Forced options are the role's own: FM sets them, the file does not
+    // Forced options are the role's own: FM sets them, the file does not; nor an instruction
+    // the role is locked on (its only option)
     if (rule?.forced.includes(c) || c === MARK_PLAYER) continue
+    const owner = config.playerInstructions.find(
+      (d) => d.phase === ph && d.options.some((o) => o.code === c),
+    )
+    if (owner && rule && lockedOption(owner, rule)) continue
     if (!rule?.allowed.includes(c)) {
       const def = config.playerInstructions.find((d) => d.options.some((o) => o.code === c))
       const label = def?.options.find((o) => o.code === c)?.label ?? String(c)
@@ -184,19 +200,28 @@ function playerBits(
   return { bits, mark }
 }
 
-function slot(w: Writer, s: PhaseSlot, legacy: bigint, override: boolean) {
+/**
+ * One slot block as FM writes it: an entry per role key with its player instructions, then
+ * the active role number. FM keeps a first (legacy) key in every block; in possession, a
+ * player with instructions has them under every role FM offers at the position (so they stay
+ * when the role changes), and the active role number carries FM's flag bit.
+ */
+function slot(w: Writer, s: PhaseSlot, legacy: bigint, ip: boolean) {
+  const spread = ip && (s.bits !== 0n || s.mark !== 0)
+  const keys = [...new Set([legacy, s.code, ...(spread ? s.offered : [])])].sort((a, b) =>
+    a < b ? -1 : a > b ? 1 : 0,
+  )
+  const holds = new Set([s.code, ...(spread ? s.offered : [])])
   w.bytes(SLOT)
   w.u32(s.position.mask)
   w.bytes(Uint8Array.of(0, 1, 1))
-  w.u32(override ? 2 : 1)
-  w.u64(legacy)
-  instructions(w, override && legacy !== s.code ? null : s)
-  if (override) {
-    w.u64(s.code)
-    instructions(w, s)
+  w.u32(keys.length)
+  for (const k of keys) {
+    w.u64(k)
+    instructions(w, holds.has(k) ? s : null)
   }
   w.u32(0)
-  w.u64(s.code)
+  w.u64(s.code | s.flag)
 }
 
 function instructions(w: Writer, s: PhaseSlot | null) {

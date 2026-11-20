@@ -1573,10 +1573,12 @@ export function withFmCodes(roles: RoleDef[]): RoleDef[] {
     const def = DEFAULT_ROLE_FM[r.id]
     if (!def) return r
     if (!r.fm) return { ...r, fm: def }
-    // Saved before roles had complexity points: take FM's
-    return r.fm.complexity === undefined && def.complexity !== undefined
-      ? { ...r, fm: { ...r.fm, complexity: def.complexity } }
-      : r
+    // Saved before roles had complexity points or FM's flag: take FM's
+    let fm = r.fm
+    if (fm.complexity === undefined && def.complexity !== undefined)
+      fm = { ...fm, complexity: def.complexity }
+    if (fm.flag === undefined && def.flag !== undefined) fm = { ...fm, flag: def.flag }
+    return fm === r.fm ? r : { ...r, fm }
   })
 }
 

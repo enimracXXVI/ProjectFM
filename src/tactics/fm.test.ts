@@ -16,7 +16,7 @@ import {
 import { exportProblems, fileTitle, tacticFile } from './fmf'
 import { briefingText, buildBriefing } from './briefing'
 import { roleWarnings } from './warnings'
-import { readFmf as readTacticFile } from './fmfRead'
+import { readFmf as readTacticFile, readFmfMember } from './fmfRead'
 import { POSITION_TEXT } from './positions'
 import type { SaveTactics, TacticRow, TacticSlot } from './types'
 
@@ -192,7 +192,11 @@ describe('FM tactic file', () => {
     expect(back.team).toEqual([...read.team!].sort((a, b) => a - b))
     const codeOf = (id: string | null | undefined) =>
       config.roles.find((r) => r.id === id)!.fm!.code
-    expect(back.ip.map((s) => s.role)).toEqual(row.slots.map((s) => codeOf(s.role)))
+    // In possession with FM's flag bit, exactly as FM's own save stores the roles
+    expect(back.ip.map((s) => s.role)).toEqual(saved.slots.map((s) => s.role))
+    expect(back.ip.map((s) => BigInt(s.role) & ~(7n << 21n))).toEqual(
+      row.slots.map((s) => BigInt(codeOf(s.role)!)),
+    )
     expect(back.oop.map((s) => s.role)).toEqual(row.slots.map((s) => codeOf(s.roleOop)))
     const at = fmPositions(row.slots, 'ip', config.fmCodes)
     expect(back.ip.map((s) => s.mask)).toEqual(at.map((p) => p!.mask))
@@ -266,7 +270,12 @@ function readFmf(file: Uint8Array) {
   // The tactic member is the first frame after the 26-byte header
   const tac = unframe(file.subarray(26)).out
   unframe(file.subarray(dir + 9))
-  const d = view(tac)
+  return parseSlots(tac)
+}
+
+/** A tactic member's name, mentality, team instructions and slot blocks. */
+function parseSlots(tac: Uint8Array) {
+  const d = new DataView(tac.buffer, tac.byteOffset, tac.byteLength)
   let at = 11 + 1 + 4 // header "03 01 cat. 22 00 22 44 00", 0x1b, a word
   const text = () => {
     const n = d.getUint32(at, true)
@@ -288,13 +297,22 @@ function readFmf(file: Uint8Array) {
     const mask = d.getUint32(at, true)
     at += 7
     const count = d.getUint32(at, true)
-    at += 4 + count * 24 + 4
+    at += 4
+    const entries: [string, string][] = []
+    for (let k = 0; k < count; k++) {
+      entries.push([
+        d.getBigUint64(at + 24 * k, true).toString(),
+        d.getBigUint64(at + 24 * k + 11, true).toString(),
+      ])
+    }
+    at += count * 24 + 4
     const role = d.getBigUint64(at, true).toString()
     at += 8
-    return { mask, role }
+    return { mask, role, entries }
   }
-  const ip: { mask: number; role: string }[] = []
-  const stored: { mask: number; role: string }[] = []
+  type Block = ReturnType<typeof block>
+  const ip: Block[] = []
+  const stored: Block[] = []
   const index: number[] = []
   for (let i = 0; i < 11; i++) {
     ip.push(block())
@@ -374,6 +392,45 @@ describe('FM’s own tactic files', () => {
     const team = fromSave(t, config.roles, config.fmCodes).team!
     const def = config.teamInstructions.find((d) => d.name === 'Time wasting')!
     expect(chosen(def, team)?.label).toBe(label)
+  })
+})
+
+describe('player instructions in an exported tactic', () => {
+  it('writes every slot as FM itself does', async () => {
+    // A tactic FM saved (the user's, with player instructions set in game): read it, export it,
+    // and the in-possession blocks must be FM's own: the role with FM's flag bit, and the
+    // instructions under every role FM offers at the position
+    const node = (name: string) => import(/* @vite-ignore */ `node:${name}`)
+    const { readFileSync } = (await node('fs')) as { readFileSync: (p: string) => Uint8Array }
+    const { zstdDecompressSync } = (await node('zlib')) as {
+      zstdDecompressSync: (b: Uint8Array) => Uint8Array
+    }
+    const unzstd = async (f: Uint8Array) => new Uint8Array(zstdDecompressSync(f))
+    const bytes = new Uint8Array(readFileSync('src/tactics/fixtures/fm-saved-instructions.fmf'))
+    const t = await readTacticFile(bytes, unzstd)
+    const tac = await readFmfMember(bytes, '.tac', unzstd)
+    const fm = parseSlots(tac)
+    const app = fromSave(t, config.roles, config.fmCodes)
+    const mine = readFmf(
+      tacticFile(
+        {
+          ...row,
+          name: t.name,
+          mentality: app.mentality,
+          slots: app.slots,
+          instructions: { team: app.team },
+        },
+        config,
+      ),
+    )
+    expect(mine.ip.map((b) => b.role)).toEqual(fm.ip.map((b) => b.role))
+    // FM also spreads the entries of a player whose instructions were touched in game and
+    // cleared again; that is not in the tactic, so only players with instructions are compared
+    const set = (b: { entries: [string, string][] }) => b.entries.some(([, bits]) => bits !== '0')
+    const withPi = fm.ip.flatMap((b, i) => (set(b) ? [i] : []))
+    expect(withPi.length).toBe(7)
+    expect(withPi.map((i) => mine.ip[i].entries)).toEqual(withPi.map((i) => fm.ip[i].entries))
+    expect(mine.oop).toEqual(fm.oop)
   })
 })
 
