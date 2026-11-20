@@ -10,10 +10,16 @@ const LONG_PRESS_MS = 450
 export function Tooltip({
   title,
   text,
+  content,
+  className,
   children,
 }: {
+  /** Classes for the wrapper (e.g. flex-1 to share a row). */
+  className?: string
   title?: string
   text?: string
+  /** Richer content than `text` (lists, separators); shown in a wider bubble. */
+  content?: ReactNode
   children: ReactNode
 }) {
   const id = useId()
@@ -59,7 +65,7 @@ export function Tooltip({
     <span
       ref={ref}
       aria-describedby={pos ? id : undefined}
-      className="inline-flex max-w-full min-w-0"
+      className={'inline-flex max-w-full min-w-0 ' + (className ?? '')}
       onPointerEnter={(e) => e.pointerType === 'mouse' && show()}
       onPointerLeave={(e) => e.pointerType === 'mouse' && hide()}
       onFocus={show}
@@ -92,14 +98,20 @@ export function Tooltip({
             ref={bubble}
             role="tooltip"
             style={{ left: pos.x, top: pos.y, visibility: pos.placed ? 'visible' : 'hidden' }}
-            className="pointer-events-none fixed z-50 w-max max-w-64 -translate-x-1/2 rounded-lg border border-border bg-surface-2 px-3 py-2 text-left text-xs font-normal tracking-normal text-text normal-case shadow-lg"
+            className={
+              'pointer-events-none fixed z-50 w-max -translate-x-1/2 rounded-lg border border-border bg-surface-2 px-3 py-2 text-left text-xs font-normal tracking-normal text-text normal-case shadow-lg ' +
+              (content ? 'max-w-72' : 'max-w-64')
+            }
           >
             {title && (
-              <span className={text ? 'mb-0.5 block font-semibold' : 'block font-semibold'}>
+              <span
+                className={text || content ? 'mb-0.5 block font-semibold' : 'block font-semibold'}
+              >
                 {title}
               </span>
             )}
             {text}
+            {content}
           </span>,
           document.body,
         )}

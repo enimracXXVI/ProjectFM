@@ -512,8 +512,12 @@ function CompareRows({ rows, series }: { rows: Row[]; series: Series[] }) {
                   key={i}
                   className={clsx(
                     'border-t border-border',
-                    r.type === 'row' && r.mark === 'key' && 'bg-[#123f27]/60',
-                    r.type === 'row' && r.mark === 'preferred' && 'bg-amber-400/5',
+                    r.type === 'row' &&
+                      r.mark === 'key' &&
+                      'bg-[color-mix(in_srgb,var(--role-key)_10%,transparent)]',
+                    r.type === 'row' &&
+                      r.mark === 'preferred' &&
+                      'bg-[color-mix(in_srgb,var(--role-pref)_7%,transparent)]',
                   )}
                 >
                   <th

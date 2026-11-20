@@ -1,4 +1,5 @@
 import { clsx } from 'clsx'
+import { applyRoleColors } from '../lib/roleMarks'
 import { ArrowUp, PanelLeftClose, PanelLeftOpen } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
 import { NavLink, Outlet, useLocation } from 'react-router-dom'
@@ -29,7 +30,9 @@ export function Layout() {
   // "Back to top" once the page has been scrolled a screen down
   const [scrolled, setScrolled] = useState(false)
   const checks = useChecks()
-  const { mobileBar } = useConfig()
+  const { mobileBar, roleColors } = useConfig()
+  // Role highlight colours (Settings > Colours)
+  useEffect(() => applyRoleColors(roleColors), [roleColors])
   const barItems = mobileBar
     .map((to) => sections.find((n) => n.to === to))
     .filter((n): n is (typeof sections)[number] => !!n)

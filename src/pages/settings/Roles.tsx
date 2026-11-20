@@ -1,5 +1,5 @@
 import { clsx } from 'clsx'
-import { KEY_CHIP, PREFERRED_CHIP } from '../../lib/roleMarks'
+import { KEY_CHIP, KEY_TEXT, PREFERRED_CHIP, PREFERRED_TEXT } from '../../lib/roleMarks'
 import { Plus, Trash2 } from 'lucide-react'
 import { useMemo, useState } from 'react'
 import { useConfirm } from '../../components/confirm'
@@ -132,8 +132,8 @@ export function RolesSettings() {
         />
       </div>
       <p className="mb-3 text-sm text-muted">
-        Tap an attribute to cycle it: <span className="text-[#5ee39b]">key</span> →{' '}
-        <span className="text-amber-200">preferred</span> → not used.
+        Tap an attribute to cycle it: <span className={KEY_TEXT}>key</span> →{' '}
+        <span className={PREFERRED_TEXT}>preferred</span> → not used.
       </p>
 
       <ul className="grid gap-2">

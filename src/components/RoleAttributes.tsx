@@ -4,7 +4,7 @@ import type { RoleDef } from '../data/roles'
 import { attributeLabel } from '../data/config'
 import { attrColor, attrNumber } from '../lib/attributes'
 import { useConfig } from '../lib/config'
-import { KEY_CHIP, PREFERRED_CHIP } from '../lib/roleMarks'
+import { KEY_CHIP, KEY_TEXT, PREFERRED_CHIP, PREFERRED_TEXT } from '../lib/roleMarks'
 
 /**
  * A player's attributes for one role: FM's key attributes, then its preferred ones, each with
@@ -27,9 +27,7 @@ export function RoleAttributes({
     if (!list.length) return null
     return (
       <div className="grid gap-1">
-        <span
-          className={clsx('text-xs font-semibold', accent ? 'text-[#5ee39b]' : 'text-amber-200')}
-        >
+        <span className={clsx('text-xs font-semibold', accent ? KEY_TEXT : PREFERRED_TEXT)}>
           {title}
         </span>
         <ul className="flex flex-wrap gap-1">

@@ -1,17 +1,33 @@
 /**
- * How a role's attributes are marked everywhere (profile, compare, tactics, settings).
- * Key: FM27's own look (a dark green row with a bright green bar, as on its staff and role
- * screens). Preferred: a different colour so the two never look alike; FM's own colour for it
- * is not confirmed yet (?).
+ * How a role's attributes are marked everywhere (profile, compare, tactics, settings): key
+ * attributes green and preferred ones blue, as FM27 does, or the colours set in Settings >
+ * Colours (applied as the CSS variables --role-key and --role-pref).
  */
-export const KEY_ROW = 'bg-[#123f27] font-semibold shadow-[inset_3px_0_0_#35d07f]'
-export const PREFERRED_ROW = 'bg-amber-400/10 shadow-[inset_3px_0_0_rgb(251_191_36/0.7)]'
+export const DEFAULT_ROLE_COLORS = { key: '#35d07f', preferred: '#4aa3ff' }
+
+export const KEY_ROW =
+  'bg-[color-mix(in_srgb,var(--role-key)_22%,transparent)] font-semibold shadow-[inset_3px_0_0_var(--role-key)]'
+export const PREFERRED_ROW =
+  'bg-[color-mix(in_srgb,var(--role-pref)_16%,transparent)] shadow-[inset_3px_0_0_var(--role-pref)]'
 /** For cells that must keep their own background (sticky table columns). */
-export const KEY_LABEL = 'font-semibold text-[#5ee39b] shadow-[inset_3px_0_0_#35d07f]'
-export const PREFERRED_LABEL = 'text-amber-200 shadow-[inset_3px_0_0_rgb(251_191_36/0.7)]'
+export const KEY_LABEL =
+  'font-semibold text-[var(--role-key)] shadow-[inset_3px_0_0_var(--role-key)]'
+export const PREFERRED_LABEL = 'text-[var(--role-pref)] shadow-[inset_3px_0_0_var(--role-pref)]'
 /** Legend swatches. */
-export const KEY_SWATCH = 'bg-[#35d07f]'
-export const PREFERRED_SWATCH = 'bg-amber-400/70'
+export const KEY_SWATCH = 'bg-[var(--role-key)]'
+export const PREFERRED_SWATCH = 'bg-[var(--role-pref)]'
 /** Chips (Settings > Roles, tactic slot panel). */
-export const KEY_CHIP = 'border-[#35d07f] bg-[#123f27] text-[#5ee39b]'
-export const PREFERRED_CHIP = 'border-amber-400/70 bg-amber-400/10 text-amber-200'
+export const KEY_CHIP =
+  'border-[var(--role-key)] bg-[color-mix(in_srgb,var(--role-key)_18%,transparent)] text-[var(--role-key)]'
+export const PREFERRED_CHIP =
+  'border-[var(--role-pref)] bg-[color-mix(in_srgb,var(--role-pref)_14%,transparent)] text-[var(--role-pref)]'
+/** Text only. */
+export const KEY_TEXT = 'text-[var(--role-key)]'
+export const PREFERRED_TEXT = 'text-[var(--role-pref)]'
+
+/** Applies the role colours to the page. */
+export function applyRoleColors(c: { key: string; preferred: string }) {
+  const root = document.documentElement.style
+  root.setProperty('--role-key', c.key || DEFAULT_ROLE_COLORS.key)
+  root.setProperty('--role-pref', c.preferred || DEFAULT_ROLE_COLORS.preferred)
+}

@@ -82,8 +82,9 @@ export const SETTINGS_GROUPS: SettingsGroup[] = [
       {
         to: '/settings/colours',
         label: 'Colours',
-        hint: 'Every colour of the app, with HEX and RGB codes',
-        about: 'A reference of the colours the app uses. Nothing to change here.',
+        hint: 'Role highlight colours; every colour of the app, with HEX and RGB codes',
+        about:
+          'The colours marking a role’s key and preferred attributes (FM27’s green and blue by default, changeable), and a reference of every colour the app uses.',
       },
     ],
   },

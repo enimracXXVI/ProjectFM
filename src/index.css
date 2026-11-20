@@ -11,6 +11,12 @@
   --color-accent-strong: #16a34a;
 }
 
+/* Role attribute highlight (key, preferred): FM27's green and blue, or Settings > Colours */
+:root {
+  --role-key: #35d07f;
+  --role-pref: #4aa3ff;
+}
+
 @layer base {
   /* Number boxes without the up/down arrows (they look out of place, above all in Firefox) */
   input[type='number'] {

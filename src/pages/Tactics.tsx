@@ -12,6 +12,7 @@ import {
   Undo2,
   Upload,
   Wand2,
+  X,
 } from 'lucide-react'
 import { useState, type ReactNode } from 'react'
 import { Link } from 'react-router-dom'
@@ -30,6 +31,7 @@ import { attributeLabel } from '../data/config'
 import { FmAboutLine } from '../components/FmAboutBox'
 import { useConfig } from '../lib/config'
 import { RoleAttributes } from '../components/RoleAttributes'
+import { InstructionCard } from '../components/InstructionCard'
 import { useFoot } from '../lib/useFoot'
 import { roleScore } from '../lib/roleFit'
 import {
@@ -455,7 +457,9 @@ function TacticEditor({ tactic }: { tactic: TacticRow }) {
     squad,
     fitCtx,
   ).team
-  const [open, setOpen] = useState({ team: false, brief: false, fit: false })
+  const [open, setOpen] = useState({ brief: false, fit: false })
+  const [panel, setPanel] = useUrlState<'team' | 'player'>('panel', 'team', TEXT as never)
+  const [piSlot, setPiSlot] = useState(0)
 
   return (
     <div className="grid gap-4 lg:grid-cols-[26rem_minmax(0,1fr)]">
@@ -556,7 +560,10 @@ function TacticEditor({ tactic }: { tactic: TacticRow }) {
                   if (dragFrom !== null) swap(dragFrom, i)
                   setDragFrom(null)
                 }}
-                onClick={() => setActive(active === i ? null : i)}
+                onClick={() => {
+                  setActive(active === i ? null : i)
+                  setPiSlot(i)
+                }}
                 style={{ left: `${x * 100}%`, top: `${(1 - y) * 100}%` }}
                 className={clsx(
                   'absolute z-[1] w-[19%] -translate-x-1/2 -translate-y-1/2 rounded-lg border bg-surface/95 px-1 py-1 text-center leading-tight shadow',
@@ -581,6 +588,19 @@ function TacticEditor({ tactic }: { tactic: TacticRow }) {
               </button>
             )
           })}
+          {active !== null && form.slots[active] && (
+            <PositionPopup
+              key={`${active}-${phase}`}
+              slot={form.slots[active]}
+              phase={phase}
+              roles={rolesFor(active)}
+              fmPosition={atFm[active]}
+              squad={squad}
+              used={used}
+              onChange={(patch) => setSlot(active, patch)}
+              onClose={() => setActive(null)}
+            />
+          )}
           <PitchScore className="bottom-1.5 left-1.5" label="Squad fit" value={fitNow} />
           <PitchScore className="right-1.5 bottom-1.5" label="Best XI" value={fitBest} />
         </div>
@@ -724,32 +744,76 @@ function TacticEditor({ tactic }: { tactic: TacticRow }) {
       </Card>
 
       <div className="grid min-w-0 content-start gap-4">
-        {active !== null && form.slots[active] && (
-          <SlotPanel
-            key={active}
-            slot={form.slots[active]}
-            phase={phase}
-            roles={rolesFor(active)}
-            fmPosition={atFm[active]}
-            squad={squad}
-            used={used}
-            onChange={(patch) => setSlot(active, patch)}
-            onSwap={(other) => swap(active, other)}
-            others={form.slots.map((s, i) => ({
-              i,
-              label: `${posOf(s, phase) ?? '?'} · ${playerOf(s) ? shortName(playerOf(s)!) : '–'}`,
-            }))}
-            index={active}
-            onClose={() => setActive(null)}
-          />
-        )}
-        <Section
-          title={`Team instructions · ${phase === 'ip' ? 'in possession' : 'out of possession'}`}
-          open={open.team}
-          onToggle={() => setOpen({ ...open, team: !open.team })}
-        >
-          <InstructionsEditor phase={phase} codes={team} onChange={setTeam} />
-        </Section>
+        <Card className="grid gap-3">
+          <div className="flex flex-wrap items-center gap-2" role="tablist">
+            {(
+              [
+                ['team', 'Team instructions'],
+                ['player', 'Player instructions'],
+              ] as const
+            ).map(([k, label]) => (
+              <button
+                key={k}
+                type="button"
+                role="tab"
+                aria-selected={panel === k}
+                onClick={() => setPanel(k)}
+                className={clsx(
+                  'min-h-9 rounded-md px-3 text-xs font-bold tracking-wide uppercase',
+                  panel === k
+                    ? 'bg-text text-bg'
+                    : 'border border-border text-muted hover:text-text',
+                )}
+              >
+                {label}
+              </button>
+            ))}
+            <span className="ml-auto text-xs text-muted">
+              {phase === 'ip' ? 'In possession' : 'Out of possession'} (switch above the pitch)
+            </span>
+          </div>
+          {panel === 'team' ? (
+            <InstructionsEditor phase={phase} codes={team} onChange={setTeam} />
+          ) : (
+            <div className="grid gap-3">
+              <div className="flex flex-wrap gap-1.5" aria-label="Position">
+                {form.slots.map((s, i) => {
+                  const p = playerOf(s)
+                  return (
+                    <button
+                      key={i}
+                      type="button"
+                      aria-pressed={piSlot === i}
+                      onClick={() => setPiSlot(i)}
+                      className={clsx(
+                        'min-h-9 rounded-md border px-2 text-xs',
+                        piSlot === i
+                          ? 'border-accent bg-accent/10 text-text'
+                          : 'border-border text-muted hover:text-text',
+                      )}
+                    >
+                      <span className="font-semibold">{atFm[i]?.id ?? positions[i] ?? '?'}</span>{' '}
+                      {p ? shortName(p) : '–'}
+                    </button>
+                  )
+                })}
+              </div>
+              {form.slots[piSlot] && (
+                <PlayerInstructions
+                  key={`${piSlot}-${phase}`}
+                  slot={form.slots[piSlot]}
+                  phase={phase}
+                  role={
+                    rolesFor(piSlot).find((r) => r.id === roleIdOf(form.slots[piSlot], phase)) ??
+                    null
+                  }
+                  fmPosition={atFm[piSlot]}
+                  onChange={(patch) => setSlot(piSlot, patch)}
+                />
+              )}
+            </div>
+          )}
+        </Card>
         <BriefingSection
           tactic={{ ...form, instructions: { team } }}
           squad={squad}
@@ -991,7 +1055,11 @@ function Section({
   )
 }
 
-function SlotPanel({
+/**
+ * The pop-up of a position on the pitch: its player, then two tabs, Role (the roles FM offers
+ * there, each with the player's fit) and Instructions (the player instructions as cards).
+ */
+function PositionPopup({
   slot,
   phase,
   roles,
@@ -999,9 +1067,6 @@ function SlotPanel({
   squad,
   used,
   onChange,
-  onSwap,
-  others,
-  index,
   onClose,
 }: {
   slot: TacticSlot
@@ -1011,15 +1076,12 @@ function SlotPanel({
   squad: PlayerRow[]
   used: Set<string | null | undefined>
   onChange: (patch: Partial<TacticSlot>) => void
-  onSwap: (other: number) => void
-  others: { i: number; label: string }[]
-  index: number
   onClose: () => void
 }) {
   const config = useConfig()
-  // Opened by tapping a position; folds on phones like the other sections
-  const [open, setOpen] = useState(true)
-  const role = roles.find((r) => r.id === roleIdOf(slot, phase)) ?? null
+  const [tab, setTab] = useState<'role' | 'instructions'>('role')
+  const roleId = roleIdOf(slot, phase)
+  const role = roles.find((r) => r.id === roleId) ?? null
   // Players able to play the position first (FM rating, Settings > Tactics), then by role fit
   const pos = posOf(slot, phase)
   const ranked = squad
@@ -1036,139 +1098,167 @@ function SlotPanel({
         byLastName(a.p, b.p),
     )
   const current = squad.find((p) => p.id === slot.player) ?? null
+  const setRole = (id: string | null) =>
+    // A new role starts with FM's defaults: no player instructions set
+    onChange(phase === 'ip' ? { role: id, pi: [] } : { roleOop: id, piOop: [], markOop: null })
   return (
-    <Section
-      title={`${posOf(slot, phase) ?? 'Position'} · ${current?.name ?? 'no player'}`}
-      open={open}
-      onToggle={() => setOpen(!open)}
-      className="border-accent/50"
-      aside={
-        <button type="button" onClick={onClose} className="min-h-9 px-2 text-sm text-muted">
-          Done
-        </button>
-      }
+    <div
+      role="dialog"
+      aria-label={`${fmPosition?.id ?? pos ?? 'Position'} ${phase === 'ip' ? 'in possession' : 'out of possession'}`}
+      className="absolute inset-2 z-20 grid grid-rows-[auto_auto_auto_minmax(0,1fr)] gap-2 rounded-xl border border-border bg-surface p-3 shadow-2xl shadow-black/60"
     >
-      <div className="grid gap-3 sm:grid-cols-3">
-        <label className="grid gap-1 text-sm">
-          <span className="text-muted">
-            Position {phase === 'ip' ? 'in possession' : 'out of possession'}
+      <div className="flex items-center gap-2">
+        <h2 className="min-w-0 flex-1 truncate font-semibold">
+          {fmPosition?.id ?? (pos ? POSITION_TEXT[pos] : 'Position')}{' '}
+          <span className="font-normal text-muted">
+            {phase === 'ip' ? 'in possession' : 'out of possession'}
           </span>
-          <select
-            value={posOf(slot, phase) ?? ''}
-            onChange={(e) => {
-              const v = (e.target.value || null) as PositionCode | null
-              onChange(
-                phase === 'ip'
-                  ? { position: v, side: null, role: null, pi: [] }
-                  : { positionOop: v, sideOop: null, roleOop: null, piOop: [], markOop: null },
-              )
-            }}
-            className={field}
-          >
-            <option value="">?</option>
-            {POSITION_CODES.map((c) => (
-              <option key={c} value={c}>
-                {POSITION_TEXT[c]}
-              </option>
-            ))}
-          </select>
-        </label>
-        <label className="grid gap-1 text-sm">
-          <span className="text-muted">Role</span>
-          <select
-            value={roleIdOf(slot, phase) ?? ''}
-            onChange={(e) =>
-              // A new role starts with FM's defaults: no player instructions set
-              onChange(
-                phase === 'ip'
-                  ? { role: e.target.value || null, pi: [] }
-                  : { roleOop: e.target.value || null, piOop: [], markOop: null },
-              )
-            }
-            className={field}
-          >
-            <option value="">Pick a role…</option>
-            {roleIdOf(slot, phase) && !role && (
-              <option value={roleIdOf(slot, phase)!}>
-                {config.roles.find((r) => r.id === roleIdOf(slot, phase))?.name ?? '?'} (not offered
-                here)
-              </option>
-            )}
-            {roles.map((r) => (
-              <option key={r.id} value={r.id}>
-                {r.name}
-              </option>
-            ))}
-          </select>
-        </label>
-        <label className="grid gap-1 text-sm">
-          <span className="text-muted">Player</span>
-          <select
-            value={slot.player ?? ''}
-            onChange={(e) => onChange({ player: e.target.value || null })}
-            className={field}
-          >
-            <option value="">No player</option>
-            {(
-              [
-                [`Rated ${config.positionMin}+ at ${pos ?? 'this position'}`, true],
-                [`Rated under ${config.positionMin}`, false],
-              ] as const
-            ).map(([label, able]) => {
-              const group = ranked.filter((x) => x.able === able)
-              return group.length ? (
-                <optgroup key={label} label={label}>
-                  {group.map(({ p, score, rating }) => (
-                    <option key={p.id} value={p.id}>
-                      {p.name}
-                      {rating !== null ? ` · rated ${rating}` : ''}
-                      {score !== null ? ` · fit ${score}` : ''}
-                      {used.has(p.id) && slot.player !== p.id ? ' (in XI: swaps)' : ''}
-                    </option>
-                  ))}
-                </optgroup>
-              ) : null
-            })}
-          </select>
-        </label>
-      </div>
-      {role && current && <RoleAttributes role={role} attributes={current.attributes} />}
-      {role && (role.about || role.tags?.length) && <RoleAbout role={role} />}
-      <RatingGuide
-        role={config.roles.find((r) => r.id === slot.role) ?? null}
-        complexity={role?.fm?.complexity}
-      />
-      <PlayerInstructions
-        slot={slot}
-        phase={phase}
-        role={role}
-        fmPosition={fmPosition}
-        onChange={onChange}
-      />
-      <label className="grid gap-1 text-sm">
-        <span className="text-muted">Swap player with</span>
-        <select
-          value=""
-          onChange={(e) => e.target.value && onSwap(Number(e.target.value))}
-          className={field}
+        </h2>
+        <button
+          type="button"
+          aria-label="Close"
+          onClick={onClose}
+          className="grid size-9 place-items-center rounded-lg text-muted hover:bg-surface-2 hover:text-text"
         >
-          <option value="">Pick a position…</option>
-          {others
-            .filter((o) => o.i !== index)
-            .map((o) => (
-              <option key={o.i} value={o.i}>
-                {o.label}
-              </option>
-            ))}
-        </select>
-      </label>
-    </Section>
+          <X className="size-4" aria-hidden />
+        </button>
+      </div>
+      <select
+        aria-label="Player"
+        value={slot.player ?? ''}
+        onChange={(e) => onChange({ player: e.target.value || null })}
+        className={field}
+      >
+        <option value="">No player</option>
+        {(
+          [
+            [`Rated ${config.positionMin}+ at ${pos ?? 'this position'}`, true],
+            [`Rated under ${config.positionMin}`, false],
+          ] as const
+        ).map(([label, able]) => {
+          const group = ranked.filter((x) => x.able === able)
+          return group.length ? (
+            <optgroup key={label} label={label}>
+              {group.map(({ p, score, rating }) => (
+                <option key={p.id} value={p.id}>
+                  {p.name}
+                  {rating !== null ? ` · rated ${rating}` : ''}
+                  {score !== null ? ` · fit ${score}` : ''}
+                  {used.has(p.id) && slot.player !== p.id ? ' (in XI: swaps)' : ''}
+                </option>
+              ))}
+            </optgroup>
+          ) : null
+        })}
+      </select>
+      <div className="flex border-b border-border" role="tablist">
+        {(
+          [
+            ['role', 'Role'],
+            ['instructions', 'Instructions'],
+          ] as const
+        ).map(([t, label]) => (
+          <button
+            key={t}
+            type="button"
+            role="tab"
+            aria-selected={tab === t}
+            onClick={() => setTab(t)}
+            className={clsx(
+              'min-h-10 px-3 text-sm font-semibold',
+              tab === t ? 'border-b-2 border-accent text-text' : 'text-muted hover:text-text',
+            )}
+          >
+            {label}
+          </button>
+        ))}
+      </div>
+      <div className="min-h-0 overflow-y-auto pr-1">
+        {tab === 'role' ? (
+          <div className="grid gap-3">
+            <ul className="grid gap-1">
+              {roleId && !role && (
+                <li className="rounded-lg border border-amber-400/50 px-2 py-1.5 text-sm text-amber-200">
+                  {config.roles.find((r) => r.id === roleId)?.name ?? '?'}: not offered here
+                </li>
+              )}
+              {roles.map((r) => {
+                const fit = current ? roleScore(current.attributes, r, config.roleWeights) : null
+                const on = r.id === roleId
+                return (
+                  <li key={r.id}>
+                    <button
+                      type="button"
+                      aria-pressed={on}
+                      onClick={() => setRole(on ? null : r.id)}
+                      className={clsx(
+                        'grid w-full grid-cols-[3rem_minmax(0,1fr)_auto] items-center gap-2 rounded-lg border px-2 py-1.5 text-left text-sm',
+                        on ? 'border-accent bg-accent/10' : 'border-border hover:bg-surface-2',
+                      )}
+                    >
+                      <span className="text-xs font-semibold text-muted">{roleShort(r)}</span>
+                      <span className="truncate">{r.name}</span>
+                      {fit !== null && (
+                        <span className={clsx('font-semibold tabular-nums', scoreTextColor(fit))}>
+                          {fit}
+                        </span>
+                      )}
+                    </button>
+                  </li>
+                )
+              })}
+            </ul>
+            {role && current && <RoleAttributes role={role} attributes={current.attributes} />}
+            {role && (role.about || role.tags?.length) && <RoleAbout role={role} />}
+            <RatingGuide
+              role={config.roles.find((r) => r.id === slot.role) ?? null}
+              complexity={role?.fm?.complexity}
+            />
+            <label className="grid gap-1 text-sm">
+              <span className="text-muted">
+                Position {phase === 'ip' ? 'in possession' : 'out of possession'} (or drag the card)
+              </span>
+              <select
+                value={pos ?? ''}
+                onChange={(e) => {
+                  const v = (e.target.value || null) as PositionCode | null
+                  onChange(
+                    phase === 'ip'
+                      ? { position: v, side: null, role: null, pi: [] }
+                      : { positionOop: v, sideOop: null, roleOop: null, piOop: [], markOop: null },
+                  )
+                }}
+                className={field}
+              >
+                <option value="">?</option>
+                {POSITION_CODES.map((c) => (
+                  <option key={c} value={c}>
+                    {POSITION_TEXT[c]}
+                  </option>
+                ))}
+              </select>
+            </label>
+          </div>
+        ) : (
+          <PlayerInstructions
+            slot={slot}
+            phase={phase}
+            role={role}
+            fmPosition={fmPosition}
+            onChange={onChange}
+          />
+        )}
+      </div>
+    </div>
   )
 }
 
 type Phase = 'ip' | 'oop'
 
-/** Player instructions FM offers for the slot's role at its position, one dropdown each. */
+/**
+ * Player instructions FM offers for the slot's role at its position, one card each. Those the
+ * role always does, or cannot change, are locked as in FM.
+ */
 function PlayerInstructions({
   slot,
   phase,
@@ -1186,58 +1276,44 @@ function PlayerInstructions({
   const codes = (phase === 'ip' ? slot.pi : slot.piOop) ?? []
   const defs = config.playerInstructions.filter((d) => d.phase === phase)
   const set = (next: number[]) => onChange(phase === 'ip' ? { pi: next } : { piOop: next })
-  if (!role) return null
-  // Every instruction, as FM shows them: the ones the role cannot change are locked
+  if (!role) return <p className="text-sm text-muted">Pick a role first.</p>
   const all = defs.map((d) => ({ d, ...playerChoices(d, role, fmPosition) }))
-  const rows = all.map((r) =>
-    r.options.length > 1 || r.forced
-      ? { ...r, locked: false }
-      : { ...r, locked: true, options: r.d.options.filter((o) => o.code === 0).slice(0, 1) },
-  )
   if (!all.some((r) => r.options.length > 1 || r.forced))
     return (
       <p className="text-xs text-muted">
         No player instructions for {role.name} here (Settings &gt; Roles sets them).
       </p>
     )
-  const markTarget = rows.some(({ d }) => {
+  const markTarget = all.some(({ d }) => {
     const c = chosen(d, codes)
     return c?.target === 'position' && c.code !== 0
   })
   return (
     <section className="grid gap-2">
-      <h3 className="text-sm text-muted">
-        Player instructions {phase === 'ip' ? 'in possession' : 'out of possession'}
-      </h3>
-      <ul className="grid grid-cols-2 gap-x-2 gap-y-1">
-        {rows.map(({ d, options, forced, locked }) => {
-          const current = forced || locked ? options[0] : chosen(d, codes)
+      <ul className="grid grid-cols-[repeat(auto-fill,minmax(10.5rem,1fr))] gap-2">
+        {all.map(({ d, options, forced }) => {
+          const locked = !forced && options.length <= 1
+          // Standard (no instruction) first, then FM's options in its order
+          const shown = locked
+            ? d.options.filter((o) => o.code === 0).slice(0, 1)
+            : [...options].sort((a, b) => Number(b.code === 0) - Number(a.code === 0))
+          const value = forced ? options[0].code : (chosen(d, codes)?.code ?? 0)
           return (
-            <li key={d.name} className="grid content-start gap-0.5 text-xs">
-              <span className="truncate text-muted">{d.name}</span>
-              <select
-                value={current?.code ?? 0}
+            <li key={d.name}>
+              <InstructionCard
+                def={d}
+                value={value}
+                options={shown}
                 disabled={forced || locked}
-                title={
+                note={
                   forced
                     ? `${role.name} always does this`
                     : locked
                       ? `FM does not let ${role.name} change this here`
                       : undefined
                 }
-                onChange={(e) => set(choose(d, codes, Number(e.target.value)))}
-                className="min-h-10 min-w-0 rounded-lg border border-border bg-surface-2 px-2 text-sm disabled:opacity-70"
-              >
-                {options.map((o) => (
-                  <option key={o.code} value={o.code} disabled={o.target === 'player'}>
-                    {o.label}
-                    {o.target === 'player' ? ' (set in FM for a match)' : ''}
-                    {forced ? ' (role)' : ''}
-                    {locked ? ' (locked)' : ''}
-                  </option>
-                ))}
-              </select>
-              <FmAboutLine about={current?.about} />
+                onChange={(code) => set(choose(d, codes, code))}
+              />
             </li>
           )
         })}
@@ -1282,22 +1358,15 @@ function InstructionsEditor({
   )
   return (
     <section className="grid gap-2">
-      <ul className="grid grid-cols-2 gap-x-2 gap-y-1">
+      <ul className="grid grid-cols-[repeat(auto-fill,minmax(10.5rem,1fr))] gap-2">
         {defs.map((d) => (
-          <li key={d.name} className="grid content-start gap-0.5 text-xs">
-            <span className="truncate text-muted">{d.name}</span>
-            <select
+          <li key={d.name}>
+            <InstructionCard
+              def={d}
               value={chosen(d, codes)?.code ?? 0}
-              onChange={(e) => onChange(choose(d, codes, Number(e.target.value)))}
-              className="min-h-10 min-w-0 rounded-lg border border-border bg-surface-2 px-2 text-sm font-semibold"
-            >
-              {d.options.map((o) => (
-                <option key={o.code} value={o.code}>
-                  {o.label}
-                </option>
-              ))}
-            </select>
-            <FmAboutLine about={chosen(d, codes)?.about} />
+              defaultCode={d.default ?? 0}
+              onChange={(code) => onChange(choose(d, codes, code))}
+            />
           </li>
         ))}
       </ul>

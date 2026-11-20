@@ -1,4 +1,5 @@
 import { ArrowLeft, Check, Copy } from 'lucide-react'
+import { RoleColorsEditor } from './RoleColors'
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { SettingsSection } from '../../components/SettingsSection'
@@ -34,8 +35,9 @@ export function ColoursSettings() {
       </Link>
       <PageHeader
         title="Colours"
-        subtitle="Every colour the app uses. Tap a HEX code to copy it."
+        subtitle="Every colour the app uses. Tap a HEX code to copy it. The role highlight colours can be changed."
       />
+      <RoleColorsEditor />
       <div className="grid gap-4">
         {PALETTE.map((group) => (
           <SettingsSection key={group.title} id={`colours/${group.title}`} title={group.title}>
