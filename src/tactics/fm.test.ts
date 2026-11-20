@@ -18,7 +18,7 @@ import { briefingText, buildBriefing } from './briefing'
 import { roleWarnings } from './warnings'
 import { readFmf as readTacticFile } from './fmfRead'
 import { POSITION_TEXT } from './positions'
-import type { SaveTactics, TacticRow } from './types'
+import type { SaveTactics, TacticRow, TacticSlot } from './types'
 
 const config = DEFAULT_CONFIG
 const saved = tactic as unknown as SaveTactics['tactics'][number]
@@ -114,7 +114,7 @@ describe('FM rules', () => {
     // 4-3-3 in possession (DM + two MCs), 4-4-2-ish out of possession, sides by order
     const ip = ['GK', 'DR', 'DC', 'DC', 'DL', 'DM', 'MC', 'MC', 'AMR', 'AML', 'ST'] as const
     const oop = ['GK', 'DR', 'DC', 'DC', 'DL', 'MC', 'MC', 'MC', 'MR', 'ML', 'ST'] as const
-    const slots = ip.map((position, i) => ({
+    const slots: TacticSlot[] = ip.map((position, i) => ({
       position,
       positionOop: oop[i],
       player: `p${i}`,
