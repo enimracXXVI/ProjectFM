@@ -79,8 +79,12 @@ export function InstructionCard({
       document.removeEventListener('keydown', key)
     }
   }, [open])
+  // The list under the value always shows every option FM has; the ones that cannot be set
+  // here (locked, not offered for the role, or set in a match) are greyed out
+  const settable = (o: FmOption) =>
+    !disabled && o.target !== 'player' && list.some((x) => x.code === o.code)
   const pick = (o: FmOption) => {
-    if (disabled || o.target === 'player') return
+    if (!settable(o)) return
     onChange(o.code)
     setOpen(false)
   }
@@ -90,8 +94,8 @@ export function InstructionCard({
       ref={box}
       className={clsx(
         'relative grid content-start gap-2 rounded-lg border bg-surface p-2.5',
-        open ? 'border-accent' : 'border-border',
-        disabled && 'opacity-70',
+        // The open card sits above its neighbours so its list is never covered
+        open ? 'z-40 border-accent' : 'border-border',
       )}
     >
       <Tooltip
@@ -102,7 +106,11 @@ export function InstructionCard({
           {def.name}
         </span>
       </Tooltip>
-      <div className="flex gap-1" role="radiogroup" aria-label={def.name}>
+      <div
+        className={clsx('flex gap-1', disabled && 'opacity-60')}
+        role="radiogroup"
+        aria-label={def.name}
+      >
         {list.map((o) => (
           <Tooltip
             key={o.code}
@@ -135,12 +143,11 @@ export function InstructionCard({
       <button
         type="button"
         aria-expanded={open}
-        disabled={disabled}
         onClick={() => setOpen(!open)}
-        className="flex min-h-7 items-center justify-between gap-1 text-left text-sm disabled:cursor-not-allowed"
+        className="flex min-h-7 items-center justify-between gap-1 text-left text-sm"
       >
         <span className="truncate">{current?.label}</span>
-        {!disabled && <ChevronDown className="size-3.5 shrink-0 text-muted" aria-hidden />}
+        <ChevronDown className="size-3.5 shrink-0 text-muted" aria-hidden />
       </button>
       {note && <p className="-mt-1 text-[11px] text-muted">{note}</p>}
       {open && (
@@ -148,16 +155,18 @@ export function InstructionCard({
           role="listbox"
           className="absolute top-full right-0 left-0 z-30 mt-1 grid max-h-80 min-w-60 gap-0.5 overflow-y-auto rounded-lg border border-border bg-surface p-1 shadow-2xl shadow-black/50"
         >
-          {list.map((o) => (
+          {def.options.map((o) => (
             <li key={o.code}>
               <button
                 type="button"
                 role="option"
                 aria-selected={o.code === current?.code}
-                disabled={o.target === 'player'}
+                aria-disabled={!settable(o)}
+                disabled={!settable(o) && o.code !== current?.code}
                 onClick={() => pick(o)}
                 className={clsx(
-                  'grid w-full gap-0.5 rounded-md px-2 py-1.5 text-left hover:bg-surface-2 disabled:opacity-50',
+                  'grid w-full gap-0.5 rounded-md px-2 py-1.5 text-left',
+                  settable(o) ? 'hover:bg-surface-2' : 'cursor-not-allowed opacity-45',
                   o.code === current?.code && 'bg-accent/15',
                 )}
               >
@@ -174,8 +183,13 @@ export function InstructionCard({
                     {o.about?.short?.join(' ') ?? o.about?.text}
                   </span>
                 )}
-                {o.target === 'player' && (
+                {o.target === 'player' ? (
                   <span className="text-xs text-muted">Set in FM for a match.</span>
+                ) : (
+                  !settable(o) &&
+                  o.code !== current?.code && (
+                    <span className="text-xs text-muted">Not available here.</span>
+                  )
                 )}
               </button>
             </li>
