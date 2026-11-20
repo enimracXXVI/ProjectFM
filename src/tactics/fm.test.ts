@@ -10,6 +10,7 @@ import {
   rolesAt,
   shapeOf,
   slotSides,
+  swapPlaces,
   teamCodes,
 } from './fm'
 import { exportProblems, fileTitle, tacticFile } from './fmf'
@@ -107,6 +108,49 @@ describe('FM rules', () => {
     expect(slotSides(['GK', 'DC', 'DC', 'DM', 'ST'])).toEqual([null, 'L', 'R', 'C', 'C'])
     expect(slotSides(['DC', 'DC', 'DC'])).toEqual(['L', 'C', 'R'])
     expect(slotSides(['DC', 'DC'], ['R', 'L'])).toEqual(['R', 'L'])
+  })
+
+  it('swaps two places out of possession only, every other slot staying put', () => {
+    // 4-3-3 in possession (DM + two MCs), 4-4-2-ish out of possession, sides by order
+    const ip = ['GK', 'DR', 'DC', 'DC', 'DL', 'DM', 'MC', 'MC', 'AMR', 'AML', 'ST'] as const
+    const oop = ['GK', 'DR', 'DC', 'DC', 'DL', 'MC', 'MC', 'MC', 'MR', 'ML', 'ST'] as const
+    const slots = ip.map((position, i) => ({
+      position,
+      positionOop: oop[i],
+      player: `p${i}`,
+      role: `r${i}`,
+      roleOop: `o${i}`,
+    }))
+    const ids = (list: typeof slots, ph: 'ip' | 'oop') =>
+      fmPositions(list, ph, config.fmCodes).map((p) => p?.id)
+    const beforeIp = ids(slots, 'ip')
+    const beforeOop = ids(slots, 'oop')
+    expect(beforeOop.slice(5, 8)).toEqual(['MCL', 'MC', 'MCR'])
+    const next = swapPlaces(slots, 5, 7, 'oop', config.fmCodes)
+    // Players and in-possession places untouched
+    expect(next.map((s) => s.player)).toEqual(slots.map((s) => s.player))
+    expect(ids(next, 'ip')).toEqual(beforeIp)
+    // Out of possession: 5 and 7 swap, with their roles; everyone else keeps his spot
+    const after = ids(next, 'oop')
+    expect(after[5]).toBe('MCR')
+    expect(after[7]).toBe('MCL')
+    expect(next[5].roleOop).toBe('o7')
+    expect(next[7].roleOop).toBe('o5')
+    after.forEach((id, k) => k !== 5 && k !== 7 && expect(id).toBe(beforeOop[k]))
+  })
+
+  it('does not borrow the in-possession side for another position out of possession', () => {
+    const slots = [
+      { position: 'DM' as const, side: 'R' as const, positionOop: 'MC' as const },
+      { position: 'DM' as const, side: 'L' as const, positionOop: 'MC' as const },
+      { position: 'MC' as const, side: 'C' as const, positionOop: 'MC' as const },
+    ]
+    // Third keeps C (same position); the other two get left and right by order
+    expect(fmPositions(slots, 'oop', config.fmCodes).map((p) => p?.id)).toEqual([
+      'MCL',
+      'MCR',
+      'MC',
+    ])
   })
 
   it('offers wide centre-back roles only on the sides of a back three', () => {

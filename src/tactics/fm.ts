@@ -246,15 +246,31 @@ export function slotSides(
       continue
     }
     const order: Side[] = idx.length === 1 ? ['C'] : idx.length === 2 ? ['L', 'R'] : ['L', 'C', 'R']
-    idx.forEach((i, k) => (out[i] = order[k] ?? null))
+    // Slots with a side of their own keep it (first one wins); the others take what is left,
+    // in order, so one unknown side does not move the rest
+    const taken = new Set<Side>()
+    const keep = fromSave.map((x) =>
+      x && !taken.has(x) && idx.length > 1 ? (taken.add(x), x) : null,
+    )
+    const left = [...order, ...(['L', 'C', 'R'] as Side[])].filter(
+      (x, k, a) => a.indexOf(x) === k && !taken.has(x),
+    )
+    idx.forEach((i, k) => (out[i] = keep[k] ?? left.shift() ?? null))
   }
   return out
 }
 
 export const posOf = (s: TacticSlot, phase: RolePhase) =>
   phase === 'ip' ? s.position : (s.positionOop ?? s.position)
+/**
+ * Side of a slot in one phase. Out of possession a slot with no side of its own takes the
+ * in-possession side only when it plays the same position there (a DM's side says nothing
+ * about where the same player stands as an MC).
+ */
 export const sideOf = (s: TacticSlot, phase: RolePhase) =>
-  phase === 'ip' ? s.side : (s.sideOop ?? s.side)
+  phase === 'ip'
+    ? s.side
+    : (s.sideOop ?? (s.positionOop == null || s.positionOop === s.position ? s.side : null) ?? null)
 export const roleIdOf = (s: TacticSlot, phase: RolePhase) => (phase === 'ip' ? s.role : s.roleOop)
 
 /** The FM position of every slot in one phase (null when FM has no such position). */
@@ -369,6 +385,51 @@ export function moveSlot(
       phase === 'ip'
         ? { ...next[i], role: null, pi: [] }
         : { ...next[i], roleOop: null, piOop: [], markOop: null }
+  return next
+}
+
+/**
+ * Swaps the places of two slots in one phase only: each keeps its player and its places in the
+ * other phase, and takes the other's FM position, role and instructions in this phase. Every
+ * other slot keeps the exact FM position it had (sides are written out, so slot order no longer
+ * decides left and right).
+ */
+export function swapPlaces(
+  slots: TacticSlot[],
+  a: number,
+  b: number,
+  phase: RolePhase,
+  codes: FmCodes,
+): TacticSlot[] {
+  if (a === b || !slots[a] || !slots[b]) return slots
+  const at = fmPositions(slots, phase, codes)
+  const atOop = fmPositions(slots, 'oop', codes)
+  const placed = slots.map((s, k) => {
+    const place = at[k]
+    const position = (place?.position ?? posOf(s, phase)) as PositionCode | null
+    const side = place ? (place.side ?? null) : (sideOf(s, phase) ?? null)
+    if (phase === 'ip') {
+      // The out-of-possession shape stays where it was
+      const o = atOop[k]
+      return {
+        ...s,
+        position,
+        side,
+        positionOop: (o?.position ?? posOf(s, 'oop')) as PositionCode | null,
+        sideOop: o ? (o.side ?? null) : (sideOf(s, 'oop') ?? null),
+      }
+    }
+    return { ...s, positionOop: position, sideOop: side }
+  })
+  const next = placed.map((s) => ({ ...s }))
+  const keys: (keyof TacticSlot)[] =
+    phase === 'ip'
+      ? ['position', 'side', 'role', 'pi', 'unknownRole']
+      : ['positionOop', 'sideOop', 'roleOop', 'piOop', 'markOop', 'unknownRoleOop']
+  for (const k of keys) {
+    ;(next[a] as Record<string, unknown>)[k] = placed[b][k]
+    ;(next[b] as Record<string, unknown>)[k] = placed[a][k]
+  }
   return next
 }
 

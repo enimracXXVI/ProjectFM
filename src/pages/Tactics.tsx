@@ -43,13 +43,7 @@ import {
   suggestions,
   withPlayer,
 } from '../tactics/analysis'
-import {
-  FORMATIONS,
-  POSITION_CODES,
-  POSITION_TEXT,
-  formationLabel,
-  pitchPlaces,
-} from '../tactics/positions'
+import { FORMATIONS, POSITION_TEXT, formationLabel, pitchPlaces } from '../tactics/positions'
 import type { PositionCode, TacticRow, TacticSlot } from '../tactics/types'
 import {
   choose,
@@ -69,6 +63,7 @@ import {
   type FmPosition,
   FM_GRID,
   moveSlot,
+  swapPlaces,
   DEFAULT_FM_CODES,
 } from '../tactics/fm'
 import { exportProblems, fileTitle, tacticFile } from '../tactics/fmf'
@@ -388,9 +383,15 @@ function TacticEditor({ tactic }: { tactic: TacticRow }) {
     const slots = 'player' in patch ? withPlayer(form.slots, i, player ?? null) : form.slots
     setForm({ ...form, slots: slots.map((s, j) => (j === i ? { ...s, ...rest } : s)) })
   }
-  /** Swaps the players of two slots (positions and roles stay with the slots). */
+  /**
+   * Dropping a player on another. In possession: the two players swap (positions and roles stay
+   * with the slots, so each also takes the other's out-of-possession place). Out of possession:
+   * only their out-of-possession places swap, so each keeps his in-possession place.
+   */
   const swap = (a: number, b: number) => {
     if (a === b) return
+    if (phase === 'oop')
+      return setForm({ ...form, slots: swapPlaces(form.slots, a, b, 'oop', config.fmCodes) })
     const slots = form.slots.map((s) => ({ ...s }))
     ;[slots[a].player, slots[b].player] = [slots[b].player, slots[a].player]
     setForm({ ...form, slots })
@@ -597,6 +598,20 @@ function TacticEditor({ tactic }: { tactic: TacticRow }) {
               fmPosition={atFm[active]}
               squad={squad}
               used={used}
+              spots={config.fmCodes.positions
+                .filter((f) => FM_GRID[f.id] && (active === 0) === (f.id === 'GK'))
+                .map((f) => {
+                  const k = atFm.findIndex((a) => a?.id === f.id)
+                  const who = k >= 0 ? playerOf(form.slots[k]) : null
+                  return { id: f.id, taken: k < 0 ? null : who ? shortName(who) : f.id }
+                })}
+              onPlace={(id) => {
+                const k = atFm.findIndex((a) => a?.id === id)
+                if (k === active) return
+                if (k >= 0) return swap(active, k)
+                const f = config.fmCodes.positions.find((x) => x.id === id)
+                if (f) move(active, f)
+              }}
               onChange={(patch) => setSlot(active, patch)}
               onClose={() => setActive(null)}
             />
@@ -607,7 +622,8 @@ function TacticEditor({ tactic }: { tactic: TacticRow }) {
         <p className="text-center text-xs text-muted">
           {phase === 'ip' ? 'In possession' : 'Out of possession'}:{' '}
           {formation || formationLabel(positions)} · drag a player to a free spot to move him (or
-          tap him, then the spot); drag onto another player to swap
+          tap him, then the spot); drag onto another player to swap{' '}
+          {phase === 'ip' ? 'the two players' : 'their out-of-possession places only'}
         </p>
         <label className="grid gap-1 text-sm">
           <span className="text-muted">Name</span>
@@ -1066,6 +1082,8 @@ function PositionPopup({
   fmPosition,
   squad,
   used,
+  spots,
+  onPlace,
   onChange,
   onClose,
 }: {
@@ -1075,6 +1093,10 @@ function PositionPopup({
   fmPosition: FmPosition | null
   squad: PlayerRow[]
   used: Set<string | null | undefined>
+  /** FM's positions this slot can go to, with who is there now. */
+  spots: { id: string; taken: string | null }[]
+  /** Moves the slot to a free FM position, or swaps it with the slot at a taken one. */
+  onPlace: (id: string) => void
   onChange: (patch: Partial<TacticSlot>) => void
   onClose: () => void
 }) {
@@ -1219,21 +1241,19 @@ function PositionPopup({
                 Position {phase === 'ip' ? 'in possession' : 'out of possession'} (or drag the card)
               </span>
               <select
-                value={pos ?? ''}
-                onChange={(e) => {
-                  const v = (e.target.value || null) as PositionCode | null
-                  onChange(
-                    phase === 'ip'
-                      ? { position: v, side: null, role: null, pi: [] }
-                      : { positionOop: v, sideOop: null, roleOop: null, piOop: [], markOop: null },
-                  )
-                }}
+                value={fmPosition?.id ?? ''}
+                onChange={(e) => e.target.value && onPlace(e.target.value)}
                 className={field}
               >
-                <option value="">?</option>
-                {POSITION_CODES.map((c) => (
-                  <option key={c} value={c}>
-                    {POSITION_TEXT[c]}
+                {!fmPosition && <option value="">?</option>}
+                {spots.map((f) => (
+                  <option key={f.id} value={f.id}>
+                    {f.id}
+                    {f.id === fmPosition?.id
+                      ? ''
+                      : f.taken
+                        ? ` (${f.taken}: ${phase === 'ip' ? 'swap players' : 'swap places out of possession'})`
+                        : ''}
                   </option>
                 ))}
               </select>
