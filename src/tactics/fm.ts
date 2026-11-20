@@ -74,6 +74,10 @@ export interface RoleFm {
    * 22 support, 23 attack) (?).
    */
   flag?: number
+  /** The flag is a guess from the duty pattern, not yet seen in a file FM saved (?). */
+  flagGuess?: boolean
+  /** Version of the instruction rules (2: which instructions FM lets the role change). */
+  rules?: number
 }
 
 /** Game-wide codes: mentalities (in code order 1, 2, …), positions and role code mask. */
@@ -519,20 +523,12 @@ export function choose(def: FmInstruction, codes: number[] | undefined, code: nu
 export const defaultTeamCodes = (defs: FmInstruction[]) =>
   defs.flatMap((d) => (d.default ? [d.default] : []))
 
-/**
- * The option a role is locked to on one instruction: one it is forced to do, or the only one
- * it may pick of an instruction with two or more (FM then shows it fixed: centre-backs on Make
- * fewer runs, Deep-Lying Playmakers on Take more risks, seen in game).
- */
+/** The option a role is forced to on one instruction (FM sets it; the file does not). */
 export function lockedOption(
   def: FmInstruction,
   rule: { allowed: number[]; forced: number[] },
-): { option: FmOption; only: boolean } | null {
-  const forced = def.options.find((o) => o.code && rule.forced.includes(o.code))
-  if (forced) return { option: forced, only: false }
-  const choices = def.options.filter((o) => o.code)
-  const allowed = choices.filter((o) => rule.allowed.includes(o.code))
-  return choices.length >= 2 && allowed.length === 1 ? { option: allowed[0], only: true } : null
+): FmOption | null {
+  return def.options.find((o) => o.code && rule.forced.includes(o.code)) ?? null
 }
 
 /** Player instruction options FM offers for a role at an FM position: forced ones only. */
@@ -540,11 +536,11 @@ export function playerChoices(
   def: FmInstruction,
   role: RoleDef | null,
   position: FmPosition | null,
-): { options: FmOption[]; forced: boolean; only?: boolean } {
+): { options: FmOption[]; forced: boolean } {
   const rule = position ? role?.fm?.instructions?.[position.id] : undefined
   if (!rule) return { options: [], forced: false }
-  const locked = lockedOption(def, rule)
-  if (locked) return { options: [locked.option], forced: true, only: locked.only }
+  const forced = lockedOption(def, rule)
+  if (forced) return { options: [forced], forced: true }
   return {
     options: def.options.filter((o) => o.code === 0 || rule.allowed.includes(o.code)),
     forced: false,

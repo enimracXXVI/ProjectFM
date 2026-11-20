@@ -394,19 +394,24 @@ function RoleFmEditor({ role, onChange }: { role: RoleDef; onChange: (fm: RoleFm
         </label>
         {role.phase === 'ip' && (
           <label className="grid gap-1 text-xs text-muted">
-            Flag FM adds to the role number in tactic files (always the same for a role; without it
-            FM drops the player instructions of an exported tactic (?))
+            FM&apos;s duty for the role: the flag FM adds to the role number in tactic files.
+            Without it FM drops the player instructions of an exported tactic.
+            {fm.flagGuess ? ' Not yet seen in a file FM saved: a guess (?).' : ''}
             <select
               value={fm.flag ?? ''}
               onChange={(e) =>
-                onChange({ ...fm, flag: e.target.value ? Number(e.target.value) : undefined })
+                onChange({
+                  ...fm,
+                  flag: e.target.value ? Number(e.target.value) : undefined,
+                  flagGuess: false,
+                })
               }
               className={input}
             >
-              <option value="">Not known yet</option>
-              <option value="21">Bit 21 (like a defend duty)</option>
-              <option value="22">Bit 22 (like a support duty)</option>
-              <option value="23">Bit 23 (like an attack duty)</option>
+              <option value="">Not known</option>
+              <option value="21">Defend (bit 21)</option>
+              <option value="22">Support (bit 22)</option>
+              <option value="23">Attack (bit 23)</option>
             </select>
           </label>
         )}

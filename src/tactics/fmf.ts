@@ -18,7 +18,6 @@ import {
   shapeOf,
   teamCodes,
   type FmPosition,
-  lockedOption,
 } from './fm'
 import { POSITION_TEXT, formationLabel } from './positions'
 import type { TacticRow, TacticSlot } from './types'
@@ -175,12 +174,13 @@ function playerBits(
   let mark = 0
   for (const c of picked) {
     // Forced options are the role's own: FM sets them, the file does not; nor an instruction
-    // the role is locked on (its only option)
+    // the role cannot change (set before the role was, or before the rules knew it)
     if (rule?.forced.includes(c) || c === MARK_PLAYER) continue
     const owner = config.playerInstructions.find(
       (d) => d.phase === ph && d.options.some((o) => o.code === c),
     )
-    if (owner && rule && lockedOption(owner, rule)) continue
+    if (owner && rule && !owner.options.some((o) => o.code && rule.allowed.includes(o.code)))
+      continue
     if (!rule?.allowed.includes(c)) {
       const def = config.playerInstructions.find((d) => d.options.some((o) => o.code === c))
       const label = def?.options.find((o) => o.code === c)?.label ?? String(c)

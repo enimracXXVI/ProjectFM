@@ -1312,7 +1312,7 @@ function PlayerInstructions({
   return (
     <section className="grid gap-2">
       <ul className="grid grid-cols-[repeat(auto-fill,minmax(10.5rem,1fr))] gap-2">
-        {all.map(({ d, options, forced, only }) => {
+        {all.map(({ d, options, forced }) => {
           const locked = !forced && options.length <= 1
           // Standard (no instruction) first, then FM's options in its order
           const shown = locked
@@ -1328,11 +1328,9 @@ function PlayerInstructions({
                 disabled={forced || locked}
                 note={
                   forced
-                    ? only
-                      ? `The only option FM gives ${role.name} here, so it is fixed (?)`
-                      : `${role.name} always does this`
+                    ? `${role.name} always does this`
                     : locked
-                      ? `FM does not let ${role.name} change this here`
+                      ? `${role.name} decides this: FM does not let you change it`
                       : undefined
                 }
                 onChange={(code) => set(choose(d, codes, code))}

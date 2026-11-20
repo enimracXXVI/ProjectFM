@@ -587,23 +587,44 @@ describe('goalkeeper distribution: specific teammate', () => {
 })
 
 describe('player instruction codes', () => {
-  it('stores Cross from byline as 7 and Cross from deep as 8 (an FM-saved tactic)', () => {
+  it('stores Cross from deep as 7 and Cross from byline as 8 (checked in FM27)', () => {
+    // FM showed the app's 7 as Cross from deep, and saved its own Cross from byline as 8
     const d = DEFAULT_CONFIG.playerInstructions.find((x) => x.name === 'Cross from')!
-    expect(d.options.find((o) => o.code === 7)?.label).toBe('Cross from byline')
-    expect(d.options.find((o) => o.code === 8)?.label).toBe('Cross from deep')
-    // A list saved before the fix is corrected
+    expect(d.options.find((o) => o.code === 7)?.label).toBe('Cross from deep')
+    expect(d.options.find((o) => o.code === 8)?.label).toBe('Cross from byline')
+    // A list saved while the two were swapped is corrected
     const old = [
       {
         ...d,
         options: [
-          { label: 'Cross from deep', code: 7 },
-          { label: 'Cross from byline', code: 8 },
+          { label: 'Cross from deep', code: 8 },
+          { label: 'Cross from byline', code: 7 },
           { label: 'Standard', code: 0 },
         ],
       },
     ]
     const merged = mergeConfig({ playerInstructions: old } as never).playerInstructions
     const fixed = merged.find((x) => x.name === 'Cross from')!
-    expect(fixed.options.find((o) => o.code === 7)?.label).toBe('Cross from byline')
+    expect(fixed.options.find((o) => o.code === 8)?.label).toBe('Cross from byline')
+  })
+
+  it('locks what FM does not let a role change (FM Scout, as seen in game)', () => {
+    const rule = (id: string, pos: string) =>
+      config.roles.find((r) => r.id === id)!.fm!.instructions![pos]
+    const def = (name: string) => config.playerInstructions.find((x) => x.name === name)!
+    const at = (id: string) => config.fmCodes.positions.find((p) => p.id === id)!
+    const role = (id: string) => config.roles.find((r) => r.id === id)!
+    // Centre-Back: Forward runs fixed on Make fewer runs; Attacking width free at DCR
+    expect(playerChoices(def('Forward runs'), role('cb-ip'), at('DCR'))).toMatchObject({
+      forced: true,
+      options: [{ label: 'Make fewer runs' }],
+    })
+    expect(rule('cb-ip', 'DCR').allowed).toContain(25)
+    // Deep-Lying Playmaker: Passing risk fixed on Take more risks, Forward runs fixed too
+    expect(playerChoices(def('Passing risk'), role('dlp'), at('DMC'))).toMatchObject({
+      forced: true,
+      options: [{ label: 'Take more risks' }],
+    })
+    expect(playerChoices(def('Forward runs'), role('dlp'), at('DMC')).forced).toBe(true)
   })
 })

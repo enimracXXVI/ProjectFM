@@ -1577,7 +1577,12 @@ export function withFmCodes(roles: RoleDef[]): RoleDef[] {
     let fm = r.fm
     if (fm.complexity === undefined && def.complexity !== undefined)
       fm = { ...fm, complexity: def.complexity }
-    if (fm.flag === undefined && def.flag !== undefined) fm = { ...fm, flag: def.flag }
+    if (fm.flag === undefined && def.flag !== undefined)
+      fm = { ...fm, flag: def.flag, flagGuess: def.flagGuess }
+    // Rules from before FM's list of what each role may change (FM Scout's tactic creator,
+    // matching every lock seen in game): take FM's
+    if ((fm.rules ?? 1) < (def.rules ?? 1) && def.instructions)
+      fm = { ...fm, instructions: def.instructions, rules: def.rules }
     return fm === r.fm ? r : { ...r, fm }
   })
 }

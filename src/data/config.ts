@@ -244,10 +244,10 @@ function crossFromFixed(list: FmInstruction[]): FmInstruction[] {
       : {
           ...d,
           options: d.options.map((o) =>
-            o.label === 'Cross from deep' && o.code === 7
-              ? { ...o, code: 8 }
-              : o.label === 'Cross from byline' && o.code === 8
-                ? { ...o, code: 7 }
+            o.label === 'Cross from deep' && o.code === 8
+              ? { ...o, code: 7 }
+              : o.label === 'Cross from byline' && o.code === 7
+                ? { ...o, code: 8 }
                 : o,
           ),
         },
