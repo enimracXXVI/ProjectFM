@@ -74,6 +74,15 @@ export function WorldPlayer() {
         ),
       },
       {
+        label: 'Based in',
+        value: p.basedIn && (
+          <>
+            <Flag nation={p.basedIn} />
+            <span className="truncate">{p.basedIn}</span>
+          </>
+        ),
+      },
+      {
         label: 'League',
         value:
           p.league != null

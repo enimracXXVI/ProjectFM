@@ -24,7 +24,7 @@ import {
 export type StatsKind = 'overall' | 'league' | 'cup' | 'non_competitive'
 
 /** Version of public/fmsave/extract.py this app expects. */
-export const READER_VERSION = 22
+export const READER_VERSION = 23
 
 export interface SaveData {
   /** Version of the save reader that produced this (absent before version 3). */
@@ -82,7 +82,7 @@ export interface SaveData {
   /** Every player in Reader dump shape, nations as FM database ids (removed once read). */
   dump?: {
     meta: DumpMeta
-    players: (DumpPerson & { natDb?: number[] })[]
+    players: (DumpPerson & { natDb?: number[]; basedDb?: number | null })[]
     staff: []
     leagues?: Record<string, LeagueInfo>
   }
@@ -341,9 +341,10 @@ export function mergeKnowledge(fromSave: KnowledgeEntry[], current: KnowledgeEnt
 /** The save's players as a Reader dump (nation ids turned into names). */
 export function dumpFromSave(data: SaveData): Dump {
   if (!data.dump) throw new Error('This save was read without its player list.')
-  const players = data.dump.players.map(({ natDb, ...p }) => ({
+  const players = data.dump.players.map(({ natDb, basedDb, ...p }) => ({
     ...p,
     nat: (natDb ?? []).map(fmNation),
+    basedIn: basedDb != null ? fmNation(basedDb) : null,
   }))
   return { meta: data.dump.meta, players, staff: [], leagues: data.dump.leagues }
 }

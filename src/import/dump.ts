@@ -49,6 +49,8 @@ export interface DumpPerson {
   /** Club reputation and the club's league (FM competition database id), reader 20. */
   clubRep?: number | null
   league?: number | null
+  /** Nation the club is from ("Based in"), reader 23. */
+  basedIn?: string | null
   lastName?: string | null
   commonName?: string | null
   job?: string

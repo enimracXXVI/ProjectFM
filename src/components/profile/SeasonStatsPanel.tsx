@@ -1,5 +1,6 @@
 import { clsx } from 'clsx'
-import { useMemo, useState } from 'react'
+import { TEXT, useUrlState } from '../../lib/urlState'
+import { useMemo } from 'react'
 import { scoreTextColor } from '../../lib/attributes'
 import { useConfig } from '../../lib/config'
 import { scoreColor } from '../../lib/roleFit'
@@ -37,9 +38,9 @@ export function SeasonStatsPanel({
   const config = useConfig()
   const career = useCurrentCareer()
   const { data: seasons, isPending: listing } = useStatsSeasons(career.id)
-  const [picked, setPicked] = useState<number | null>(null)
+  const [picked, setPicked] = useUrlState<number | null>('stats-season', null)
   const season = picked ?? seasons?.[0] ?? null
-  const [kind, setKind] = useState<StatKind>('overall')
+  const [kind, setKind] = useUrlState<StatKind>('stats-kind', 'overall', TEXT as never)
   const { data: file, isPending, error } = useSeasonStats(career.id, season)
   const s = useMemo(() => (file ? statsIndex(file, kind).get(uid) : undefined), [file, kind, uid])
   // His stat profiles (roles and positions he plays): percentiles against that pool

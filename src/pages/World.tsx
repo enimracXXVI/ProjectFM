@@ -1,6 +1,8 @@
 import { clsx } from 'clsx'
 import { DEFAULT_PROFILE_MINUTES, profileScores } from '../world/profiles'
 import { PickList } from '../components/PickList'
+import { CheckList } from '../components/CheckList'
+import { fmNation } from '../import/save'
 import { leagueName, levelOf, topLevel } from '../world/leagues'
 import { useSeasonStats, useStatsSeasons } from '../world/hooks'
 import { seasonText } from '../data/seasons'
@@ -21,7 +23,8 @@ import { Card, PageHeader, Placeholder } from '../components/ui'
 import { useCurrentCareer } from '../lib/career'
 import { useConfig } from '../lib/config'
 import { traitNames } from '../data/traits'
-import { scoreTextColor } from '../lib/attributes'
+import { attributeLabel } from '../data/config'
+import { attrColor, scoreTextColor } from '../lib/attributes'
 import { parsePositions, roleScore, scoreColor } from '../lib/roleFit'
 import { useWorld } from '../world/hooks'
 import { eur } from '../lib/money'
@@ -48,7 +51,18 @@ const PAGE = 100
 
 const input = 'min-h-11 w-full rounded-lg border border-border bg-surface px-3 text-base md:text-sm'
 
-type SortCol = 'name' | 'age' | 'role' | 'ca' | 'pa' | 'value' | 'stat' | 'level' | 'profile'
+type SortCol =
+  | 'name'
+  | 'age'
+  | 'role'
+  | 'ca'
+  | 'pa'
+  | 'value'
+  | 'stat'
+  | 'level'
+  | 'profile'
+  /** Extra columns: an attribute (a:), a hidden value (h:) or a season stat (s:). */
+  | `${'a' | 'h' | 's'}:${string}`
 
 export function World() {
   const career = useCurrentCareer()
@@ -74,7 +88,9 @@ export function World() {
   const [profileId, setProfileId] = useUrlState('profile', '', TEXT)
   const [statKind, setStatKind] = useUrlState<StatKind>('statKind', 'overall', TEXT as never)
   // League and level: compare players across leagues of different strength
-  const [league, setLeague] = useUrlState('league', '', TEXT)
+  const [leagues, setLeagues] = useUrlState<string[]>('leagues', [])
+  // Extra table columns the user picks: attributes, hidden values, season stats
+  const [cols, setCols] = useUrlState<string[]>('cols', [])
   const [minLevelInput, setMinLevel, minLevel] = useUrlText('minLevel')
   const [weigh, setWeigh] = useUrlState('weigh', false, BOOL)
   // Ranking by role: only players who can play one of the role's positions
@@ -102,13 +118,18 @@ export function World() {
     profileId,
     statKind,
     minMinutes,
-    league,
+    leagues,
     minLevel,
     weigh,
   })
   const { data: seasons } = useStatsSeasons(career.id)
   const statsSeason = seasons?.[0] ?? null
-  const wantStats = !!(filters.statKey || filters.minMinutes || filters.profileId)
+  const wantStats = !!(
+    filters.statKey ||
+    filters.minMinutes ||
+    filters.profileId ||
+    cols.some((c) => c.startsWith('s:'))
+  )
   const { data: statsFile, isPending: statsLoading } = useSeasonStats(
     career.id,
     wantStats ? statsSeason : null,
@@ -118,6 +139,38 @@ export function World() {
     [statsFile, filters.statKind],
   )
   const metric = METRICS.find((m) => m.key === filters.statKey) ?? null
+  // The value of an extra column for a row
+  const extraValue = useMemo(() => {
+    const attrIdx = new Map((data?.file.attrs ?? []).map((a, i) => [a, i]))
+    const hidIdx = new Map((data?.file.hidden ?? []).map((a, i) => [a, i]))
+    return (row: WorldRow, col: string): number | null => {
+      const [kind, key] = [col.slice(0, 1), col.slice(2)]
+      if (kind === 'a') return row[15][attrIdx.get(key) ?? -1] || null
+      if (kind === 'h') return row[16][hidIdx.get(key) ?? -1] || null
+      return stats ? metricValue(stats.get(row[0]), key) : null
+    }
+  }, [data, stats])
+  const colLabel = (col: string) => {
+    const key = col.slice(2)
+    if (col.startsWith('s:')) return METRICS.find((m) => m.key === key)?.label ?? key
+    return config.attributes[key]?.abbr || attributeLabel(config, key)
+  }
+  const columnOptions = useMemo(
+    () => [
+      ...Object.keys(config.attributes)
+        .filter((a) => data?.file.attrs.includes(a))
+        .map((a) => ({
+          value: `a:${a}`,
+          label: attributeLabel(config, a),
+          group: 'Attributes',
+        })),
+      ...(config.showHidden
+        ? (data?.file.hidden ?? []).map((h) => ({ value: `h:${h}`, label: h, group: 'Hidden' }))
+        : []),
+      ...METRICS.map((m) => ({ value: `s:${m.key}`, label: m.label, group: `Stats · ${m.group}` })),
+    ],
+    [config, data],
+  )
   const profile = config.statProfiles.find((p) => p.id === filters.profileId) ?? null
   // Percentile scores against everyone who plays the profile's positions
   const profileScoreMap = useMemo(() => {
@@ -153,8 +206,11 @@ export function World() {
         .sort(([, a], [, b]) => (b.rep ?? 0) - (a.rep ?? 0))
         .map(([id, l]) => ({
           value: id,
-          label: `${leagueName(id, l, config.competitions)} · level ${Math.round((l.rep ?? 0) / 100)}`,
-        })),
+          label: leagueName(id, l, config.competitions),
+          group: l.nation != null ? fmNation(l.nation) : 'Other',
+          detail: `level ${Math.round((l.rep ?? 0) / 100)}`,
+        }))
+        .sort((a, b) => a.group.localeCompare(b.group)),
     [data, config.competitions],
   )
 
@@ -198,7 +254,7 @@ export function World() {
       if (role && f.roleNatural && !parsePositions(r[7]).some((p) => role.positions.includes(p)))
         continue
       if (minMin !== null && stats && (stats.get(r[0])?.minutes ?? 0) < minMin) continue
-      if (f.league && String(r[28] ?? '') !== f.league) continue
+      if (f.leagues.length && !f.leagues.includes(String(r[28] ?? ''))) continue
       const level = levelOf(r, file.leagues)
       if (lvlMin !== null && (level?.level ?? 0) < lvlMin) continue
       const stat = metric && stats ? metricValue(stats.get(r[0]), metric.key) : null
@@ -228,23 +284,25 @@ export function World() {
       sort?.col ?? (profile ? 'profile' : metric ? 'stat' : role ? 'role' : 'value')
     const asc = sort?.asc ?? col === 'name'
     const val = (o: (typeof out)[number]): number | string | null =>
-      col === 'name'
-        ? o.row[1]
-        : col === 'age'
-          ? o.row[2]
-          : col === 'profile'
-            ? o.prof
-            : col === 'level'
-              ? (o.level?.level ?? null)
-              : col === 'stat'
-                ? o.stat
-                : col === 'role'
-                  ? o.score
-                  : col === 'ca'
-                    ? o.row[9]
-                    : col === 'pa'
-                      ? o.row[10]
-                      : o.row[11]
+      col.includes(':')
+        ? extraValue(o.row, col)
+        : col === 'name'
+          ? o.row[1]
+          : col === 'age'
+            ? o.row[2]
+            : col === 'profile'
+              ? o.prof
+              : col === 'level'
+                ? (o.level?.level ?? null)
+                : col === 'stat'
+                  ? o.stat
+                  : col === 'role'
+                    ? o.score
+                    : col === 'ca'
+                      ? o.row[9]
+                      : col === 'pa'
+                        ? o.row[10]
+                        : o.row[11]
     return out.sort((a, b) => {
       if (col === 'name')
         return asc
@@ -270,6 +328,7 @@ export function World() {
     metric,
     profileScoreMap,
     profile,
+    extraValue,
   ])
 
   if (isPending)
@@ -477,10 +536,10 @@ export function World() {
                 onChange={(e) => setMinMinutes(e.target.value)}
                 className={input}
               />
-              <PickList
-                value={league}
+              <CheckList
+                value={leagues}
                 placeholder="Any league"
-                onChange={setLeague}
+                onChange={setLeagues}
                 options={leagueOptions}
                 className="col-span-2"
               />
@@ -672,6 +731,14 @@ export function World() {
       </ul>
 
       {/* Tablet / desktop */}
+      <div className={clsx('mb-2 max-w-md', layout === 'table' ? 'block' : 'hidden md:block')}>
+        <CheckList
+          value={cols}
+          placeholder="Add columns: attributes, stats…"
+          onChange={setCols}
+          options={columnOptions}
+        />
+      </div>
       <div
         className={clsx(
           'max-h-[calc(100dvh-9rem)] overflow-auto rounded-xl border border-border md:block',
@@ -728,6 +795,14 @@ export function World() {
                 icon={sortIcon('value')}
                 onClick={() => toggleSort('value')}
               />
+              {cols.map((c) => (
+                <SortTh
+                  key={c}
+                  label={colLabel(c)}
+                  icon={sortIcon(c as SortCol)}
+                  onClick={() => toggleSort(c as SortCol)}
+                />
+              ))}
             </tr>
           </thead>
           <tbody className="divide-y divide-border bg-surface tabular-nums">
@@ -801,6 +876,20 @@ export function World() {
                 {config.showHidden && <td className="px-3 py-2">{row[9] ?? '–'}</td>}
                 {config.showHidden && <td className="px-3 py-2">{row[10] ?? '–'}</td>}
                 <td className="px-3 py-2 whitespace-nowrap">{eur(row[11])}</td>
+                {cols.map((c) => {
+                  const v = extraValue(row, c)
+                  return (
+                    <td
+                      key={c}
+                      className={clsx(
+                        'px-3 py-2 text-center',
+                        c.startsWith('a:') && v !== null && attrColor(v),
+                      )}
+                    >
+                      {v === null ? '–' : c.startsWith('s:') ? formatMetric(c.slice(2), v) : v}
+                    </td>
+                  )
+                })}
               </tr>
             ))}
           </tbody>

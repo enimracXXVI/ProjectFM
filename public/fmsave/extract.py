@@ -45,7 +45,7 @@ def _plain(v):
 
 
 # Raised whenever extract() returns new data, so the app can spot an outdated copy
-READER_VERSION = 22
+READER_VERSION = 23
 
 JOB_SCOUT, JOB_CHIEF_SCOUT = 14, 44
 _FF8 = b"\xff" * 8
@@ -218,8 +218,14 @@ def _dump(save, club_uid, club_name, extras):
         clubs = list(save.clubs())
         club_ids = {c.uid: c.unique_id for c in clubs}
         club_rep = {c.uid: c.reputation for c in clubs}
+        # Based in: the nation whose football association the club belongs to (Toronto FC:
+        # Canada, though it plays in the US league); older fmsave: the league's nation
+        club_nation = {
+            c.uid: nation_db_ids.get(getattr(c, "fa_nation_id", None) or c.nation_id)
+            for c in clubs
+        }
     except Exception:
-        clubs, club_ids, club_rep = [], {}, {}
+        clubs, club_ids, club_rep, club_nation = [], {}, {}, {}
     try:
         league_of, leagues = _leagues(save, clubs)
     except Exception:
@@ -250,6 +256,7 @@ def _dump(save, club_uid, club_name, extras):
             "clubId": club_ids.get(p.club_uid) if p.club_uid is not None else None,
             "clubRep": club_rep.get(p.club_uid) if p.club_uid is not None else None,
             "league": league_of.get(p.club_uid) if p.club_uid is not None else None,
+            "basedDb": club_nation.get(p.club_uid) if p.club_uid is not None else None,
             "dob": p.birth_date.isoformat() if p.birth_date else None,
             "ca": p.ability.current if p.ability else None,
             "pa": p.ability.potential if p.ability else None,

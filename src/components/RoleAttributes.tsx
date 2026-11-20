@@ -4,6 +4,7 @@ import type { RoleDef } from '../data/roles'
 import { attributeLabel } from '../data/config'
 import { attrColor, attrNumber } from '../lib/attributes'
 import { useConfig } from '../lib/config'
+import { KEY_CHIP, PREFERRED_CHIP } from '../lib/roleMarks'
 
 /**
  * A player's attributes for one role: FM's key attributes, then its preferred ones, each with
@@ -26,7 +27,9 @@ export function RoleAttributes({
     if (!list.length) return null
     return (
       <div className="grid gap-1">
-        <span className={clsx('text-xs font-semibold', accent ? 'text-accent' : 'text-muted')}>
+        <span
+          className={clsx('text-xs font-semibold', accent ? 'text-[#5ee39b]' : 'text-amber-200')}
+        >
           {title}
         </span>
         <ul className="flex flex-wrap gap-1">
@@ -38,7 +41,7 @@ export function RoleAttributes({
                 title={attributeLabel(config, a)}
                 className={clsx(
                   'inline-flex max-w-full items-center gap-1.5 rounded-md border px-2 py-0.5 text-xs',
-                  accent ? 'border-accent/50 bg-accent/10' : 'border-border',
+                  accent ? KEY_CHIP : PREFERRED_CHIP,
                 )}
               >
                 <span className="truncate">{attributeLabel(config, a)}</span>

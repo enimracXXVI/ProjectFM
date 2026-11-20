@@ -1,4 +1,5 @@
 import { NotesPanel } from '../components/NotesPanel'
+import { TEXT, useUrlState } from '../lib/urlState'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { clsx } from 'clsx'
 import { ArrowLeft, Plus, Trash2 } from 'lucide-react'
@@ -68,7 +69,11 @@ function StaffForm({ existing }: { existing: StaffRow | null }) {
         }
       : empty,
   )
-  const [tab, setTab] = useState<StaffTab>(() => tabForJob(existing?.role ?? null))
+  const [tab, setTab] = useUrlState<StaffTab>(
+    'tab',
+    tabForJob(existing?.role ?? null),
+    TEXT as never,
+  )
   const sections = config.staffTabs[tab] ?? []
   const keyAttrs = config.staffKeyAttrs[form.role ?? ''] ?? []
   const countries = useMemo(

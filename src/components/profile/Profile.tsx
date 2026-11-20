@@ -1,4 +1,6 @@
 import { clsx } from 'clsx'
+import { TEXT, useUrlState } from '../../lib/urlState'
+import { KEY_ROW, KEY_SWATCH, PREFERRED_ROW, PREFERRED_SWATCH } from '../../lib/roleMarks'
 import { ChevronRight, Dumbbell } from 'lucide-react'
 import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
 import { HIDDEN_NAMES } from '../../data/attributeInfo'
@@ -52,8 +54,8 @@ type Highlight = { key: Set<string>; preferred: Set<string> } | null
 /** Highlight style of an attribute row: key, preferred, or dimmed when a role is picked. */
 function highlightClass(h: Highlight, n: string) {
   if (!h) return null
-  if (h.key.has(n)) return 'bg-sky-400/20 font-semibold shadow-[inset_3px_0_0_var(--color-sky-400)]'
-  if (h.preferred.has(n)) return 'bg-sky-400/10 shadow-[inset_3px_0_0_rgb(56_189_248/0.45)]'
+  if (h.key.has(n)) return KEY_ROW
+  if (h.preferred.has(n)) return PREFERRED_ROW
   return 'opacity-45'
 }
 
@@ -102,10 +104,10 @@ function RolePicker({
             Fit {fit.score ?? '–'}
           </span>
           <span className="inline-flex items-center gap-1">
-            <span className="size-2.5 rounded-sm bg-sky-400/60" /> Key
+            <span className={clsx('size-2.5 rounded-sm', KEY_SWATCH)} /> Key
           </span>
           <span className="inline-flex items-center gap-1">
-            <span className="size-2.5 rounded-sm bg-sky-400/25" /> Preferred
+            <span className={clsx('size-2.5 rounded-sm', PREFERRED_SWATCH)} /> Preferred
           </span>
         </p>
       )}
@@ -774,7 +776,7 @@ export function ProfileStrip({ data }: { data: ProfileData }) {
 
 /** The Profile tab: desktop side card + attribute columns; mobile compact grid + details. */
 export function ProfileTab({ data, footer }: { data: ProfileData; footer?: ReactNode }) {
-  const [roleId, setRoleId] = useState('')
+  const [roleId, setRoleId] = useUrlState('highlight', '', TEXT)
   const highlight = useHighlight(roleId)
   return (
     <>

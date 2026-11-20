@@ -1,4 +1,5 @@
 import { clsx } from 'clsx'
+import { TEXT, useUrlState } from '../../lib/urlState'
 import { HIDDEN_NAMES } from '../../data/attributeInfo'
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { attributeLabel } from '../../data/config'
@@ -44,7 +45,7 @@ export function DevChart({
     .flat()
     .filter((s) => !s.attributes.every((a) => HIDDEN_NAMES.has(a)))
   const hasCA = config.showHidden && list.some((s) => s.extra?.CA)
-  const [metric, setMetric] = useState('total')
+  const [metric, setMetric] = useUrlState('metric', 'total', TEXT)
 
   const last = list.at(-1)
   const names = last ? Object.keys(last.attributes) : []

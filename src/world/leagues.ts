@@ -23,13 +23,15 @@ export function topLevel(file: WorldFile): number {
   return reps.length ? Math.round(Math.max(...reps) / 100) : 100
 }
 
-/** A league's name: from Settings > FM names (competitions), else its nation and FM id. */
+/**
+ * A league's name, led by the country it is based in: "Italy – Serie A". The name is the one
+ * set in Settings > FM names (competitions), else the save's, else FM's id ("Italy – #32").
+ */
 export function leagueName(
   id: number | string,
   info: LeagueInfo | undefined,
   competitions: Record<string, CompetitionInfo>,
 ): string {
-  const named = competitions[String(id)]?.name || info?.name
-  if (named) return named
-  return `${info?.nation != null ? fmNation(info.nation) : 'League'} · #${id}`
+  const named = competitions[String(id)]?.name || info?.name || `#${id}`
+  return info?.nation != null ? `${fmNation(info.nation)} – ${named}` : named
 }

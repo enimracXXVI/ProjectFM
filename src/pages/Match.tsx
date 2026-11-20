@@ -1,6 +1,7 @@
 import { clsx } from 'clsx'
 import { matchFormations } from '../competitions/formation'
 import { pairSubs } from '../competitions/subs'
+import { PlayerLink } from '../components/PlayerLink'
 import { ArrowLeft } from 'lucide-react'
 import { Link, useParams, useSearchParams } from 'react-router-dom'
 import { HeadToHead } from '../components/HeadToHead'
@@ -276,9 +277,9 @@ function Lineup({
                               {p.name ?? 'Unknown'}
                             </Link>
                           ) : (
-                            <span className="truncate whitespace-nowrap">
+                            <PlayerLink uid={p.id} className="truncate whitespace-nowrap">
                               {p.name ?? 'Unknown'}
-                            </span>
+                            </PlayerLink>
                           )}
                           {p.on && (
                             <span

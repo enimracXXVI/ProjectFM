@@ -1,4 +1,12 @@
 import { clsx } from 'clsx'
+import {
+  KEY_LABEL,
+  KEY_ROW,
+  KEY_SWATCH,
+  PREFERRED_LABEL,
+  PREFERRED_ROW,
+  PREFERRED_SWATCH,
+} from '../lib/roleMarks'
 import { X } from 'lucide-react'
 import { useMemo } from 'react'
 import { useUrlState } from '../lib/urlState'
@@ -207,10 +215,10 @@ export function Compare() {
             <p className="mb-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-muted">
               Attributes for {role.name}:
               <span className="inline-flex items-center gap-1">
-                <span className="size-2.5 rounded-sm bg-sky-400/60" /> Key
+                <span className={clsx('size-2.5 rounded-sm', KEY_SWATCH)} /> Key
               </span>
               <span className="inline-flex items-center gap-1">
-                <span className="size-2.5 rounded-sm bg-sky-400/25" /> Preferred
+                <span className={clsx('size-2.5 rounded-sm', PREFERRED_SWATCH)} /> Preferred
               </span>
               <span>▲ best · = all the same</span>
             </p>
@@ -408,12 +416,12 @@ const Equal = () => (
 )
 /** Sticky first column: keeps its solid background, so only text and the side bar change. */
 const MARK_LABEL = {
-  key: 'font-semibold text-sky-300 shadow-[inset_3px_0_0_var(--color-sky-400)]',
-  preferred: 'text-sky-200/80 shadow-[inset_3px_0_0_rgb(56_189_248/0.45)]',
+  key: KEY_LABEL,
+  preferred: PREFERRED_LABEL,
 }
 const MARK = {
-  key: 'bg-sky-400/20 font-semibold text-text shadow-[inset_3px_0_0_var(--color-sky-400)]',
-  preferred: 'bg-sky-400/10 text-text shadow-[inset_3px_0_0_rgb(56_189_248/0.45)]',
+  key: `${KEY_ROW} text-text`,
+  preferred: `${PREFERRED_ROW} text-text`,
 }
 
 /** Phones: names stay on top, every row shows all players side by side. Wider: a table. */
@@ -504,8 +512,8 @@ function CompareRows({ rows, series }: { rows: Row[]; series: Series[] }) {
                   key={i}
                   className={clsx(
                     'border-t border-border',
-                    r.type === 'row' && r.mark === 'key' && 'bg-sky-400/10',
-                    r.type === 'row' && r.mark === 'preferred' && 'bg-sky-400/5',
+                    r.type === 'row' && r.mark === 'key' && 'bg-[#123f27]/60',
+                    r.type === 'row' && r.mark === 'preferred' && 'bg-amber-400/5',
                   )}
                 >
                   <th

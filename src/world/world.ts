@@ -80,6 +80,8 @@ export type WorldRow = [
   /** Club reputation (0–10000) and league (FM competition database id). */
   clubRep?: number | null,
   league?: number | null,
+  /** Nation the club is from: "Based in" (reader 23). */
+  basedIn?: string | null,
 ]
 
 export interface WorldFile {
@@ -146,6 +148,7 @@ export function buildWorld(dump: Dump): WorldFile {
       p.dob || null,
       p.clubRep || null,
       p.league || null,
+      p.basedIn || null,
     ]
   })
   return {
@@ -191,6 +194,7 @@ export interface WorldPlayer {
   dob: string | null
   clubRep: number | null
   league: number | null
+  basedIn: string | null
 }
 
 /** Expands a row into a player object (done on demand: the file holds tens of thousands). */
@@ -218,6 +222,7 @@ export function rowToPlayer(file: WorldFile, r: WorldRow): WorldPlayer {
     dob: r[26] ?? null,
     clubRep: r[27] ?? null,
     league: r[28] ?? null,
+    basedIn: r[29] ?? null,
     id: r[0],
     name: r[1],
     age: r[2],

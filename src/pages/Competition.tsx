@@ -20,6 +20,7 @@ import { seasonLabel } from '../competitions/view'
 import { useCurrentCareer } from '../lib/career'
 import { useConfig } from '../lib/config'
 import { SERIES_COLORS } from '../lib/seriesColors'
+import { PlayerLink } from '../components/PlayerLink'
 import { FixtureRow, ResultBadge, Tabs } from './competitionParts'
 
 export function Competition() {
@@ -104,18 +105,22 @@ function LeagueTable({ file, comp }: { file: CompetitionsFile; comp: SaveCompeti
             ]}
           />
         </div>
-        <select
-          aria-label="Table after matchday"
-          value={md}
-          onChange={(e) => setMd(Number(e.target.value))}
-          className="mb-3 min-h-11 rounded-lg border border-border bg-surface px-3 text-base md:text-sm"
-        >
-          {Array.from({ length: Math.max(last, 1) }, (_, i) => i + 1).map((n) => (
-            <option key={n} value={n}>
-              After matchday {n}
-            </option>
-          ))}
-        </select>
+        <label className="mb-3 flex min-h-11 min-w-60 flex-1 items-center gap-3 rounded-lg border border-border bg-surface px-3 text-sm">
+          <span className="shrink-0 text-muted">After matchday</span>
+          <input
+            type="range"
+            aria-label="Table after matchday"
+            min={1}
+            max={Math.max(last, 1)}
+            step={1}
+            value={Math.min(md || last, Math.max(last, 1))}
+            onChange={(e) => setMd(Number(e.target.value))}
+            className="h-2 min-w-0 flex-1 cursor-pointer accent-[var(--color-accent)]"
+          />
+          <span className="w-6 shrink-0 text-right font-semibold tabular-nums">
+            {Math.min(md || last, Math.max(last, 1))}
+          </span>
+        </label>
       </div>
       <div className="overflow-x-auto rounded-xl border border-border">
         <table className="w-full text-sm tabular-nums">
@@ -402,7 +407,9 @@ function Players({ file, comp }: { file: CompetitionsFile; comp: SaveCompetition
               {rows.map((l, i) => (
                 <tr key={l.key} className="border-t border-border text-center">
                   <td className="px-2 py-2 text-right text-muted">{i + 1}</td>
-                  <td className="max-w-44 truncate px-2 py-2 text-left">{l.name}</td>
+                  <td className="max-w-44 truncate px-2 py-2 text-left">
+                    <PlayerLink uid={l.key}>{l.name}</PlayerLink>
+                  </td>
                   <td className="max-w-32 truncate px-2 py-2 text-left text-muted">{l.club}</td>
                   <td className="px-2 py-2">{l.apps}</td>
                   <td className={clsx('px-2 py-2', sort === 'goals' && 'font-bold')}>{l.goals}</td>
