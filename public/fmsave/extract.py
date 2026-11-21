@@ -20,6 +20,14 @@ _CHAIN_RECORDS = []
 _decode_chain_record = _contracts.ContractDecoder.decode_chain_record
 
 
+
+def _pid(person):
+    """A person's ID as FM shows it: the database unique ID. People the game made (newgens,
+    regens) have none in fmsave, so they were left out everywhere; FM shows their record ID
+    plus one (checked on three Fiorentina youth players: record 2002049883 is FM's
+    2002049884, and so on), so they get that."""
+    return person.unique_id if person.unique_id is not None else person.uid + 1
+
 def _note_chain_record(self, game_db, offset):
     selector = struct.unpack_from("<I", game_db, offset + self.selector_offset)[0]
     _CHAIN_RECORDS.append((selector - 1, game_db[offset - 12]))
@@ -45,7 +53,7 @@ def _plain(v):
 
 
 # Raised whenever extract() returns new data, so the app can spot an outdated copy
-READER_VERSION = 23
+READER_VERSION = 24
 
 JOB_SCOUT, JOB_CHIEF_SCOUT = 14, 44
 _FF8 = b"\xff" * 8
@@ -91,7 +99,7 @@ def _all_staff(save, club_uid):
         if s.club_uid != club_uid or job is None or job in _BOARD_JOBS:
             continue
         out.append({
-            "uniqueId": s.unique_id,
+            "uniqueId": _pid(s),
             "name": s.name,
             "lastName": getattr(s, "last_name", None),
             "commonName": getattr(s, "common_name", None),
@@ -117,7 +125,7 @@ def _scouts(save, club_uid):
     with save._context.section("game_db") as game_db:
         for s in staff:
             out.append({
-                "uniqueId": s.unique_id,
+                "uniqueId": _pid(s),
                 "name": s.name,
                 "age": s.age,
                 "chief": s.job.raw == JOB_CHIEF_SCOUT,
@@ -235,7 +243,7 @@ def _dump(save, club_uid, club_name, extras):
         contracts.setdefault(c.player_uid, c)
     players = []
     for p in save.players():
-        if not p.name or p.unique_id is None:
+        if not p.name or _pid(p) is None:
             continue
         rep = p.reputation.world if p.reputation else None
         if p.club_uid is None and (rep is None or rep == 0xFFFF):
@@ -246,7 +254,7 @@ def _dump(save, club_uid, club_name, extras):
         pos = p.positions
         nats = [p.nation_id, *p.second_nation_ids]
         row = {
-            "id": p.unique_id,
+            "id": _pid(p),
             "name": p.name,
             "lastName": p.last_name,
             "commonName": p.common_name,
@@ -383,7 +391,7 @@ def _competitions(save, club_uid, club_name):
         stats.append({
             "comp": m.competition_id,
             "date": m.date.isoformat(),
-            "uniqueId": p.unique_id if p else None,
+            "uniqueId": _pid(p) if p else None,
             "name": m.player_name,
             "club": p.club_uid if p else None,
             "clubName": p.club_short_name if p else None,
@@ -462,7 +470,7 @@ def _slot_codes(role_bits, trail_bits, settings):
 
 def _tactics(save, club_uid):
     """The first team's tactics (formation, style, mentality, roles, instructions) and selection."""
-    players = {p.uid: p.unique_id for p in save.players() if p.club_uid == club_uid}
+    players = {p.uid: _pid(p) for p in save.players() if p.club_uid == club_uid}
     out = []
     for t in save.tactics():
         if t.club_uid != club_uid or (t.team_slot or 0) != 0:
@@ -592,7 +600,7 @@ def _matchday_squads(save, club_uid, fixtures):
     person = {}
     for k, uid in enumerate(records.uids):
         p = by_uid.get(uid)
-        person[records.pindexes[k] + 1] = (p.unique_id if p else None, p.name if p else None)
+        person[records.pindexes[k] + 1] = (_pid(p) if p else None, p.name if p else None)
     try:
         named = _named_team_stats(save)
     except Exception:
@@ -800,7 +808,7 @@ def _named_team_stats(save):
 
 def _injuries(save, club_uid):
     """Injuries recorded for the club's players (date, cause, severity; no duration)."""
-    players = {p.uid: p.unique_id for p in save.players() if p.club_uid == club_uid}
+    players = {p.uid: _pid(p) for p in save.players() if p.club_uid == club_uid}
     out = []
     for i in save.injuries():
         if i.club_uid != club_uid or i.player_uid not in players:
@@ -834,7 +842,7 @@ def _world_stats(save, rows):
         return None
     names = [f.name for f in fields(rows[0]) if f.name not in _WORLD_STAT_SKIP
              and f.name not in set(getattr(type(rows[0]), "COMPUTED_FIELDS", ()) or ())]
-    unique = {p.uid: p.unique_id for p in save.players()}
+    unique = {p.uid: _pid(p) for p in save.players()}
     acc = {}
     for r in rows:
         kind = _plain(r.kind)
@@ -873,7 +881,7 @@ def extract(path):
             raise ValueError("No managed club found in this save.")
         club_uid = clubs[0].club_uid
         players = save.players().where(club_uid=club_uid)
-        uid_to_unique = {p.uid: p.unique_id for p in players}
+        uid_to_unique = {p.uid: _pid(p) for p in players}
         out = {
             "reader": READER_VERSION,
             "club": clubs[0].club_name,
@@ -884,7 +892,7 @@ def extract(path):
         }
         for p in players:
             out["players"].append({
-                "uniqueId": p.unique_id,
+                "uniqueId": _pid(p),
                 "name": p.name,
                 "leftFoot": p.left_foot,
                 "rightFoot": p.right_foot,
