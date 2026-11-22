@@ -23,12 +23,21 @@ import { byLastName } from '../lib/names'
 import type { AppConfig } from '../data/config'
 import {
   INTENSITY_TEXT,
+  NONE,
+  PLAYING,
+  REST_DAYS,
   TRAINING_KEYS,
   focusOf,
   ipTrainingRole,
   oopTrainingRole,
+  restBack,
   restDaysLeft,
 } from '../training/individual'
+import { focusesForPlayer } from '../training/focus'
+import { setPlayerExtra } from '../data/api'
+import { parsePositions } from '../lib/roleFit'
+import type { RoleDef } from '../data/roles'
+import { useMutation, useQueryClient } from '@tanstack/react-query'
 
 type View = 'profile' | 'attributes' | 'contract' | 'stats' | 'roles' | 'training'
 type Role = 'outfield' | 'goalkeepers'
@@ -523,21 +532,17 @@ export function Squad() {
                         <td className="px-4 py-2.5 whitespace-nowrap text-muted">
                           {p.positions ?? '–'}
                         </td>
-                        {TRAINING_COLS.map(([key]) => {
-                          const c = training.get(p.id)?.[key]
-                          return (
-                            <td
-                              key={key}
-                              className={clsx(
-                                'px-4 py-2.5 whitespace-nowrap',
-                                c?.muted && 'text-muted',
-                              )}
-                              title={c?.title}
-                            >
-                              {c?.text ?? '–'}
-                            </td>
-                          )
-                        })}
+                        {TRAINING_COLS.map(([key]) => (
+                          <td key={key} className="px-2 py-1.5 whitespace-nowrap">
+                            {isPast ? (
+                              <span className="px-2 text-muted">
+                                {training.get(p.id)?.[key]?.text ?? '–'}
+                              </span>
+                            ) : (
+                              <TrainingSelect player={p} field={key} />
+                            )}
+                          </td>
+                        ))}
                       </>
                     ) : view === 'roles' ? (
                       <>
@@ -795,4 +800,136 @@ function trainingCells(p: PlayerRow, config: AppConfig): TrainingCells {
             }
           : none('–'),
   }
+}
+
+type Option = { value: string; label: string }
+
+/**
+ * One training setting of a player, editable like the team picker: saves straight away. The
+ * next save import replaces it with what FM has.
+ */
+function TrainingSelect({ player, field }: { player: PlayerRow; field: keyof TrainingCells }) {
+  const config = useConfig()
+  const qc = useQueryClient()
+  const mutation = useMutation({
+    mutationFn: (patch: Record<string, string | null>) => setPlayerExtra(player, patch),
+    onSettled: () => {
+      qc.invalidateQueries({ queryKey: ['players', player.career_id] })
+      qc.invalidateQueries({ queryKey: ['player', player.id] })
+    },
+  })
+  const x = player.extra
+  const codes = config.trainingRoleCodes
+  const mine = new Set(parsePositions(player.positions))
+  const byFit = (phase: 'ip' | 'oop') => {
+    const list = config.roles.filter((r) => r.phase === phase)
+    const natural = list.filter((r) => r.positions.some((q) => mine.has(q)))
+    return { natural, other: list.filter((r) => !natural.includes(r)) }
+  }
+  let value = ''
+  let first: Option[] = []
+  let groups: [string, Option[]][] = []
+  let patchFor: (v: string) => Record<string, string | null> = () => ({})
+  // Rest is counted from the game date the training was read on (else today)
+  const asOf = () => x[TRAINING_KEYS.asOf] || new Date().toISOString().slice(0, 10)
+
+  if (field === 'ip' || field === 'oop') {
+    const key = field === 'ip' ? TRAINING_KEYS.ip : TRAINING_KEYS.oop
+    const cur =
+      field === 'ip'
+        ? ipTrainingRole(x[key], codes, config.roles)
+        : oopTrainingRole(x[key], codes, config.roles)
+    const empty = field === 'ip' ? PLAYING : NONE
+    value = !cur
+      ? ''
+      : 'playing' in cur && cur.playing
+        ? PLAYING
+        : 'none' in cur && cur.none
+          ? NONE
+          : cur.role
+            ? `role:${cur.role.id}`
+            : `raw:${x[key]}`
+    first = [{ value: empty, label: field === 'ip' ? 'Playing position' : 'None' }]
+    if (value.startsWith('raw:'))
+      first.push({ value, label: `Role ${cur?.code ?? '?'} (not named yet)` })
+    const { natural, other } = byFit(field)
+    const opt = (r: RoleDef): Option => ({ value: `role:${r.id}`, label: r.name })
+    groups = [
+      ['His positions', natural.map(opt)],
+      ['Other roles', other.map(opt)],
+    ]
+    patchFor = (v) => ({ [key]: v, [TRAINING_KEYS.asOf]: asOf() })
+  } else if (field === 'focus') {
+    value = x[TRAINING_KEYS.focus] ?? ''
+    first = [{ value: '', label: 'None' }]
+    const offered = focusesForPlayer(player.positions, config.trainingFocuses)
+    if (value && !offered.some((f) => String(f.code) === value))
+      first.push({
+        value,
+        label: focusOf(value, config.trainingFocuses)?.name ?? `Focus ${value}`,
+      })
+    groups = [
+      [
+        'Focus',
+        focusesForPlayer(player.positions, config.trainingFocuses).map((f) => ({
+          value: String(f.code),
+          label: f.name,
+        })),
+      ],
+    ]
+    patchFor = (v) => ({ [TRAINING_KEYS.focus]: v, [TRAINING_KEYS.asOf]: asOf() })
+  } else {
+    const back = x[TRAINING_KEYS.rest]
+    const resting = restDaysLeft(back, x[TRAINING_KEYS.asOf])
+    value = resting && back ? 'resting' : (x[TRAINING_KEYS.intensity] ?? '')
+    first = resting && back ? [{ value: 'resting', label: `Resting · back ${dayMonth(back)}` }] : []
+    groups = [
+      ['Intensity', Object.entries(INTENSITY_TEXT).map(([v, label]) => ({ value: v, label }))],
+      [
+        'No pitch or gym work',
+        REST_DAYS.map(([n, label]) => ({ value: `rest:${n}`, label: `For ${label}` })),
+      ],
+    ]
+    patchFor = (v): Record<string, string | null> =>
+      v.startsWith('rest:')
+        ? {
+            [TRAINING_KEYS.rest]: restBack(asOf(), Number(v.slice(5))),
+            [TRAINING_KEYS.asOf]: asOf(),
+          }
+        : { [TRAINING_KEYS.intensity]: v, [TRAINING_KEYS.rest]: '', [TRAINING_KEYS.asOf]: asOf() }
+  }
+  if (value === '' && field !== 'focus') first.unshift({ value: '', label: '–' })
+
+  const label = TRAINING_COLS.find(([k]) => k === field)?.[1] ?? field
+  return (
+    <select
+      aria-label={`${label} for ${player.name}`}
+      value={value}
+      disabled={mutation.isPending}
+      onChange={(e) => e.target.value && mutation.mutate(patchFor(e.target.value))}
+      className={clsx(
+        'min-h-9 max-w-56 rounded-lg border border-border bg-surface-2 px-2 text-sm',
+        mutation.isError && 'border-red-500',
+        (value === '' || value === NONE || value === 'auto' || value.startsWith('raw:')) &&
+          'text-muted',
+      )}
+    >
+      {first.map((o) => (
+        <option key={o.value} value={o.value}>
+          {o.label}
+        </option>
+      ))}
+      {groups
+        .filter(([, list]) => list.length)
+        .map(([g, list]) => (
+          <optgroup key={g} label={g}>
+            {list.map((o) => (
+              <option key={o.value} value={o.value}>
+                {o.label}
+              </option>
+            ))}
+          </optgroup>
+        ))}
+    </select>
+  )
 }

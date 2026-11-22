@@ -126,30 +126,67 @@ export function isTrainingRoleCodes(v: unknown): v is TrainingRoleCodes {
   )
 }
 
-/** The in-possession role a player trains: the role, or the number when it is not known. */
+/**
+ * The in-possession role a player trains: the role, "playing position", or the number when it
+ * is not known. Read from the save (a number) or set in the app ("role:<id>", "playing").
+ */
 export function ipTrainingRole(
   raw: string | undefined,
   codes: TrainingRoleCodes,
   roles: RoleDef[],
-): { role: RoleDef | null; code: number } | null {
-  if (!raw || !/^\d+$/.test(raw)) return null
+): { role: RoleDef | null; code: number | null; playing?: boolean } | null {
+  if (!raw) return null
+  if (raw === PLAYING) return { role: null, code: null, playing: true }
+  if (raw.startsWith('role:'))
+    return { role: roles.find((r) => r.id === raw.slice(5)) ?? null, code: null }
+  if (!/^\d+$/.test(raw)) return null
   const code = Number(raw) >> 6
   const id = codes.ip[String(code)]
   return { role: roles.find((r) => r.id === id) ?? null, code }
 }
 
-/** The out-of-possession role a player trains: the role, None, or the number. */
+/**
+ * The out-of-possession role a player trains: the role, None, or the number. Read from the save
+ * (a number) or set in the app ("role:<id>", "none").
+ */
 export function oopTrainingRole(
   raw: string | undefined,
   codes: TrainingRoleCodes,
   roles: RoleDef[],
-): { role: RoleDef | null; none: boolean; code: number } | null {
-  if (!raw || !/^-?\d+$/.test(raw)) return null
+): { role: RoleDef | null; none: boolean; code: number | null } | null {
+  if (!raw) return null
+  if (raw === NONE) return { role: null, none: true, code: null }
+  if (raw.startsWith('role:'))
+    return { role: roles.find((r) => r.id === raw.slice(5)) ?? null, none: false, code: null }
+  if (!/^-?\d+$/.test(raw)) return null
   const n = Number(raw)
   if (n === codes.oopNone) return { role: null, none: true, code: n }
   const id = codes.oop[n + 32]
   if (id === null) return { role: null, none: true, code: n }
   return { role: roles.find((r) => r.id === id) ?? null, none: false, code: n }
+}
+
+/** Values set in the app for "Playing position" (in possession) and None (out of possession). */
+export const PLAYING = 'playing'
+export const NONE = 'none'
+
+/** Rest options FM offers next to the intensities (days without pitch or gym work). */
+export const REST_DAYS: [number, string][] = [
+  [1, '1 day'],
+  [2, '2 days'],
+  [3, '3 days'],
+  [4, '4 days'],
+  [5, '5 days'],
+  [6, '6 days'],
+  [7, '1 week'],
+  [14, '2 weeks'],
+]
+
+/** The first day back from a rest of n days starting the day after `from` (as FM stores it). */
+export function restBack(from: string, days: number): string {
+  const d = new Date(`${from}T00:00:00Z`)
+  d.setUTCDate(d.getUTCDate() + days + 1)
+  return d.toISOString().slice(0, 10)
 }
 
 export const INTENSITY_TEXT: Record<string, string> = {

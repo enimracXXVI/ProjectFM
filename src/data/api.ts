@@ -646,6 +646,19 @@ export async function setPlayerTeam(player: PlayerRow, team: Team): Promise<void
   check(await supabase.from('players').update({ extra }).eq('id', player.id))
 }
 
+/** Sets or clears (null) some of a player's extra fields, keeping the rest. */
+export async function setPlayerExtra(
+  player: PlayerRow,
+  patch: Record<string, string | null>,
+): Promise<void> {
+  const extra = { ...player.extra }
+  for (const [k, v] of Object.entries(patch)) {
+    if (v === null) delete extra[k]
+    else extra[k] = v
+  }
+  check(await supabase.from('players').update({ extra }).eq('id', player.id))
+}
+
 /** Sets a player's individual training focus by name (kept in extra, untouched by imports). */
 export async function setPlayerFocus(player: PlayerRow, focus: string | null): Promise<void> {
   const extra = { ...player.extra }
