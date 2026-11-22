@@ -2,6 +2,9 @@ import { useState } from 'react'
 import { SettingsSection } from '../../components/SettingsSection'
 import { SettingsShell } from '../../components/SettingsShell'
 import { useConfig } from '../../lib/config'
+import { useCurrentCareer } from '../../lib/career'
+import { usePlayers } from '../../data/hooks'
+import { TRAINING_KEYS } from '../../training/individual'
 import { useSaveConfig } from '../../lib/useSaveConfig'
 import type { TrainingRoleCodes } from '../../training/individual'
 
@@ -19,6 +22,17 @@ export function TrainingRolesSettings() {
     setForm(stored)
   }
   const [code, setCode] = useState('')
+  // Role numbers your players train that have no name yet, with who trains them
+  const career = useCurrentCareer()
+  const { data: squad } = usePlayers(career.id)
+  const unnamed = new Map<string, string[]>()
+  for (const p of squad ?? []) {
+    const raw = p.extra[TRAINING_KEYS.ip]
+    if (!raw || !/^\d+$/.test(raw)) continue
+    const n = String(Number(raw) >> 6)
+    if (n in form.ip) continue
+    unnamed.set(n, [...(unnamed.get(n) ?? []), `${p.name} (${p.positions ?? '?'})`])
+  }
   const rolesOf = (phase: 'ip' | 'oop') => config.roles.filter((r) => r.phase === phase)
   const ipCodes = Object.keys(form.ip).sort((a, b) => Number(a) - Number(b))
 
@@ -69,6 +83,30 @@ export function TrainingRolesSettings() {
             </li>
           ))}
         </ul>
+        {unnamed.size > 0 && (
+          <div className="mt-3 rounded-lg border border-amber-400/40 bg-amber-400/5 p-3">
+            <p className="mb-2 text-sm">
+              Not named yet: look one of these players up on FM&apos;s training screen (IP Role) and
+              add the number with that role.
+            </p>
+            <ul className="grid gap-1 text-sm">
+              {[...unnamed]
+                .sort((a, b) => Number(a[0]) - Number(b[0]))
+                .map(([n, who]) => (
+                  <li key={n} className="flex flex-wrap items-center gap-x-2">
+                    <button
+                      type="button"
+                      onClick={() => setCode(n)}
+                      className="min-h-9 w-12 rounded-md border border-border text-right tabular-nums hover:bg-surface-2"
+                    >
+                      {n}
+                    </button>
+                    <span className="text-muted">{who.join(', ')}</span>
+                  </li>
+                ))}
+            </ul>
+          </div>
+        )}
         <div className="mt-3 flex items-center gap-2">
           <input
             inputMode="numeric"
