@@ -5,9 +5,10 @@ and clauses, and this season's stats per competition kind. Also the club's scout
 attributes (Authority included) and scouting knowledge per nation.
 """
 import json
+import re
 import struct
 from dataclasses import asdict, is_dataclass
-from datetime import date, datetime
+from datetime import date, datetime, timedelta
 
 import fmsave
 from fmsave.readers import contracts as _contracts
@@ -20,6 +21,81 @@ _CHAIN_RECORDS = []
 _decode_chain_record = _contracts.ContractDecoder.decode_chain_record
 
 
+
+
+_TRAINING_ROLES = re.compile(rb"\x01\x02([\x01-\x10])\x04\x05")
+_TRAINING_KEEP = re.compile(rb"\x01\x01..[\x6c\xe0-\xff]\x07\x00\x00", re.S)
+_TRAINING_INTENSITY = re.compile(rb"(?=[\xff\x00-\x02][\x10-\x20]\x00\x00\x00[\x10-\x20]\x00\x00\x00)")
+
+
+def _date(raw):
+    """FM's 4-byte date as ISO text: day of the year from 1 (low 9 bits; the rest is the time),
+    then the year. None when unset (year 1900)."""
+    day, year = struct.unpack("<HH", raw)
+    day &= 0x1FF
+    if year < 1950 or year > 2200 or not day:
+        return None
+    return (date(year, 1, 1) + timedelta(days=day - 1)).isoformat()
+
+
+def _training(rec):
+    """A player's individual training from his record in game_db, found by ProjectFM on the
+    user's FM27 saves (27.1) by changing one setting at a time in game:
+
+    - roles list "01 02 N 04" then N entries "05 <role u16> <date> ...": the last one is the
+      in-possession role being trained (the u16 is role number x 64 + position number);
+    - "01 03 <focus>": the training focus (FM's focus code, FF none);
+    - "01 01 <date> 00 00 <oop i16>": the out-of-possession role (FM's out-of-possession role
+      number minus 32; 50 is None);
+    - then the intensity byte (FF automatic, 0 half, 1 normal, 2 double) and, 20 bytes on,
+      the first day back from a rest (no pitch or gym work): 2 days set on 19 Dec is 22 Dec.
+    Anything not found is left out."""
+    out = {}
+    m = _TRAINING_ROLES.search(rec, 0, 1400)
+    if not m:
+        return out
+    at = m.start() + 4
+    role = None
+    for _ in range(m.group(1)[0]):
+        if rec[at:at + 1] != b"\x05":
+            break
+        role = struct.unpack_from("<H", rec, at + 1)[0]
+        more = rec[at + 23] if at + 23 < len(rec) else 1
+        at += 24
+        if more != 4:
+            break
+    if role is not None:
+        out["ipRole"] = role
+    keep = _TRAINING_KEEP.search(rec, at, at + 1200)
+    if not keep:
+        return out
+    k = keep.end()
+    out["oopRole"] = struct.unpack_from("<h", rec, k)[0]
+    focus = rec.rfind(b"\x01\x03", max(at, k - 40), k)
+    out["focus"] = None if focus < 0 or rec[focus + 2] == 0xFF else rec[focus + 2]
+    inten = _TRAINING_INTENSITY.search(rec, k, k + 90)
+    if inten:
+        i = inten.start()
+        out["intensity"] = {0xFF: "auto", 0: "half", 1: "normal", 2: "double"}[rec[i]]
+        out["restUntil"] = _date(rec[i + 20:i + 24])
+    return out
+
+
+def _training_by_uid(save, uids):
+    """Individual training of these players (by person uid)."""
+    records = save._context.player_records()
+    offsets = records.record_offsets
+    out = {}
+    with save._context.section("game_db") as game_db:
+        for k, uid in enumerate(records.uids):
+            if uid not in uids:
+                continue
+            end = offsets[k + 1] if k + 1 < len(offsets) else offsets[k] + 6000
+            try:
+                out[uid] = _training(bytes(game_db[offsets[k]:end]))
+            except Exception:
+                out[uid] = {}
+    return out
 
 def _pid(person):
     """A person's ID as FM shows it: the database unique ID. People the game made (newgens,
@@ -53,7 +129,7 @@ def _plain(v):
 
 
 # Raised whenever extract() returns new data, so the app can spot an outdated copy
-READER_VERSION = 24
+READER_VERSION = 25
 
 JOB_SCOUT, JOB_CHIEF_SCOUT = 14, 44
 _FF8 = b"\xff" * 8
@@ -890,9 +966,15 @@ def extract(path):
             "contracts": [],
             "stats": [],
         }
+        try:
+            training = _training_by_uid(save, {p.uid for p in players})
+        except Exception:
+            training = {}
         for p in players:
             out["players"].append({
                 "uniqueId": _pid(p),
+                # Individual training (role, focus, intensity, rest), as far as it was found
+                "training": training.get(p.uid) or None,
                 "name": p.name,
                 "leftFoot": p.left_foot,
                 "rightFoot": p.right_foot,

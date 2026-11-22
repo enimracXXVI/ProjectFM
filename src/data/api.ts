@@ -1,4 +1,5 @@
 import type { DevSnapshot } from '../lib/development'
+import { TRAINING_KEYS } from '../training/individual'
 import type { Team } from './teams'
 import { supabase } from '../lib/supabase'
 import { jobTitle, STAFF_ATTRS } from './staffJobs'
@@ -582,6 +583,7 @@ export async function importFmSave(opts: {
         ...u?.contract,
         ...u?.stats,
         ...(u?.traits != null ? { Traits: u.traits } : {}),
+        ...u?.training,
       },
     }
   })
@@ -597,12 +599,17 @@ export async function importFmSave(opts: {
       header: name,
       target: { kind: 'attribute' as const, name },
     })),
-    ...[...DUMP_PRESENT.extra, 'team', 'Traits', ...SAVE_CONTRACT_KEYS, ...SAVE_STATS_KEYS].map(
-      (key) => ({
-        header: key,
-        target: { kind: 'extra' as const, key },
-      }),
-    ),
+    ...[
+      ...DUMP_PRESENT.extra,
+      'team',
+      'Traits',
+      ...SAVE_CONTRACT_KEYS,
+      ...SAVE_STATS_KEYS,
+      ...Object.values(TRAINING_KEYS),
+    ].map((key) => ({
+      header: key,
+      target: { kind: 'extra' as const, key },
+    })),
   ]
   const players = await importPlayers({
     careerId: career.id,

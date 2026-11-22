@@ -3,6 +3,7 @@
  * ProjectFM fields: the Contract and Stats columns (same keys as the FM HTML exports),
  * feet, and personality values.
  */
+import { trainingFields, type SaveTraining } from '../training/individual'
 import type { CompetitionsFile } from '../competitions/types'
 import type { SeasonStatsFile } from '../world/stats'
 import type { SaveTactics } from '../tactics/types'
@@ -24,7 +25,7 @@ import {
 export type StatsKind = 'overall' | 'league' | 'cup' | 'non_competitive'
 
 /** Version of public/fmsave/extract.py this app expects. */
-export const READER_VERSION = 24
+export const READER_VERSION = 25
 
 export interface SaveData {
   /** Version of the save reader that produced this (absent before version 3). */
@@ -48,6 +49,8 @@ export interface SaveData {
     personality: Record<string, number> | null
     /** Trait bit numbers (reader 15 and later). */
     traits?: number[]
+    /** Individual training (reader 25 and later). */
+    training?: SaveTraining | null
   }[]
   contracts: {
     uniqueId: number
@@ -198,6 +201,8 @@ export interface SavePlayerUpdate {
   stats: Record<string, string> | null
   /** Trait bits ("2,8,10", empty for none), or null from an older reader. */
   traits: string | null
+  /** Individual training fields (empty from an older reader or when not found). */
+  training: Record<string, string>
 }
 
 /** All stats keys the save import writes (cleared before new stats are written). */
@@ -230,6 +235,7 @@ export function saveUpdates(
       contract: contract ? contractFields(contract) : null,
       stats: stats ? statsFields(stats) : null,
       traits: p.traits ? p.traits.join(',') : null,
+      training: trainingFields(p.training, data.gameDate),
     }
   })
 }

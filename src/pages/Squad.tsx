@@ -20,8 +20,17 @@ import { useConfig } from '../lib/config'
 import { allRoleFits, roleScore, scoreColor, type RoleFit } from '../lib/roleFit'
 import { sortValue } from '../lib/values'
 import { byLastName } from '../lib/names'
+import type { AppConfig } from '../data/config'
+import {
+  INTENSITY_TEXT,
+  TRAINING_KEYS,
+  focusOf,
+  ipTrainingRole,
+  oopTrainingRole,
+  restDaysLeft,
+} from '../training/individual'
 
-type View = 'profile' | 'attributes' | 'contract' | 'stats' | 'roles'
+type View = 'profile' | 'attributes' | 'contract' | 'stats' | 'roles' | 'training'
 type Role = 'outfield' | 'goalkeepers'
 type SortKey = { col: string; asc: boolean }
 
@@ -101,6 +110,13 @@ export function Squad() {
     return map
   }, [data, config.roles, config.roleWeights, selectedRole])
 
+  // Individual training read from the save (Squad > Training)
+  const training = useMemo(() => {
+    const map = new Map<string, TrainingCells>()
+    for (const p of data ?? []) map.set(p.id, trainingCells(p, config))
+    return map
+  }, [data, config])
+
   const players = useMemo(() => {
     const q = filter.toLowerCase()
     const list = (data ?? []).filter(
@@ -115,6 +131,8 @@ export function Squad() {
       if (sort.col === 'r:sel') return fits.get(p.id)?.sel ?? null
       if (sort.col === 'r:ip') return fits.get(p.id)?.ip?.score ?? null
       if (sort.col === 'r:oop') return fits.get(p.id)?.oop?.score ?? null
+      if (sort.col.startsWith('t:'))
+        return training.get(p.id)?.[sort.col.slice(2) as keyof TrainingCells]?.sort ?? null
       const profile = profileCols.find((c) => c.key === sort.col)
       return profile ? profile.get(p) : attrNumber(p.attributes[sort.col])
     }
@@ -129,7 +147,7 @@ export function Squad() {
         typeof x === 'number' && typeof y === 'number' ? x - y : String(x).localeCompare(String(y))
       return sort.asc ? r : -r
     })
-  }, [data, filter, sort, view, role, fits, profileCols, team])
+  }, [data, filter, sort, view, role, fits, training, profileCols, team])
 
   // Only sections/columns that have data for the players shown
   const sections = useMemo(
@@ -238,6 +256,7 @@ export function Squad() {
                   ['contract', 'Contract'],
                   ['stats', 'Stats'],
                   ['roles', 'Roles'],
+                  ['training', 'Training'],
                 ]}
               />
               {view === 'roles' && (
@@ -388,7 +407,25 @@ export function Squad() {
                     onSort={toggleSort}
                     sticky
                   />
-                  {view === 'roles' ? (
+                  {view === 'training' ? (
+                    <>
+                      <SortHeader
+                        col="positions"
+                        label="Position"
+                        sort={sort}
+                        onSort={toggleSort}
+                      />
+                      {TRAINING_COLS.map(([key, label]) => (
+                        <SortHeader
+                          key={key}
+                          col={`t:${key}`}
+                          label={label}
+                          sort={sort}
+                          onSort={toggleSort}
+                        />
+                      ))}
+                    </>
+                  ) : view === 'roles' ? (
                     <>
                       <SortHeader
                         col="r:sel"
@@ -481,7 +518,28 @@ export function Squad() {
                       </Link>{' '}
                       <TeamBadge player={p} /> <StatusChip code={p.extra.status} />
                     </td>
-                    {view === 'roles' ? (
+                    {view === 'training' ? (
+                      <>
+                        <td className="px-4 py-2.5 whitespace-nowrap text-muted">
+                          {p.positions ?? '–'}
+                        </td>
+                        {TRAINING_COLS.map(([key]) => {
+                          const c = training.get(p.id)?.[key]
+                          return (
+                            <td
+                              key={key}
+                              className={clsx(
+                                'px-4 py-2.5 whitespace-nowrap',
+                                c?.muted && 'text-muted',
+                              )}
+                              title={c?.title}
+                            >
+                              {c?.text ?? '–'}
+                            </td>
+                          )
+                        })}
+                      </>
+                    ) : view === 'roles' ? (
                       <>
                         <td className="px-4 py-2.5">
                           <ScoreCell score={fits.get(p.id)?.sel ?? null} />
@@ -673,4 +731,68 @@ function SortHeader({
       )}
     </th>
   )
+}
+
+type TrainingCell = { text: string; sort: string | number | null; muted?: boolean; title?: string }
+type TrainingCells = Record<'ip' | 'oop' | 'focus' | 'intensity', TrainingCell>
+
+const TRAINING_COLS: [keyof TrainingCells, string][] = [
+  ['ip', 'IP role'],
+  ['oop', 'OOP role'],
+  ['focus', 'Training focus'],
+  ['intensity', 'Intensity'],
+]
+
+const dayMonth = (iso: string) =>
+  new Date(`${iso}T00:00:00`).toLocaleDateString(undefined, { day: 'numeric', month: 'short' })
+
+/** A player's individual training (from the save) as table cells. */
+function trainingCells(p: PlayerRow, config: AppConfig): TrainingCells {
+  const codes = config.trainingRoleCodes
+  const none = (text: string): TrainingCell => ({ text, sort: null, muted: true })
+  const ip = ipTrainingRole(p.extra[TRAINING_KEYS.ip], codes, config.roles)
+  const oop = oopTrainingRole(p.extra[TRAINING_KEYS.oop], codes, config.roles)
+  const focus = focusOf(p.extra[TRAINING_KEYS.focus], config.trainingFocuses)
+  const intensity = p.extra[TRAINING_KEYS.intensity]
+  const back = p.extra[TRAINING_KEYS.rest]
+  const rest = restDaysLeft(back, p.extra[TRAINING_KEYS.asOf])
+  return {
+    ip: !ip
+      ? none('–')
+      : ip.role
+        ? { text: ip.role.name, sort: ip.role.name }
+        : {
+            text: `Role ${ip.code} (?)`,
+            sort: `~${ip.code}`,
+            muted: true,
+            title: 'Not known yet: name it in Settings > Training roles',
+          },
+    oop: !oop
+      ? none('–')
+      : oop.none
+        ? none('None')
+        : oop.role
+          ? { text: oop.role.name, sort: oop.role.name }
+          : { text: `Role ${oop.code} (?)`, sort: `~${oop.code}`, muted: true },
+    focus:
+      focus === undefined
+        ? none('–')
+        : focus === null
+          ? none('None')
+          : { text: focus.name, sort: focus.name },
+    intensity:
+      rest && back
+        ? {
+            text: `Resting · back ${dayMonth(back)}`,
+            sort: `0${String(rest).padStart(3, '0')}`,
+            title: `No pitch or gym work: ${rest} day${rest === 1 ? '' : 's'} left (as of ${p.extra[TRAINING_KEYS.asOf]})`,
+          }
+        : intensity
+          ? {
+              text: INTENSITY_TEXT[intensity] ?? intensity,
+              sort: INTENSITY_TEXT[intensity] ?? intensity,
+              muted: intensity === 'auto',
+            }
+          : none('–'),
+  }
 }

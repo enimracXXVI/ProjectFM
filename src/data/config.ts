@@ -1,4 +1,9 @@
 import { supabase } from '../lib/supabase'
+import {
+  DEFAULT_TRAINING_ROLE_CODES,
+  isTrainingRoleCodes,
+  type TrainingRoleCodes,
+} from '../training/individual'
 import { DEFAULT_ROLE_COLORS } from '../lib/roleMarks'
 import {
   DEFAULT_MEDIA_THRESHOLDS,
@@ -140,6 +145,8 @@ export interface AppConfig {
   briefingLowFit: number
   /** Colours marking a role's key and preferred attributes. */
   roleColors: { key: string; preferred: string }
+  /** How the save numbers the roles players train (Squad > Training). */
+  trainingRoleCodes: TrainingRoleCodes
   /** Picking a player for a tactic slot: FM position rating (1–20) that counts as able to play there. */
   positionMin: number
   /** FM's role-combination warnings the briefing checks (text, on/off, limits). */
@@ -218,6 +225,7 @@ export const DEFAULT_CONFIG: AppConfig = {
   briefingLowFit: 55,
   positionMin: 15,
   roleColors: DEFAULT_ROLE_COLORS,
+  trainingRoleCodes: DEFAULT_TRAINING_ROLE_CODES,
   roleWarnings: DEFAULT_ROLE_WARNINGS,
   trainingSessions: DEFAULT_TRAINING_SESSIONS,
   tacticalStyles: DEFAULT_TACTICAL_STYLES,
@@ -322,6 +330,9 @@ export function mergeConfig(stored: Stored): AppConfig {
     briefingLowFit: stored.briefingLowFit ?? DEFAULT_CONFIG.briefingLowFit,
     positionMin: stored.positionMin ?? DEFAULT_CONFIG.positionMin,
     roleColors: { ...DEFAULT_CONFIG.roleColors, ...stored.roleColors },
+    trainingRoleCodes: isTrainingRoleCodes(stored.trainingRoleCodes)
+      ? stored.trainingRoleCodes
+      : DEFAULT_TRAINING_ROLE_CODES,
     trainingSessions: stored.trainingSessions ?? DEFAULT_CONFIG.trainingSessions,
     tacticalStyles: stored.tacticalStyles ?? DEFAULT_CONFIG.tacticalStyles,
     matchData: stored.matchData ?? DEFAULT_CONFIG.matchData,

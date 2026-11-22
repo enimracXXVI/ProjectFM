@@ -231,6 +231,13 @@ export const SETTINGS_GROUPS: SettingsGroup[] = [
         hint: 'Individual focuses and the attributes they train',
         about: 'The individual training focuses and which attributes each works on.',
       },
+      {
+        to: '/settings/training-roles',
+        label: 'Training roles',
+        hint: 'How the save numbers the roles players train',
+        about:
+          "The numbers the save uses for each player's role training (Squad > Training). Out of possession they follow FM's own role list; in possession only the roles seen in your saves are known, so a new one shows as a number you can name here.",
+      },
     ],
   },
   {

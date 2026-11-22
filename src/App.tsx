@@ -43,6 +43,7 @@ import { OlderRolesSettings } from './pages/settings/OlderRoles'
 import { PicturesSettings } from './pages/settings/Pictures'
 import { SettingsGuide } from './pages/settings/Guide'
 import { MediaHandlingSettings } from './pages/settings/MediaHandling'
+import { TrainingRolesSettings } from './pages/settings/TrainingRoles'
 import { StatProfilesSettings } from './pages/settings/StatProfiles'
 import { TacticRulesSettings } from './pages/settings/TacticRules'
 import { GameIdeasSettings } from './pages/settings/GameIdeas'
@@ -134,6 +135,7 @@ function SignedIn() {
         <Route path="settings/pictures" element={<PicturesSettings />} />
         <Route path="settings/guide" element={<SettingsGuide />} />
         <Route path="settings/media-handling" element={<MediaHandlingSettings />} />
+        <Route path="settings/training-roles" element={<TrainingRolesSettings />} />
         <Route path="settings/stat-profiles" element={<StatProfilesSettings />} />
         <Route path="settings/tactic-rules" element={<TacticRulesSettings />} />
         <Route path="settings/game-ideas" element={<GameIdeasSettings />} />
