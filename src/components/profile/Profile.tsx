@@ -1,4 +1,5 @@
 import { clsx } from 'clsx'
+import { focusesFor } from '../../training/focus'
 import { TEXT, useUrlState } from '../../lib/urlState'
 import { KEY_ROW, KEY_SWATCH, PREFERRED_ROW, PREFERRED_SWATCH } from '../../lib/roleMarks'
 import { ChevronRight, Dumbbell } from 'lucide-react'
@@ -628,7 +629,14 @@ function AttributesWide({ data, highlight }: { data: ProfileData; highlight: Hig
                     >
                       <Tooltip
                         title={attributeLabel(config, n)}
-                        text={config.attributes[n]?.description || attributeLabel(config, n)}
+                        content={
+                          <>
+                            <span className="block">
+                              {config.attributes[n]?.description || attributeLabel(config, n)}
+                            </span>
+                            <TrainedBy attribute={n} />
+                          </>
+                        }
                       >
                         <span tabIndex={0} className="flex min-w-0 cursor-help items-center gap-1">
                           <span className="truncate">{attributeLabel(config, n)}</span>
@@ -837,5 +845,18 @@ export function ProfileTabs<T extends string>({
         </button>
       ))}
     </div>
+  )
+}
+
+/** The individual training focuses that work on an attribute (Settings > Training focuses). */
+function TrainedBy({ attribute }: { attribute: string }) {
+  const config = useConfig()
+  const list = focusesFor(attribute, config.trainingFocuses)
+  return (
+    <span className="mt-1 block border-t border-border pt-1 text-muted">
+      {list.length
+        ? `Trained by: ${list.map((f) => f.name).join(', ')}`
+        : 'No training focus works on it'}
+    </span>
   )
 }

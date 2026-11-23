@@ -1,7 +1,7 @@
 import { clsx } from 'clsx'
 import { Face } from '../components/Pictures'
-import { ChevronDown, ChevronUp, Scale, TrendingUp, Trophy } from 'lucide-react'
-import { useMemo } from 'react'
+import { ChevronDown, ChevronUp, Dumbbell, Scale, TrendingUp, Trophy, X } from 'lucide-react'
+import { useEffect, useMemo, useState } from 'react'
 import { SORT, TEXT, useUrlState, useUrlText } from '../lib/urlState'
 import { seasonText, seasonYear, useSquadSeason, useSquadSeasons } from '../data/seasons'
 import { Link } from 'react-router-dom'
@@ -33,7 +33,7 @@ import {
   restBack,
   restDaysLeft,
 } from '../training/individual'
-import { focusesForPlayer } from '../training/focus'
+import { focusesForPlayer, type TrainingFocus } from '../training/focus'
 import { setPlayerExtra } from '../data/api'
 import { parsePositions } from '../lib/roleFit'
 import type { RoleDef } from '../data/roles'
@@ -538,6 +538,8 @@ export function Squad() {
                               <span className="px-2 text-muted">
                                 {training.get(p.id)?.[key]?.text ?? '–'}
                               </span>
+                            ) : key === 'focus' ? (
+                              <FocusCell player={p} />
                             ) : (
                               <TrainingSelect player={p} field={key} />
                             )}
@@ -808,7 +810,15 @@ type Option = { value: string; label: string }
  * One training setting of a player, editable like the team picker: saves straight away. The
  * next save import replaces it with what FM has.
  */
-function TrainingSelect({ player, field }: { player: PlayerRow; field: keyof TrainingCells }) {
+function TrainingSelect({
+  player,
+  field,
+  className,
+}: {
+  player: PlayerRow
+  field: keyof TrainingCells
+  className?: string
+}) {
   const config = useConfig()
   const qc = useQueryClient()
   const mutation = useMutation({
@@ -912,6 +922,7 @@ function TrainingSelect({ player, field }: { player: PlayerRow; field: keyof Tra
         mutation.isError && 'border-red-500',
         (value === '' || value === NONE || value === 'auto' || value.startsWith('raw:')) &&
           'text-muted',
+        className,
       )}
     >
       {first.map((o) => (
@@ -931,5 +942,169 @@ function TrainingSelect({ player, field }: { player: PlayerRow; field: keyof Tra
           </optgroup>
         ))}
     </select>
+  )
+}
+
+/** A player's values for a focus's attributes, and their average (none when not known). */
+function focusValues(player: PlayerRow, focus: TrainingFocus) {
+  const values = focus.attributes.map((a) => ({ a, v: player.attributes[a] }))
+  const nums = values.map((x) => attrNumber(x.v)).filter((n): n is number => n !== null)
+  const avg = nums.length ? nums.reduce((t, n) => t + n, 0) / nums.length : null
+  return { values, avg }
+}
+
+/** The attributes a focus works on, with the player's values in attribute colours. */
+function FocusAttributes({ player, focus }: { player: PlayerRow; focus: TrainingFocus }) {
+  const config = useConfig()
+  if (!focus.attributes.length)
+    return (
+      <span className="text-muted" title="Set them in Settings > Training focuses">
+        No attributes set
+      </span>
+    )
+  return (
+    <span className="flex flex-wrap gap-x-2 gap-y-0.5">
+      {focusValues(player, focus).values.map(({ a, v }) => (
+        <span key={a} className="whitespace-nowrap">
+          <span className="text-muted">
+            {config.attributes[a]?.abbr || attributeLabel(config, a)}
+          </span>{' '}
+          <span className={clsx('font-semibold tabular-nums', attrColor(v))}>{formatAttr(v)}</span>
+        </span>
+      ))}
+    </span>
+  )
+}
+
+/**
+ * The focus picker, the attributes the chosen focus works on (with the player's values) and a
+ * "Which focus?" card comparing every focus FM offers him.
+ */
+function FocusCell({ player }: { player: PlayerRow }) {
+  const config = useConfig()
+  const [open, setOpen] = useState(false)
+  const focus = focusOf(player.extra[TRAINING_KEYS.focus], config.trainingFocuses)
+  const full = focus ? config.trainingFocuses.find((f) => f.code === focus.code) : undefined
+  return (
+    <div className="grid w-64 gap-1">
+      <div className="flex items-center gap-1">
+        <TrainingSelect player={player} field="focus" className="min-w-0 flex-1" />
+        <button
+          type="button"
+          aria-label={`Which focus for ${player.name}?`}
+          title="Which focus?"
+          onClick={() => setOpen(true)}
+          className="grid size-9 shrink-0 place-items-center rounded-lg text-muted hover:bg-surface-2 hover:text-text"
+        >
+          <Dumbbell className="size-4" aria-hidden />
+        </button>
+      </div>
+      {full && (
+        <div className="px-1 text-xs whitespace-normal">
+          <FocusAttributes player={player} focus={full} />
+        </div>
+      )}
+      {open && <WhichFocus player={player} onClose={() => setOpen(false)} />}
+    </div>
+  )
+}
+
+/** Every focus FM offers the player, weakest attributes first; picking one sets it. */
+function WhichFocus({ player, onClose }: { player: PlayerRow; onClose: () => void }) {
+  const config = useConfig()
+  const qc = useQueryClient()
+  const mutation = useMutation({
+    mutationFn: (code: string) =>
+      setPlayerExtra(player, {
+        [TRAINING_KEYS.focus]: code,
+        [TRAINING_KEYS.asOf]:
+          player.extra[TRAINING_KEYS.asOf] || new Date().toISOString().slice(0, 10),
+      }),
+    onSuccess: onClose,
+    onSettled: () => {
+      qc.invalidateQueries({ queryKey: ['players', player.career_id] })
+      qc.invalidateQueries({ queryKey: ['player', player.id] })
+    },
+  })
+  useEffect(() => {
+    const key = (e: KeyboardEvent) => e.key === 'Escape' && onClose()
+    document.addEventListener('keydown', key)
+    return () => document.removeEventListener('keydown', key)
+  }, [onClose])
+  const current = player.extra[TRAINING_KEYS.focus] ?? ''
+  const rows = focusesForPlayer(player.positions, config.trainingFocuses)
+    .map((f) => ({ f, ...focusValues(player, f) }))
+    .sort((a, b) => (a.avg ?? 99) - (b.avg ?? 99))
+  return (
+    <div
+      role="dialog"
+      aria-modal="true"
+      aria-label={`Which focus for ${player.name}?`}
+      className="fixed inset-0 z-50 grid place-items-center bg-black/60 p-4 whitespace-normal"
+      onClick={onClose}
+    >
+      <div
+        className="grid max-h-[85dvh] w-full max-w-lg grid-rows-[auto_minmax(0,1fr)] rounded-xl border border-border bg-surface shadow-2xl"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className="flex items-start justify-between gap-2 border-b border-border p-3">
+          <div>
+            <p className="font-semibold">Which focus for {player.name}?</p>
+            <p className="text-xs text-muted">
+              Each focus with the attributes it works on and his values; weakest first. Tap one to
+              set it.
+            </p>
+          </div>
+          <button
+            type="button"
+            aria-label="Close"
+            onClick={onClose}
+            className="grid size-9 shrink-0 place-items-center rounded-lg text-muted hover:bg-surface-2"
+          >
+            <X className="size-4" aria-hidden />
+          </button>
+        </div>
+        <ul className="grid content-start gap-1 overflow-y-auto p-2">
+          <li>
+            <button
+              type="button"
+              onClick={() => mutation.mutate('')}
+              className={clsx(
+                'w-full rounded-lg px-3 py-2 text-left text-sm hover:bg-surface-2',
+                current === '' && 'bg-accent/15',
+              )}
+            >
+              None
+            </button>
+          </li>
+          {rows.map(({ f, avg }) => (
+            <li key={f.code}>
+              <button
+                type="button"
+                disabled={mutation.isPending}
+                onClick={() => mutation.mutate(String(f.code))}
+                className={clsx(
+                  'grid w-full gap-0.5 rounded-lg px-3 py-2 text-left text-sm hover:bg-surface-2',
+                  current === String(f.code) && 'bg-accent/15 ring-1 ring-accent/50',
+                )}
+              >
+                <span className="flex items-center justify-between gap-2">
+                  <span className="font-semibold">{f.name}</span>
+                  {avg !== null && (
+                    <span className="text-xs text-muted tabular-nums">avg {avg.toFixed(1)}</span>
+                  )}
+                </span>
+                <span className="text-xs">
+                  <FocusAttributes player={player} focus={f} />
+                </span>
+              </button>
+            </li>
+          ))}
+        </ul>
+        {mutation.isError && (
+          <p className="px-3 pb-3 text-sm text-red-400">{(mutation.error as Error).message}</p>
+        )}
+      </div>
+    </div>
   )
 }
