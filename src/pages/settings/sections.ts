@@ -28,6 +28,13 @@ export const SETTINGS_GROUPS: SettingsGroup[] = [
           'Upload your FM27 save. It updates your squad, staff, tactics, competitions, stats and the World database in one go. Do this whenever you want the app up to date.',
       },
       {
+        to: '/careers',
+        label: 'Careers',
+        hint: 'Your saves: new, edit, clear or delete',
+        about:
+          'One career per FM save: its name, club, crest, kits and current season. Create a new one, edit or clear one here; switch between them with the club picker at the top (its last entry also opens this page).',
+      },
+      {
         to: '/check',
         label: 'Check in game',
         hint: 'What the app could not work out, for you to look up',

@@ -48,8 +48,17 @@ export const sections: NavItem[] = [
 
 /**
  * The sidebar and the phone's More sections: Development and Compare open from the Squad
- * page; Notes from the Dashboard; Import, Check in game and How it works from Settings.
+ * page; Notes from the Dashboard; Import, Check in game, How it works and Careers from Settings
+ * (Careers also from the club picker).
  * All of them can still go in the phone's bottom bar.
  */
-const IN_PAGES = new Set(['/development', '/compare', '/notes', '/import', '/check', '/explain'])
+const IN_PAGES = new Set([
+  '/development',
+  '/compare',
+  '/notes',
+  '/import',
+  '/check',
+  '/explain',
+  '/careers',
+])
 export const navItems: NavItem[] = sections.filter((s) => !IN_PAGES.has(s.to))

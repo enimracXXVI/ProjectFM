@@ -82,10 +82,6 @@ export function Dashboard() {
       <div className="mt-6">
         <NotesPanel limit={8} />
       </div>
-      <div className="mt-6 grid gap-3 lg:grid-cols-2">
-        <Placeholder>Season timeline chart — coming soon</Placeholder>
-        <Placeholder>Finances chart — coming soon</Placeholder>
-      </div>
     </>
   )
 }

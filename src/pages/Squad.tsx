@@ -21,6 +21,7 @@ import { useConfig } from '../lib/config'
 import { allRoleFits, roleScore, scoreColor, type RoleFit } from '../lib/roleFit'
 import { sortValue } from '../lib/values'
 import { byLastName } from '../lib/names'
+import { traitNames } from '../data/traits'
 import type { AppConfig } from '../data/config'
 import {
   INTENSITY_TEXT,
@@ -41,7 +42,7 @@ import { parsePositions } from '../lib/roleFit'
 import type { RoleDef } from '../data/roles'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 
-type View = 'profile' | 'attributes' | 'contract' | 'stats' | 'roles' | 'training'
+type View = 'profile' | 'attributes' | 'contract' | 'stats' | 'roles' | 'training' | 'traits'
 type Role = 'outfield' | 'goalkeepers'
 type SortKey = { col: string; asc: boolean }
 
@@ -128,11 +129,26 @@ export function Squad() {
     return map
   }, [data, config])
 
+  // Player traits (from the save), and which of them the squad has, most common first
+  const [trait, setTrait] = useUrlState('trait', '', TEXT)
+  const traitsOf = useMemo(() => {
+    const map = new Map<string, string[]>()
+    for (const p of data ?? []) map.set(p.id, traitNames(p.extra.Traits, config.traitNames))
+    return map
+  }, [data, config.traitNames])
+  const squadTraits = useMemo(() => {
+    const count = new Map<string, number>()
+    for (const list of traitsOf.values())
+      for (const t of list) count.set(t, (count.get(t) ?? 0) + 1)
+    return [...count].sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]))
+  }, [traitsOf])
+
   const players = useMemo(() => {
     const q = filter.toLowerCase()
     const list = (data ?? []).filter(
       (p) =>
         (team === 'all' || teamOf(p) === team) &&
+        (view !== 'traits' || !trait || (traitsOf.get(p.id) ?? []).includes(trait)) &&
         (view !== 'attributes' || isGoalkeeper(p.positions) === (role === 'goalkeepers')) &&
         (!q || p.name.toLowerCase().includes(q) || (p.positions ?? '').toLowerCase().includes(q)),
     )
@@ -142,6 +158,7 @@ export function Squad() {
       if (sort.col === 'r:sel') return fits.get(p.id)?.sel ?? null
       if (sort.col === 'r:ip') return fits.get(p.id)?.ip?.score ?? null
       if (sort.col === 'r:oop') return fits.get(p.id)?.oop?.score ?? null
+      if (sort.col === 'tr:count') return traitsOf.get(p.id)?.length ?? 0
       if (sort.col.startsWith('t:'))
         return training.get(p.id)?.[sort.col.slice(2) as keyof TrainingCells]?.sort ?? null
       const profile = profileCols.find((c) => c.key === sort.col)
@@ -158,7 +175,7 @@ export function Squad() {
         typeof x === 'number' && typeof y === 'number' ? x - y : String(x).localeCompare(String(y))
       return sort.asc ? r : -r
     })
-  }, [data, filter, sort, view, role, fits, training, profileCols, team])
+  }, [data, filter, sort, view, role, fits, training, traitsOf, trait, profileCols, team])
 
   // Only sections/columns that have data for the players shown
   const sections = useMemo(
@@ -268,6 +285,7 @@ export function Squad() {
                   ['stats', 'Stats'],
                   ['roles', 'Roles'],
                   ['training', 'Training'],
+                  ['traits', 'Traits'],
                 ]}
               />
               {view === 'roles' && (
@@ -293,6 +311,21 @@ export function Squad() {
                           </option>
                         ))}
                     </optgroup>
+                  ))}
+                </select>
+              )}
+              {view === 'traits' && (
+                <select
+                  aria-label="Trait"
+                  value={trait}
+                  onChange={(e) => setTrait(e.target.value)}
+                  className="min-h-11 rounded-lg border border-border bg-surface px-3 text-sm"
+                >
+                  <option value="">All traits</option>
+                  {squadTraits.map(([t, n]) => (
+                    <option key={t} value={t}>
+                      {t} ({n})
+                    </option>
                   ))}
                 </select>
               )}
@@ -418,7 +451,24 @@ export function Squad() {
                     onSort={toggleSort}
                     sticky
                   />
-                  {view === 'training' ? (
+                  {view === 'traits' ? (
+                    <>
+                      <SortHeader
+                        col="positions"
+                        label="Position"
+                        sort={sort}
+                        onSort={toggleSort}
+                      />
+                      <SortHeader
+                        col="tr:count"
+                        label="No."
+                        title="Number of traits"
+                        sort={sort}
+                        onSort={toggleSort}
+                      />
+                      <th className="px-4 py-2 font-normal">Traits</th>
+                    </>
+                  ) : view === 'training' ? (
                     <>
                       <SortHeader
                         col="positions"
@@ -529,7 +579,44 @@ export function Squad() {
                       </Link>{' '}
                       <TeamBadge player={p} /> <StatusChip code={p.extra.status} />
                     </td>
-                    {view === 'training' ? (
+                    {view === 'traits' ? (
+                      <>
+                        <td className="px-4 py-2.5 whitespace-nowrap text-muted">
+                          {p.positions ?? '–'}
+                        </td>
+                        <td className="px-4 py-2.5 text-center">
+                          {traitsOf.get(p.id)?.length ?? 0}
+                        </td>
+                        <td className="min-w-72 px-4 py-2">
+                          {(traitsOf.get(p.id) ?? []).length ? (
+                            <span className="flex flex-wrap gap-1">
+                              {(traitsOf.get(p.id) ?? []).map((t) => (
+                                <button
+                                  key={t}
+                                  type="button"
+                                  onClick={() => setTrait(trait === t ? '' : t)}
+                                  title={
+                                    trait === t
+                                      ? 'Show all traits'
+                                      : `Only players who ${t.toLowerCase()}`
+                                  }
+                                  className={clsx(
+                                    'rounded-md border px-2 py-0.5 text-xs',
+                                    trait === t
+                                      ? 'border-accent bg-accent/15 text-text'
+                                      : 'border-border text-muted hover:text-text',
+                                  )}
+                                >
+                                  {t}
+                                </button>
+                              ))}
+                            </span>
+                          ) : (
+                            <span className="text-muted">No traits</span>
+                          )}
+                        </td>
+                      </>
+                    ) : view === 'training' ? (
                       <>
                         <td className="px-4 py-2.5 whitespace-nowrap text-muted">
                           {p.positions ?? '–'}

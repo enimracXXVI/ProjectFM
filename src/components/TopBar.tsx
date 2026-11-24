@@ -1,6 +1,6 @@
 import { clsx } from 'clsx'
 import { Settings, Upload } from 'lucide-react'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import { useCareer } from '../lib/career'
 import { Crest } from './Crest'
 import { GlobalSearch } from './GlobalSearch'
@@ -9,6 +9,9 @@ import { Logo } from './Logo'
 export function TopBar() {
   const { careers, current, setCurrentId } = useCareer()
   const currentId = current?.id ?? ''
+  const navigate = useNavigate()
+  // The picker's last entry opens the Careers page (new, edit, delete)
+  const MANAGE = '__manage'
 
   return (
     <header className="sticky top-0 z-10 border-b border-border bg-bg/95 pt-safe backdrop-blur">
@@ -25,7 +28,9 @@ export function TopBar() {
         <select
           id="career-select"
           value={currentId}
-          onChange={(e) => setCurrentId(e.target.value)}
+          onChange={(e) =>
+            e.target.value === MANAGE ? navigate('/careers') : setCurrentId(e.target.value)
+          }
           className="min-h-11 max-w-[45vw] truncate rounded-lg border border-border bg-surface px-3 text-sm md:max-w-xs"
         >
           {careers.map((c) => (
@@ -33,6 +38,8 @@ export function TopBar() {
               {c.name} — {c.club}
             </option>
           ))}
+          <option disabled>──────────</option>
+          <option value={MANAGE}>Manage careers…</option>
         </select>
 
         <GlobalSearch />
