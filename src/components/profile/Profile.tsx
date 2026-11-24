@@ -1,8 +1,9 @@
 import { clsx } from 'clsx'
+import { ConesIcon } from '../ConesIcon'
 import { focusesFor } from '../../training/focus'
 import { TEXT, useUrlState } from '../../lib/urlState'
 import { KEY_ROW, KEY_SWATCH, PREFERRED_ROW, PREFERRED_SWATCH } from '../../lib/roleMarks'
-import { ChevronRight, Dumbbell } from 'lucide-react'
+import { ChevronRight } from 'lucide-react'
 import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
 import { HIDDEN_NAMES } from '../../data/attributeInfo'
 import { attributeLabel } from '../../data/config'
@@ -641,7 +642,7 @@ function AttributesWide({ data, highlight }: { data: ProfileData; highlight: Hig
                         <span tabIndex={0} className="flex min-w-0 cursor-help items-center gap-1">
                           <span className="truncate">{attributeLabel(config, n)}</span>
                           {trained && (
-                            <Dumbbell
+                            <ConesIcon
                               className="size-3 shrink-0 text-accent"
                               aria-label={`Trained by ${data.trainedBy}`}
                             />

@@ -1,6 +1,7 @@
 import { clsx } from 'clsx'
+import { ConesIcon } from '../components/ConesIcon'
 import { Face } from '../components/Pictures'
-import { ChevronDown, ChevronUp, Dumbbell, Scale, TrendingUp, Trophy, X } from 'lucide-react'
+import { ChevronDown, ChevronUp, Scale, TrendingUp, Trophy, X } from 'lucide-react'
 import { useEffect, useMemo, useState } from 'react'
 import { SORT, TEXT, useUrlState, useUrlText } from '../lib/urlState'
 import { seasonText, seasonYear, useSquadSeason, useSquadSeasons } from '../data/seasons'
@@ -33,7 +34,8 @@ import {
   restBack,
   restDaysLeft,
 } from '../training/individual'
-import { focusesForPlayer, type TrainingFocus } from '../training/focus'
+import { focusesForPlayer, focusesForRole, type TrainingFocus } from '../training/focus'
+import { KEY_TEXT, PREFERRED_TEXT } from '../lib/roleMarks'
 import { setPlayerExtra } from '../data/api'
 import { parsePositions } from '../lib/roleFit'
 import type { RoleDef } from '../data/roles'
@@ -996,7 +998,7 @@ function FocusCell({ player }: { player: PlayerRow }) {
           onClick={() => setOpen(true)}
           className="grid size-9 shrink-0 place-items-center rounded-lg text-muted hover:bg-surface-2 hover:text-text"
         >
-          <Dumbbell className="size-4" aria-hidden />
+          <ConesIcon className="size-4" aria-hidden />
         </button>
       </div>
       {full && (
@@ -1032,9 +1034,27 @@ function WhichFocus({ player, onClose }: { player: PlayerRow; onClose: () => voi
     return () => document.removeEventListener('keydown', key)
   }, [onClose])
   const current = player.extra[TRAINING_KEYS.focus] ?? ''
-  const rows = focusesForPlayer(player.positions, config.trainingFocuses)
+  const offered = focusesForPlayer(player.positions, config.trainingFocuses)
+  // The in-possession role he trains: his key, then preferred attributes come first
+  const role =
+    ipTrainingRole(player.extra[TRAINING_KEYS.ip], config.trainingRoleCodes, config.roles)?.role ??
+    null
+  const ranked = role ? focusesForRole(offered, role, (a) => attrNumber(player.attributes[a])) : []
+  const helping = ranked.filter((r) => r.gain > 0)
+  const rows = offered
+    .filter((f) => !helping.some((h) => h.focus.code === f.code))
     .map((f) => ({ f, ...focusValues(player, f) }))
     .sort((a, b) => (a.avg ?? 99) - (b.avg ?? 99))
+  const pick = (code: string) => mutation.mutate(code)
+  const attrs = (list: { attribute: string; value: number | null }[]) =>
+    list.map(({ attribute, value }) => (
+      <span key={attribute} className="whitespace-nowrap">
+        <span className="text-muted">{attributeLabel(config, attribute)}</span>{' '}
+        <span className={clsx('font-semibold tabular-nums', attrColor(value ?? undefined))}>
+          {value ?? '–'}
+        </span>
+      </span>
+    ))
   return (
     <div
       role="dialog"
@@ -1050,10 +1070,7 @@ function WhichFocus({ player, onClose }: { player: PlayerRow; onClose: () => voi
         <div className="flex items-start justify-between gap-2 border-b border-border p-3">
           <div>
             <p className="font-semibold">Which focus for {player.name}?</p>
-            <p className="text-xs text-muted">
-              Each focus with the attributes it works on and his values; weakest first. Tap one to
-              set it.
-            </p>
+            <p className="text-xs text-muted">Tap a focus to set it.</p>
           </div>
           <button
             type="button"
@@ -1064,43 +1081,108 @@ function WhichFocus({ player, onClose }: { player: PlayerRow; onClose: () => voi
             <X className="size-4" aria-hidden />
           </button>
         </div>
-        <ul className="grid content-start gap-1 overflow-y-auto p-2">
-          <li>
-            <button
-              type="button"
-              onClick={() => mutation.mutate('')}
-              className={clsx(
-                'w-full rounded-lg px-3 py-2 text-left text-sm hover:bg-surface-2',
-                current === '' && 'bg-accent/15',
+        <div className="grid content-start gap-3 overflow-y-auto p-2">
+          {role ? (
+            <section className="grid gap-1">
+              <p className="px-1 text-xs text-muted">
+                For the role he trains, <b className="text-text">{role.name}</b>: focuses on its key
+                attributes first, then its preferred ones; his weakest count most.
+              </p>
+              {helping.length === 0 && (
+                <p className="px-1 text-sm text-muted">
+                  No focus works on this role&apos;s attributes (Settings &gt; Training focuses).
+                </p>
               )}
-            >
-              None
-            </button>
-          </li>
-          {rows.map(({ f, avg }) => (
-            <li key={f.code}>
-              <button
-                type="button"
-                disabled={mutation.isPending}
-                onClick={() => mutation.mutate(String(f.code))}
-                className={clsx(
-                  'grid w-full gap-0.5 rounded-lg px-3 py-2 text-left text-sm hover:bg-surface-2',
-                  current === String(f.code) && 'bg-accent/15 ring-1 ring-accent/50',
-                )}
-              >
-                <span className="flex items-center justify-between gap-2">
-                  <span className="font-semibold">{f.name}</span>
-                  {avg !== null && (
-                    <span className="text-xs text-muted tabular-nums">avg {avg.toFixed(1)}</span>
+              <ul className="grid gap-1">
+                {helping.map((r, k) => (
+                  <li key={r.focus.code}>
+                    <button
+                      type="button"
+                      disabled={mutation.isPending}
+                      onClick={() => pick(String(r.focus.code))}
+                      className={clsx(
+                        'grid w-full gap-0.5 rounded-lg px-3 py-2 text-left text-sm hover:bg-surface-2',
+                        current === String(r.focus.code) && 'bg-accent/15 ring-1 ring-accent/50',
+                      )}
+                    >
+                      <span className="flex items-center gap-2 font-semibold">
+                        {r.focus.name}
+                        {k === 0 && (
+                          <span className="rounded bg-accent/20 px-1.5 py-0.5 text-[10px] tracking-wide text-accent uppercase">
+                            Suggested
+                          </span>
+                        )}
+                      </span>
+                      {r.key.length > 0 && (
+                        <span className="flex flex-wrap gap-x-2 text-xs">
+                          <span className={KEY_TEXT}>Key</span>
+                          {attrs(r.key)}
+                        </span>
+                      )}
+                      {r.preferred.length > 0 && (
+                        <span className="flex flex-wrap gap-x-2 text-xs">
+                          <span className={PREFERRED_TEXT}>Preferred</span>
+                          {attrs(r.preferred)}
+                        </span>
+                      )}
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            </section>
+          ) : (
+            <p className="px-1 text-xs text-muted">
+              The role he trains is not known here (playing position, or a role not named yet in
+              Settings &gt; Training roles), so the focuses are listed by his weakest attributes.
+            </p>
+          )}
+          <section className="grid gap-1">
+            {role && rows.length > 0 && (
+              <p className="px-1 text-xs font-semibold tracking-wide text-muted uppercase">
+                Other focuses
+              </p>
+            )}
+            <ul className="grid gap-1">
+              <li>
+                <button
+                  type="button"
+                  onClick={() => pick('')}
+                  className={clsx(
+                    'w-full rounded-lg px-3 py-2 text-left text-sm hover:bg-surface-2',
+                    current === '' && 'bg-accent/15',
                   )}
-                </span>
-                <span className="text-xs">
-                  <FocusAttributes player={player} focus={f} />
-                </span>
-              </button>
-            </li>
-          ))}
-        </ul>
+                >
+                  None
+                </button>
+              </li>
+              {rows.map(({ f, avg }) => (
+                <li key={f.code}>
+                  <button
+                    type="button"
+                    disabled={mutation.isPending}
+                    onClick={() => pick(String(f.code))}
+                    className={clsx(
+                      'grid w-full gap-0.5 rounded-lg px-3 py-2 text-left text-sm hover:bg-surface-2',
+                      current === String(f.code) && 'bg-accent/15 ring-1 ring-accent/50',
+                    )}
+                  >
+                    <span className="flex items-center justify-between gap-2">
+                      <span className="font-semibold">{f.name}</span>
+                      {avg !== null && (
+                        <span className="text-xs text-muted tabular-nums">
+                          avg {avg.toFixed(1)}
+                        </span>
+                      )}
+                    </span>
+                    <span className="text-xs">
+                      <FocusAttributes player={player} focus={f} />
+                    </span>
+                  </button>
+                </li>
+              ))}
+            </ul>
+          </section>
+        </div>
         {mutation.isError && (
           <p className="px-3 pb-3 text-sm text-red-400">{(mutation.error as Error).message}</p>
         )}

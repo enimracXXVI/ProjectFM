@@ -8,6 +8,7 @@ import {
   restDaysLeft,
   trainingFields,
 } from './individual'
+import { focusesForRole } from './focus'
 
 const roles = DEFAULT_CONFIG.roles
 const ip = (raw: number) => ipTrainingRole(String(raw), codes, roles)?.role?.name
@@ -47,5 +48,20 @@ describe('individual training from the save', () => {
     // Two days without pitch or gym work set on 19 Dec: back on 22 Dec
     expect(restDaysLeft(f['Training rest until'], f['Training as of'])).toBe(2)
     expect(restDaysLeft('', '2026-12-19')).toBeNull()
+  })
+})
+
+describe('which focus for the role he trains', () => {
+  it('puts the focus for his weakest key attributes first', () => {
+    const focuses = DEFAULT_CONFIG.trainingFocuses.filter((f) => f.who !== 'goalkeeper')
+    const role = { key: ['Acceleration', 'Pace', 'Stamina'], preferred: ['Agility'] }
+    const values: Record<string, number> = { Acceleration: 9, Pace: 10, Stamina: 16, Agility: 8 }
+    const list = focusesForRole(focuses, role, (a) => values[a] ?? null)
+    expect(list[0].focus.name).toBe('Quickness') // key Acc 9 and Pace 10
+    expect(list[0].key.map((k) => k.attribute)).toEqual(['Acceleration', 'Pace'])
+    expect(list.find((x) => x.focus.name === 'Agility and Balance')?.preferred).toEqual([
+      { attribute: 'Agility', value: 8 },
+    ])
+    expect(list.at(-1)?.gain).toBe(0)
   })
 })

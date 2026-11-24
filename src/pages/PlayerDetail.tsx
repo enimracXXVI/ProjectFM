@@ -1,4 +1,5 @@
-import { ArrowLeft, Dumbbell, Scale } from 'lucide-react'
+import { ArrowLeft, Scale } from 'lucide-react'
+import { ConesIcon } from '../components/ConesIcon'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import { FocusSelect } from '../components/FocusSelect'
 import { NotesPanel } from '../components/NotesPanel'
@@ -94,7 +95,7 @@ export function PlayerDetail() {
             </label>
             {focus && focus.attributes.length > 0 && (
               <span className="flex items-start gap-1 text-xs text-accent">
-                <Dumbbell className="mt-0.5 size-3.5 shrink-0" aria-hidden />
+                <ConesIcon className="mt-0.5 size-3.5 shrink-0" aria-hidden />
                 {focus.attributes.map((a) => attributeLabel(config, a)).join(', ')}
               </span>
             )}

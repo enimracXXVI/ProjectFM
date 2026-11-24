@@ -53,3 +53,39 @@ export function withWho(list: (Omit<TrainingFocus, 'who'> & { who?: FocusWho })[
     })
     .sort((a, b) => (order.indexOf(a.name) + 1 || 99) - (order.indexOf(b.name) + 1 || 99))
 }
+
+/** What a focus does for a role: the role's key and preferred attributes it works on. */
+export interface FocusForRole {
+  focus: TrainingFocus
+  /** Higher helps the role more: weak key attributes count double, weak preferred ones once. */
+  gain: number
+  key: { attribute: string; value: number | null }[]
+  preferred: { attribute: string; value: number | null }[]
+}
+
+/**
+ * The focuses a player can take, ranked by how much they help the role he trains: each of the
+ * role's key attributes a focus works on adds twice its room to grow (20 minus his value),
+ * each preferred one once. Focuses that work on none of them come last (gain 0).
+ */
+export function focusesForRole(
+  focuses: TrainingFocus[],
+  role: { key: string[]; preferred: string[] },
+  value: (attribute: string) => number | null,
+): FocusForRole[] {
+  const part = (f: TrainingFocus, list: string[]) =>
+    f.attributes
+      .filter((a) => list.includes(a))
+      .map((attribute) => ({ attribute, value: value(attribute) }))
+      .sort((a, b) => (a.value ?? 99) - (b.value ?? 99))
+  return focuses
+    .map((focus) => {
+      const key = part(focus, role.key)
+      const preferred = part(focus, role.preferred)
+      const room = (x: { value: number | null }) => (x.value === null ? 0 : 20 - x.value)
+      const gain =
+        key.reduce((t, x) => t + 2 * room(x), 0) + preferred.reduce((t, x) => t + room(x), 0)
+      return { focus, gain, key, preferred }
+    })
+    .sort((a, b) => b.gain - a.gain || a.focus.name.localeCompare(b.focus.name))
+}

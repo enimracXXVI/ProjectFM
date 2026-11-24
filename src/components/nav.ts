@@ -4,7 +4,6 @@ import {
   Briefcase,
   Shield,
   ClipboardCheck,
-  Dumbbell,
   Lightbulb,
   LayoutDashboard,
   NotebookPen,
@@ -16,6 +15,7 @@ import {
   UserCog,
   Users,
 } from 'lucide-react'
+import { ConesIcon } from './ConesIcon'
 import type { ComponentType, SVGProps } from 'react'
 import { PitchIcon } from './PitchIcon'
 
@@ -31,7 +31,7 @@ export const sections: NavItem[] = [
   { to: '/notes', label: 'Notes', icon: NotebookPen },
   { to: '/squad', label: 'Squad', icon: Users },
   { to: '/tactics', label: 'Tactics', icon: PitchIcon },
-  { to: '/training', label: 'Training', icon: Dumbbell },
+  { to: '/training', label: 'Training', icon: ConesIcon },
   { to: '/development', label: 'Development', icon: TrendingUp },
   { to: '/compare', label: 'Compare', icon: Scale },
   { to: '/staff', label: 'Staff', icon: UserCog },
