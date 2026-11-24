@@ -74,6 +74,8 @@ export function World() {
   const [layout, setLayout] = useUrlState<'cards' | 'table'>('layout', 'cards', TEXT as never)
   const [positions, setPositions] = useUrlState<string[]>('pos', [])
   const [traits, setTraits] = useUrlState<string[]>('traits', [])
+  // Database players, or the ones the game made (newgens: IDs from Settings > FM codes up)
+  const [origin, setOrigin] = useUrlState<'' | 'real' | 'newgen'>('origin', '', TEXT as never)
   const [ageMinInput, setAgeMin, ageMin] = useUrlText('ageMin')
   const [ageMaxInput, setAgeMax, ageMax] = useUrlText('ageMax')
   const [regionId, setRegionId] = useUrlState('region', '', TEXT)
@@ -104,6 +106,7 @@ export function World() {
     name,
     positions,
     traits,
+    origin,
     ageMin,
     ageMax,
     regionId,
@@ -227,6 +230,7 @@ export function World() {
     const pmin = config.showHidden && f.paMin ? Number(f.paMin) : null
     const wanted = new Set(f.positions)
     const wantedTraits = f.traits.map(Number)
+    const newgenMin = config.fmCodes.newgenMinId || 2002000000
     const myClub = file.meta.myClub
 
     const minMin = f.minMinutes ? Number(f.minMinutes) : null
@@ -251,6 +255,7 @@ export function World() {
       if (clubQ && !searchKey(`${r[5] ?? ''} ${r[6] ?? ''}`).includes(clubQ)) continue
       if (wanted.size && !parsePositions(r[7]).some((p) => wanted.has(p))) continue
       if (wantedTraits.length && !wantedTraits.every((b) => r[20]?.includes(b))) continue
+      if (f.origin && r[0] >= newgenMin !== (f.origin === 'newgen')) continue
       if (role && f.roleNatural && !parsePositions(r[7]).some((p) => role.positions.includes(p)))
         continue
       if (minMin !== null && stats && (stats.get(r[0])?.minutes ?? 0) < minMin) continue
@@ -322,6 +327,7 @@ export function World() {
     role,
     config.roleWeights,
     config.showHidden,
+    config.fmCodes.newgenMinId,
     regionOf,
     sort,
     stats,
@@ -481,6 +487,16 @@ export function World() {
                 )
               })}
             </div>
+            <select
+              aria-label="Database or game-made players"
+              value={origin}
+              onChange={(e) => setOrigin(e.target.value as typeof origin)}
+              className={`${input} max-w-xs`}
+            >
+              <option value="">All players</option>
+              <option value="real">Database players only</option>
+              <option value="newgen">Newgens only (made by the game)</option>
+            </select>
             {traitOptions.length > 0 && (
               <div className="flex flex-wrap items-center gap-1.5">
                 <select

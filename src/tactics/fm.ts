@@ -99,6 +99,12 @@ export interface FmCodes {
    */
   fileVersion: string
   /**
+   * People the game made (newgens, regens) get IDs from here up; the FM27 database's own
+   * players stop at 2,001,040,995 (the user's save: every player from 2,002,000,000 up is
+   * 12–23 with no reputation).
+   */
+  newgenMinId: number
+  /**
    * Names for team instruction codes no FM27 screen shows (FM's styles set some). "(?)" marks a
    * name worked out from FM's files but not confirmed.
    */
@@ -142,6 +148,7 @@ export const DEFAULT_FM_CODES: FmCodes = {
   roleCodeMask: D.roleCodeMask,
   // From the user's own FM27 tactic and schedule files
   fileVersion: 'f8186c05',
+  newgenMinId: 2002000000,
   // FM27's engine keeps a table of the option for each code (game_plugin.dll): 31–34, 64, 74
   // and 75 hold its empty option, so FM27 has no option for them. FM27's screen code registers
   // its options in code order (GameAssembly.dll): Underlap (28–30), then GK distribution method

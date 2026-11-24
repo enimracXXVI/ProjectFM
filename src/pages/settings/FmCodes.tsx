@@ -331,6 +331,22 @@ export function FmCodesSettings() {
           </label>
         </SettingsSection>
 
+        <SettingsSection id="fm-codes/newgens" title="Players the game made (newgens)">
+          <label className="grid gap-1 text-sm">
+            <span className="text-muted">
+              People FM creates during a career (youth intakes, regens) get IDs from this number up;
+              the database&apos;s own players stay below it. World uses it for the Newgens filter.
+              FM27: 2002000000 (the database&apos;s players end at 2001040995).
+            </span>
+            <input
+              inputMode="numeric"
+              value={form.newgenMinId ?? ''}
+              onChange={(e) => set({ newgenMinId: Number(e.target.value.replace(/\D/g, '')) || 0 })}
+              className={`${input} tabular-nums`}
+            />
+          </label>
+        </SettingsSection>
+
         <SettingsSection
           id="fm-codes/conflicts"
           title="Team instructions FM does not allow together"
