@@ -86,7 +86,8 @@ export function Staff() {
           onChange={(v) => setParam({ team: v === 'all' ? null : v })}
           options={[
             ['all', `All (${all.length})`],
-            ...TEAMS.map(
+            // Staff are never youth candidates
+            ...TEAMS.filter(([t]) => t !== 'yc').map(
               ([t, label]) =>
                 [t, `${label} (${all.filter((s) => teamOfStaff(s) === t).length})`] as [
                   Team,

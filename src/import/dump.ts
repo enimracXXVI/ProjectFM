@@ -420,8 +420,9 @@ export function summarizeDump(dump: Dump, knownUids: number[]): DumpSummary {
       player: playerFromDump(p),
       level: teamLevel(p),
       squadNo: readerSquadNumber(p),
-      // FM team slot from the save: 0 first team, 1 U20, 2 U18
-      team: (['first', 'u21', 'u18'] as const)[p.teamType ?? 0] ?? 'first',
+      // FM team slot from the save: 0 first team, 1 U20, 2 U18, 3 youth candidates (seen after
+      // the user's 2027 youth intake)
+      team: (['first', 'u21', 'u18', 'yc'] as const)[p.teamType ?? 0] ?? 'first',
     })),
     scouts: scouts.map(staffFromDump),
     clubOf,
