@@ -1,4 +1,5 @@
 import { clsx } from 'clsx'
+import { CopyName } from '../components/CopyName'
 import { DEFAULT_PROFILE_MINUTES, profileScores } from '../world/profiles'
 import { PickList } from '../components/PickList'
 import { CheckList } from '../components/CheckList'
@@ -76,6 +77,8 @@ export function World() {
   const [traits, setTraits] = useUrlState<string[]>('traits', [])
   // Database players, or the ones the game made (newgens: IDs from Settings > FM codes up)
   const [origin, setOrigin] = useUrlState<'' | 'real' | 'newgen'>('origin', '', TEXT as never)
+  // Players at women's clubs (their youth intakes): left out unless asked for
+  const [women, setWomen] = useUrlState('women', false, BOOL)
   const [ageMinInput, setAgeMin, ageMin] = useUrlText('ageMin')
   const [ageMaxInput, setAgeMax, ageMax] = useUrlText('ageMax')
   const [regionId, setRegionId] = useUrlState('region', '', TEXT)
@@ -107,6 +110,7 @@ export function World() {
     positions,
     traits,
     origin,
+    women,
     ageMin,
     ageMax,
     regionId,
@@ -497,6 +501,15 @@ export function World() {
               <option value="real">Database players only</option>
               <option value="newgen">Newgens only (made by the game)</option>
             </select>
+            <label className="flex min-h-11 items-center gap-2 text-sm">
+              <input
+                type="checkbox"
+                checked={women}
+                onChange={(e) => setWomen(e.target.checked)}
+                className="size-4 accent-[var(--color-accent)]"
+              />
+              Include players at women&apos;s clubs
+            </label>
             {traitOptions.length > 0 && (
               <div className="flex flex-wrap items-center gap-1.5">
                 <select
@@ -719,6 +732,7 @@ export function World() {
             >
               <div className="flex items-center gap-2">
                 <span className="min-w-0 flex-1 truncate font-semibold">{row[1]}</span>
+                <CopyName name={row[1]} className="-my-1" />
                 {score !== null && <span className="font-semibold tabular-nums">{score}</span>}
                 {prof !== null && (
                   <span
@@ -832,6 +846,7 @@ export function World() {
                     <Face id={row[0]} className="size-6" />
                     {row[1]}
                   </Link>
+                  <CopyName name={row[1]} className="ml-1" />
                 </td>
                 {profile && (
                   <td className="px-3 py-2">

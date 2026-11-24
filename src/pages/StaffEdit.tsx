@@ -1,4 +1,5 @@
 import { NotesPanel } from '../components/NotesPanel'
+import { CopyName } from '../components/CopyName'
 import { TEXT, useUrlState } from '../lib/urlState'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { clsx } from 'clsx'
@@ -123,7 +124,10 @@ function StaffForm({ existing }: { existing: StaffRow | null }) {
         >
           <ArrowLeft className="size-4" aria-hidden /> Staff
         </Link>
-        <PageHeader title={existing ? existing.name : 'Add staff'} />
+        <PageHeader
+          title={existing ? existing.name : 'Add staff'}
+          actions={existing ? <CopyName name={existing.name} /> : undefined}
+        />
 
         <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
           <Field

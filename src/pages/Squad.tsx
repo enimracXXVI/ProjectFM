@@ -1,4 +1,5 @@
 import { clsx } from 'clsx'
+import { CopyName } from '../components/CopyName'
 import { ConesIcon } from '../components/ConesIcon'
 import { Face } from '../components/Pictures'
 import { ChevronDown, ChevronUp, Scale, TrendingUp, Trophy, X } from 'lucide-react'
@@ -392,6 +393,7 @@ export function Squad() {
                     </span>
                     <Face id={p.fm_uid} className="size-7" />
                     <span className="min-w-0 truncate font-semibold">{p.name}</span>
+                    <CopyName name={p.name} className="-my-1" />
                     <TeamBadge player={p} />
                     <StatusChip code={p.extra.status} />
                     {/* CA/PA (when hidden values are shown) wins over age when space is short */}
@@ -576,8 +578,9 @@ export function Squad() {
                       >
                         <Face id={p.fm_uid} className="size-6" />
                         {p.name}
-                      </Link>{' '}
-                      <TeamBadge player={p} /> <StatusChip code={p.extra.status} />
+                      </Link>
+                      <CopyName name={p.name} className="ml-0.5" /> <TeamBadge player={p} />{' '}
+                      <StatusChip code={p.extra.status} />
                     </td>
                     {view === 'traits' ? (
                       <>

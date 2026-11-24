@@ -51,6 +51,8 @@ export interface DumpPerson {
   league?: number | null
   /** Nation the club is from ("Based in"), reader 23. */
   basedIn?: string | null
+  /** At a women's club (reader 26). */
+  women?: boolean
   lastName?: string | null
   commonName?: string | null
   job?: string

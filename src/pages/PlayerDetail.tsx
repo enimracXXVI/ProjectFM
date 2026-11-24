@@ -1,4 +1,5 @@
 import { ArrowLeft, Scale } from 'lucide-react'
+import { CopyName } from '../components/CopyName'
 import { ConesIcon } from '../components/ConesIcon'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import { FocusSelect } from '../components/FocusSelect'
@@ -134,7 +135,7 @@ export function PlayerDetail() {
         </span>
         <div className="min-w-0 flex-1">
           <h1 className="flex flex-wrap items-center gap-x-2 text-xl font-bold tracking-tight lg:text-2xl">
-            {p.name} <StatusChip code={p.extra.status} />
+            {p.name} <CopyName name={p.name} /> <StatusChip code={p.extra.status} />
           </h1>
           <p className="flex flex-wrap items-center gap-x-1.5 text-sm text-muted">
             {[p.positions, p.age != null ? `${p.age} years` : null].filter(Boolean).join(' · ')}

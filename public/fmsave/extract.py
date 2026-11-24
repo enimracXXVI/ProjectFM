@@ -129,7 +129,7 @@ def _plain(v):
 
 
 # Raised whenever extract() returns new data, so the app can spot an outdated copy
-READER_VERSION = 25
+READER_VERSION = 26
 
 JOB_SCOUT, JOB_CHIEF_SCOUT = 14, 44
 _FF8 = b"\xff" * 8
@@ -302,6 +302,8 @@ def _dump(save, club_uid, club_name, extras):
         clubs = list(save.clubs())
         club_ids = {c.uid: c.unique_id for c in clubs}
         club_rep = {c.uid: c.reputation for c in clubs}
+        # Women's clubs (their youth intakes make women players)
+        women_clubs = {c.uid for c in clubs if getattr(c.gender, "raw", None) == 1}
         # Based in: the nation whose football association the club belongs to (Toronto FC:
         # Canada, though it plays in the US league); older fmsave: the league's nation
         club_nation = {
@@ -309,7 +311,7 @@ def _dump(save, club_uid, club_name, extras):
             for c in clubs
         }
     except Exception:
-        clubs, club_ids, club_rep, club_nation = [], {}, {}, {}
+        clubs, club_ids, club_rep, club_nation, women_clubs = [], {}, {}, {}, set()
     try:
         league_of, leagues = _leagues(save, clubs)
     except Exception:
@@ -358,6 +360,8 @@ def _dump(save, club_uid, club_name, extras):
             "expires": c.end.isoformat() if c and c.end else None,
             "worldRep": rep,
         }
+        if p.club_uid in women_clubs:
+            row["women"] = True
         number, morale = extras.get(p.uid, (None, None))
         if number is not None:
             row["squadNo"] = number

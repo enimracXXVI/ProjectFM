@@ -1,4 +1,5 @@
 import { ArrowLeft, Scale } from 'lucide-react'
+import { CopyName } from '../components/CopyName'
 import { leagueName, levelOf } from '../world/leagues'
 import { useMemo } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
@@ -144,7 +145,9 @@ export function WorldPlayer() {
       <div className="mb-3 flex items-center gap-3">
         <Face id={p.id} className="size-14 lg:size-16" />
         <div className="min-w-0 flex-1">
-          <h1 className="text-xl font-bold tracking-tight lg:text-2xl">{p.name}</h1>
+          <h1 className="flex flex-wrap items-center gap-x-2 text-xl font-bold tracking-tight lg:text-2xl">
+            {p.name} <CopyName name={p.name} />
+          </h1>
           <p className="flex flex-wrap items-center gap-x-1.5 text-sm text-muted">
             {[p.positions, p.age && `${p.age} years`].filter(Boolean).join(' · ')}
             {p.nation && (

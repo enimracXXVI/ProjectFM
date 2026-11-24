@@ -1,4 +1,5 @@
 import { clsx } from 'clsx'
+import { CopyName } from './CopyName'
 import type { ReactNode } from 'react'
 import { Link } from 'react-router-dom'
 import { usePlayers } from '../data/hooks'
@@ -20,14 +21,24 @@ export function PlayerLink({
   const career = useCurrentCareer()
   const { data: squad } = usePlayers(career.id)
   const id = uid == null || uid === '' ? null : Number(uid)
-  if (id === null || !Number.isFinite(id)) return <span className={className}>{children}</span>
+  const copy = typeof children === 'string' ? <CopyName name={children} className="-my-1" /> : null
+  if (id === null || !Number.isFinite(id))
+    return (
+      <>
+        <span className={className}>{children}</span>
+        {copy}
+      </>
+    )
   const mine = squad?.find((p) => p.fm_uid === id)
   return (
-    <Link
-      to={mine ? `/squad/${mine.id}` : `/world/${id}`}
-      className={clsx('hover:text-accent hover:underline', className)}
-    >
-      {children}
-    </Link>
+    <>
+      <Link
+        to={mine ? `/squad/${mine.id}` : `/world/${id}`}
+        className={clsx('hover:text-accent hover:underline', className)}
+      >
+        {children}
+      </Link>
+      {copy}
+    </>
   )
 }

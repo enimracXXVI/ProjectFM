@@ -82,6 +82,8 @@ export type WorldRow = [
   league?: number | null,
   /** Nation the club is from: "Based in" (reader 23). */
   basedIn?: string | null,
+  /** 1 for a player at a women's club (reader 26). */
+  women?: 1 | null,
 ]
 
 export interface WorldFile {
@@ -149,6 +151,7 @@ export function buildWorld(dump: Dump): WorldFile {
       p.clubRep || null,
       p.league || null,
       p.basedIn || null,
+      p.women ? 1 : null,
     ]
   })
   return {
@@ -195,6 +198,8 @@ export interface WorldPlayer {
   clubRep: number | null
   league: number | null
   basedIn: string | null
+  /** At a women's club. */
+  women: boolean
 }
 
 /** Expands a row into a player object (done on demand: the file holds tens of thousands). */
@@ -223,6 +228,7 @@ export function rowToPlayer(file: WorldFile, r: WorldRow): WorldPlayer {
     clubRep: r[27] ?? null,
     league: r[28] ?? null,
     basedIn: r[29] ?? null,
+    women: r[30] === 1,
     id: r[0],
     name: r[1],
     age: r[2],
