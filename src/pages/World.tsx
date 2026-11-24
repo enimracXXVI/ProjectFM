@@ -510,6 +510,12 @@ export function World() {
               />
               Include players at women&apos;s clubs
             </label>
+            {!women && (data?.file.meta.reader ?? 0) < 26 && (
+              <p className="text-xs text-amber-300">
+                This World data was imported before the app could tell women&apos;s clubs apart:
+                import your save again to leave their players out.
+              </p>
+            )}
             {traitOptions.length > 0 && (
               <div className="flex flex-wrap items-center gap-1.5">
                 <select
@@ -839,14 +845,16 @@ export function World() {
             {shown.map(({ row, score, stat, level, prof }) => (
               <tr key={row[0]} className="group hover:bg-surface-2">
                 <td className="sticky left-0 z-[1] bg-surface px-4 py-2 whitespace-nowrap shadow-[inset_-1px_0_0_var(--color-border)] group-hover:bg-surface-2">
-                  <Link
-                    to={`/world/${row[0]}`}
-                    className="inline-flex items-center gap-2 font-medium hover:text-accent"
-                  >
-                    <Face id={row[0]} className="size-6" />
-                    {row[1]}
-                  </Link>
-                  <CopyName name={row[1]} className="ml-1" />
+                  <span className="inline-flex items-center gap-1">
+                    <Link
+                      to={`/world/${row[0]}`}
+                      className="inline-flex items-center gap-2 font-medium hover:text-accent"
+                    >
+                      <Face id={row[0]} className="size-6" />
+                      {row[1]}
+                    </Link>
+                    <CopyName name={row[1]} />
+                  </span>
                 </td>
                 {profile && (
                   <td className="px-3 py-2">

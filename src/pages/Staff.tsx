@@ -229,10 +229,12 @@ function StaffTable({
             {sorted.map((s) => (
               <tr key={s.id} className="border-t border-border">
                 <td className="sticky left-0 z-[1] bg-surface px-3 py-2 whitespace-nowrap">
-                  <Link to={`/staff/${s.id}`} className="font-medium hover:text-accent">
-                    {s.name}
-                  </Link>
-                  <CopyName name={s.name} className="ml-1" />
+                  <span className="inline-flex items-center gap-1 align-middle">
+                    <Link to={`/staff/${s.id}`} className="font-medium hover:text-accent">
+                      {s.name}
+                    </Link>
+                    <CopyName name={s.name} />
+                  </span>
                   <span className="ml-1 hidden text-xs text-muted sm:inline">{s.nation}</span>
                 </td>
                 <td className="px-2 py-2 whitespace-nowrap text-accent">{s.role ?? '–'}</td>

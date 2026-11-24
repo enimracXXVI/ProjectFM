@@ -38,16 +38,12 @@ export function CopyName({ name, className }: { name: string; className?: string
       aria-label={done ? `Copied ${name}` : `Copy ${name}`}
       title={done ? 'Copied' : 'Copy name'}
       className={clsx(
-        'inline-grid size-7 shrink-0 place-items-center rounded-md align-middle text-muted hover:bg-surface-2 hover:text-text',
+        'inline-grid size-6 shrink-0 place-items-center rounded-md text-muted/70 hover:bg-surface-2 hover:text-text',
         done && 'text-accent',
         className,
       )}
     >
-      {done ? (
-        <Check className="size-3.5" aria-hidden />
-      ) : (
-        <Copy className="size-3.5" aria-hidden />
-      )}
+      {done ? <Check className="size-3" aria-hidden /> : <Copy className="size-3" aria-hidden />}
     </button>
   )
 }

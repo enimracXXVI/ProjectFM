@@ -383,6 +383,8 @@ def _dump(save, club_uid, club_name, extras):
             "currency": "GBP",
             "source": "FM save",
             "projectfm": 1,
+            # Which reader made the file (World tells when it is too old for a filter)
+            "reader": READER_VERSION,
         },
         "players": players,
         "staff": [],

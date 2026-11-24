@@ -17,6 +17,8 @@ export interface DumpMeta {
   myClub?: string
   currency?: string
   source?: string
+  /** The ProjectFM save reader that made it (reader 26 on). */
+  reader?: number
 }
 
 export interface DumpPerson {

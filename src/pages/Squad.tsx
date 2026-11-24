@@ -572,15 +572,17 @@ export function Squad() {
                     )}
                   >
                     <td className="sticky left-0 z-[1] bg-surface px-4 py-2.5 whitespace-nowrap shadow-[inset_-1px_0_0_var(--color-border)] group-hover:bg-surface-2">
-                      <Link
-                        to={`/squad/${p.id}`}
-                        className="inline-flex items-center gap-2 font-medium hover:text-accent"
-                      >
-                        <Face id={p.fm_uid} className="size-6" />
-                        {p.name}
-                      </Link>
-                      <CopyName name={p.name} className="ml-0.5" /> <TeamBadge player={p} />{' '}
-                      <StatusChip code={p.extra.status} />
+                      <span className="inline-flex items-center gap-1 align-middle">
+                        <Link
+                          to={`/squad/${p.id}`}
+                          className="inline-flex items-center gap-2 font-medium hover:text-accent"
+                        >
+                          <Face id={p.fm_uid} className="size-6" />
+                          {p.name}
+                        </Link>
+                        <CopyName name={p.name} />
+                      </span>{' '}
+                      <TeamBadge player={p} /> <StatusChip code={p.extra.status} />
                     </td>
                     {view === 'traits' ? (
                       <>
