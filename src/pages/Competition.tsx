@@ -15,7 +15,17 @@ import {
   type Venue,
 } from '../competitions/league'
 import type { CompetitionsFile, SaveCompetition } from '../competitions/types'
-import { compInfo, compLabel, cupRounds, leaders, myFixtures } from '../competitions/view'
+import {
+  compInfo,
+  compLabel,
+  cupRounds,
+  leaders,
+  myFixtures,
+  type Leader,
+} from '../competitions/view'
+import { useSeasonStats, useStatsSeasons, useWorld } from '../world/hooks'
+import { statsIndex } from '../world/stats'
+import { useMemo } from 'react'
 import { seasonLabel } from '../competitions/view'
 import { useCurrentCareer } from '../lib/career'
 import { useConfig } from '../lib/config'
@@ -81,7 +91,7 @@ function League({ file, comp }: { file: CompetitionsFile; comp: SaveCompetition 
       {tab === 'matchdays' && <Matchdays file={file} comp={comp} />}
       {tab === 'positions' && <PositionChart file={file} comp={comp} />}
       {tab === 'fixtures' && <MyGames file={file} comp={comp} />}
-      {tab === 'players' && <Players file={file} comp={comp} />}
+      {tab === 'players' && <LeaguePlayers file={file} comp={comp} />}
     </>
   )
 }
@@ -363,11 +373,69 @@ function MyGames({ file, comp }: { file: CompetitionsFile; comp: SaveCompetition
   )
 }
 
+/**
+ * A league's players: the season stats FM keeps for every player (his league games), for the
+ * players at the league's clubs. FM's per-match records only cover some teams, so they are used
+ * only when the season stats are not there (an older import).
+ */
+function LeaguePlayers({ file, comp }: { file: CompetitionsFile; comp: SaveCompetition }) {
+  const career = useCurrentCareer()
+  const { data: world } = useWorld(career.id)
+  const { data: seasons } = useStatsSeasons(career.id)
+  const season =
+    file.season != null && seasons?.includes(file.season) ? file.season : (seasons?.[0] ?? null)
+  const { data: statsFile, isPending } = useSeasonStats(career.id, season)
+  const all = useMemo(() => {
+    if (!world || !statsFile || comp.databaseId == null) return null
+    const stats = statsIndex(statsFile, 'league')
+    const out: Leader[] = []
+    for (const r of world.file.rows) {
+      if (r[28] !== comp.databaseId) continue
+      const st = stats.get(r[0])
+      if (!st) continue
+      const apps = (st.starts ?? 0) + (st.substitute_appearances ?? 0)
+      if (!apps) continue
+      out.push({
+        key: String(r[0]),
+        name: r[1],
+        club: r[5] ?? '',
+        apps,
+        goals: st.goals ?? 0,
+        assists: st.assists ?? 0,
+        rating: st.rated_appearances ? (st.average_rating ?? null) : null,
+      })
+    }
+    return out
+  }, [world, statsFile, comp.databaseId])
+  if (comp.databaseId != null && (isPending || !world) && season !== null)
+    return <Placeholder>Loading the season stats…</Placeholder>
+  if (!all) return <Players file={file} comp={comp} />
+  return (
+    <Players
+      file={file}
+      comp={comp}
+      list={all}
+      note="From FM's season stats of every player at this league's clubs (league games), as of your last import."
+    />
+  )
+}
+
 type LeaderSort = 'goals' | 'assists' | 'rating'
 
-function Players({ file, comp }: { file: CompetitionsFile; comp: SaveCompetition }) {
+function Players({
+  file,
+  comp,
+  list,
+  note,
+}: {
+  file: CompetitionsFile
+  comp: SaveCompetition
+  /** The players to rank (default: FM's per-match records for the competition). */
+  list?: Leader[]
+  note?: string
+}) {
   const [sort, setSort] = useUrlState<LeaderSort>('sort', 'goals', TEXT as never)
-  const all = leaders(file, comp.id)
+  const all = list ?? leaders(file, comp.id)
   const rows = [...all]
     .filter((l) => (sort === 'rating' ? l.rating !== null : l[sort] > 0))
     .sort((a, b) =>
@@ -426,7 +494,8 @@ function Players({ file, comp }: { file: CompetitionsFile; comp: SaveCompetition
         </div>
       )}
       <p className="mt-2 text-xs text-muted">
-        From FM’s per-match player stats, which FM keeps for the teams it follows closely.
+        {note ??
+          'From FM’s per-match player stats, which FM keeps for the teams it follows closely.'}
       </p>
     </>
   )
