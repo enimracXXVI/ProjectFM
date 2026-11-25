@@ -84,6 +84,8 @@ export type WorldRow = [
   basedIn?: string | null,
   /** 1 for a player at a women's club (reader 26). */
   women?: 1 | null,
+  /** The club team he is in: 0 or null first team, 1+ a reserve or youth team. */
+  team?: number | null,
 ]
 
 export interface WorldFile {
@@ -152,6 +154,7 @@ export function buildWorld(dump: Dump): WorldFile {
       p.league || null,
       p.basedIn || null,
       p.women ? 1 : null,
+      p.teamType || null,
     ]
   })
   return {

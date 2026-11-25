@@ -98,6 +98,9 @@ export function World() {
   const [cols, setCols] = useUrlState<string[]>('cols', [])
   const [minLevelInput, setMinLevel, minLevel] = useUrlText('minLevel')
   const [weigh, setWeigh] = useUrlState('weigh', false, BOOL)
+  // Players in a club's reserve or youth teams: their stats come from youth games, so stat and
+  // level rankings leave them out unless asked for
+  const [youth, setYouth] = useUrlState('youth', false, BOOL)
   // Ranking by role: only players who can play one of the role's positions
   const [roleNatural, setRoleNatural] = useUrlState('roleNatural', true, BOOL)
   const [minMinutesInput, setMinMinutes, minMinutes] = useUrlText('minMin')
@@ -128,6 +131,7 @@ export function World() {
     leagues,
     minLevel,
     weigh,
+    youth,
   })
   const { data: seasons } = useStatsSeasons(career.id)
   const statsSeason = seasons?.[0] ?? null
@@ -247,8 +251,11 @@ export function World() {
       level: ReturnType<typeof levelOf>
       prof: number | null
     }[] = []
+    // Ranking by stats, a stat profile or level: first-team players only unless asked for
+    const ranking = !!(f.statKey || f.profileId || f.weigh)
     for (const r of file.rows) {
       if (f.hideMine && r[5] && r[5] === myClub) continue
+      if (ranking && !f.youth && (r[31] ?? 0) > 0) continue
       if (amin !== null && (r[2] ?? 0) < amin) continue
       if (amax !== null && (r[2] ?? 99) > amax) continue
       if (cmin !== null && (r[9] ?? 0) < cmin) continue
@@ -387,6 +394,11 @@ export function World() {
       }
     >
       <span className="truncate">{leagueText(row) ?? '–'}</span>
+      {(row[31] ?? 0) > 0 && (
+        <span className="shrink-0 rounded bg-sky-500/15 px-1 text-[10px] font-semibold text-sky-300">
+          Youth/res.
+        </span>
+      )}
       {level && (
         <span className="shrink-0 tabular-nums">
           {level.from === 'club' ? '≈' : ''}
@@ -598,6 +610,25 @@ export function World() {
                 />
                 Weigh by level
               </label>
+              <label
+                className="flex min-h-11 items-center gap-2 text-sm"
+                title="Their stats are from youth and reserve games and their level is their club's first team's, so stat, profile and level rankings leave them out unless ticked"
+              >
+                <input
+                  type="checkbox"
+                  checked={youth}
+                  onChange={(e) => setYouth(e.target.checked)}
+                />
+                Include youth and reserve team players
+              </label>
+              {(statKey || profileId || weigh) &&
+                !youth &&
+                (data?.file.rows[0]?.length ?? 0) < 32 && (
+                  <p className="col-span-full text-xs text-amber-300">
+                    This World data was imported before youth and reserve team players could be told
+                    apart: import your save again to leave them out of the rankings.
+                  </p>
+                )}
             </div>
             <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-6">
               <input
