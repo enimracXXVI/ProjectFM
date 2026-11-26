@@ -19,10 +19,9 @@ namespace ProjectFM.Dev
         private static float next;
         private const string Mark = "pfm-face";
         private const string PersonPictureGuid = "a3126e03e5bea6348ba86f23b5c5d7de";
-        private const float Size = 46f;
         private static int added;
 
-        public static void Start(ManualLogSource log) { L = log; next = 0; added = 0; L.LogInfo("dev faces 0.1: player pictures on the tactics pitch"); }
+        public static void Start(ManualLogSource log) { L = log; next = 0; added = 0; L.LogInfo("dev faces 0.2: picture outside the card, left of the shirt row, as tall as it"); }
 
         public static void Stop()
         {
@@ -36,38 +35,31 @@ namespace ProjectFM.Dev
             next = Time.realtimeSinceStartup + 0.5f;
             int now = 0;
             foreach (var root in Roots())
-                foreach (var row in FindAll(root, "ShirtAndRoleMovements"))
+                foreach (var row in FindAll(root, "ShirtAndIcons"))
                 {
-                    if (Child(row, Mark) != null) continue;
-                    try { Add(row); now++; }
+                    var face = Child(row, Mark);
+                    if (face != null) { Fit(face, row); continue; }
+                    try { Fit(Add(row), row); now++; }
                     catch (Exception e) { L.LogWarning("dev faces: " + e.Message); return; }
                 }
             if (now > 0) { added += now; L.LogInfo($"dev faces: {now} pictures added ({added} in all)"); }
         }
 
-        private static void Add(VisualElement row)
+        /// <summary>
+        /// The picture sits outside the card, just left of its shirt row (absolutely placed), so
+        /// nothing in the card moves: the shirt and both role arrows stay where FM puts them.
+        /// </summary>
+        private static VisualElement Add(VisualElement row)
         {
-            // Before the shirt, as in the skin
-            int at = row.childCount;
-            for (int i = 0; i < row.childCount; i++)
-            {
-                string type;
-                try { type = row[i].GetIl2CppType().Name; } catch { continue; }
-                if (type == "FMTacticsShirt") { at = i; break; }
-            }
             var wrap = new VisualElement { name = Mark, pickingMode = PickingMode.Ignore };
             var st = wrap.style;
-            st.width = new StyleLength(Size);
-            st.height = new StyleLength(Size);
-            st.minWidth = new StyleLength(Size);
-            st.flexShrink = new StyleFloat(0f);
-            st.alignSelf = new StyleEnum<Align>(Align.Center);
+            st.position = new StyleEnum<Position>(Position.Absolute);
+            st.right = new StyleLength(new Length(100f, LengthUnit.Percent));
+            st.top = new StyleLength(0f);
             st.marginRight = new StyleLength(2f);
             st.overflow = new StyleEnum<Overflow>(Overflow.Hidden);
-            var r = new StyleLength(Size / 2f);
-            st.borderTopLeftRadius = st.borderTopRightRadius = st.borderBottomLeftRadius = st.borderBottomRightRadius = r;
             st.backgroundColor = new StyleColor(new Color(0f, 0f, 0f, 0.25f));
-            row.Insert(at, wrap);
+            row.Add(wrap);
 
             var remap = new BindingRemapper();
             remap.Mappings = Maps(("person", "position.Player"));
@@ -78,6 +70,19 @@ namespace ProjectFM.Dev
                 new UnityEngine.AddressableAssets.AssetReferenceT<VisualTreeAsset>(PersonPictureGuid));
             if (pic != null) { Fill(pic); pic.pickingMode = PickingMode.Ignore; remap.Add(pic); }
             BindableElementUtils.BindHierarchy(wrap);
+            return wrap;
+        }
+
+        /// <summary>A round picture as tall as the shirt row.</summary>
+        private static void Fit(VisualElement face, VisualElement row)
+        {
+            float h = row.resolvedStyle.height;
+            if (float.IsNaN(h) || h < 10f) return;
+            if (Math.Abs(face.resolvedStyle.width - h) < 1f) return;
+            var st = face.style;
+            st.width = st.height = st.minWidth = new StyleLength(h);
+            var r = new StyleLength(h / 2f);
+            st.borderTopLeftRadius = st.borderTopRightRadius = st.borderBottomLeftRadius = st.borderBottomRightRadius = r;
         }
 
         private static void Fill(VisualElement e)
