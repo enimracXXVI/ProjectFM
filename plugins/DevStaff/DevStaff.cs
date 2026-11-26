@@ -20,7 +20,7 @@ namespace ProjectFM.Dev
         private static readonly string[] CardNames = { "ClubCoachingStaff", "ClubRecruitmentStaff", "ClubMedicalStaff" };
         private const string Target = "staffsubgroup.StaffSubGroupCountFeedbackString";
 
-        public static void Start(ManualLogSource log) { L = log; next = 0; checkAt = 0; L.LogInfo("dev staff 0.8: staff table and comparison, MrTini's sizing"); }
+        public static void Start(ManualLogSource log) { L = log; next = 0; checkAt = 0; L.LogInfo("dev staff 0.9: fold buttons for the roles list and the comparison"); }
 
         public static void Stop()
         {
@@ -28,6 +28,8 @@ namespace ProjectFM.Dev
             {
                 foreach (var e in FindAll(root, Mark)) e.RemoveFromHierarchy();
                 foreach (var e in FindAll(root, "pfm-dev-compare")) e.RemoveFromHierarchy();
+                foreach (var e in FindAll(root, FoldName)) e.RemoveFromHierarchy();
+                foreach (var e in FindAll(root, "StreamedTable_JobsList")) e.style.display = DisplayStyle.Flex;
             }
         }
 
@@ -274,7 +276,76 @@ namespace ProjectFM.Dev
             }
             BindableElementUtils.BindHierarchy(real);
             BindableElementUtils.BindHierarchy(cr);
+            AddFolds(parent, cr, card);
             L.LogInfo($"dev staff: {card} real: table {(table != null ? "built" : "missing")}, comparison {(cmp != null ? "built" : "missing")}");
+        }
+
+        // Folded parts by card ("ClubCoachingStaff/roles", ".../compare"); kept while FM runs
+        private static readonly HashSet<string> Folded = new HashSet<string>();
+        private const string FoldName = "pfm-fold";
+
+        /// <summary>A chevron button that shows or hides some parts of the card.</summary>
+        private static Button Fold(string key, Func<List<VisualElement>> parts)
+        {
+            var b = new Button { name = FoldName, tooltip = "Show or hide" };
+            var icon = new VisualElement();
+            icon.AddToClassList("ui-concepts-chevron-down_small");
+            icon.style.width = new StyleLength(16f);
+            icon.style.height = new StyleLength(16f);
+            b.Add(icon);
+            var st = b.style;
+            st.backgroundColor = new StyleColor(new Color(1f, 1f, 1f, 0.06f));
+            st.borderTopWidth = st.borderBottomWidth = st.borderLeftWidth = st.borderRightWidth = new StyleFloat(0f);
+            st.borderTopLeftRadius = st.borderTopRightRadius = st.borderBottomLeftRadius = st.borderBottomRightRadius = new StyleLength(6f);
+            st.width = new StyleLength(28f);
+            st.height = new StyleLength(28f);
+            st.paddingLeft = st.paddingRight = st.paddingTop = st.paddingBottom = new StyleLength(0f);
+            st.marginLeft = new StyleLength(StyleKeyword.Auto);
+            st.alignItems = new StyleEnum<Align>(Align.Center);
+            st.justifyContent = new StyleEnum<Justify>(Justify.Center);
+            st.alignSelf = new StyleEnum<Align>(Align.Center);
+            st.flexShrink = new StyleFloat(0f);
+            void Apply()
+            {
+                bool folded = Folded.Contains(key);
+                foreach (var e in parts()) e.style.display = folded ? DisplayStyle.None : DisplayStyle.Flex;
+                icon.style.rotate = new StyleRotate(new Rotate(new Angle(folded ? -90f : 0f, AngleUnit.Degree)));
+            }
+            b.add_clicked((Il2CppSystem.Action)new Action(() =>
+            {
+                if (!Folded.Remove(key)) Folded.Add(key);
+                Apply();
+            }));
+            Apply();
+            return b;
+        }
+
+        private static void AddFolds(VisualElement parent, VisualElement compare, string card)
+        {
+            var cardEl = parent;
+            for (var p = parent; p != null; p = p.parent) if (p.name == card) { cardEl = p; break; }
+            // The roles list (Manager 1/1, Coaches 10/10…): button in the card's title row
+            var header = Find(cardEl, card.Replace("Club", "") + "Header");
+            var roles = Find(cardEl, "StreamedTable_JobsList");
+            if (header != null && roles != null && Find(header, FoldName) == null)
+            {
+                header.style.flexGrow = new StyleFloat(1f);
+                header.Add(Fold(card + "/roles", () => new List<VisualElement> { roles }));
+            }
+            // The comparison: button in its title row, hides the rest of the block
+            var heading = Find(compare, "FullHeadingFrame");
+            if (heading != null && heading.parent != null && Find(heading, FoldName) == null)
+            {
+                var block = heading.parent;
+                heading.Add(Fold(card + "/compare", () =>
+                {
+                    var list = new List<VisualElement>();
+                    for (int i = 0; i < block.childCount; i++)
+                        if (block[i] != heading) list.Add(block[i]);
+                    return list;
+                }));
+            }
+            else L.LogWarning($"dev staff: {card}: comparison title row not found");
         }
 
         private static SIText Probe(string path)
