@@ -23,7 +23,7 @@ namespace ProjectFM.Dev
         private const float Size = 34f;
         private static bool first = true;
 
-        public static void Start(ManualLogSource log) { L = log; next = 0; added = 0; first = true; L.LogInfo("dev faces 0.5: picture sits on the roles bar left of the shirt; role arrows stacked right of it"); }
+        public static void Start(ManualLogSource log) { L = log; next = 0; added = 0; first = true; L.LogInfo("dev faces 0.6: stacked arrows shrunk to half the shirt's height each"); }
 
         public static void Stop()
         {
@@ -39,6 +39,8 @@ namespace ProjectFM.Dev
                         arrow.style.position = new StyleEnum<Position>(StyleKeyword.Null);
                         arrow.style.left = new StyleLength(StyleKeyword.Null);
                         arrow.style.top = new StyleLength(StyleKeyword.Null);
+                        arrow.style.scale = new StyleScale(StyleKeyword.Null);
+                        arrow.style.transformOrigin = new StyleTransformOrigin(StyleKeyword.Null);
                     }
             }
         }
@@ -114,7 +116,8 @@ namespace ProjectFM.Dev
             if (sb.width <= 1f || sb.height <= 1f) return;
             var ib = inner.worldBound;
 
-            // Arrows: one column right of the shirt
+            // Arrows: one column right of the shirt, each half the shirt's height, so the pair
+            // stays above the roles bar (drawn smaller only: the card's layout does not change)
             float x = sb.xMax - ib.xMin + 2f, y = sb.yMin - ib.yMin;
             foreach (var name in new[] { "OOPRoleRemapper", "IPRoleRemapper" })
             {
@@ -122,10 +125,17 @@ namespace ProjectFM.Dev
                 if (arrow == null) continue;
                 if (arrow.resolvedStyle.position != Position.Absolute)
                     arrow.style.position = new StyleEnum<Position>(Position.Absolute);
-                var ab = arrow.worldBound;
-                if (ab.width <= 1f || ab.height <= 1f) continue; // not shown in this view
+                float h = arrow.resolvedStyle.height;
+                if (float.IsNaN(h) || h <= 1f || arrow.worldBound.width <= 1f) continue; // not shown in this view
+                float f = Math.Min(1f, sb.height / 2f / h);
+                var sc = arrow.resolvedStyle.scale.value;
+                if (Math.Abs(sc.x - f) > 0.01f)
+                {
+                    arrow.style.transformOrigin = new StyleTransformOrigin(new TransformOrigin(0f, 0f, 0f));
+                    arrow.style.scale = new StyleScale(new Scale(new Vector2(f, f)));
+                }
                 Move(arrow, x, y);
-                y += ab.height;
+                y += h * f;
             }
 
             // Picture: left of the shirt, its bottom on the shirt's bottom
