@@ -20,12 +20,15 @@ namespace ProjectFM.Dev
         private static readonly string[] CardNames = { "ClubCoachingStaff", "ClubRecruitmentStaff", "ClubMedicalStaff" };
         private const string Target = "staffsubgroup.StaffSubGroupCountFeedbackString";
 
-        public static void Start(ManualLogSource log) { L = log; next = 0; checkAt = 0; L.LogInfo("dev staff 0.7: mappings added through FM's own List.Add, then the real staff table and comparison"); }
+        public static void Start(ManualLogSource log) { L = log; next = 0; checkAt = 0; L.LogInfo("dev staff 0.8: staff table and comparison, MrTini's sizing"); }
 
         public static void Stop()
         {
             foreach (var root in Roots())
+            {
                 foreach (var e in FindAll(root, Mark)) e.RemoveFromHierarchy();
+                foreach (var e in FindAll(root, "pfm-dev-compare")) e.RemoveFromHierarchy();
+            }
         }
 
         public static void Tick()
@@ -40,15 +43,16 @@ namespace ProjectFM.Dev
                     var board = card == null ? null : Find(card, "SIVisible_IsClub");
                     var parent = board?.parent;
                     if (parent == null || Find(parent, Mark) != null) continue;
+                    // As the MrTini23 skin lays it out: the table takes the card's free height
+                    // (grow from nothing), the comparison keeps its own height (no shrink)
                     var box = new VisualElement { name = Mark };
                     parent.Insert(parent.IndexOf(board) + 1, box);
-                    foreach (var v in Variants) Try(box, v, name);
-                    try { Real(box, name); } catch (Exception e) { L.LogWarning($"dev staff: {name} real: {e}"); }
+                    try { Real(box, parent, name); } catch (Exception e) { L.LogWarning($"dev staff: {name} real: {e}"); }
                     checkAt = Time.realtimeSinceStartup + 2f;
                 }
         }
 
-        private static readonly string[] Variants = { "I" };
+        private static readonly string[] Variants = { };
 
         private static RemapInfo Info(string from, string to, int serialised, bool create)
         {
@@ -213,11 +217,29 @@ namespace ProjectFM.Dev
         }
 
         /// <summary>FM's staff table and team comparison for the card, as the MrTini23 skin wires them.</summary>
-        private static void Real(VisualElement box, string card)
+        private static void Grow(VisualElement e)
         {
+            e.style.alignSelf = new StyleEnum<Align>(Align.Stretch);
+            e.style.flexGrow = new StyleFloat(1f);
+            e.style.flexShrink = new StyleFloat(1f);
+            e.style.flexBasis = new StyleLength(0f);
+            e.style.minHeight = new StyleLength(0f);
+            e.style.width = new StyleLength(new Length(100f, LengthUnit.Percent));
+        }
+
+        private static void Keep(VisualElement e)
+        {
+            e.style.alignSelf = new StyleEnum<Align>(Align.Stretch);
+            e.style.flexShrink = new StyleFloat(0f);
+            e.style.width = new StyleLength(new Length(100f, LengthUnit.Percent));
+        }
+
+        private static void Real(VisualElement box, VisualElement parent, string card)
+        {
+            Grow(box);
+            box.AddToClassList("margin-top-global-gap-large");
             var real = new VisualElement { name = "pfm-real" };
-            real.AddToClassList("align-self-stretch");
-            real.AddToClassList("flex-grow-class");
+            Grow(real);
             box.Add(real);
 
             var tr = new BindingRemapper();
@@ -227,30 +249,31 @@ namespace ProjectFM.Dev
                 ("isAllStaffTab", "const.False"),
                 ("showQuickFlicks", "const.False"),
                 ("showBlockAppearance", "const.False"));
-            tr.AddToClassList("align-self-stretch");
-            tr.AddToClassList("flex-grow-class");
+            Grow(tr);
             real.Add(tr);
             var table = Build(TableGuid);
             if (table != null)
             {
-                table.AddToClassList("align-self-stretch");
-                table.AddToClassList("flex-grow-class");
+                Grow(table);
                 tr.Add(table);
             }
 
             var (guid, data) = Compare[card];
             var cr = new BindingRemapper();
             cr.Mappings = Maps(("attributes", data));
-            cr.AddToClassList("align-self-stretch");
+            Keep(cr);
+            cr.name = "pfm-dev-compare";
             cr.AddToClassList("margin-top-global-gap-large");
-            real.Add(cr);
+            // Its own block after the table's, so the table cannot squash it
+            parent.Insert(parent.IndexOf(box) + 1, cr);
             var cmp = Build(guid);
             if (cmp != null)
             {
-                cmp.AddToClassList("align-self-stretch");
+                Keep(cmp);
                 cr.Add(cmp);
             }
             BindableElementUtils.BindHierarchy(real);
+            BindableElementUtils.BindHierarchy(cr);
             L.LogInfo($"dev staff: {card} real: table {(table != null ? "built" : "missing")}, comparison {(cmp != null ? "built" : "missing")}");
         }
 
@@ -278,7 +301,7 @@ namespace ProjectFM.Dev
                     if (box == null) continue;
                     var rb = Find(box, "pfm-real");
                     if (rb != null)
-                        L.LogInfo($"dev staff: {name} real: table rows {Find(rb, "View")?.childCount ?? -1}, columns {Find(rb, "column-headers")?.childCount ?? -1}, comparison parts {Find(rb, "HasDataCheck")?.childCount ?? -1}");
+                        L.LogInfo($"dev staff: {name} real: table rows {Find(rb, "View")?.childCount ?? -1}, columns {Find(rb, "column-headers")?.childCount ?? -1}, comparison parts {Find(card, "HasDataCheck")?.childCount ?? -1}");
                     // FM's own remappers on the way up from the card's insides, then ours
                     int n = 0;
                     for (var p = box.parent; p != null && n < 4; p = p.parent)
