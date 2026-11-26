@@ -1,0 +1,5 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <AssemblyName>ProjectFM.ScreenDump</AssemblyName>
+  </PropertyGroup>
+</Project>
