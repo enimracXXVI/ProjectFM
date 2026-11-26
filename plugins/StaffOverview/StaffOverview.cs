@@ -16,7 +16,7 @@ namespace ProjectFM.StaffOverview
     /// the way the MrTini23 skin does in its screen file, but at run time and without changing
     /// any game file.
     /// </summary>
-    [BepInPlugin("projectfm.staffoverview", "ProjectFM Staff Overview", "0.3.0")]
+    [BepInPlugin("projectfm.staffoverview", "ProjectFM Staff Overview", "0.4.0")]
     public class Plugin : BasePlugin
     {
         internal static ManualLogSource L;
@@ -112,9 +112,21 @@ namespace ProjectFM.StaffOverview
                     var view = Find(box, "View", 0);
                     var panes = Find(box, "column-headers", 0);
                     var data = Find(box, "HasDataCheck", 0);
+                    LogProbes(box, c.card);
                     Plugin.L.LogInfo($"staff overview: {c.card}: table rows {view?.childCount ?? -1}, columns {panes?.childCount ?? -1}, comparison parts {data?.childCount ?? -1}");
                 }
             }
+        }
+
+        private static void LogProbes(VisualElement e, string card)
+        {
+            if (e.name != null && e.name.StartsWith("pfm-probe:"))
+            {
+                var t = e.TryCast<SIText>();
+                Plugin.L.LogInfo($"staff overview: {card}: {e.name.Substring(10)} = \"{t?.text}\" (inside a remapper: {e.parent?.GetIl2CppType().Name == "BindingRemapper"})");
+                return;
+            }
+            for (int i = 0; i < e.childCount; i++) LogProbes(e[i], card);
         }
 
         private void Pass()
@@ -139,6 +151,32 @@ namespace ProjectFM.StaffOverview
                 }
             }
         }
+
+        /// <summary>A small text bound to one data path, to see what FM gives there.</summary>
+        private static SIText Probe(string path)
+        {
+            var t = new SIText { name = "pfm-probe:" + path };
+            var method = new BindingMethod<SIText>();
+            method.m_kind = BindingMethodKind.Direct;
+            var direct = new DirectBinding();
+            direct.Path = BindingPath.Create(path);
+            method.m_direct = direct;
+            t.TextBinding = method;
+            t.style.fontSize = new StyleLength(9f);
+            t.style.opacity = new StyleFloat(0.5f);
+            return t;
+        }
+
+        private static readonly string[] OuterProbes =
+        {
+            "staffsubgroup.StaffSubGroupCountFeedbackString",
+            "staffsubgroup.StaffSubGroupPersonListFiltered",
+            "staffsubgroup",
+            "team",
+            "team.StaffListFilter",
+            "team.StaffCoachingSubGroupComparisonAttributes",
+            "subgrouptype",
+        };
 
         private static BindingRemapper Remapper(params (string from, string to)[] maps)
         {
@@ -183,6 +221,8 @@ namespace ProjectFM.StaffOverview
             foreach (var cls in new[] { "align-self-stretch", "margin-top-global-gap-large", "flex-grow-class", "flex-basis-0" })
                 box.AddToClassList(cls);
             parent.Insert(at, box);
+            // Test readers (0.4): what the card's data holds, outside and inside the remappers
+            foreach (var path in OuterProbes) box.Add(Probe(path));
 
             if (table != null)
             {
@@ -196,6 +236,8 @@ namespace ProjectFM.StaffOverview
                 r.AddToClassList("align-self-stretch");
                 r.AddToClassList("flex-grow-class");
                 box.Add(r);
+                r.Add(Probe("personlist"));
+                r.Add(Probe("filter"));
                 var t = table;
                 t.AddToClassList("align-self-stretch");
                 t.AddToClassList("flex-grow-class");
@@ -207,6 +249,7 @@ namespace ProjectFM.StaffOverview
                 r.AddToClassList("align-self-stretch");
                 r.AddToClassList("margin-top-global-gap-large");
                 box.Add(r);
+                r.Add(Probe("attributes"));
                 var t = compare;
                 t.AddToClassList("align-self-stretch");
                 r.Add(t);
