@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import sample from './fixtures/save-extract-sample.json'
-import { fmEuro, saveUpdates, type SaveData } from './save'
+import { contractFields, fmEuro, saveUpdates, type SaveData } from './save'
 
 const data = sample as unknown as SaveData
 
@@ -42,5 +42,44 @@ describe('save import mapping', () => {
     expect(overall.leftFoot).toBe('Very Strong (20)')
     const league = saveUpdates(data, 'league').find((u) => u.uniqueId === id)!
     expect(league.stats!.Minutes).toBe('64')
+  })
+})
+
+describe('contractFields: loans and agreed contracts (reader 27)', () => {
+  const base = {
+    uniqueId: 1,
+    wage: 62603,
+    end: '2030-06-30',
+    squadStatus: null,
+    kind: 'full_time',
+    onLoan: false,
+    clauses: [],
+  }
+  it('shows a loan as FM does: owning club, dates and the borrowing club share', () => {
+    // Pote on the user's save: owned by Sporting, at Fiorentina, end not in the save
+    const out = contractFields({
+      ...base,
+      start: '2025-10-06',
+      club: 'Sporting Clube de Portugal',
+      loan: {
+        from: 'Sporting Clube de Portugal',
+        at: 'A.C.F. Fiorentina',
+        start: '2026-07-20',
+        end: null,
+        wage: 46952,
+      },
+    })
+    expect(out['Loan from']).toBe('Sporting Clube de Portugal')
+    expect(out['On loan at']).toBe('A.C.F. Fiorentina')
+    expect(out.Signed).toBe('6/10/2025')
+    expect(out['Loan expires']).toBe('Not in the save')
+    expect(out['Loan wage paid']).toContain('(75%)')
+  })
+  it('lists contracts agreed to start later', () => {
+    const out = contractFields({
+      ...base,
+      future: [{ club: 'A.C.F. Fiorentina', start: '2027-06-30', end: '2031-06-30', wage: 56720 }],
+    })
+    expect(out['Agreed contract']).toMatch(/^A\.C\.F\. Fiorentina from 30\/6\/2027 to 30\/6\/2031/)
   })
 })

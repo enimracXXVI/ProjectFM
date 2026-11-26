@@ -129,7 +129,7 @@ def _plain(v):
 
 
 # Raised whenever extract() returns new data, so the app can spot an outdated copy
-READER_VERSION = 26
+READER_VERSION = 27
 
 JOB_SCOUT, JOB_CHIEF_SCOUT = 14, 44
 _FF8 = b"\xff" * 8
@@ -951,6 +951,43 @@ def _world_stats(save, rows):
     return {"kinds": list(_WORLD_STAT_KINDS), "fields": names, "rows": out}
 
 
+def _loan_info(c, club_uid):
+    """A loan to or from the club: who owns him, where he plays, the dates and the wage the
+    borrowing club pays. fmsave flags most loans; a few (Pote at Fiorentina, owned by
+    Sporting) only show as a chain record of the managed club without terms of its own."""
+    try:
+        chain = list(c.chain or ())
+        spell = next(
+            (e for e in chain if not e.has_terms and e.club_uid is not None and e.club_uid != c.club_uid),
+            None,
+        )
+        if not c.on_loan and not (spell and c.club_uid != club_uid and spell.club_uid == club_uid):
+            return None
+        return {
+            "from": c.loan_parent_club_name or c.club_name,
+            "at": spell.club_name if spell else None,
+            "start": c.loan_start or (spell.start if spell else None),
+            "end": c.loan_end,
+            "wage": spell.wage if spell else None,
+        }
+    except Exception:
+        return None
+
+
+def _future_moves(c, today):
+    """Contracts agreed to start later (a loan with an obligation to buy, or a transfer already
+    agreed): club, start, end and wage. Read from chain records with terms that start after
+    the game date (unconfirmed in game)."""
+    out = []
+    try:
+        for e in c.chain or ():
+            if e.has_terms and e.start and today and e.start > today:
+                out.append({"club": e.club_name, "start": e.start, "end": e.end, "wage": e.wage})
+    except Exception:
+        pass
+    return out
+
+
 def extract(path):
     with fmsave.open(path) as save:
         # First, so the contract records are noted the one time fmsave reads them
@@ -982,6 +1019,10 @@ def extract(path):
                 # Individual training (role, focus, intensity, rest), as far as it was found
                 "training": training.get(p.uid) or None,
                 "name": p.name,
+                # The player's real name when the save keeps one (Pote: Pedro António Pereira
+                # Gonçalves), else first plus last name
+                "legalName": getattr(p, "legal_name", None),
+                "fullName": getattr(p, "full_name", None),
                 "leftFoot": p.left_foot,
                 "rightFoot": p.right_foot,
                 "personality": asdict(p.personality) if is_dataclass(p.personality) else None,
@@ -1006,6 +1047,9 @@ def extract(path):
                 "squadStatus": c.squad_status,
                 "kind": c.kind,
                 "onLoan": c.on_loan,
+                "club": c.club_name,
+                "loan": _loan_info(c, club_uid),
+                "future": _future_moves(c, save.info.game_date),
                 "clauses": [
                     {"kind": cl.kind, "value": getattr(cl, "value", None)} for cl in (c.clauses or ())
                 ],

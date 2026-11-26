@@ -137,6 +137,11 @@ export function PlayerDetail() {
           <h1 className="flex flex-wrap items-center gap-x-2 text-xl font-bold tracking-tight lg:text-2xl">
             {p.name} <CopyName name={p.name} /> <StatusChip code={p.extra.status} />
           </h1>
+          {p.extra['Full name'] && (
+            <p className="truncate text-sm text-muted" title="Full name">
+              {p.extra['Full name']}
+            </p>
+          )}
           <p className="flex flex-wrap items-center gap-x-1.5 text-sm text-muted">
             {[p.positions, p.age != null ? `${p.age} years` : null].filter(Boolean).join(' · ')}
             {p.nation && (
@@ -207,20 +212,40 @@ function ContractAndStats({
   const labelOf = (key: string) => contractCols.find((c) => c.key === key)?.label || key
   const value =
     p.extra['Transfer Value'] ?? (p.extra.Value ? eur(Number(p.extra.Value)) : undefined)
+  const ourClub = (
+    <>
+      <ClubCrest id={p.extra['Club ID']} />
+      <span className="truncate" title={club}>
+        {club}
+      </span>
+    </>
+  )
+  // On loan here: the owning club holds the contract (as FM and sortitoutsi show it)
+  const loanedIn = !!p.extra['Loan from'] && p.extra['Loan from'] !== club
+  const loanedOut = !!p.extra['On loan at'] && p.extra['On loan at'] !== club
   const contract: InfoRow[] = [
-    {
-      label: 'Club',
-      value: (
-        <>
-          <ClubCrest id={p.extra['Club ID']} />
-          <span className="truncate" title={club}>
-            {club}
-          </span>
-        </>
-      ),
-    },
+    { label: 'Club', value: loanedIn ? p.extra['Loan from'] : ourClub },
+    ...(loanedIn ? [{ label: 'On loan at', value: ourClub }] : []),
+    ...(loanedOut ? [{ label: 'On loan at', value: p.extra['On loan at'] }] : []),
     { label: 'Squad number', value: p.squad_number },
     ...CONTRACT_FIRST.map((k) => ({ label: labelOf(k), value: p.extra[k] })),
+    { label: 'Signed', value: p.extra.Signed },
+    ...(loanedIn || loanedOut
+      ? [
+          { label: 'Loan start', value: p.extra['Loan start'] },
+          { label: 'Loan expires', value: p.extra['Loan expires'] },
+          {
+            label: 'Wage paid by the loan club',
+            value: p.extra['Loan wage paid'],
+            hint: "The wage in the borrowing club's contract record, and its share of the full wage. Not yet checked against FM.",
+          },
+        ]
+      : []),
+    {
+      label: 'Agreed contract',
+      value: p.extra['Agreed contract'],
+      hint: 'A contract in the save that starts later: a loan with an obligation to buy, or a transfer or renewal already agreed. Not yet checked against FM.',
+    },
     { label: 'Value', value },
     ...contractCols
       .filter((c) => !CONTRACT_FIRST.includes(c.key) && c.key !== 'Transfer Value')
@@ -228,6 +253,7 @@ function ContractAndStats({
   ]
   const personal: InfoRow[] = [
     { label: 'Name', value: p.name },
+    { label: 'Full name', value: p.extra['Full name'] },
     { label: 'Age', value: p.age },
     { label: 'Date of birth', value: isoDate(p.extra['Date of birth']) },
     {

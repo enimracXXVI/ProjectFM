@@ -584,6 +584,7 @@ export async function importFmSave(opts: {
         ...u?.stats,
         ...(u?.traits != null ? { Traits: u.traits } : {}),
         ...u?.training,
+        ...u?.names,
       },
     }
   })
@@ -604,6 +605,7 @@ export async function importFmSave(opts: {
       'team',
       'Traits',
       ...SAVE_CONTRACT_KEYS,
+      'Full name',
       ...SAVE_STATS_KEYS,
       ...Object.values(TRAINING_KEYS),
     ].map((key) => ({

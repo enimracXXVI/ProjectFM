@@ -25,7 +25,7 @@ import {
 export type StatsKind = 'overall' | 'league' | 'cup' | 'non_competitive'
 
 /** Version of public/fmsave/extract.py this app expects. */
-export const READER_VERSION = 26
+export const READER_VERSION = 27
 
 export interface SaveData {
   /** Version of the save reader that produced this (absent before version 3). */
@@ -44,6 +44,9 @@ export interface SaveData {
   players: {
     uniqueId: number
     name: string
+    /** Real name when the save keeps one, and first plus last name (reader 27). */
+    legalName?: string | null
+    fullName?: string | null
     leftFoot: number | null
     rightFoot: number | null
     personality: Record<string, number> | null
@@ -59,6 +62,19 @@ export interface SaveData {
     squadStatus: string | null
     kind: string | null
     onLoan: boolean
+    start?: string | null
+    /** The contract's club (the owning club for a player on loan; reader 27). */
+    club?: string | null
+    /** A loan: owning club, borrowing club, dates and the borrowing club's wage share. */
+    loan?: {
+      from: string | null
+      at: string | null
+      start: string | null
+      end: string | null
+      wage: number | null
+    } | null
+    /** Contracts agreed to start later (unconfirmed in game). */
+    future?: { club: string | null; start: string; end: string | null; wage: number | null }[]
     clauses: { kind: string; value: number | null }[]
   }[]
   stats: (Record<string, number | string | null> & { uniqueId: number; kind: string })[]
@@ -139,7 +155,37 @@ export function contractFields(c: SaveData['contracts'][number]): Record<string,
   if (release) out['Minimum Fee Release Clause'] = fmEuro(release.value! * EUR_PER_GBP)
   if (c.clauses.some((x) => x.kind === 'optional_extension_by_club'))
     out['Optional Contract Extension By Club'] = 'Yes'
+  if (c.club) out['Contract club'] = c.club
+  if (c.start) out.Signed = fmDate(c.start)
+  if (c.loan) {
+    if (c.loan.from) out['Loan from'] = c.loan.from
+    if (c.loan.at) out['On loan at'] = c.loan.at
+    if (c.loan.start) out['Loan start'] = fmDate(c.loan.start)
+    // Not every loan's end is in the save (Pote's is not)
+    out['Loan expires'] = c.loan.end ? fmDate(c.loan.end) : 'Not in the save'
+    if (c.loan.wage != null) {
+      const share = c.wage ? Math.round((c.loan.wage / c.wage) * 100) : null
+      out['Loan wage paid'] =
+        `${fmEuro(c.loan.wage * 52 * EUR_PER_GBP)} p/a${share !== null ? ` (${share}%)` : ''} (?)`
+    }
+  }
+  if (c.future?.length)
+    out['Agreed contract'] =
+      c.future
+        .map(
+          (f) =>
+            `${f.club ?? '?'} from ${fmDate(f.start)}${f.end ? ` to ${fmDate(f.end)}` : ''}${
+              f.wage != null ? `, ${fmEuro(f.wage * 52 * EUR_PER_GBP)} p/a` : ''
+            }`,
+        )
+        .join('; ') + ' (?)'
   return out
+}
+
+/** The player's real name when it differs from the name FM shows. */
+export function realName(p: SaveData['players'][number]): Record<string, string> {
+  const full = p.legalName || p.fullName
+  return { 'Full name': full && full !== p.name ? full : '' }
 }
 
 const num = (v: unknown) => (typeof v === 'number' ? v : 0)
@@ -203,6 +249,8 @@ export interface SavePlayerUpdate {
   traits: string | null
   /** Individual training fields (empty from an older reader or when not found). */
   training: Record<string, string>
+  /** Real name (reader 27; empty from an older reader). */
+  names: Record<string, string>
 }
 
 /** All stats keys the save import writes (cleared before new stats are written). */
@@ -217,6 +265,14 @@ export const SAVE_CONTRACT_KEYS = [
   'Expires',
   'Minimum Fee Release Clause',
   'Optional Contract Extension By Club',
+  'Contract club',
+  'Signed',
+  'Loan from',
+  'On loan at',
+  'Loan start',
+  'Loan expires',
+  'Loan wage paid',
+  'Agreed contract',
 ]
 
 /** What the save import changes per player, for one competition kind. */
@@ -236,6 +292,7 @@ export function saveUpdates(
       stats: stats ? statsFields(stats) : null,
       traits: p.traits ? p.traits.join(',') : null,
       training: trainingFields(p.training, data.gameDate),
+      names: p.legalName !== undefined || p.fullName !== undefined ? realName(p) : {},
     }
   })
 }

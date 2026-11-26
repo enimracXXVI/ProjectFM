@@ -86,6 +86,17 @@ import { ratingSet } from '../tactics/matchData'
 import { byLastName, shortName } from '../lib/names'
 
 /** Pitch coordinates (0–1, own goal at 0) of an FM position on FM's grid. */
+/**
+ * Text size for a last name on a pitch card: long names get smaller on phones, so the whole
+ * name fits on one line in most cases (cut with … only when it still does not).
+ */
+const nameSize = (name: string) =>
+  name.length > 11
+    ? 'text-[8.5px] sm:text-[11px]'
+    : name.length > 8
+      ? 'text-[9.5px] sm:text-[11px]'
+      : 'text-[10.5px] sm:text-[11px]'
+
 /** The grid cell (CSS row and column, attack at the top) of an FM position on the pitch. */
 function gridCell(id: string | undefined) {
   const g = id ? FM_GRID[id] : undefined
@@ -664,8 +675,11 @@ function TacticEditor({ tactic }: { tactic: TacticRow }) {
                     </span>
                   )}
                 </span>
-                <span className="block text-[10px] font-semibold break-words sm:text-[11px]">
-                  {p ? p.name : '–'}
+                <span
+                  className={clsx('block truncate font-semibold', nameSize(p ? shortName(p) : ''))}
+                  title={p?.name}
+                >
+                  {p ? shortName(p) : '–'}
                 </span>
                 <span className="block truncate text-[9px] text-muted">
                   {role ? roleShort(role) : 'No role'}
@@ -682,8 +696,11 @@ function TacticEditor({ tactic }: { tactic: TacticRow }) {
                     return (
                       <Fragment key={k}>
                         <span className="opacity-70">{k + 1}</span>
-                        <span className={clsx('break-words', !id && 'italic opacity-60')}>
-                          {id ? (b ? b.name : '?') : 'Not selected'}
+                        <span
+                          className={clsx('truncate', !id && 'italic opacity-60')}
+                          title={b?.name}
+                        >
+                          {id ? (b ? shortName(b) : '?') : 'Not selected'}
                         </span>
                       </Fragment>
                     )

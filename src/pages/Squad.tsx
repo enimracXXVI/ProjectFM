@@ -4,7 +4,7 @@ import { ConesIcon } from '../components/ConesIcon'
 import { Face } from '../components/Pictures'
 import { ChevronDown, ChevronUp, Scale, TrendingUp, Trophy, X } from 'lucide-react'
 import { useEffect, useMemo, useState } from 'react'
-import { SORT, TEXT, useUrlState, useUrlText } from '../lib/urlState'
+import { BOOL, SORT, TEXT, useUrlState, useUrlText } from '../lib/urlState'
 import { seasonText, seasonYear, useSquadSeason, useSquadSeasons } from '../data/seasons'
 import { Link } from 'react-router-dom'
 import { StatusChip } from '../components/StatusChip'
@@ -81,8 +81,14 @@ export function Squad() {
   const { data: pastSeasons } = useSquadSeasons(career.id)
   const { data: past } = useSquadSeason(career.id, season)
   const isPast = season !== null
+  // Former players (sold, released, loaned out…): every player the club once had
+  const [showLeft, setShowLeft] = useUrlState<boolean>('left', false, BOOL)
   const data = useMemo(() => {
-    if (!isPast) return (live ?? []).filter((p) => p.in_squad)
+    if (!isPast) {
+      const all = live ?? []
+      const inSquad = all.filter((p) => p.in_squad)
+      return showLeft ? [...inSquad, ...all.filter((p) => !p.in_squad)] : inSquad
+    }
     const squad = past?.squad ?? []
     const ids = new Set(squad.map((p) => p.id))
     // Players who left during the season come after the final squad, dimmed
@@ -90,7 +96,7 @@ export function Squad() {
       ...squad.map((p) => ({ ...p, in_squad: true })),
       ...(past?.left ?? []).filter((p) => !ids.has(p.id)).map((p) => ({ ...p, in_squad: false })),
     ]
-  }, [isPast, live, past])
+  }, [isPast, live, past, showLeft])
   const [view, setView] = useUrlState<View>('view', 'profile', TEXT as never)
   // Phones: cards, or the full table (scrolls sideways, names stay in place)
   const [layout, setLayout] = useUrlState<'cards' | 'table'>('layout', 'cards', TEXT as never)
@@ -364,6 +370,16 @@ export function Squad() {
               </select>
             )}
           </div>
+          {!isPast && (
+            <label className="mb-3 flex min-h-9 items-center gap-2 text-sm text-muted">
+              <input
+                type="checkbox"
+                checked={showLeft}
+                onChange={(e) => setShowLeft(e.target.checked)}
+              />
+              Show players who left ({(live ?? []).filter((p) => !p.in_squad).length}), dimmed
+            </label>
+          )}
           {isPast && (
             <p className="mb-3 text-sm text-muted">
               The squad at the end of {seasonText(season)}. Players who left during the season are
