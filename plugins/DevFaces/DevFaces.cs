@@ -23,7 +23,7 @@ namespace ProjectFM.Dev
         private const float Size = 34f;
         private static bool first = true;
 
-        public static void Start(ManualLogSource log) { L = log; next = 0; added = 0; first = true; measuredLogged = false; L.LogInfo("dev faces 0.10: picture, shirt and arrows centred on the role bar; picture not clickable"); }
+        public static void Start(ManualLogSource log) { L = log; next = 0; added = 0; first = true; measuredLogged = false; L.LogInfo("dev faces 0.11: status icons move with the shirt; picture drawn behind the shirt"); }
 
         public static void Stop()
         {
@@ -82,7 +82,9 @@ namespace ProjectFM.Dev
             st.width = st.height = st.minWidth = st.maxWidth = st.minHeight = st.maxHeight = new StyleLength(Size);
 
 
-            row.Add(wrap);
+            // Behind the shirt (drawn before it), so shirt numbers stay readable
+            var innerRow = Child(row, "ShirtAndRoleMovements");
+            if (innerRow != null) row.Insert(row.IndexOf(innerRow), wrap); else row.Add(wrap);
 
             var remap = new BindingRemapper();
             remap.Mappings = Maps(("person", "position.Player"));
@@ -149,8 +151,14 @@ namespace ProjectFM.Dev
             float start = rb.xMin + (rb.width - total) / 2f;
             float shirtX = start + Size - Overlap;
             float shift = shirtX - shirtNatural;
-            if (Math.Abs(Translation(shirt) - shift) > 0.5f)
-                shirt.style.translate = new StyleTranslate(new Translate(new Length(shift), new Length(0f)));
+            // The shirt and what FM draws on it (injury, travel, yellow card…) move together
+            for (int i = 0; i < inner.childCount; i++)
+            {
+                var c = inner[i];
+                if (c.name == "OOPRoleRemapper" || c.name == "IPRoleRemapper") continue;
+                if (Math.Abs(Translation(c) - shift) > 0.5f)
+                    c.style.translate = new StyleTranslate(new Translate(new Length(shift), new Length(0f)));
+            }
 
             float x = shirtX + sb.width + 1f - ib.xMin, y = sb.yMin - ib.yMin;
             foreach (var arrow in arrows)
