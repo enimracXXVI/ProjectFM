@@ -20,17 +20,33 @@ namespace ProjectFM.Dev
         private const float Gap = 24f;
         private static string lastLog;
 
-        public static void Start(ManualLogSource log) { L = log; next = 0; L.LogInfo("dev bookmarks 0.2: width set once from the right edge; list refreshed; bookmark counts logged"); }
+        private static int settle;
+        private static float recountAt;
 
-        public static void Stop()
+        public static void Start(ManualLogSource log)
+        {
+            // Clear whatever an earlier version set, and read FM's widths only once it has
+            // laid the bar out again without them
+            Reset();
+            settle = 2;
+            L = log; next = 0; L.LogInfo("dev bookmarks 0.3: FM's width limits lifted; FM's own widths read after a reset"); }
+
+        public static void Stop() => Reset();
+
+        private static void Reset()
         {
             // Give FM its own widths back
             foreach (var root in Roots())
             {
                 var area = Find(root, "Bookmarks");
                 var list = area == null ? null : Find(area, "BookmarksList");
-                if (area != null) area.style.width = new StyleLength(StyleKeyword.Null);
-                if (list != null) list.style.width = new StyleLength(StyleKeyword.Null);
+                foreach (var e in new[] { area, list })
+                {
+                    if (e == null) continue;
+                    e.style.width = new StyleLength(StyleKeyword.Null);
+                    e.style.maxWidth = new StyleLength(StyleKeyword.Null);
+                    e.style.minWidth = new StyleLength(StyleKeyword.Null);
+                }
             }
             origArea = origList = -1;
             extra = 0;
@@ -47,6 +63,7 @@ namespace ProjectFM.Dev
                 var tabs = Find(root, "SecondaryNavigationBarTabs");
                 if (area == null || list == null || tabs == null) continue;
                 if (area.worldBound.width <= 0) continue;
+                if (settle > 0) { settle--; continue; }
                 if (origArea < 0)
                 {
                     origArea = area.resolvedStyle.width;
@@ -59,12 +76,23 @@ namespace ProjectFM.Dev
                 // a gap) to there. Worked out afresh each time, never added up (0.1 ran away).
                 float target = Math.Max(origArea, area.worldBound.xMax - lastRight - Gap);
                 float newExtra = target - origArea;
+                if (recountAt > 0 && Time.realtimeSinceStartup > recountAt)
+                {
+                    recountAt = 0;
+                    L.LogInfo($"dev bookmarks: a second later: bar drawn {area.worldBound.width:0}px, list drawn {list.worldBound.width:0}px; {Counts(area, list)}");
+                }
                 if (Math.Abs(newExtra - extra) < 4f) continue;
+                recountAt = Time.realtimeSinceStartup + 1f;
                 extra = newExtra;
-                area.style.width = new StyleLength(origArea + extra);
-                list.style.width = new StyleLength(origList + extra);
+                // Width and the limits FM's styles put on it (0.2 asked for 1030px, FM drew 717px)
+                foreach (var (e, w) in new[] { (area, origArea + extra), (list, origList + extra) })
+                {
+                    e.style.width = new StyleLength(w);
+                    e.style.maxWidth = new StyleLength(w);
+                    e.style.minWidth = new StyleLength(w);
+                }
                 Refresh(list);
-                var msg = $"dev bookmarks: last tab ends at {lastRight:0}px, bar {origArea + extra:0}px (+{extra:0}px), drawn {area.worldBound.width:0}px; {Counts(area, list)}";
+                var msg = $"dev bookmarks: last tab ends at {lastRight:0}px, bar {origArea + extra:0}px (+{extra:0}px), drawn {area.worldBound.width:0}px, list drawn {list.worldBound.width:0}px, parent {area.parent?.worldBound.width:0}px; {Counts(area, list)}";
                 if (msg != lastLog) { lastLog = msg; L.LogInfo(msg); }
             }
         }
