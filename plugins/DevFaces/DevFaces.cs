@@ -23,7 +23,7 @@ namespace ProjectFM.Dev
         private const float Size = 34f;
         private static bool first = true;
 
-        public static void Start(ManualLogSource log) { L = log; next = 0; added = 0; first = true; measuredLogged = false; L.LogInfo("dev faces 0.11: status icons move with the shirt; picture drawn behind the shirt"); }
+        public static void Start(ManualLogSource log) { L = log; next = 0; added = 0; first = true; measuredLogged = false; L.LogInfo("dev faces 0.12: picture back on top of the shirt; status icons move with the shirt"); }
 
         public static void Stop()
         {
@@ -82,9 +82,8 @@ namespace ProjectFM.Dev
             st.width = st.height = st.minWidth = st.maxWidth = st.minHeight = st.maxHeight = new StyleLength(Size);
 
 
-            // Behind the shirt (drawn before it), so shirt numbers stay readable
-            var innerRow = Child(row, "ShirtAndRoleMovements");
-            if (innerRow != null) row.Insert(row.IndexOf(innerRow), wrap); else row.Add(wrap);
+            // On top of the shirt (drawn after it)
+            row.Add(wrap);
 
             var remap = new BindingRemapper();
             remap.Mappings = Maps(("person", "position.Player"));

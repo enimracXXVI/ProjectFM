@@ -17,7 +17,7 @@ namespace ProjectFM.ConditionRings
     /// Shows condition and match sharpness as coloured rings with FM's own percentage in them,
     /// in place of the level icons in FM27's player tables. Reads only what FM already shows.
     /// </summary>
-    [BepInPlugin("projectfm.conditionrings", "ProjectFM Condition Rings", "1.4.0")]
+    [BepInPlugin("projectfm.conditionrings", "ProjectFM Condition Rings", "1.5.0")]
     public class Plugin : BasePlugin
     {
         internal static ManualLogSource L;
@@ -41,6 +41,8 @@ namespace ProjectFM.ConditionRings
         public bool Condition = true;
         public bool Sharpness = true;
         public bool ShowNumber = true;
+        public bool Bold = true;
+        public bool FatigueNumber = true;
         public float Size = 24f;
         public float Border = 2.5f;
         public float FontSize = 9f;
@@ -83,6 +85,7 @@ namespace ProjectFM.ConditionRings
                 s.Write();
                 return s;
             }
+            var seen = new HashSet<string>();
             foreach (var raw in File.ReadAllLines(Path))
             {
                 var line = raw.Trim();
@@ -93,9 +96,15 @@ namespace ProjectFM.ConditionRings
                 var v = line.Substring(eq + 1).Trim();
                 int hash = v.IndexOf(" #", StringComparison.Ordinal);
                 if (hash >= 0) v = v.Substring(0, hash).Trim();
+                seen.Add(k);
                 try { s.Set(k, v); }
                 catch { log.LogWarning($"rings settings: can't read \"{line}\""); }
             }
+            // Settings added in later versions: written into an existing file with their defaults
+            var add = new List<string>();
+            if (!seen.Contains("bold")) add.AddRange(new[] { "# The number in bold", "Bold = true" });
+            if (!seen.Contains("fatiguenumber")) add.AddRange(new[] { "# Fatigue as a number instead of FM's icon", "FatigueNumber = true" });
+            if (add.Count > 0) try { File.AppendAllLines(Path, add); } catch { }
             return s;
         }
 
@@ -112,6 +121,8 @@ namespace ProjectFM.ConditionRings
                 case "condition": Condition = Yes(v); break;
                 case "sharpness": Sharpness = Yes(v); break;
                 case "shownumber": ShowNumber = Yes(v); break;
+                case "bold": Bold = Yes(v); break;
+                case "fatiguenumber": FatigueNumber = Yes(v); break;
                 case "size": Size = Math.Clamp(Num(v), 10f, 60f); break;
                 case "border": Border = Math.Clamp(Num(v), 0f, 10f); break;
                 case "fontsize": FontSize = Math.Clamp(Num(v), 5f, 30f); break;
@@ -142,6 +153,10 @@ namespace ProjectFM.ConditionRings
                 $"Sharpness = {B(Sharpness)}",
                 "# Show the percentage inside the ring",
                 $"ShowNumber = {B(ShowNumber)}",
+                "# The number in bold",
+                $"Bold = {B(Bold)}",
+                "# Fatigue as a number instead of FM's icon",
+                $"FatigueNumber = {B(FatigueNumber)}",
                 "",
                 "# Look (pixels)",
                 $"Size = {F(Size)}",
@@ -406,6 +421,7 @@ namespace ProjectFM.ConditionRings
         private bool Handle(VisualElement e)
         {
             if (HandleSkinned(e)) return true;
+            if (HandleFatigue(e)) return true;
             string cls;
             bool sharp;
             if (e.name == "ConditionIcon")
@@ -445,6 +461,7 @@ namespace ProjectFM.ConditionRings
             // A number from a skin next to the icon, else FM's own value read through a hidden
             // text bound to the same data the MrTini23 skin shows (player.Condition, binding.Sharpness)
             int? pct = PercentNear(e, sharp ? "KojuroSharp" : "KojuroPct") ?? BoundValue(e, sharp);
+            if (!sharp && pct.HasValue) NoteLevel(cls, pct.Value);
             int value = pct ?? FromLevel(cls, sharp);
 
             if (ring == null)
@@ -467,6 +484,84 @@ namespace ProjectFM.ConditionRings
         }
 
         private const string ValueName = "pfm-value";
+        private const string FatigueName = "pfm-fatigue";
+
+        /// <summary>
+        /// Fatigue as a number: FM's fatigue cell gives its value as "binding" (the MrTini23 skin
+        /// shows that as text); a bold text bound to it replaces the icon.
+        /// </summary>
+        private bool HandleFatigue(VisualElement e)
+        {
+            if (e.childCount != 0 || e.parent == null) return false;
+            if (ClassStarting(e, "game-concepts-fatigue") == null) return false;
+            var parent = e.parent;
+            SIText text = null;
+            for (int i = 0; i < parent.childCount; i++)
+                if (parent[i].name == FatigueName) { text = parent[i].TryCast<SIText>(); break; }
+            if (!S.FatigueNumber)
+            {
+                if (text != null) text.RemoveFromHierarchy();
+                e.style.display = DisplayStyle.Flex;
+                return true;
+            }
+            if (text != null && restyle) { text.RemoveFromHierarchy(); text = null; }
+            if (text == null)
+            {
+                try
+                {
+                    text = new SIText { name = FatigueName };
+                    var method = new BindingMethod<SIText>();
+                    method.m_kind = BindingMethodKind.Direct;
+                    var direct = new DirectBinding();
+                    direct.Path = new BindingPath("binding");
+                    method.m_direct = direct;
+                    text.TextBinding = method;
+                    var st = text.style;
+                    st.fontSize = new StyleLength(S.FontSize + 3f);
+                    st.unityFontStyleAndWeight = new StyleEnum<FontStyle>(S.Bold ? FontStyle.Bold : FontStyle.Normal);
+                    st.color = new StyleColor(S.Text);
+                    st.unityTextAlign = new StyleEnum<TextAnchor>(TextAnchor.MiddleCenter);
+                    st.alignSelf = new StyleEnum<Align>(Align.Center);
+                    text.pickingMode = PickingMode.Ignore;
+                    parent.Insert(parent.IndexOf(e) + 1, text);
+                    try { text.BindToData(); } catch { }
+                }
+                catch (Exception ex)
+                {
+                    if (!fatigueFailed) { fatigueFailed = true; Plugin.L.LogWarning("rings: fatigue number: " + ex.Message); }
+                    return false;
+                }
+            }
+            e.style.display = DisplayStyle.None;
+            if (!fatigueLogged && !string.IsNullOrEmpty(text.text)) { fatigueLogged = true; Plugin.L.LogInfo($"rings: FM's fatigue reads \"{text.text}\""); }
+            return true;
+        }
+
+        private static bool fatigueFailed, fatigueLogged;
+
+        // Which condition percentages FM draws with which heart (its icon level), to match FM
+        private static readonly SortedDictionary<string, (int min, int max)> levels = new SortedDictionary<string, (int, int)>();
+        private static float levelsLogAt;
+
+        private static void NoteLevel(string cls, int pct)
+        {
+            var key = cls.Replace("scaling-icons-condition-", "");
+            bool changed = false;
+            if (levels.TryGetValue(key, out var r))
+            {
+                if (pct < r.min) { r.min = pct; changed = true; }
+                if (pct > r.max) { r.max = pct; changed = true; }
+                levels[key] = r;
+            }
+            else { levels[key] = (pct, pct); changed = true; }
+            if (changed && Time.realtimeSinceStartup > levelsLogAt)
+            {
+                levelsLogAt = Time.realtimeSinceStartup + 5f;
+                var parts = new List<string>();
+                foreach (var kv in levels) parts.Add($"{kv.Key}: {kv.Value.min}-{kv.Value.max}%");
+                Plugin.L.LogInfo("rings: FM's hearts so far: " + string.Join(", ", parts));
+            }
+        }
 
         /// <summary>FM's condition or sharpness for the cell, from a hidden bound text.</summary>
         private static int? BoundValue(VisualElement icon, bool sharp)
@@ -538,6 +633,7 @@ namespace ProjectFM.ConditionRings
             var label = new Label { name = "pfm-ring-label" };
             var ls = label.style;
             ls.fontSize = new StyleLength(S.FontSize);
+            ls.unityFontStyleAndWeight = new StyleEnum<FontStyle>(S.Bold ? FontStyle.Bold : FontStyle.Normal);
             ls.unityTextAlign = new StyleEnum<TextAnchor>(TextAnchor.MiddleCenter);
             ls.paddingLeft = new StyleLength(0f);
             ls.paddingRight = new StyleLength(0f);
