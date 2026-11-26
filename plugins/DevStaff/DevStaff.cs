@@ -20,7 +20,7 @@ namespace ProjectFM.Dev
         private static readonly string[] CardNames = { "ClubCoachingStaff", "ClubRecruitmentStaff", "ClubMedicalStaff" };
         private const string Target = "staffsubgroup.StaffSubGroupCountFeedbackString";
 
-        public static void Start(ManualLogSource log) { L = log; next = 0; checkAt = 0; L.LogInfo("dev staff 0.9: fold buttons for the roles list and the comparison"); }
+        public static void Start(ManualLogSource log) { L = log; next = 0; checkAt = 0; L.LogInfo("dev staff 0.10: fold buttons for roles, staff list and comparison; staff list and comparison folded at first"); }
 
         public static void Stop()
         {
@@ -277,15 +277,40 @@ namespace ProjectFM.Dev
             BindableElementUtils.BindHierarchy(real);
             BindableElementUtils.BindHierarchy(cr);
             AddFolds(parent, cr, card);
+            // The staff list: button after Filter in the table's own header row
+            var tableHeader = table == null ? null : Find(table, "Header");
+            if (tableHeader != null && tableHeader.parent != null && Find(tableHeader, FoldName) == null)
+            {
+                var holder = tableHeader.parent;
+                tableHeader.Add(Fold(card + "/staff", () =>
+                {
+                    var list = new List<VisualElement>();
+                    for (int i = 0; i < holder.childCount; i++)
+                        if (holder[i] != tableHeader) list.Add(holder[i]);
+                    return list;
+                }, folded =>
+                {
+                    // Folded, the table block shrinks to its header; open, it takes the free height
+                    foreach (var e in new[] { box, real, tr, table })
+                    {
+                        e.style.flexGrow = new StyleFloat(folded ? 0f : 1f);
+                        e.style.flexBasis = folded ? new StyleLength(StyleKeyword.Auto) : new StyleLength(0f);
+                    }
+                }));
+            }
+            else L.LogWarning($"dev staff: {card}: staff table header not found");
             L.LogInfo($"dev staff: {card} real: table {(table != null ? "built" : "missing")}, comparison {(cmp != null ? "built" : "missing")}");
         }
 
         // Folded parts by card ("ClubCoachingStaff/roles", ".../compare"); kept while FM runs
-        private static readonly HashSet<string> Folded = new HashSet<string>();
+        private static readonly HashSet<string> Toggled = new HashSet<string>();
+
+        // The roles list starts open, the staff list and the comparison start folded
+        private static bool IsFolded(string key) => key.EndsWith("/roles") ? Toggled.Contains(key) : !Toggled.Contains(key);
         private const string FoldName = "pfm-fold";
 
         /// <summary>A chevron button that shows or hides some parts of the card.</summary>
-        private static Button Fold(string key, Func<List<VisualElement>> parts)
+        private static Button Fold(string key, Func<List<VisualElement>> parts, Action<bool> after = null)
         {
             var b = new Button { name = FoldName, tooltip = "Show or hide" };
             var icon = new VisualElement();
@@ -307,13 +332,14 @@ namespace ProjectFM.Dev
             st.flexShrink = new StyleFloat(0f);
             void Apply()
             {
-                bool folded = Folded.Contains(key);
+                bool folded = IsFolded(key);
                 foreach (var e in parts()) e.style.display = folded ? DisplayStyle.None : DisplayStyle.Flex;
+                after?.Invoke(folded);
                 icon.style.rotate = new StyleRotate(new Rotate(new Angle(folded ? -90f : 0f, AngleUnit.Degree)));
             }
             b.add_clicked((Il2CppSystem.Action)new Action(() =>
             {
-                if (!Folded.Remove(key)) Folded.Add(key);
+                if (!Toggled.Remove(key)) Toggled.Add(key);
                 Apply();
             }));
             Apply();
