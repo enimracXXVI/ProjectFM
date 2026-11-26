@@ -20,7 +20,7 @@ namespace ProjectFM.Dev
         private const float Gap = 24f;
         private static string lastLog;
 
-        public static void Start(ManualLogSource log) { L = log; next = 0; L.LogInfo("dev bookmarks 0.1: widen the bookmark bar into the free space"); }
+        public static void Start(ManualLogSource log) { L = log; next = 0; L.LogInfo("dev bookmarks 0.2: width set once from the right edge; list refreshed; bookmark counts logged"); }
 
         public static void Stop()
         {
@@ -55,14 +55,52 @@ namespace ProjectFM.Dev
                 }
                 float lastRight = RightmostTab(tabs);
                 if (lastRight <= 0) continue;
-                float free = area.worldBound.xMin - lastRight - Gap;
-                if (Math.Abs(free) < 4f) continue;
-                extra = Math.Max(0f, extra + free);
+                // The bar keeps its right edge: its width is everything from the last tab (plus
+                // a gap) to there. Worked out afresh each time, never added up (0.1 ran away).
+                float target = Math.Max(origArea, area.worldBound.xMax - lastRight - Gap);
+                float newExtra = target - origArea;
+                if (Math.Abs(newExtra - extra) < 4f) continue;
+                extra = newExtra;
                 area.style.width = new StyleLength(origArea + extra);
                 list.style.width = new StyleLength(origList + extra);
-                var msg = $"dev bookmarks: last tab ends at {lastRight:0}px, bar now {origArea + extra:0}px (+{extra:0}px)";
+                Refresh(list);
+                var msg = $"dev bookmarks: last tab ends at {lastRight:0}px, bar {origArea + extra:0}px (+{extra:0}px), drawn {area.worldBound.width:0}px; {Counts(area, list)}";
                 if (msg != lastLog) { lastLog = msg; L.LogInfo(msg); }
             }
+        }
+
+        /// <summary>Asks FM's list to lay its bookmarks out again for the new width.</summary>
+        private static void Refresh(VisualElement list)
+        {
+            try
+            {
+                var v = Find(list, "VirtualisedList") ?? FirstOfType(list, "VirtualisedList");
+                var vl = v?.TryCast<SI.UI.VirtualisedList>();
+                vl?.Controller?.Refresh();
+            }
+            catch (Exception e) { L.LogWarning("dev bookmarks: refresh: " + e.Message); }
+        }
+
+        private static VisualElement FirstOfType(VisualElement e, string type, int depth = 0)
+        {
+            try { if (e.GetIl2CppType().Name == type) return e; } catch { }
+            if (depth > 10) return null;
+            for (int i = 0; i < e.childCount; i++)
+            {
+                var r = FirstOfType(e[i], type, depth + 1);
+                if (r != null) return r;
+            }
+            return null;
+        }
+
+        /// <summary>How many bookmarks FM gives the list, how many it draws, and its "(+N)".</summary>
+        private static string Counts(VisualElement area, VisualElement list)
+        {
+            string items = "?", drawn = "?", more = "?";
+            try { items = list.TryCast<SI.Bindable.StreamedObjectList>()?.ItemCount.ToString() ?? "?"; } catch { }
+            try { drawn = (Find(list, "View")?.childCount ?? -1).ToString(); } catch { }
+            try { more = Find(area, "BookmarksText")?.TryCast<TextElement>()?.text ?? "(none)"; } catch { }
+            return $"bookmarks in the list {items}, drawn {drawn}, more text {more}";
         }
 
         /// <summary>Where the second bar's last visible tab (or its More button) ends.</summary>
