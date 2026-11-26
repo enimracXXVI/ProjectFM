@@ -15,7 +15,7 @@ import {
   Wand2,
   X,
 } from 'lucide-react'
-import { useRef, useState, type ReactNode } from 'react'
+import { Fragment, useRef, useState, type ReactNode } from 'react'
 import { Link } from 'react-router-dom'
 import { TEXT, useUrlState } from '../lib/urlState'
 import { useConfirm } from '../components/confirm'
@@ -50,7 +50,7 @@ import {
   suggestions,
   withPlayer,
 } from '../tactics/analysis'
-import { FORMATIONS, POSITION_TEXT, formationLabel, pitchPlaces } from '../tactics/positions'
+import { FORMATIONS, POSITION_TEXT, pitchPlaces } from '../tactics/positions'
 import type { PositionCode, TacticRow, TacticSlot } from '../tactics/types'
 import {
   choose,
@@ -86,11 +86,18 @@ import { ratingSet } from '../tactics/matchData'
 import { byLastName, shortName } from '../lib/names'
 
 /** Pitch coordinates (0–1, own goal at 0) of an FM position on FM's grid. */
-function gridPlace(id: string | undefined) {
+/** The grid cell (CSS row and column, attack at the top) of an FM position on the pitch. */
+function gridCell(id: string | undefined) {
   const g = id ? FM_GRID[id] : undefined
-  if (!g) return null
-  const rows = [0.07, 0.22, 0.38, 0.54, 0.7, 0.87]
-  return { x: 0.1 + g.col * 0.2, y: rows[g.row] }
+  return g ? { row: 6 - g.row, col: g.col + 1 } : null
+}
+
+/** The nearest grid cell to a place on the pitch (0–1 across, 0–1 up). */
+function cellFromPlace(p: { x: number; y: number } | undefined) {
+  if (!p) return { row: 3, col: 3 }
+  const row = Math.min(5, Math.max(0, Math.round((p.y - 0.07) / 0.16)))
+  const col = Math.min(4, Math.max(0, Math.round((p.x - 0.1) / 0.2)))
+  return { row: 6 - row, col: col + 1 }
 }
 
 const field =
@@ -552,7 +559,8 @@ function TacticEditor({ tactic }: { tactic: TacticRow }) {
                   phase === ph ? 'bg-surface-2 font-semibold' : 'text-muted',
                 )}
               >
-                {label}
+                <span className="sm:hidden">{ph === 'ip' ? 'In poss.' : 'Out of poss.'}</span>
+                <span className="hidden sm:inline">{label}</span>
               </button>
             ))}
           </div>
@@ -577,16 +585,17 @@ function TacticEditor({ tactic }: { tactic: TacticRow }) {
             <Redo2 className="size-4" aria-hidden />
           </button>
         </div>
-        {/* Pitch: attack at the top */}
-        <div className="relative mx-auto aspect-[3/4] w-full max-w-md overflow-hidden rounded-xl border border-emerald-900/60 bg-emerald-950/40">
-          <div className="absolute inset-x-[20%] top-0 h-[12%] border-x border-b border-emerald-800/50" />
-          <div className="absolute inset-x-[20%] bottom-0 h-[12%] border-x border-t border-emerald-800/50" />
-          <div className="absolute inset-x-0 top-1/2 border-t border-emerald-800/50" />
+        {/* Pitch: attack at the top. FM's 6 x 5 grid of positions; each row is as tall as its
+            tallest card, so cards never overlap and full names fit. */}
+        <div className="relative mx-auto grid w-full max-w-md grid-cols-5 grid-rows-[repeat(6,minmax(4.5rem,auto))] gap-1 overflow-hidden rounded-xl border border-emerald-900/60 bg-emerald-950/40 p-1">
+          <div className="pointer-events-none absolute inset-x-[20%] top-0 h-[10%] border-x border-b border-emerald-800/50" />
+          <div className="pointer-events-none absolute inset-x-[20%] bottom-0 h-[10%] border-x border-t border-emerald-800/50" />
+          <div className="pointer-events-none absolute inset-x-0 top-1/2 border-t border-emerald-800/50" />
           {/* FM's free spots: drop a player here, or tap one after picking a player */}
           {config.fmCodes.positions
             .filter((f) => FM_GRID[f.id] && f.id !== 'GK' && !atFm.some((a) => a?.id === f.id))
             .map((f) => {
-              const { x, y } = gridPlace(f.id)!
+              const cell = gridCell(f.id)!
               const can = dragFrom !== null ? dragFrom !== 0 : active !== null && active !== 0
               return (
                 <button
@@ -600,9 +609,9 @@ function TacticEditor({ tactic }: { tactic: TacticRow }) {
                     setDragFrom(null)
                   }}
                   onClick={() => active !== null && move(active, f)}
-                  style={{ left: `${x * 100}%`, top: `${(1 - y) * 100}%` }}
+                  style={{ gridRow: cell.row, gridColumn: cell.col }}
                   className={clsx(
-                    'absolute grid h-[7%] w-[17%] -translate-x-1/2 -translate-y-1/2 place-items-center rounded-lg border border-dashed text-xs transition-opacity',
+                    'grid h-10 w-full place-items-center self-center rounded-lg border border-dashed text-xs transition-opacity',
                     can
                       ? 'border-emerald-400/70 text-emerald-300 hover:bg-emerald-400/15'
                       : 'border-emerald-800/50 text-transparent opacity-40',
@@ -616,7 +625,7 @@ function TacticEditor({ tactic }: { tactic: TacticRow }) {
             const p = playerOf(s)
             const role = roleOf(s)
             const score = p && role ? roleScore(p.attributes, role, config.roleWeights) : null
-            const { x, y } = gridPlace(atFm[i]?.id) ?? places[i]
+            const cell = gridCell(atFm[i]?.id) ?? cellFromPlace(places[i])
             return (
               <button
                 key={i}
@@ -640,9 +649,9 @@ function TacticEditor({ tactic }: { tactic: TacticRow }) {
                     )
                   setPiSlot(i)
                 }}
-                style={{ left: `${x * 100}%`, top: `${(1 - y) * 100}%` }}
+                style={{ gridRow: cell.row, gridColumn: cell.col }}
                 className={clsx(
-                  'absolute z-[1] w-[19%] -translate-x-1/2 -translate-y-1/2 rounded-lg border bg-surface/95 px-1 py-1 text-center leading-tight shadow',
+                  'z-[1] min-w-0 self-center rounded-lg border bg-surface/95 px-0.5 py-1 text-center leading-tight shadow sm:px-1',
                   active === i ? 'border-accent ring-2 ring-accent/50' : 'border-border',
                   !positions[i] && 'border-amber-400',
                 )}
@@ -655,15 +664,15 @@ function TacticEditor({ tactic }: { tactic: TacticRow }) {
                     </span>
                   )}
                 </span>
-                <span className="block truncate text-[11px] font-semibold">
-                  {p ? shortName(p) : '–'}
+                <span className="block text-[10px] font-semibold break-words sm:text-[11px]">
+                  {p ? p.name : '–'}
                 </span>
                 <span className="block truncate text-[9px] text-muted">
                   {role ? roleShort(role) : 'No role'}
                 </span>
                 <span
                   className={clsx(
-                    'mt-0.5 block border-t border-border/60 pt-0.5 text-[9px]',
+                    'mt-0.5 grid grid-cols-[auto_minmax(0,1fr)] gap-x-1 border-t border-border/60 pt-0.5 text-left text-[9px]',
                     backupProblems(s, form.slots, squad).length ? 'text-amber-300' : 'text-muted',
                   )}
                   title="Replacements"
@@ -671,11 +680,12 @@ function TacticEditor({ tactic }: { tactic: TacticRow }) {
                   {backupsOf(s).map((id, k) => {
                     const b = id ? squad.find((x) => x.id === id) : null
                     return (
-                      <span key={k} className={clsx('block truncate', !id && 'opacity-60')}>
-                        {id
-                          ? `${k + 1}. ${b ? shortName(b) : '?'}`
-                          : `No ${k === 0 ? '1st' : '2nd'} replacement`}
-                      </span>
+                      <Fragment key={k}>
+                        <span className="opacity-70">{k + 1}</span>
+                        <span className={clsx('break-words', !id && 'italic opacity-60')}>
+                          {id ? (b ? b.name : '?') : 'Not selected'}
+                        </span>
+                      </Fragment>
                     )
                   })}
                 </span>
@@ -685,31 +695,6 @@ function TacticEditor({ tactic }: { tactic: TacticRow }) {
           <PitchScore className="bottom-1.5 left-1.5" label="Squad fit" value={fitNow} />
           <PitchScore className="right-1.5 bottom-1.5" label="Best XI" value={fitBest} />
         </div>
-        <div className="flex flex-wrap items-center justify-center gap-2">
-          <Button
-            variant="ghost"
-            onClick={() => {
-              const ctx = {
-                roles: config.roles,
-                weights: config.roleWeights,
-                fmCodes: config.fmCodes,
-              }
-              const picks = suggestBackups(form.slots, squad, ctx, (p) => !injured(p))
-              setForm({ ...form, slots: form.slots.map((s, i) => ({ ...s, backups: picks[i] })) })
-            }}
-          >
-            <Wand2 className="size-4" aria-hidden /> Fill empty replacements
-          </Button>
-          <span className="text-xs text-muted">
-            Under each player: his 1st and 2nd replacement (tap him to change them)
-          </span>
-        </div>
-        <p className="text-center text-xs text-muted">
-          {phase === 'ip' ? 'In possession' : 'Out of possession'}:{' '}
-          {formation || formationLabel(positions)} · drag a player to a free spot to move him (or
-          tap him, then the spot); drag onto another player to swap{' '}
-          {phase === 'ip' ? 'the two players' : 'their out-of-possession places only'}
-        </p>
       </Card>
 
       <div ref={rightRef} className="grid min-w-0 scroll-mt-4 content-start gap-4">
