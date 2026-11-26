@@ -23,12 +23,24 @@ namespace ProjectFM.Dev
         private const float Size = 34f;
         private static bool first = true;
 
-        public static void Start(ManualLogSource log) { L = log; next = 0; added = 0; first = true; L.LogInfo("dev faces 0.4: picture lined up just left of the shirt and its arrows"); }
+        public static void Start(ManualLogSource log) { L = log; next = 0; added = 0; first = true; L.LogInfo("dev faces 0.5: picture sits on the roles bar left of the shirt; role arrows stacked right of it"); }
 
         public static void Stop()
         {
             foreach (var root in Roots())
+            {
                 foreach (var e in FindAll(root, Mark)) e.RemoveFromHierarchy();
+                // The arrows back where FM puts them
+                foreach (var inner in FindAll(root, "ShirtAndRoleMovements"))
+                    foreach (var name in new[] { "OOPRoleRemapper", "IPRoleRemapper" })
+                    {
+                        var arrow = Child(inner, name);
+                        if (arrow == null) continue;
+                        arrow.style.position = new StyleEnum<Position>(StyleKeyword.Null);
+                        arrow.style.left = new StyleLength(StyleKeyword.Null);
+                        arrow.style.top = new StyleLength(StyleKeyword.Null);
+                    }
+            }
         }
 
         public static void Tick()
@@ -81,31 +93,50 @@ namespace ProjectFM.Dev
         }
 
         /// <summary>
-        /// Just left of the leftmost thing beside the shirt (the out-of-possession arrow, or the
-        /// shirt), level with the shirt. Only the picture moves, never the card's contents.
+        /// Lays out the card's top row: the role arrows in one column right of the shirt (out of
+        /// possession on top, in possession under it), and the picture left of the shirt with its
+        /// bottom on the shirt's bottom, so nothing runs under the roles bar. Only absolutely
+        /// placed things move; the shirt stays where FM puts it.
         /// </summary>
         private static void Place(VisualElement face, VisualElement row)
         {
             var inner = Child(row, "ShirtAndRoleMovements");
             if (inner == null) return;
-            float left = float.MaxValue, top = float.MaxValue;
+            VisualElement shirt = null;
             for (int i = 0; i < inner.childCount; i++)
             {
-                var c = inner[i];
-                var b = c.worldBound;
-                if (b.width <= 1f || b.height <= 1f) continue;
-                try { if (c.resolvedStyle.display == DisplayStyle.None) continue; } catch { }
-                left = Math.Min(left, b.xMin);
                 string type = "";
-                try { type = c.GetIl2CppType().Name; } catch { }
-                if (type == "FMTacticsShirt") top = b.yMin;
+                try { type = inner[i].GetIl2CppType().Name; } catch { }
+                if (type == "FMTacticsShirt") { shirt = inner[i]; break; }
             }
-            if (left == float.MaxValue) return;
+            if (shirt == null) return;
+            var sb = shirt.worldBound;
+            if (sb.width <= 1f || sb.height <= 1f) return;
+            var ib = inner.worldBound;
+
+            // Arrows: one column right of the shirt
+            float x = sb.xMax - ib.xMin + 2f, y = sb.yMin - ib.yMin;
+            foreach (var name in new[] { "OOPRoleRemapper", "IPRoleRemapper" })
+            {
+                var arrow = Child(inner, name);
+                if (arrow == null) continue;
+                if (arrow.resolvedStyle.position != Position.Absolute)
+                    arrow.style.position = new StyleEnum<Position>(Position.Absolute);
+                var ab = arrow.worldBound;
+                if (ab.width <= 1f || ab.height <= 1f) continue; // not shown in this view
+                Move(arrow, x, y);
+                y += ab.height;
+            }
+
+            // Picture: left of the shirt, its bottom on the shirt's bottom
             var rb = row.worldBound;
-            float x = left - rb.xMin - Size - 2f;
-            float y = top == float.MaxValue ? 0f : top - rb.yMin;
-            if (Math.Abs(face.resolvedStyle.left - x) > 1f) face.style.left = new StyleLength(x);
-            if (Math.Abs(face.resolvedStyle.top - y) > 1f) face.style.top = new StyleLength(y);
+            Move(face, sb.xMin - rb.xMin - Size - 2f, sb.yMax - rb.yMin - Size);
+        }
+
+        private static void Move(VisualElement e, float x, float y)
+        {
+            if (float.IsNaN(e.resolvedStyle.left) || Math.Abs(e.resolvedStyle.left - x) > 1f) e.style.left = new StyleLength(x);
+            if (float.IsNaN(e.resolvedStyle.top) || Math.Abs(e.resolvedStyle.top - y) > 1f) e.style.top = new StyleLength(y);
         }
 
         private static void Fill(VisualElement e)
