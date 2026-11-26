@@ -172,17 +172,14 @@ export function contractFields(c: SaveData['contracts'][number]): Record<string,
   }
   if (c.future?.length) {
     // The latest record is the agreed move (Drăguşin and Njie to Fiorentina, Dodo to Flamengo:
-    // checked in game); an earlier one (Dodo to Juventus) is not explained yet
-    const text = (f: NonNullable<typeof c.future>[number]) =>
+    // checked in game). Earlier ones are talks that did not go through (Dodo and Juventus)
+    const f = [...c.future].sort((a, b) => a.start.localeCompare(b.start)).at(-1)!
+    out['Agreed contract'] =
       `${f.club ?? '?'} from ${fmDate(f.start)}${f.end ? ` to ${fmDate(f.end)}` : ''}${
         f.wage != null ? `, ${fmEuro(f.wage * 52 * EUR_PER_GBP)} p/a` : ''
       }`
-    const all = [...c.future].sort((a, b) => a.start.localeCompare(b.start))
-    const last = all[all.length - 1]
-    out['Agreed contract'] =
-      text(last) +
-      (all.length > 1 ? ` (also in the save: ${all.slice(0, -1).map(text).join('; ')} (?))` : '')
   }
+
   return out
 }
 
