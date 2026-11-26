@@ -16,7 +16,7 @@ namespace ProjectFM.StaffOverview
     /// the way the MrTini23 skin does in its screen file, but at run time and without changing
     /// any game file.
     /// </summary>
-    [BepInPlugin("projectfm.staffoverview", "ProjectFM Staff Overview", "0.1.0")]
+    [BepInPlugin("projectfm.staffoverview", "ProjectFM Staff Overview", "0.2.0")]
     public class Plugin : BasePlugin
     {
         internal static ManualLogSource L;
@@ -42,11 +42,14 @@ namespace ProjectFM.StaffOverview
 
         // FM's card name -> the department's comparison block and its data (from FM's own
         // Coaching / Recruitment / Medical Team tabs)
-        private static readonly (string card, string block, string data)[] Cards =
+        // FM's asset ids (Addressables GUIDs, as FM's own screen files reference them)
+        private const string TableGuid = "b00fa0597031b5642ba1e26ca3fb6ee0"; // ClubStaffTeamContractBlock
+
+        private static readonly (string card, string block, string guid, string data)[] Cards =
         {
-            ("ClubCoachingStaff", "ClubStaffCoachingTeamComparisonBlock", "team.StaffCoachingSubGroupComparisonAttributes"),
-            ("ClubRecruitmentStaff", "ClubStaffRecruitmentTeamComparisonBlock", "team.StaffRecruitmentSubGroupComparisonAttributes"),
-            ("ClubMedicalStaff", "ClubStaffMedicalTeamComparisonBlock", "team.StaffMedicalSubGroupComparisonAttributes"),
+            ("ClubCoachingStaff", "ClubStaffCoachingTeamComparisonBlock", "bb6a535ad4ad38446ac0e1b3552b4c85", "team.StaffCoachingSubGroupComparisonAttributes"),
+            ("ClubRecruitmentStaff", "ClubStaffRecruitmentTeamComparisonBlock", "1a3bc8c395c7a6f44983a8f52f4322de", "team.StaffRecruitmentSubGroupComparisonAttributes"),
+            ("ClubMedicalStaff", "ClubStaffMedicalTeamComparisonBlock", "9e54f89e398f44d41a54ed08d9c42a85", "team.StaffMedicalSubGroupComparisonAttributes"),
         };
 
         private void Update()
@@ -110,7 +113,7 @@ namespace ProjectFM.StaffOverview
                     for (int i = 0; i < parent.childCount; i++)
                         if (parent[i].name == Mark) { done = true; break; }
                     if (done) continue;
-                    Add(parent, parent.IndexOf(board) + 1, c.card, c.block, c.data);
+                    Add(parent, parent.IndexOf(board) + 1, c.card, c.block, c.guid, c.data);
                 }
             }
         }
@@ -130,10 +133,27 @@ namespace ProjectFM.StaffOverview
             return r;
         }
 
-        private void Add(VisualElement parent, int at, string card, string block, string data)
+        /// <summary>
+        /// Builds one of FM's templates the way FM does (SI's loader resolves the templates nested
+        /// in it), falling back to Unity's own when that fails.
+        /// </summary>
+        private VisualElement Build(string name, string guid)
         {
-            var table = Template("ClubStaffTeamContractBlock");
-            var compare = Template(block);
+            try
+            {
+                var r = new UnityEngine.AddressableAssets.AssetReferenceT<VisualTreeAsset>(guid);
+                var e = SI.Core.VisualTreeAssetExtensions.Instantiate(r);
+                if (e != null) return e;
+                Plugin.L.LogWarning($"staff overview: FM's loader gave nothing for {name}");
+            }
+            catch (Exception ex) { Plugin.L.LogWarning($"staff overview: FM's loader failed for {name}: {ex.Message}"); }
+            return Template(name)?.Instantiate();
+        }
+
+        private void Add(VisualElement parent, int at, string card, string block, string guid, string data)
+        {
+            var table = Build("ClubStaffTeamContractBlock", TableGuid);
+            var compare = Build(block, guid);
             var box = new VisualElement { name = Mark };
             foreach (var cls in new[] { "align-self-stretch", "margin-top-global-gap-large", "flex-grow-class", "flex-basis-0" })
                 box.AddToClassList(cls);
@@ -151,11 +171,10 @@ namespace ProjectFM.StaffOverview
                 r.AddToClassList("align-self-stretch");
                 r.AddToClassList("flex-grow-class");
                 box.Add(r);
-                var t = table.Instantiate();
+                var t = table;
                 t.AddToClassList("align-self-stretch");
                 t.AddToClassList("flex-grow-class");
                 r.Add(t);
-                try { r.BindToData(); } catch (Exception e) { Plugin.L.LogWarning($"staff overview: list binding ({card}): {e.Message}"); }
             }
             if (compare != null)
             {
@@ -163,11 +182,13 @@ namespace ProjectFM.StaffOverview
                 r.AddToClassList("align-self-stretch");
                 r.AddToClassList("margin-top-global-gap-large");
                 box.Add(r);
-                var t = compare.Instantiate();
+                var t = compare;
                 t.AddToClassList("align-self-stretch");
                 r.Add(t);
-                try { r.BindToData(); } catch (Exception e) { Plugin.L.LogWarning($"staff overview: comparison binding ({card}): {e.Message}"); }
             }
+            // Ask FM to bind the new pieces to the card's data, as it does for its own screens
+            try { BindableElementUtils.BindHierarchy(box); }
+            catch (Exception e) { Plugin.L.LogWarning($"staff overview: binding ({card}): {e.Message}"); }
             Plugin.L.LogInfo($"staff overview: {card}: list {(table != null ? "added" : "missing")}, comparison {(compare != null ? "added" : "missing")}");
         }
     }
