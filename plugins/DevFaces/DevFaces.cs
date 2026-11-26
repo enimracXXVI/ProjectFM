@@ -23,7 +23,7 @@ namespace ProjectFM.Dev
         private const float Size = 34f;
         private static bool first = true;
 
-        public static void Start(ManualLogSource log) { L = log; next = 0; added = 0; first = true; L.LogInfo("dev faces 0.6: stacked arrows shrunk to half the shirt's height each"); }
+        public static void Start(ManualLogSource log) { L = log; next = 0; added = 0; first = true; L.LogInfo("dev faces 0.7: picture and arrows end at the role row's top; both arrows one size"); }
 
         public static void Stop()
         {
@@ -116,9 +116,16 @@ namespace ProjectFM.Dev
             if (sb.width <= 1f || sb.height <= 1f) return;
             var ib = inner.worldBound;
 
-            // Arrows: one column right of the shirt, each half the shirt's height, so the pair
-            // stays above the roles bar (drawn smaller only: the card's layout does not change)
-            float x = sb.xMax - ib.xMin + 2f, y = sb.yMin - ib.yMin;
+            // The role row (the coloured bar with the role names) under the shirt: the shirt
+            // runs behind it, so its top is where everything above has to end
+            var card = row.parent;
+            var roleRow = card == null ? null : Child(card, "IsSuggestedSubBorder");
+            float bottom = roleRow != null && roleRow.worldBound.height > 1f ? roleRow.worldBound.yMin : sb.yMax;
+            float room = bottom - sb.yMin; // visible height beside the shirt
+
+            // Arrows: one column right of the shirt, the same size, the pair as tall as that room
+            var arrows = new List<VisualElement>();
+            float tallest = 0f;
             foreach (var name in new[] { "OOPRoleRemapper", "IPRoleRemapper" })
             {
                 var arrow = Child(inner, name);
@@ -127,20 +134,29 @@ namespace ProjectFM.Dev
                     arrow.style.position = new StyleEnum<Position>(Position.Absolute);
                 float h = arrow.resolvedStyle.height;
                 if (float.IsNaN(h) || h <= 1f || arrow.worldBound.width <= 1f) continue; // not shown in this view
-                float f = Math.Min(1f, sb.height / 2f / h);
-                var sc = arrow.resolvedStyle.scale.value;
-                if (Math.Abs(sc.x - f) > 0.01f)
+                arrows.Add(arrow);
+                tallest = Math.Max(tallest, h);
+            }
+            if (arrows.Count > 0 && room > 4f)
+            {
+                float f = Math.Min(1f, room / 2f / tallest); // same in every view: room for two
+                float x = sb.xMax - ib.xMin + 2f, y = sb.yMin - ib.yMin;
+                foreach (var arrow in arrows)
                 {
-                    arrow.style.transformOrigin = new StyleTransformOrigin(new TransformOrigin(0f, 0f, 0f));
-                    arrow.style.scale = new StyleScale(new Scale(new Vector2(f, f)));
+                    var sc = arrow.resolvedStyle.scale.value;
+                    if (Math.Abs(sc.x - f) > 0.01f)
+                    {
+                        arrow.style.transformOrigin = new StyleTransformOrigin(new TransformOrigin(0f, 0f, 0f));
+                        arrow.style.scale = new StyleScale(new Scale(new Vector2(f, f)));
+                    }
+                    Move(arrow, x, y);
+                    y += tallest * f;
                 }
-                Move(arrow, x, y);
-                y += h * f;
             }
 
-            // Picture: left of the shirt, its bottom on the shirt's bottom
+            // Picture: left of the shirt, its bottom on the role row's top
             var rb = row.worldBound;
-            Move(face, sb.xMin - rb.xMin - Size - 2f, sb.yMax - rb.yMin - Size);
+            Move(face, sb.xMin - rb.xMin - Size - 2f, bottom - rb.yMin - Size);
         }
 
         private static void Move(VisualElement e, float x, float y)
