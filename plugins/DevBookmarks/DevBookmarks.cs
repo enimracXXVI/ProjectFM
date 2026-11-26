@@ -32,14 +32,16 @@ namespace ProjectFM.Dev
         private const float Gap = 24f;
         private static int lastCorrected = -1;
         private const int MeasureMax = 12;
-        private static List<float> measured;   // every bookmark's width, in order
+        private static List<float> measured;   // every bookmark's width, in order (current label mode)
+        private static readonly Dictionary<bool, List<float>> byLabels = new Dictionary<bool, List<float>>();
+        private static bool? labels;            // FM's "Show bookmark labels" when last looked
         private static bool measuring;
 
         public static void Start(ManualLogSource log)
         {
             L = log;
             next = 0;
-            L.LogInfo("dev bookmarks 0.8: each bookmark measured once; as many as fit by their real widths");
+            L.LogInfo("dev bookmarks 0.9: measured again when labels are turned on or off (both kept)");
             try
             {
                 harmony = new Harmony("projectfm.dev.bookmarks");
@@ -75,6 +77,8 @@ namespace ProjectFM.Dev
             lastCorrected = -1;
             measured = null;
             measuring = false;
+            byLabels.Clear();
+            labels = null;
             foreach (var root in Roots())
             {
                 var area = Find(root, "Bookmarks");
@@ -149,6 +153,19 @@ namespace ProjectFM.Dev
                 var m = Module();
                 if (m == null) continue;
 
+                // Labels on or off change every bookmark's width: use (or take) that mode's widths
+                bool? nowLabels = null;
+                try { nowLabels = m.m_areBookmarkLabelsVisible?.Value; } catch { }
+                if (nowLabels.HasValue && nowLabels != labels)
+                {
+                    if (labels.HasValue && measured != null) byLabels[labels.Value] = measured;
+                    labels = nowLabels;
+                    measuring = false;
+                    measured = byLabels.TryGetValue(nowLabels.Value, out var known) ? known : null;
+                    newRoom = true;
+                    L.LogInfo($"dev bookmarks: labels {(nowLabels.Value ? "on" : "off")}: {(measured != null ? "widths known" : "measuring")}");
+                }
+
                 // First every bookmark is drawn once (up to 12) to measure it
                 if (measured == null && !measuring)
                 {
@@ -161,6 +178,7 @@ namespace ProjectFM.Dev
                 {
                     if (widths.Count < items) continue; // still drawing
                     measured = new List<float>(widths);
+                    if (labels.HasValue) byLabels[labels.Value] = measured;
                     measuring = false;
                     newRoom = true;
                     L.LogInfo($"dev bookmarks: measured {measured.Count} bookmarks: {string.Join(", ", measured.ConvertAll(w => w.ToString("0")))} px");
@@ -222,7 +240,10 @@ namespace ProjectFM.Dev
         {
             int total = o.Value + fmMax;
             if (measured != null && total > measured.Count && measured.Count < MeasureMax && total <= MeasureMax)
+            {
                 measured = null; // a bookmark was added since it was measured: measure again
+                byLabels.Clear();
+            }
             int real = Math.Max(0, total - Max);
             lastCorrected = real;
             if (real != o.Value) o.Value = real;
