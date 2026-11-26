@@ -23,7 +23,7 @@ namespace ProjectFM.Dev
         private const float Size = 34f;
         private static bool first = true;
 
-        public static void Start(ManualLogSource log) { L = log; next = 0; added = 0; first = true; measuredLogged = false; L.LogInfo("dev faces 0.9: no circle; picture and arrows kept inside the card"); }
+        public static void Start(ManualLogSource log) { L = log; next = 0; added = 0; first = true; measuredLogged = false; L.LogInfo("dev faces 0.10: picture, shirt and arrows centred on the role bar; picture not clickable"); }
 
         public static void Stop()
         {
@@ -32,6 +32,9 @@ namespace ProjectFM.Dev
                 foreach (var e in FindAll(root, Mark)) e.RemoveFromHierarchy();
                 // The arrows back where FM puts them
                 foreach (var inner in FindAll(root, "ShirtAndRoleMovements"))
+                {
+                    for (int i = 0; i < inner.childCount; i++)
+                        inner[i].style.translate = new StyleTranslate(StyleKeyword.Null);
                     foreach (var name in new[] { "OOPRoleRemapper", "IPRoleRemapper" })
                     {
                         var arrow = Child(inner, name);
@@ -42,6 +45,7 @@ namespace ProjectFM.Dev
                         arrow.style.scale = new StyleScale(StyleKeyword.Null);
                         arrow.style.transformOrigin = new StyleTransformOrigin(StyleKeyword.Null);
                     }
+                }
             }
         }
 
@@ -120,7 +124,7 @@ namespace ProjectFM.Dev
             float bottom = BarTop(card, row, sb);
             float room = bottom - sb.yMin; // visible height beside the shirt
 
-            // Arrows: one column right of the shirt, the same size, the pair as tall as that room
+            // Arrows: one column, the same size, the pair as tall as the room beside the shirt
             var arrows = new List<VisualElement>();
             float tallest = 0f;
             foreach (var name in new[] { "OOPRoleRemapper", "IPRoleRemapper" })
@@ -134,31 +138,49 @@ namespace ProjectFM.Dev
                 arrows.Add(arrow);
                 tallest = Math.Max(tallest, h);
             }
-            if (arrows.Count > 0 && room > 4f)
+            float f = arrows.Count > 0 && room > 4f ? Math.Min(1f, room / 2f / tallest) : 1f;
+            float aw = 0f; foreach (var a in arrows) aw = Math.Max(aw, a.resolvedStyle.width * f);
+
+            // The group (picture overlapping the shirt a little, shirt, arrows) centred on the
+            // card's role bar. The shirt is moved by a translation only, so FM's layout stays.
+            var rb = row.worldBound;
+            float shirtNatural = sb.xMin - Translation(shirt);
+            float total = Size - Overlap + sb.width + 1f + aw;
+            float start = rb.xMin + (rb.width - total) / 2f;
+            float shirtX = start + Size - Overlap;
+            float shift = shirtX - shirtNatural;
+            if (Math.Abs(Translation(shirt) - shift) > 0.5f)
+                shirt.style.translate = new StyleTranslate(new Translate(new Length(shift), new Length(0f)));
+
+            float x = shirtX + sb.width + 1f - ib.xMin, y = sb.yMin - ib.yMin;
+            foreach (var arrow in arrows)
             {
-                float f = Math.Min(1f, room / 2f / tallest); // same in every view: room for two
-                float aw = 0f; foreach (var a in arrows) aw = Math.Max(aw, a.resolvedStyle.width * f);
-                var rbox = row.worldBound;
-                // Right of the shirt, but not past the card's right edge
-                float ax = Math.Min(sb.xMax + 1f, rbox.xMax - aw);
-                float x = ax - ib.xMin, y = sb.yMin - ib.yMin;
-                foreach (var arrow in arrows)
+                var sc = arrow.resolvedStyle.scale.value;
+                if (Math.Abs(sc.x - f) > 0.01f)
                 {
-                    var sc = arrow.resolvedStyle.scale.value;
-                    if (Math.Abs(sc.x - f) > 0.01f)
-                    {
-                        arrow.style.transformOrigin = new StyleTransformOrigin(new TransformOrigin(0f, 0f, 0f));
-                        arrow.style.scale = new StyleScale(new Scale(new Vector2(f, f)));
-                    }
-                    Move(arrow, x, y);
-                    y += tallest * f;
+                    arrow.style.transformOrigin = new StyleTransformOrigin(new TransformOrigin(0f, 0f, 0f));
+                    arrow.style.scale = new StyleScale(new Scale(new Vector2(f, f)));
                 }
+                Move(arrow, x, y);
+                y += tallest * f;
             }
 
-            // Picture: left of the shirt but inside the card (overlapping the shirt a little if
-            // need be), its bottom on the role bar's top
-            var rb = row.worldBound;
-            Move(face, Math.Max(0f, sb.xMin - rb.xMin - Size - 2f), bottom - rb.yMin - Size);
+            // Picture: its bottom on the role bar's top; not clickable (clicks go to the shirt)
+            Move(face, start - rb.xMin, bottom - rb.yMin - Size);
+            NoPicking(face);
+        }
+
+        private const float Overlap = 8f;
+
+        private static float Translation(VisualElement e)
+        {
+            try { return e.resolvedStyle.translate.x; } catch { return 0f; }
+        }
+
+        private static void NoPicking(VisualElement e)
+        {
+            if (e.pickingMode != PickingMode.Ignore) e.pickingMode = PickingMode.Ignore;
+            for (int i = 0; i < e.childCount; i++) NoPicking(e[i]);
         }
 
         private static bool measuredLogged;
