@@ -1,0 +1,18 @@
+<Project>
+  <!--
+    ProjectFM's BepInEx plugins for FM27. They build against the user's own BepInEx: copy
+    FM27's BepInEx\core and BepInEx\interop folders into plugins/.bepinex (not committed, as
+    they hold the game's code). Build with: dotnet build -c Release plugins/<Name>
+  -->
+  <PropertyGroup>
+    <BepInExDir Condition="'$(BepInExDir)' == ''">$(MSBuildThisFileDirectory).bepinex/</BepInExDir>
+    <TargetFramework>net6.0</TargetFramework>
+    <Nullable>disable</Nullable>
+    <LangVersion>latest</LangVersion>
+    <GenerateDocumentationFile>false</GenerateDocumentationFile>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="$(BepInExDir)core/*.dll" Private="false" />
+    <Reference Include="$(BepInExDir)interop/*.dll" Private="false" />
+  </ItemGroup>
+</Project>

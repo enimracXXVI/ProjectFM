@@ -35,11 +35,15 @@ import { InstructionCard } from '../components/InstructionCard'
 import { useFoot } from '../lib/useFoot'
 import { roleScore } from '../lib/roleFit'
 import {
+  BACKUP_COUNT,
   benchCover,
   bestXi,
   canPlay,
   gradeTactic,
+  playsPosition,
   positionRating,
+  slotScore,
+  suggestBackups,
   suggestions,
   withPlayer,
 } from '../tactics/analysis'
@@ -459,7 +463,7 @@ function TacticEditor({ tactic }: { tactic: TacticRow }) {
     squad,
     fitCtx,
   ).team
-  const [open, setOpen] = useState({ brief: false, fit: false })
+  const [open, setOpen] = useState({ brief: false, fit: false, subs: false })
   const [panel, setPanel] = useUrlState<'team' | 'player'>('panel', 'team', TEXT as never)
   const [piSlot, setPiSlot] = useState(0)
 
@@ -853,6 +857,13 @@ function TacticEditor({ tactic }: { tactic: TacticRow }) {
           best={bestPick}
           open={open.fit}
           onToggle={() => setOpen({ ...open, fit: !open.fit })}
+        />
+        <Replacements
+          slots={form.slots}
+          squad={squad}
+          onSlots={(slots) => setForm({ ...form, slots })}
+          open={open.subs}
+          onToggle={() => setOpen({ ...open, subs: !open.subs })}
         />
       </div>
     </div>
@@ -1597,6 +1608,173 @@ function SquadFit({
         Fit: the player&apos;s role scores in this slot (both phases), 0–100. Pick best XI fills
         every unlocked slot with the best players who can play the position. Cover: the best player
         outside the XI for that position.
+      </p>
+    </Section>
+  )
+}
+
+const injured = (p: PlayerRow) => /\bInj\b/.test(p.extra.status ?? '')
+
+/**
+ * Who replaces whom: for each position, the starter and his 1st and 2nd replacement, chosen by
+ * the user, with suggestions from how well each player fits the slot.
+ */
+function Replacements({
+  slots,
+  squad,
+  onSlots,
+  open,
+  onToggle,
+}: {
+  slots: TacticSlot[]
+  squad: PlayerRow[]
+  onSlots: (slots: TacticSlot[]) => void
+  open: boolean
+  onToggle: () => void
+}) {
+  const config = useConfig()
+  const ctx = { roles: config.roles, weights: config.roleWeights, fmCodes: config.fmCodes }
+  const byId = new Map(squad.map((p) => [p.id, p]))
+  const xi = new Set(slots.map((s) => s.player).filter(Boolean))
+  // How many positions each player covers
+  const covers = new Map<string, number>()
+  for (const s of slots)
+    for (const b of (s.backups ?? []).slice(0, BACKUP_COUNT))
+      if (b) covers.set(b, (covers.get(b) ?? 0) + 1)
+  const roleName = (id: string | null | undefined) => {
+    const r = config.roles.find((x) => x.id === id)
+    return r ? roleShort(r) : '–'
+  }
+  const setBackup = (i: number, k: number, id: string | null) =>
+    onSlots(
+      slots.map((s, j) => {
+        if (j !== i) return s
+        const b = Array.from({ length: BACKUP_COUNT }, (_, n) => s.backups?.[n] ?? null)
+        b[k] = id
+        return { ...s, backups: b }
+      }),
+    )
+  const filled = slots.filter((s) => s.backups?.some(Boolean)).length
+  const fill = (replace: boolean) => {
+    const base = replace ? slots.map((s) => ({ ...s, backups: [] })) : slots
+    const picks = suggestBackups(base, squad, ctx, (p) => !injured(p))
+    onSlots(base.map((s, i) => ({ ...s, backups: picks[i] })))
+  }
+  return (
+    <Section title={`Replacements · ${filled}/${slots.length}`} open={open} onToggle={onToggle}>
+      <div className="flex flex-wrap items-center gap-2">
+        <p className="mr-auto text-sm text-muted">
+          Who comes in for whom. Your picks are kept with the tactic.
+        </p>
+        <Button onClick={() => fill(false)}>
+          <Wand2 className="size-4" aria-hidden /> Fill empty
+        </Button>
+        <Button
+          onClick={() => fill(true)}
+          disabled={!filled}
+          title="Replace every pick with the suggestions"
+        >
+          Suggest all again
+        </Button>
+      </div>
+      <ul className="grid gap-2">
+        {inFmPositionOrder(fmPositions(slots, 'ip', config.fmCodes)).map((i) => {
+          const s = slots[i]
+          const starter = s.player ? byId.get(s.player) : undefined
+          const backups = Array.from({ length: BACKUP_COUNT }, (_, k) => s.backups?.[k] ?? null)
+          const warn: string[] = []
+          for (const b of backups) {
+            if (!b) continue
+            const p = byId.get(b)
+            if (!p) {
+              warn.push('a replacement is no longer in the squad list')
+              continue
+            }
+            if (injured(p)) warn.push(`${shortName(p)} is injured`)
+            if (xi.has(b)) warn.push(`${shortName(p)} already starts`)
+            if (b === s.player) warn.push(`${shortName(p)} is the starter`)
+            if ((covers.get(b) ?? 0) > 2)
+              warn.push(`${shortName(p)} covers ${covers.get(b)} positions`)
+          }
+          if (backups[0] && backups[0] === backups[1]) warn.push('same player twice')
+          if (!backups.some(Boolean)) warn.push('no replacement')
+          // Players who can play here first, best fit first
+          const options = squad
+            .filter((p) => p.id !== s.player)
+            .map((p) => ({ p, score: slotScore(p, s, ctx), plays: playsPosition(p, s.position) }))
+            .sort((a, b) => Number(b.plays) - Number(a.plays) || (b.score ?? -1) - (a.score ?? -1))
+          const label = (o: (typeof options)[number]) =>
+            `${shortName(o.p)} · ${o.score ?? '–'}${injured(o.p) ? ' · injured' : ''}${xi.has(o.p.id) ? ' · starts' : ''}`
+          return (
+            <li key={i} className="rounded-lg border border-border/60 p-2">
+              <div className="flex flex-wrap items-baseline gap-x-2 text-sm">
+                <span className="w-16 font-semibold">{s.position ?? '?'}</span>
+                <span className="text-xs text-muted">
+                  {roleName(s.role)}
+                  {s.roleOop ? ` / ${roleName(s.roleOop)}` : ''}
+                </span>
+                <span className="ml-auto">
+                  {starter ? shortName(starter) : <span className="text-muted">no starter</span>}
+                  {starter && (
+                    <span
+                      className={clsx(
+                        'ml-1 font-semibold tabular-nums',
+                        scoreTextColor(slotScore(starter, s, ctx) ?? 0),
+                      )}
+                    >
+                      {slotScore(starter, s, ctx) ?? '–'}
+                    </span>
+                  )}
+                </span>
+              </div>
+              <div className="mt-1 grid gap-1 sm:grid-cols-2">
+                {backups.map((b, k) => (
+                  <label key={k} className="flex items-center gap-2 text-xs text-muted">
+                    <span className="w-8 shrink-0">
+                      {k + 1}
+                      {k === 0 ? 'st' : 'nd'}
+                    </span>
+                    <select
+                      aria-label={`${k + 1}${k === 0 ? 'st' : 'nd'} replacement for ${s.position ?? 'slot'}`}
+                      value={b ?? ''}
+                      onChange={(e) => setBackup(i, k, e.target.value || null)}
+                      className="min-h-11 min-w-0 flex-1 rounded-lg border border-border bg-surface-2 px-2 text-base text-text md:min-h-9 md:text-sm"
+                    >
+                      <option value="">–</option>
+                      {b && !byId.has(b) && <option value={b}>(not in the list)</option>}
+                      <optgroup label="Plays the position">
+                        {options
+                          .filter((o) => o.plays)
+                          .map((o) => (
+                            <option key={o.p.id} value={o.p.id}>
+                              {label(o)}
+                            </option>
+                          ))}
+                      </optgroup>
+                      <optgroup label="Others">
+                        {options
+                          .filter((o) => !o.plays)
+                          .map((o) => (
+                            <option key={o.p.id} value={o.p.id}>
+                              {label(o)}
+                            </option>
+                          ))}
+                      </optgroup>
+                    </select>
+                  </label>
+                ))}
+              </div>
+              {warn.length > 0 && (
+                <p className="mt-1 text-xs text-amber-300">{[...new Set(warn)].join(' · ')}</p>
+              )}
+            </li>
+          )
+        })}
+      </ul>
+      <p className="text-xs text-muted">
+        The number next to each name is his fit for this slot (0–100). Fill empty picks the best
+        players outside the XI who play the position, skipping injured ones and spreading
+        replacements across the squad.
       </p>
     </Section>
   )

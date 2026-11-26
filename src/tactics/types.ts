@@ -39,6 +39,8 @@ export interface TacticSlot {
   unknownRoleOop?: string | null
   /** Preferred player (ProjectFM player id). */
   player?: string | null
+  /** Who replaces him, in order (1st, 2nd replacement; ProjectFM player ids). */
+  backups?: (string | null)[]
 }
 
 export interface TacticRow {

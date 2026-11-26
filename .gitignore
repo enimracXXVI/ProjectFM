@@ -33,3 +33,8 @@ public/pyodide/
 public/fmsave/fmsave-latest.whl
 public/fmsave/fmsave-latest.json
 __pycache__/
+
+# BepInEx plugins: the game's code and build output
+plugins/.bepinex
+plugins/*/bin/
+plugins/*/obj/

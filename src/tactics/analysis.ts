@@ -304,3 +304,39 @@ export function canPlay(p: PlayerRow, pos: PositionCode | null | undefined, min:
   const r = positionRating(p, pos)
   return r === null ? playsPosition(p, pos ?? null) : r >= min
 }
+
+/** How many replacements each position keeps. */
+export const BACKUP_COUNT = 2
+
+/**
+ * Players to replace the starter in each slot, best first: outside the XI, able to play the
+ * position, and not already a replacement in another slot when someone else is as good. Slots
+ * keep the replacements already chosen; only empty places are filled.
+ */
+export function suggestBackups(
+  slots: TacticSlot[],
+  squad: PlayerRow[],
+  ctx: FitContext,
+  ok: (p: PlayerRow) => boolean = () => true,
+): (string | null)[][] {
+  const xi = new Set(slots.map((s) => s.player).filter(Boolean))
+  const used = new Map<string, number>()
+  for (const s of slots) for (const b of s.backups ?? []) if (b) used.set(b, (used.get(b) ?? 0) + 1)
+  return slots.map((s) => {
+    const out = Array.from({ length: BACKUP_COUNT }, (_, k) => s.backups?.[k] ?? null)
+    const ranked = squad
+      .filter((p) => !xi.has(p.id) && ok(p) && playsPosition(p, s.position))
+      .map((p) => ({ p, score: slotScore(p, s, ctx) ?? 0 }))
+    // A player already covering elsewhere counts as a few points worse
+    const adj = (r: { p: PlayerRow; score: number }) => r.score - (used.get(r.p.id) ?? 0) * 5
+    ranked.sort((a, b) => adj(b) - adj(a))
+    for (let k = 0; k < out.length; k++) {
+      if (out[k]) continue
+      const pick = ranked.find((r) => !out.includes(r.p.id))
+      if (!pick) break
+      out[k] = pick.p.id
+      used.set(pick.p.id, (used.get(pick.p.id) ?? 0) + 1)
+    }
+    return out
+  })
+}

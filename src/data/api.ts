@@ -938,6 +938,8 @@ export async function importSaveTactics(careerId: string, data: SaveTactics): Pr
           ? byUid.get(starters.find((x) => x.slot === t.slots[i].number)?.uniqueId ?? -1)
           : null) ??
         null,
+      // Replacements are only chosen in the app
+      ...(old?.slots[i]?.backups ? { backups: old.slots[i].backups } : {}),
     }))
     await saveTactic(careerId, old?.id ?? null, {
       name: t.name,
