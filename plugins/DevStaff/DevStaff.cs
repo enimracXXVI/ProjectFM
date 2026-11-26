@@ -20,7 +20,7 @@ namespace ProjectFM.Dev
         private static readonly string[] CardNames = { "ClubCoachingStaff", "ClubRecruitmentStaff", "ClubMedicalStaff" };
         private const string Target = "staffsubgroup.StaffSubGroupCountFeedbackString";
 
-        public static void Start(ManualLogSource log) { L = log; next = 0; checkAt = 0; L.LogInfo("dev staff 0.6: remapper comparison"); }
+        public static void Start(ManualLogSource log) { L = log; next = 0; checkAt = 0; L.LogInfo("dev staff 0.7: mappings added through FM's own List.Add, then the real staff table and comparison"); }
 
         public static void Stop()
         {
@@ -43,11 +43,12 @@ namespace ProjectFM.Dev
                     var box = new VisualElement { name = Mark };
                     parent.Insert(parent.IndexOf(board) + 1, box);
                     foreach (var v in Variants) Try(box, v, name);
+                    try { Real(box, name); } catch (Exception e) { L.LogWarning($"dev staff: {name} real: {e}"); }
                     checkAt = Time.realtimeSinceStartup + 2f;
                 }
         }
 
-        private static readonly string[] Variants = { "A", "H" };
+        private static readonly string[] Variants = { "I" };
 
         private static RemapInfo Info(string from, string to, int serialised, bool create)
         {
@@ -57,6 +58,27 @@ namespace ProjectFM.Dev
             if (serialised >= 0) m.m_serialisedType = (uint)serialised;
             try { m.OnAfterDeserialize(); } catch { }
             return m;
+        }
+
+        /// <summary>
+        /// A mapping list filled through FM's own List.Add, called by reflection: the plugin
+        /// interop's Add passes the boxed struct where FM expects the value, which left the
+        /// mapping blank (0.6 read it back as empty with a garbage type).
+        /// </summary>
+        private static Il2CppSystem.Collections.Generic.List<RemapInfo> Maps(params (string from, string to)[] maps)
+        {
+            var list = new Il2CppSystem.Collections.Generic.List<RemapInfo>();
+            var add = list.GetIl2CppType().GetMethod("Add");
+            foreach (var (from, to) in maps)
+            {
+                var m = new RemapInfo();
+                m.from = from;
+                m.to = BindingPath.Create(to);
+                var args = new Il2CppInterop.Runtime.InteropTypes.Arrays.Il2CppReferenceArray<Il2CppSystem.Object>(1);
+                args[0] = m;
+                add.Invoke(list, args);
+            }
+            return list;
         }
 
         private static Il2CppSystem.Collections.Generic.List<RemapInfo> List(RemapInfo m)
@@ -112,6 +134,12 @@ namespace ProjectFM.Dev
                         r.Add(probe); holder.Add(r);
                         r.BindToData();
                         BindableElementUtils.BindHierarchy(probe);
+                        break;
+                    case "I": // mappings through FM's List.Add
+                        r.Mappings = Maps(("x", Target));
+                        r.Add(probe); holder.Add(r);
+                        BindableElementUtils.BindHierarchy(holder);
+                        Describe($"{card} remapper I", r);
                         break;
                     case "H": // a copy of a mapping from one of FM's own remappers, with our from/to
                     {
@@ -170,6 +198,62 @@ namespace ProjectFM.Dev
             catch (Exception e) { L.LogWarning($"dev staff: describe {who}: {e.Message}"); }
         }
 
+        private const string TableGuid = "b00fa0597031b5642ba1e26ca3fb6ee0"; // ClubStaffTeamContractBlock
+        private static readonly Dictionary<string, (string guid, string data)> Compare = new Dictionary<string, (string, string)>
+        {
+            ["ClubCoachingStaff"] = ("bb6a535ad4ad38446ac0e1b3552b4c85", "team.StaffCoachingSubGroupComparisonAttributes"),
+            ["ClubRecruitmentStaff"] = ("1a3bc8c395c7a6f44983a8f52f4322de", "team.StaffRecruitmentSubGroupComparisonAttributes"),
+            ["ClubMedicalStaff"] = ("9e54f89e398f44d41a54ed08d9c42a85", "team.StaffMedicalSubGroupComparisonAttributes"),
+        };
+
+        private static VisualElement Build(string guid)
+        {
+            var r = new UnityEngine.AddressableAssets.AssetReferenceT<VisualTreeAsset>(guid);
+            return SI.Core.VisualTreeAssetExtensions.Instantiate(r);
+        }
+
+        /// <summary>FM's staff table and team comparison for the card, as the MrTini23 skin wires them.</summary>
+        private static void Real(VisualElement box, string card)
+        {
+            var real = new VisualElement { name = "pfm-real" };
+            real.AddToClassList("align-self-stretch");
+            real.AddToClassList("flex-grow-class");
+            box.Add(real);
+
+            var tr = new BindingRemapper();
+            tr.Mappings = Maps(
+                ("personlist", "staffsubgroup.StaffSubGroupPersonListFiltered"),
+                ("filter", "team.StaffListFilter"),
+                ("isAllStaffTab", "const.False"),
+                ("showQuickFlicks", "const.False"),
+                ("showBlockAppearance", "const.False"));
+            tr.AddToClassList("align-self-stretch");
+            tr.AddToClassList("flex-grow-class");
+            real.Add(tr);
+            var table = Build(TableGuid);
+            if (table != null)
+            {
+                table.AddToClassList("align-self-stretch");
+                table.AddToClassList("flex-grow-class");
+                tr.Add(table);
+            }
+
+            var (guid, data) = Compare[card];
+            var cr = new BindingRemapper();
+            cr.Mappings = Maps(("attributes", data));
+            cr.AddToClassList("align-self-stretch");
+            cr.AddToClassList("margin-top-global-gap-large");
+            real.Add(cr);
+            var cmp = Build(guid);
+            if (cmp != null)
+            {
+                cmp.AddToClassList("align-self-stretch");
+                cr.Add(cmp);
+            }
+            BindableElementUtils.BindHierarchy(real);
+            L.LogInfo($"dev staff: {card} real: table {(table != null ? "built" : "missing")}, comparison {(cmp != null ? "built" : "missing")}");
+        }
+
         private static SIText Probe(string path)
         {
             var t = new SIText { name = "pfm-probe" };
@@ -192,6 +276,9 @@ namespace ProjectFM.Dev
                     var card = Find(root, name);
                     var box = card == null ? null : Find(card, Mark);
                     if (box == null) continue;
+                    var rb = Find(box, "pfm-real");
+                    if (rb != null)
+                        L.LogInfo($"dev staff: {name} real: table rows {Find(rb, "View")?.childCount ?? -1}, columns {Find(rb, "column-headers")?.childCount ?? -1}, comparison parts {Find(rb, "HasDataCheck")?.childCount ?? -1}");
                     // FM's own remappers on the way up from the card's insides, then ours
                     int n = 0;
                     for (var p = box.parent; p != null && n < 4; p = p.parent)
