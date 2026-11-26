@@ -14,7 +14,7 @@ import {
   Wand2,
   X,
 } from 'lucide-react'
-import { useState, type ReactNode } from 'react'
+import { Fragment, useRef, useState, type ReactNode } from 'react'
 import { Link } from 'react-router-dom'
 import { TEXT, useUrlState } from '../lib/urlState'
 import { useConfirm } from '../components/confirm'
@@ -25,7 +25,9 @@ import { deleteTactic, isMissingTable, saveTactic } from '../data/api'
 import type { PlayerRow } from '../data/db'
 import { usePlayers, useTactics } from '../data/hooks'
 import { roleShort, type RoleDef } from '../data/roles'
-import { scoreTextColor } from '../lib/attributes'
+import { attrColor, attrNumber, formatAttr, scoreTextColor } from '../lib/attributes'
+import { PROFILE_COLUMNS } from '../data/attributeInfo'
+import { KEY_ROW, PREFERRED_ROW } from '../lib/roleMarks'
 import { useCurrentCareer } from '../lib/career'
 import { attributeLabel } from '../data/config'
 import { FmAboutLine } from '../components/FmAboutBox'
@@ -467,7 +469,7 @@ function TacticEditor({ tactic }: { tactic: TacticRow }) {
     fitCtx,
   ).team
   const [open, setOpenRaw] = useState(() => {
-    const start = { instr: true, brief: false, fit: false }
+    const start = { tactic: true, instr: true, brief: false, fit: false }
     try {
       return { ...start, ...JSON.parse(localStorage.getItem(OPEN_KEY) ?? '{}') }
     } catch {
@@ -482,6 +484,7 @@ function TacticEditor({ tactic }: { tactic: TacticRow }) {
       // Not kept: private window or blocked storage
     }
   }
+  const rightRef = useRef<HTMLDivElement>(null)
   const [panel, setPanel] = useUrlState<'team' | 'player'>('panel', 'team', TEXT as never)
   const [piSlot, setPiSlot] = useState(0)
 
@@ -586,6 +589,13 @@ function TacticEditor({ tactic }: { tactic: TacticRow }) {
                 }}
                 onClick={() => {
                   setActive(active === i ? null : i)
+                  // On a phone the panel is under the pitch: bring it into view
+                  if (active !== i && window.matchMedia('(max-width: 1023px)').matches)
+                    window.setTimeout(
+                      () =>
+                        rightRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' }),
+                      50,
+                    )
                   setPiSlot(i)
                 }}
                 style={{ left: `${x * 100}%`, top: `${(1 - y) * 100}%` }}
@@ -628,41 +638,6 @@ function TacticEditor({ tactic }: { tactic: TacticRow }) {
               </button>
             )
           })}
-          {active !== null && form.slots[active] && (
-            <PositionPopup
-              key={`${active}-${phase}`}
-              slot={form.slots[active]}
-              phase={phase}
-              roles={rolesFor(active)}
-              fmPosition={atFm[active]}
-              squad={squad}
-              used={used}
-              spots={config.fmCodes.positions
-                .filter((f) => FM_GRID[f.id] && (active === 0) === (f.id === 'GK'))
-                .map((f) => {
-                  const k = atFm.findIndex((a) => a?.id === f.id)
-                  const who = k >= 0 ? playerOf(form.slots[k]) : null
-                  return { id: f.id, taken: k < 0 ? null : who ? shortName(who) : f.id }
-                })}
-              onPlace={(id) => {
-                const k = atFm.findIndex((a) => a?.id === id)
-                if (k === active) return
-                if (k >= 0) return swap(active, k)
-                const f = config.fmCodes.positions.find((x) => x.id === id)
-                if (f) move(active, f)
-              }}
-              onChange={(patch) => setSlot(active, patch)}
-              onClose={() => setActive(null)}
-              replacements={
-                <BackupPicker
-                  index={active}
-                  slots={form.slots}
-                  squad={squad}
-                  onChange={(backups) => setSlot(active, { backups })}
-                />
-              }
-            />
-          )}
           <PitchScore className="bottom-1.5 left-1.5" label="Squad fit" value={fitNow} />
           <PitchScore className="right-1.5 bottom-1.5" label="Best XI" value={fitBest} />
         </div>
@@ -691,238 +666,290 @@ function TacticEditor({ tactic }: { tactic: TacticRow }) {
           tap him, then the spot); drag onto another player to swap{' '}
           {phase === 'ip' ? 'the two players' : 'their out-of-possession places only'}
         </p>
-        <label className="grid gap-1 text-sm">
-          <span className="text-muted">Name</span>
-          <input
-            value={form.name}
-            onChange={(e) => setForm({ ...form, name: e.target.value })}
-            className={field}
-          />
-        </label>
-        <div className="grid grid-cols-2 gap-2">
-          <label className="grid min-w-0 gap-1 text-sm">
-            <span className="text-muted">Style</span>
-            <select
-              value={style?.code ?? (form.style ? '' : 'NULL')}
-              onChange={(e) => pickStyle(e.target.value)}
-              className={field}
-            >
-              {/* A style name from a file that is none of FM's styles */}
-              {form.style && !style && <option value="">{form.style}</option>}
-              {config.tacticalStyles.map((x) => (
-                <option key={x.code + x.name} value={x.code}>
-                  {x.name}
-                </option>
-              ))}
-            </select>
-          </label>
-          <label className="grid min-w-0 gap-1 text-sm">
-            <span className="text-muted">Mentality</span>
-            <select
-              value={form.mentality ?? ''}
-              onChange={(e) => setForm({ ...form, mentality: e.target.value || null })}
-              className={field}
-            >
-              <option value="">Pick a mentality…</option>
-              {form.mentality && !config.fmCodes.mentalities.includes(form.mentality) && (
-                <option value={form.mentality}>{form.mentality}</option>
-              )}
-              {config.fmCodes.mentalities.map((m) => (
-                <option key={m}>{m}</option>
-              ))}
-            </select>
-          </label>
-        </div>
-        {form.mentality && <FmAboutLine about={config.fmCodes.mentalityTexts[form.mentality]} />}
-        {style ? (
-          <StyleInfo style={style} current={styleNow} slots={form.slots} />
-        ) : (
-          !form.style &&
-          cleanSlate && (
-            <StyleInfo style={cleanSlate} current={cleanSlate.name} slots={form.slots} />
-          )
-        )}
-        <ComplexityInfo slots={form.slots} team={team} />
-        <label className="grid gap-1 text-sm">
-          <span className="text-muted">
-            Formation {phase === 'ip' ? 'in possession' : 'out of possession'}
-          </span>
-          <select
-            value={formation}
-            onChange={(e) => e.target.value && applyFormation(e.target.value)}
-            className={field}
-          >
-            <option value="">{formation ? 'Custom' : 'Pick a formation…'}</option>
-            {Object.keys(FORMATIONS).map((f) => (
-              <option key={f}>{f}</option>
-            ))}
-          </select>
-        </label>
-        <label className="grid gap-1 text-sm">
-          <span className="text-muted">Notes</span>
-          <textarea
-            value={form.notes ?? ''}
-            onChange={(e) => setForm({ ...form, notes: e.target.value })}
-            rows={2}
-            className="rounded-lg border border-border bg-surface-2 px-3 py-2 text-base md:text-sm"
-          />
-        </label>
-        {tactic.save_index !== null && (
-          <p className="text-xs text-muted">
-            From your save: every import brings in its shape, roles and instructions as they are in
-            FM. Your preferred XI and notes stay.
-          </p>
-        )}
-        <div className="grid gap-1">
-          <Button variant="ghost" onClick={download} disabled={problems.length > 0}>
-            <Download className="size-4" aria-hidden /> Export to FM (.fmf)
-          </Button>
-          {problems.length > 0 ? (
-            <ul className="list-disc pl-5 text-xs text-amber-300">
-              {problems.slice(0, 6).map((p) => (
-                <li key={p}>{p}</li>
-              ))}
-              {problems.length > 6 && <li>and {problems.length - 6} more</li>}
-            </ul>
-          ) : (
-            <p className="text-xs text-muted">
-              Save the file in FM's tactics folder, then in FM open Tactics and choose Load Tactic.
-              The players are picked in your save, not in the file.
-            </p>
-          )}
-        </div>
-        <div className="flex flex-wrap items-center gap-2">
-          <Button onClick={() => save.mutate()} disabled={!dirty || save.isPending}>
-            {save.isPending ? 'Saving…' : 'Save'}
-          </Button>
-          <Button variant="ghost" onClick={() => copy.mutate()} disabled={copy.isPending}>
-            <Copy className="size-4" aria-hidden /> {copy.isPending ? 'Copying…' : 'Copy tactic'}
-          </Button>
-          <Button variant="ghost" onClick={() => setForm(tactic)} disabled={!dirty}>
-            Undo changes
-          </Button>
-          <Button
-            variant="danger"
-            className="ml-auto"
-            onClick={async () => {
-              if (
-                await confirm({
-                  title: `Delete ${tactic.name}?`,
-                  message:
-                    tactic.save_index !== null
-                      ? 'It comes back with your next save import (without your roles and notes).'
-                      : undefined,
-                  confirmLabel: 'Delete',
-                  danger: true,
-                })
-              )
-                remove.mutate()
-            }}
-          >
-            <Trash2 className="size-4" aria-hidden /> Delete
-          </Button>
-          <ErrorText error={save.error ?? remove.error ?? copy.error} />
-        </div>
       </Card>
 
-      <div className="grid min-w-0 content-start gap-4">
-        <Section
-          title="Instructions"
-          open={open.instr}
-          onToggle={() => setOpen({ ...open, instr: !open.instr })}
-        >
-          <div className="flex flex-wrap items-center gap-2" role="tablist">
-            {(
-              [
-                ['team', 'Team instructions'],
-                ['player', 'Player instructions'],
-              ] as const
-            ).map(([k, label]) => (
-              <button
-                key={k}
-                type="button"
-                role="tab"
-                aria-selected={panel === k}
-                onClick={() => setPanel(k)}
-                className={clsx(
-                  'min-h-9 rounded-md px-3 text-xs font-bold tracking-wide uppercase',
-                  panel === k
-                    ? 'bg-text text-bg'
-                    : 'border border-border text-muted hover:text-text',
-                )}
-              >
-                {label}
-              </button>
-            ))}
-            <span className="ml-auto text-xs text-muted">
-              {phase === 'ip' ? 'In possession' : 'Out of possession'} (switch above the pitch)
-            </span>
-          </div>
-          {panel === 'team' ? (
-            <InstructionsEditor phase={phase} codes={team} onChange={setTeam} />
-          ) : (
-            <div className="grid gap-3">
-              <div className="flex flex-wrap gap-1.5" aria-label="Position">
-                {inFmPositionOrder(atFm).map((i) => {
-                  const p = playerOf(form.slots[i])
-                  return (
-                    <button
-                      key={i}
-                      type="button"
-                      aria-pressed={piSlot === i}
-                      onClick={() => setPiSlot(i)}
-                      className={clsx(
-                        'min-h-9 rounded-md border px-2 text-xs',
-                        piSlot === i
-                          ? 'border-accent bg-accent/10 text-text'
-                          : 'border-border text-muted hover:text-text',
-                      )}
-                    >
-                      <span className="font-semibold">{atFm[i]?.id ?? positions[i] ?? '?'}</span>{' '}
-                      {p ? shortName(p) : '–'}
-                    </button>
-                  )
-                })}
-              </div>
-              {form.slots[piSlot] && (
-                <PlayerInstructions
-                  key={`${piSlot}-${phase}`}
-                  slot={form.slots[piSlot]}
-                  phase={phase}
-                  role={
-                    rolesFor(piSlot).find((r) => r.id === roleIdOf(form.slots[piSlot], phase)) ??
-                    null
-                  }
-                  fmPosition={atFm[piSlot]}
-                  onChange={(patch) => setSlot(piSlot, patch)}
+      <div ref={rightRef} className="grid min-w-0 scroll-mt-4 content-start gap-4">
+        {active !== null && form.slots[active] ? (
+          <PositionPopup
+            key={`${active}-${phase}`}
+            slot={form.slots[active]}
+            phase={phase}
+            roles={rolesFor(active)}
+            fmPosition={atFm[active]}
+            squad={squad}
+            used={used}
+            spots={config.fmCodes.positions
+              .filter((f) => FM_GRID[f.id] && (active === 0) === (f.id === 'GK'))
+              .map((f) => {
+                const k = atFm.findIndex((a) => a?.id === f.id)
+                const who = k >= 0 ? playerOf(form.slots[k]) : null
+                return { id: f.id, taken: k < 0 ? null : who ? shortName(who) : f.id }
+              })}
+            onPlace={(id) => {
+              const k = atFm.findIndex((a) => a?.id === id)
+              if (k === active) return
+              if (k >= 0) return swap(active, k)
+              const f = config.fmCodes.positions.find((x) => x.id === id)
+              if (f) move(active, f)
+            }}
+            onChange={(patch) => setSlot(active, patch)}
+            onClose={() => setActive(null)}
+            slots={form.slots}
+            index={active}
+            replacements={
+              <BackupPicker
+                index={active}
+                slots={form.slots}
+                squad={squad}
+                onChange={(backups) => setSlot(active, { backups })}
+              />
+            }
+          />
+        ) : (
+          <>
+            <Section
+              title={`Tactic · ${form.name}`}
+              open={open.tactic}
+              onToggle={() => setOpen({ ...open, tactic: !open.tactic })}
+            >
+              <label className="grid gap-1 text-sm">
+                <span className="text-muted">Name</span>
+                <input
+                  value={form.name}
+                  onChange={(e) => setForm({ ...form, name: e.target.value })}
+                  className={field}
                 />
+              </label>
+              <div className="grid grid-cols-2 gap-2">
+                <label className="grid min-w-0 gap-1 text-sm">
+                  <span className="text-muted">Style</span>
+                  <select
+                    value={style?.code ?? (form.style ? '' : 'NULL')}
+                    onChange={(e) => pickStyle(e.target.value)}
+                    className={field}
+                  >
+                    {/* A style name from a file that is none of FM's styles */}
+                    {form.style && !style && <option value="">{form.style}</option>}
+                    {config.tacticalStyles.map((x) => (
+                      <option key={x.code + x.name} value={x.code}>
+                        {x.name}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+                <label className="grid min-w-0 gap-1 text-sm">
+                  <span className="text-muted">Mentality</span>
+                  <select
+                    value={form.mentality ?? ''}
+                    onChange={(e) => setForm({ ...form, mentality: e.target.value || null })}
+                    className={field}
+                  >
+                    <option value="">Pick a mentality…</option>
+                    {form.mentality && !config.fmCodes.mentalities.includes(form.mentality) && (
+                      <option value={form.mentality}>{form.mentality}</option>
+                    )}
+                    {config.fmCodes.mentalities.map((m) => (
+                      <option key={m}>{m}</option>
+                    ))}
+                  </select>
+                </label>
+              </div>
+              {form.mentality && (
+                <FmAboutLine about={config.fmCodes.mentalityTexts[form.mentality]} />
               )}
-            </div>
-          )}
-        </Section>
-        <BriefingSection
-          tactic={{ ...form, instructions: { team } }}
-          squad={squad}
-          open={open.brief}
-          onToggle={() => setOpen({ ...open, brief: !open.brief })}
-        />
-        <SquadFit
-          slots={form.slots}
-          squad={squad}
-          locked={locked}
-          youth={youth}
-          onYouth={setYouth}
-          onLock={(i) => {
-            const n = new Set(locked)
-            if (n.has(i)) n.delete(i)
-            else n.add(i)
-            setLocked(n)
-          }}
-          onSlots={(slots) => setForm({ ...form, slots })}
-          best={bestPick}
-          open={open.fit}
-          onToggle={() => setOpen({ ...open, fit: !open.fit })}
-        />
+              {style ? (
+                <StyleInfo style={style} current={styleNow} slots={form.slots} />
+              ) : (
+                !form.style &&
+                cleanSlate && (
+                  <StyleInfo style={cleanSlate} current={cleanSlate.name} slots={form.slots} />
+                )
+              )}
+              <ComplexityInfo slots={form.slots} team={team} />
+              <label className="grid gap-1 text-sm">
+                <span className="text-muted">
+                  Formation {phase === 'ip' ? 'in possession' : 'out of possession'}
+                </span>
+                <select
+                  value={formation}
+                  onChange={(e) => e.target.value && applyFormation(e.target.value)}
+                  className={field}
+                >
+                  <option value="">{formation ? 'Custom' : 'Pick a formation…'}</option>
+                  {Object.keys(FORMATIONS).map((f) => (
+                    <option key={f}>{f}</option>
+                  ))}
+                </select>
+              </label>
+              <label className="grid gap-1 text-sm">
+                <span className="text-muted">Notes</span>
+                <textarea
+                  value={form.notes ?? ''}
+                  onChange={(e) => setForm({ ...form, notes: e.target.value })}
+                  rows={2}
+                  className="rounded-lg border border-border bg-surface-2 px-3 py-2 text-base md:text-sm"
+                />
+              </label>
+              {tactic.save_index !== null && (
+                <p className="text-xs text-muted">
+                  From your save: every import brings in its shape, roles and instructions as they
+                  are in FM. Your preferred XI and notes stay.
+                </p>
+              )}
+              <div className="grid gap-1">
+                <Button variant="ghost" onClick={download} disabled={problems.length > 0}>
+                  <Download className="size-4" aria-hidden /> Export to FM (.fmf)
+                </Button>
+                {problems.length > 0 ? (
+                  <ul className="list-disc pl-5 text-xs text-amber-300">
+                    {problems.slice(0, 6).map((p) => (
+                      <li key={p}>{p}</li>
+                    ))}
+                    {problems.length > 6 && <li>and {problems.length - 6} more</li>}
+                  </ul>
+                ) : (
+                  <p className="text-xs text-muted">
+                    Save the file in FM's tactics folder, then in FM open Tactics and choose Load
+                    Tactic. The players are picked in your save, not in the file.
+                  </p>
+                )}
+              </div>
+              <div className="flex flex-wrap items-center gap-2">
+                <Button onClick={() => save.mutate()} disabled={!dirty || save.isPending}>
+                  {save.isPending ? 'Saving…' : 'Save'}
+                </Button>
+                <Button variant="ghost" onClick={() => copy.mutate()} disabled={copy.isPending}>
+                  <Copy className="size-4" aria-hidden />{' '}
+                  {copy.isPending ? 'Copying…' : 'Copy tactic'}
+                </Button>
+                <Button variant="ghost" onClick={() => setForm(tactic)} disabled={!dirty}>
+                  Undo changes
+                </Button>
+                <Button
+                  variant="danger"
+                  className="ml-auto"
+                  onClick={async () => {
+                    if (
+                      await confirm({
+                        title: `Delete ${tactic.name}?`,
+                        message:
+                          tactic.save_index !== null
+                            ? 'It comes back with your next save import (without your roles and notes).'
+                            : undefined,
+                        confirmLabel: 'Delete',
+                        danger: true,
+                      })
+                    )
+                      remove.mutate()
+                  }}
+                >
+                  <Trash2 className="size-4" aria-hidden /> Delete
+                </Button>
+                <ErrorText error={save.error ?? remove.error ?? copy.error} />
+              </div>
+            </Section>
+            <Section
+              title="Instructions"
+              open={open.instr}
+              onToggle={() => setOpen({ ...open, instr: !open.instr })}
+            >
+              <div className="flex flex-wrap items-center gap-2" role="tablist">
+                {(
+                  [
+                    ['team', 'Team instructions'],
+                    ['player', 'Player instructions'],
+                  ] as const
+                ).map(([k, label]) => (
+                  <button
+                    key={k}
+                    type="button"
+                    role="tab"
+                    aria-selected={panel === k}
+                    onClick={() => setPanel(k)}
+                    className={clsx(
+                      'min-h-9 rounded-md px-3 text-xs font-bold tracking-wide uppercase',
+                      panel === k
+                        ? 'bg-text text-bg'
+                        : 'border border-border text-muted hover:text-text',
+                    )}
+                  >
+                    {label}
+                  </button>
+                ))}
+                <span className="ml-auto text-xs text-muted">
+                  {phase === 'ip' ? 'In possession' : 'Out of possession'} (switch above the pitch)
+                </span>
+              </div>
+              {panel === 'team' ? (
+                <InstructionsEditor phase={phase} codes={team} onChange={setTeam} />
+              ) : (
+                <div className="grid gap-3">
+                  <div className="flex flex-wrap gap-1.5" aria-label="Position">
+                    {inFmPositionOrder(atFm).map((i) => {
+                      const p = playerOf(form.slots[i])
+                      return (
+                        <button
+                          key={i}
+                          type="button"
+                          aria-pressed={piSlot === i}
+                          onClick={() => setPiSlot(i)}
+                          className={clsx(
+                            'min-h-9 rounded-md border px-2 text-xs',
+                            piSlot === i
+                              ? 'border-accent bg-accent/10 text-text'
+                              : 'border-border text-muted hover:text-text',
+                          )}
+                        >
+                          <span className="font-semibold">
+                            {atFm[i]?.id ?? positions[i] ?? '?'}
+                          </span>{' '}
+                          {p ? shortName(p) : '–'}
+                        </button>
+                      )
+                    })}
+                  </div>
+                  {form.slots[piSlot] && (
+                    <PlayerInstructions
+                      key={`${piSlot}-${phase}`}
+                      slot={form.slots[piSlot]}
+                      phase={phase}
+                      role={
+                        rolesFor(piSlot).find(
+                          (r) => r.id === roleIdOf(form.slots[piSlot], phase),
+                        ) ?? null
+                      }
+                      fmPosition={atFm[piSlot]}
+                      onChange={(patch) => setSlot(piSlot, patch)}
+                    />
+                  )}
+                </div>
+              )}
+            </Section>
+            <BriefingSection
+              tactic={{ ...form, instructions: { team } }}
+              squad={squad}
+              open={open.brief}
+              onToggle={() => setOpen({ ...open, brief: !open.brief })}
+            />
+            <SquadFit
+              slots={form.slots}
+              squad={squad}
+              locked={locked}
+              youth={youth}
+              onYouth={setYouth}
+              onLock={(i) => {
+                const n = new Set(locked)
+                if (n.has(i)) n.delete(i)
+                else n.add(i)
+                setLocked(n)
+              }}
+              onSlots={(slots) => setForm({ ...form, slots })}
+              best={bestPick}
+              open={open.fit}
+              onToggle={() => setOpen({ ...open, fit: !open.fit })}
+            />
+          </>
+        )}
       </div>
     </div>
   )
@@ -1157,9 +1184,14 @@ function PositionPopup({
   onChange,
   onClose,
   replacements,
+  slots,
+  index,
 }: {
   /** The pickers of the position's replacements. */
   replacements: ReactNode
+  /** All the tactic's slots and this one's place among them (for the comparison). */
+  slots: TacticSlot[]
+  index: number
   slot: TacticSlot
   phase: Phase
   roles: RoleDef[]
@@ -1174,7 +1206,7 @@ function PositionPopup({
   onClose: () => void
 }) {
   const config = useConfig()
-  const [tab, setTab] = useState<'role' | 'instructions'>('role')
+  const [tab, setTab] = useState<'players' | 'role' | 'instructions'>('players')
   const roleId = roleIdOf(slot, phase)
   const role = roles.find((r) => r.id === roleId) ?? null
   // Players able to play the position first (FM rating, Settings > Tactics), then by role fit
@@ -1200,7 +1232,7 @@ function PositionPopup({
     <div
       role="dialog"
       aria-label={`${fmPosition?.id ?? pos ?? 'Position'} ${phase === 'ip' ? 'in possession' : 'out of possession'}`}
-      className="absolute inset-2 z-20 grid grid-rows-[auto_auto_auto_auto_minmax(0,1fr)] gap-2 rounded-xl border border-border bg-surface p-3 shadow-2xl shadow-black/60"
+      className="grid min-w-0 content-start gap-2 rounded-xl border border-accent/40 bg-surface p-3"
     >
       <div className="flex items-center gap-2">
         <h2 className="min-w-0 flex-1 truncate font-semibold">
@@ -1250,6 +1282,7 @@ function PositionPopup({
       <div className="flex border-b border-border" role="tablist">
         {(
           [
+            ['players', 'Players'],
             ['role', 'Role'],
             ['instructions', 'Instructions'],
           ] as const
@@ -1269,8 +1302,10 @@ function PositionPopup({
           </button>
         ))}
       </div>
-      <div className="min-h-0 overflow-y-auto pr-1">
-        {tab === 'role' ? (
+      <div className="min-w-0">
+        {tab === 'players' ? (
+          <SlotCompare slot={slot} slots={slots} index={index} squad={squad} role={role} />
+        ) : tab === 'role' ? (
           <div className="grid gap-3">
             <ul className="grid gap-1">
               {roleId && !role && (
@@ -1703,6 +1738,155 @@ function backupProblems(slot: TacticSlot, slots: TacticSlot[], squad: PlayerRow[
   }
   if (backups[0] && backups[0] === backups[1]) out.push('same player twice')
   return [...new Set(out)]
+}
+
+/**
+ * The position's starter and his replacements side by side: fit for the slot, FM's rating at
+ * the position and every attribute, the role's key and preferred ones marked. With only a
+ * starter it is his full attribute list.
+ */
+function SlotCompare({
+  slot,
+  slots,
+  index,
+  squad,
+  role,
+}: {
+  slot: TacticSlot
+  slots: TacticSlot[]
+  index: number
+  squad: PlayerRow[]
+  role: RoleDef | null
+}) {
+  const config = useConfig()
+  const ctx = { roles: config.roles, weights: config.roleWeights, fmCodes: config.fmCodes }
+  const [roleOnly, setRoleOnly] = useState(false)
+  const byId = new Map(squad.map((p) => [p.id, p]))
+  const cols = [
+    { label: 'Starter', id: slot.player ?? null },
+    ...backupsOf(slots[index] ?? slot).map((id, k) => ({ label: k === 0 ? '1st' : '2nd', id })),
+  ]
+    .map((c) => ({ ...c, p: c.id ? (byId.get(c.id) ?? null) : null }))
+    .filter((c) => c.p)
+  if (!cols.length)
+    return <p className="text-sm text-muted">Pick a player or a replacement to see them here.</p>
+  const key = new Set(role?.key ?? [])
+  const pref = new Set(role?.preferred ?? [])
+  const sections = PROFILE_COLUMNS[slot.position === 'GK' ? 'goalkeepers' : 'outfield']
+    .flat()
+    .filter((x) => x.label !== 'Hidden')
+    .map((x) => ({
+      ...x,
+      attributes: roleOnly ? x.attributes.filter((a) => key.has(a) || pref.has(a)) : x.attributes,
+    }))
+    .filter((x) => x.attributes.length)
+  const best = (a: string) => {
+    const vals = cols.map((c) => attrNumber(c.p!.attributes[a]))
+    const top = Math.max(...vals.map((v) => v ?? -1))
+    return cols.length > 1 && vals.filter((v) => v === top).length === 1 ? top : null
+  }
+  const pos = slot.position
+  return (
+    <div className="grid gap-2">
+      {role && (
+        <label className="flex min-h-9 items-center gap-2 text-sm text-muted">
+          <input
+            type="checkbox"
+            checked={roleOnly}
+            onChange={(e) => setRoleOnly(e.target.checked)}
+          />
+          Only {roleShort(role)} key and preferred attributes
+        </label>
+      )}
+      <div className="overflow-x-auto">
+        <table className="w-full text-sm">
+          <thead>
+            <tr className="text-left text-xs text-muted">
+              <th className="py-1 pr-2 font-normal" />
+              {cols.map((c) => (
+                <th key={c.label} className="py-1 pr-2 text-right font-normal">
+                  <span className="block">{c.label}</span>
+                  <span className="block truncate font-semibold text-text">{shortName(c.p!)}</span>
+                </th>
+              ))}
+            </tr>
+          </thead>
+          <tbody>
+            <tr className="border-t border-border/50">
+              <td className="py-1 pr-2 text-muted">Fit here</td>
+              {cols.map((c) => {
+                const v = slotScore(c.p!, slot, ctx)
+                return (
+                  <td
+                    key={c.label}
+                    className={clsx(
+                      'py-1 pr-2 text-right font-semibold tabular-nums',
+                      v !== null && scoreTextColor(v),
+                    )}
+                  >
+                    {v ?? '–'}
+                  </td>
+                )
+              })}
+            </tr>
+            <tr>
+              <td className="py-1 pr-2 text-muted">Rated at {pos ?? '?'}</td>
+              {cols.map((c) => (
+                <td key={c.label} className="py-1 pr-2 text-right tabular-nums">
+                  {positionRating(c.p!, pos) ?? (playsPosition(c.p!, pos) ? 'yes' : '–')}
+                </td>
+              ))}
+            </tr>
+            {sections.map((sec) => (
+              <Fragment key={sec.label}>
+                <tr>
+                  <td
+                    colSpan={cols.length + 1}
+                    className="pt-3 pb-1 text-xs font-semibold tracking-wide text-muted uppercase"
+                  >
+                    {sec.label}
+                  </td>
+                </tr>
+                {sec.attributes.map((a) => {
+                  const top = best(a)
+                  return (
+                    <tr
+                      key={a}
+                      className={clsx(
+                        'border-t border-border/40',
+                        key.has(a) ? KEY_ROW : pref.has(a) && PREFERRED_ROW,
+                      )}
+                    >
+                      <td className="py-0.5 pr-2 pl-2">{attributeLabel(config, a)}</td>
+                      {cols.map((c) => {
+                        const v = c.p!.attributes[a]
+                        return (
+                          <td
+                            key={c.label}
+                            className={clsx(
+                              'py-0.5 pr-2 text-right tabular-nums',
+                              attrColor(v),
+                              top !== null && attrNumber(v) === top && 'font-bold underline',
+                            )}
+                          >
+                            {formatAttr(v)}
+                          </td>
+                        )
+                      })}
+                    </tr>
+                  )
+                })}
+              </Fragment>
+            ))}
+          </tbody>
+        </table>
+      </div>
+      <p className="text-xs text-muted">
+        Green rows: the role&apos;s key attributes; blue: preferred. Underlined: the best of the
+        players shown.
+      </p>
+    </div>
+  )
 }
 
 /** The 1st and 2nd replacement of a position, in its pop-up on the pitch. */
