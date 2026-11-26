@@ -31,12 +31,15 @@ namespace ProjectFM.Dev
         private static float minRoom = float.MaxValue;
         private const float Gap = 24f;
         private static int lastCorrected = -1;
+        private const int MeasureMax = 12;
+        private static List<float> measured;   // every bookmark's width, in order
+        private static bool measuring;
 
         public static void Start(ManualLogSource log)
         {
             L = log;
             next = 0;
-            L.LogInfo("dev bookmarks 0.7: maximum from the narrowest room seen; \"(+N)\" kept right");
+            L.LogInfo("dev bookmarks 0.8: each bookmark measured once; as many as fit by their real widths");
             try
             {
                 harmony = new Harmony("projectfm.dev.bookmarks");
@@ -56,8 +59,8 @@ namespace ProjectFM.Dev
                 }
             }
             catch (Exception e) { L.LogWarning("dev bookmarks: hook: " + e); }
-            Apply(Module());
-            try { Module()?.UpdateBookmarkOverflowIndicator(); } catch { }
+            try { fmMax = Module()?.m_currentMaxBookmarks?.Value ?? 4; } catch { fmMax = 4; }
+            L.LogInfo($"dev bookmarks: FM's own maximum {fmMax}");
         }
 
         public static void Stop()
@@ -70,6 +73,8 @@ namespace ProjectFM.Dev
             Max = -1;
             minRoom = float.MaxValue;
             lastCorrected = -1;
+            measured = null;
+            measuring = false;
             foreach (var root in Roots())
             {
                 var area = Find(root, "Bookmarks");
@@ -100,9 +105,8 @@ namespace ProjectFM.Dev
             {
                 var o = __instance.m_overflowingBookmarksCount;
                 if (o == null || fmMax < 0) return;
-                if (Max < 0) return;
-                int real = Math.Max(0, o.Value - (Max - fmMax));
-                if (real != o.Value) { lastCorrected = real; o.Value = real; }
+                if (Max < 0 || o.Value == lastCorrected) return;
+                Correct(o);
             }
             catch { }
         }
@@ -111,7 +115,6 @@ namespace ProjectFM.Dev
         {
             var max = m?.m_currentMaxBookmarks;
             if (max == null || Max < 0 || max.Value == Max) return;
-            fmMax = max.Value;
             max.Value = Max;
             try { m.UpdateBookmarkOverflowIndicator(); } catch { }
         }
@@ -137,37 +140,55 @@ namespace ProjectFM.Dev
                 // The room on this screen: from the last tab (plus a gap) to the bar's right edge
                 var tabs = Find(root, "SecondaryNavigationBarTabs");
                 float lastRight = tabs == null ? 0 : RightmostTab(tabs);
+                bool newRoom = false;
                 if (lastRight > 0)
                 {
                     float room = area.worldBound.xMax - lastRight - Gap - fixedParts;
-                    if (room > 50 && room < minRoom - 4f)
+                    if (room > 50 && room < minRoom - 4f) { minRoom = room; newRoom = true; }
+                }
+                var m = Module();
+                if (m == null) continue;
+
+                // First every bookmark is drawn once (up to 12) to measure it
+                if (measured == null && !measuring)
+                {
+                    measuring = true;
+                    Max = MeasureMax;
+                    Apply(m);
+                    continue;
+                }
+                if (measuring)
+                {
+                    if (widths.Count < items) continue; // still drawing
+                    measured = new List<float>(widths);
+                    measuring = false;
+                    newRoom = true;
+                    L.LogInfo($"dev bookmarks: measured {measured.Count} bookmarks: {string.Join(", ", measured.ConvertAll(w => w.ToString("0")))} px");
+                }
+                // As many as fit in the smallest room by their real widths, in order
+                if (newRoom && measured != null && minRoom < float.MaxValue)
+                {
+                    float used = 8f; int fit = 0;
+                    foreach (var w in measured)
                     {
-                        minRoom = room;
-                        float widest = 0; foreach (var w in widths) widest = Math.Max(widest, w);
-                        var m = Module();
-                        int own = fmMax >= 0 ? fmMax : (m?.m_currentMaxBookmarks?.Value ?? 4);
-                        int fit = (int)Math.Floor((room - 8f) / (widest + 4f));
-                        int want = Math.Max(own, fit);
-                        if (want != Max)
-                        {
-                            L.LogInfo($"dev bookmarks: smallest room so far {room:0}px, bookmarks up to {widest:0}px: maximum {want}");
-                            Max = want;
-                            Apply(m);
-                            try { m?.UpdateBookmarkOverflowIndicator(); } catch { }
-                            continue; // FM redraws; measure again next time
-                        }
+                        if (used + w + 4f > minRoom) break;
+                        used += w + 4f; fit++;
+                    }
+                    int want = Math.Max(fmMax, fit);
+                    if (want != Max)
+                    {
+                        L.LogInfo($"dev bookmarks: smallest room so far {minRoom:0}px: {want} bookmarks fit");
+                        Max = want;
+                        Apply(m);
+                        try { m.UpdateBookmarkOverflowIndicator(); } catch { }
+                        continue;
                     }
                 }
-                // FM recounts "(+N)" in other places too (adding a bookmark): correct it again
+                // "(+N)": FM writes your total less its own maximum; ours replaces it
                 try
                 {
-                    var o = Module()?.m_overflowingBookmarksCount;
-                    if (o != null && fmMax >= 0 && Max >= 0 && o.Value != lastCorrected && o.Value > 0)
-                    {
-                        int real = Math.Max(0, o.Value - (Max - fmMax));
-                        lastCorrected = real;
-                        if (real != o.Value) o.Value = real;
-                    }
+                    var o = m.m_overflowingBookmarksCount;
+                    if (o != null && !measuring && o.Value != lastCorrected) Correct(o);
                 }
                 catch { }
                 float target;
@@ -194,6 +215,17 @@ namespace ProjectFM.Dev
                 var msg = $"dev bookmarks: {items} bookmarks, {widths.Count} drawn, bar {target:0}px, more text '{more}'";
                 if (msg != lastLog) { lastLog = msg; L.LogInfo(msg); }
             }
+        }
+
+        /// <summary>FM's count is your total less its own maximum: the real one uses ours.</summary>
+        private static void Correct(SI.Core.ValueWithChangeNotify<int> o)
+        {
+            int total = o.Value + fmMax;
+            if (measured != null && total > measured.Count && measured.Count < MeasureMax && total <= MeasureMax)
+                measured = null; // a bookmark was added since it was measured: measure again
+            int real = Math.Max(0, total - Max);
+            lastCorrected = real;
+            if (real != o.Value) o.Value = real;
         }
 
         /// <summary>Where the second bar's last visible tab (or its More button) ends.</summary>
