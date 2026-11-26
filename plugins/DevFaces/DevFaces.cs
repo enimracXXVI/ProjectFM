@@ -20,8 +20,10 @@ namespace ProjectFM.Dev
         private const string Mark = "pfm-face";
         private const string PersonPictureGuid = "a3126e03e5bea6348ba86f23b5c5d7de";
         private static int added;
+        private const float Size = 34f;
+        private static bool first = true;
 
-        public static void Start(ManualLogSource log) { L = log; next = 0; added = 0; L.LogInfo("dev faces 0.2: picture outside the card, left of the shirt row, as tall as it"); }
+        public static void Start(ManualLogSource log) { L = log; next = 0; added = 0; first = true; L.LogInfo("dev faces 0.3: fixed size and pixel offset (0.2 froze FM)"); }
 
         public static void Stop()
         {
@@ -37,12 +39,12 @@ namespace ProjectFM.Dev
             foreach (var root in Roots())
                 foreach (var row in FindAll(root, "ShirtAndIcons"))
                 {
-                    var face = Child(row, Mark);
-                    if (face != null) { Fit(face, row); continue; }
-                    try { Fit(Add(row), row); now++; }
+                    if (Child(row, Mark) != null) continue;
+                    if (first) L.LogInfo("dev faces: adding the first picture");
+                    try { Add(row); now++; }
                     catch (Exception e) { L.LogWarning("dev faces: " + e.Message); return; }
                 }
-            if (now > 0) { added += now; L.LogInfo($"dev faces: {now} pictures added ({added} in all)"); }
+            if (now > 0) { first = false; added += now; L.LogInfo($"dev faces: {now} pictures added ({added} in all)"); }
         }
 
         /// <summary>
@@ -53,10 +55,14 @@ namespace ProjectFM.Dev
         {
             var wrap = new VisualElement { name = Mark, pickingMode = PickingMode.Ignore };
             var st = wrap.style;
+            // Fixed size and a plain pixel offset: 0.2 placed it by a percentage of the card
+            // and resized it from the card's height, and FM froze
             st.position = new StyleEnum<Position>(Position.Absolute);
-            st.right = new StyleLength(new Length(100f, LengthUnit.Percent));
+            st.left = new StyleLength(-(Size + 2f));
             st.top = new StyleLength(0f);
-            st.marginRight = new StyleLength(2f);
+            st.width = st.height = st.minWidth = st.maxWidth = st.minHeight = st.maxHeight = new StyleLength(Size);
+            var rr = new StyleLength(Size / 2f);
+            st.borderTopLeftRadius = st.borderTopRightRadius = st.borderBottomLeftRadius = st.borderBottomRightRadius = rr;
             st.overflow = new StyleEnum<Overflow>(Overflow.Hidden);
             st.backgroundColor = new StyleColor(new Color(0f, 0f, 0f, 0.25f));
             row.Add(wrap);
@@ -71,18 +77,6 @@ namespace ProjectFM.Dev
             if (pic != null) { Fill(pic); pic.pickingMode = PickingMode.Ignore; remap.Add(pic); }
             BindableElementUtils.BindHierarchy(wrap);
             return wrap;
-        }
-
-        /// <summary>A round picture as tall as the shirt row.</summary>
-        private static void Fit(VisualElement face, VisualElement row)
-        {
-            float h = row.resolvedStyle.height;
-            if (float.IsNaN(h) || h < 10f) return;
-            if (Math.Abs(face.resolvedStyle.width - h) < 1f) return;
-            var st = face.style;
-            st.width = st.height = st.minWidth = new StyleLength(h);
-            var r = new StyleLength(h / 2f);
-            st.borderTopLeftRadius = st.borderTopRightRadius = st.borderBottomLeftRadius = st.borderBottomRightRadius = r;
         }
 
         private static void Fill(VisualElement e)
