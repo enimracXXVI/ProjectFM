@@ -16,7 +16,7 @@ namespace ProjectFM.StaffOverview
     /// the way the MrTini23 skin does in its screen file, but at run time and without changing
     /// any game file.
     /// </summary>
-    [BepInPlugin("projectfm.staffoverview", "ProjectFM Staff Overview", "0.2.0")]
+    [BepInPlugin("projectfm.staffoverview", "ProjectFM Staff Overview", "0.3.0")]
     public class Plugin : BasePlugin
     {
         internal static ManualLogSource L;
@@ -96,8 +96,30 @@ namespace ProjectFM.StaffOverview
             return null;
         }
 
+        private float checkAt;
+
+        private void Check()
+        {
+            foreach (var doc in UnityEngine.Object.FindObjectsOfType<UIDocument>())
+            {
+                var root = doc.rootVisualElement;
+                if (root == null) continue;
+                foreach (var c in Cards)
+                {
+                    var card = Find(root, c.card, 0);
+                    var box = card == null ? null : Find(card, Mark, 0);
+                    if (box == null) continue;
+                    var view = Find(box, "View", 0);
+                    var panes = Find(box, "column-headers", 0);
+                    var data = Find(box, "HasDataCheck", 0);
+                    Plugin.L.LogInfo($"staff overview: {c.card}: table rows {view?.childCount ?? -1}, columns {panes?.childCount ?? -1}, comparison parts {data?.childCount ?? -1}");
+                }
+            }
+        }
+
         private void Pass()
         {
+            if (checkAt > 0 && Time.realtimeSinceStartup > checkAt) { checkAt = 0; Check(); }
             foreach (var doc in UnityEngine.Object.FindObjectsOfType<UIDocument>())
             {
                 var root = doc.rootVisualElement;
@@ -124,9 +146,12 @@ namespace ProjectFM.StaffOverview
             var list = new Il2CppSystem.Collections.Generic.List<RemapInfo>();
             foreach (var (from, to) in maps)
             {
+                // As FM reads them from its screen files: the path parsed by Create, then the
+                // mapping finished the way Unity finishes a loaded one
                 var m = new RemapInfo();
                 m.from = from;
-                m.to = new BindingPath(to);
+                m.to = BindingPath.Create(to);
+                try { m.OnAfterDeserialize(); } catch { }
                 list.Add(m);
             }
             r.Mappings = list;
@@ -189,6 +214,7 @@ namespace ProjectFM.StaffOverview
             // Ask FM to bind the new pieces to the card's data, as it does for its own screens
             try { BindableElementUtils.BindHierarchy(box); }
             catch (Exception e) { Plugin.L.LogWarning($"staff overview: binding ({card}): {e.Message}"); }
+            checkAt = Time.realtimeSinceStartup + 3f;
             Plugin.L.LogInfo($"staff overview: {card}: list {(table != null ? "added" : "missing")}, comparison {(compare != null ? "added" : "missing")}");
         }
     }
