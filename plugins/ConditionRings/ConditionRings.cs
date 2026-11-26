@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
+using System.Linq;
 using BepInEx;
 using BepInEx.Logging;
 using BepInEx.Unity.IL2CPP;
@@ -15,7 +16,7 @@ namespace ProjectFM.ConditionRings
     /// Shows condition and match sharpness as coloured rings with FM's own percentage in them,
     /// in place of the level icons in FM27's player tables. Reads only what FM already shows.
     /// </summary>
-    [BepInPlugin("projectfm.conditionrings", "ProjectFM Condition Rings", "1.2.0")]
+    [BepInPlugin("projectfm.conditionrings", "ProjectFM Condition Rings", "1.3.0")]
     public class Plugin : BasePlugin
     {
         internal static ManualLogSource L;
@@ -326,9 +327,84 @@ namespace ProjectFM.ConditionRings
             return count;
         }
 
+        private static string TypeName(VisualElement e)
+        {
+            try { return e.GetIl2CppType().Name; } catch { return ""; }
+        }
+
+        private static bool HasClass(VisualElement e, string cls)
+        {
+            try { return e.ClassListContains(cls); } catch { return false; }
+        }
+
+        /// <summary>The first text inside an element (FM's SIText), or null.</summary>
+        private static string AnyText(VisualElement e, int depth)
+        {
+            var te = e.TryCast<TextElement>();
+            if (te != null && !string.IsNullOrEmpty(te.text)) return te.text;
+            if (depth > 3) return null;
+            for (int i = 0; i < e.childCount; i++)
+            {
+                var r = AnyText(e[i], depth + 1);
+                if (r != null) return r;
+            }
+            return null;
+        }
+
+        /// <summary>
+        /// Skins that show condition and sharpness as numbers (MrTini23): FM's icon cell then holds
+        /// an SIStyleSetter with an SIText. Condition: inside the element named "Content".
+        /// Sharpness: inside a centred row that also holds the cell's tooltip (fatigue has none).
+        /// </summary>
+        private bool HandleSkinned(VisualElement e)
+        {
+            // Cheap checks first: this runs on every element of the screen
+            var parent = e.parent;
+            if (parent == null || e.childCount == 0) return false;
+            if (parent.name != "Content" && !HasClass(parent, "regular-horizontal-container-center-all"))
+                return false;
+            if (TypeName(e) != "SIStyleSetter") return false;
+            bool sharp;
+            if (parent.name == "Content") sharp = false;
+            else if (HasClass(parent, "regular-horizontal-container-center-all"))
+            {
+                bool tooltip = false;
+                for (int i = 0; i < parent.childCount; i++)
+                    if (HasClass(parent[i], "absolute-position-fill-container")) { tooltip = true; break; }
+                if (!tooltip) return false;
+                sharp = true;
+            }
+            else return false;
+
+            var raw = AnyText(e, 0);
+            VisualElement ring = null;
+            for (int i = 0; i < parent.childCount; i++)
+                if (parent[i].name == RingName) { ring = parent[i]; break; }
+            var digits = raw == null ? "" : new string(raw.Where(char.IsDigit).ToArray());
+            bool on = sharp ? S.Sharpness : S.Condition;
+            if (!on || digits.Length == 0 || digits.Length > 3)
+            {
+                // Turned off, or not a number (injured…): the skin's own text shows
+                if (ring != null) ring.RemoveFromHierarchy();
+                e.style.display = DisplayStyle.Flex;
+                return true;
+            }
+            if (ring != null && restyle) { ring.RemoveFromHierarchy(); ring = null; }
+            if (ring == null)
+            {
+                ring = MakeRing();
+                parent.Insert(parent.IndexOf(e) + 1, ring);
+            }
+            e.style.display = DisplayStyle.None;
+            int value = int.Parse(digits, CultureInfo.InvariantCulture);
+            Paint(ring, S.ColourFor(value), S.ShowNumber ? value.ToString(CultureInfo.InvariantCulture) : "");
+            return true;
+        }
+
         /// <summary>Puts a ring in place of a condition or sharpness icon; true when it did.</summary>
         private bool Handle(VisualElement e)
         {
+            if (HandleSkinned(e)) return true;
             string cls;
             bool sharp;
             if (e.name == "ConditionIcon")
