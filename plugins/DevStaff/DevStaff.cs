@@ -20,7 +20,7 @@ namespace ProjectFM.Dev
         private static readonly string[] CardNames = { "ClubCoachingStaff", "ClubRecruitmentStaff", "ClubMedicalStaff" };
         private const string Target = "staffsubgroup.StaffSubGroupCountFeedbackString";
 
-        public static void Start(ManualLogSource log) { L = log; next = 0; checkAt = 0; L.LogInfo("dev staff 0.5: remapper tests"); }
+        public static void Start(ManualLogSource log) { L = log; next = 0; checkAt = 0; L.LogInfo("dev staff 0.6: remapper comparison"); }
 
         public static void Stop()
         {
@@ -47,7 +47,7 @@ namespace ProjectFM.Dev
                 }
         }
 
-        private static readonly string[] Variants = { "A", "B", "C", "D", "E", "F", "G" };
+        private static readonly string[] Variants = { "A", "H" };
 
         private static RemapInfo Info(string from, string to, int serialised, bool create)
         {
@@ -113,6 +113,19 @@ namespace ProjectFM.Dev
                         r.BindToData();
                         BindableElementUtils.BindHierarchy(probe);
                         break;
+                    case "H": // a copy of a mapping from one of FM's own remappers, with our from/to
+                    {
+                        var fm = FmRemapper(box);
+                        if (fm == null) { L.LogWarning("dev staff: no FM remapper found"); break; }
+                        var src = fm.Mappings[0];
+                        src.from = "x";
+                        src.to = BindingPath.Create(Target);
+                        r.Mappings = List(src);
+                        r.Add(probe); holder.Add(r);
+                        r.BindToData();
+                        BindableElementUtils.BindHierarchy(probe);
+                        break;
+                    }
                     case "G": // bind everything twice: whole holder after the remapper
                         holder.Add(r);
                         r.Mappings = List(Info("x", Target, -1, true));
@@ -123,6 +136,38 @@ namespace ProjectFM.Dev
                 }
             }
             catch (Exception e) { L.LogWarning($"dev staff: {card} variant {v}: {e.Message}"); }
+        }
+
+        /// <summary>The nearest of FM's own remappers above the element, with mappings.</summary>
+        private static BindingRemapper FmRemapper(VisualElement e)
+        {
+            for (var p = e.parent; p != null; p = p.parent)
+            {
+                var r = p.TryCast<BindingRemapper>();
+                if (r != null && r.Mappings != null && r.Mappings.Count > 0) return r;
+            }
+            return null;
+        }
+
+        private static void Describe(string who, BindingRemapper r)
+        {
+            try
+            {
+                string key = "?", owner = "?";
+                try { key = r.Key.ToString(); } catch (Exception e) { key = "err " + e.Message; }
+                try { owner = r.m_core?.OwnerElement?.name ?? "(null)"; } catch (Exception e) { owner = "err " + e.Message; }
+                var maps = r.Mappings;
+                L.LogInfo($"dev staff: {who}: name '{r.name}', key {key}, core owner {owner}, mappings {maps?.Count ?? -1}, attached {r.panel != null}");
+                if (maps != null)
+                    for (int i = 0; i < maps.Count && i < 6; i++)
+                    {
+                        var m = maps[i];
+                        string type = "?";
+                        try { type = m.type.ToString(); } catch { }
+                        L.LogInfo($"dev staff:    {m.from} -> {m.to.Path} | serialisedType {m.m_serialisedType} | type {type}");
+                    }
+            }
+            catch (Exception e) { L.LogWarning($"dev staff: describe {who}: {e.Message}"); }
         }
 
         private static SIText Probe(string path)
@@ -147,6 +192,16 @@ namespace ProjectFM.Dev
                     var card = Find(root, name);
                     var box = card == null ? null : Find(card, Mark);
                     if (box == null) continue;
+                    // FM's own remappers on the way up from the card's insides, then ours
+                    int n = 0;
+                    for (var p = box.parent; p != null && n < 4; p = p.parent)
+                    {
+                        var fr = p.TryCast<BindingRemapper>();
+                        if (fr != null) { Describe($"{name} FM remapper {n++}", fr); }
+                    }
+                    var ours = Find(box, "pfm-var-A");
+                    var or = ours == null || ours.childCount == 0 ? null : ours[0].TryCast<BindingRemapper>();
+                    if (or != null) Describe($"{name} our remapper A", or);
                     foreach (var v in Variants)
                     {
                         var holder = Find(box, "pfm-var-" + v);
