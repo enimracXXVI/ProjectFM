@@ -14,7 +14,7 @@ import {
   Wand2,
   X,
 } from 'lucide-react'
-import { Fragment, useRef, useState, type ReactNode } from 'react'
+import { useRef, useState, type ReactNode } from 'react'
 import { Link } from 'react-router-dom'
 import { TEXT, useUrlState } from '../lib/urlState'
 import { useConfirm } from '../components/confirm'
@@ -26,7 +26,7 @@ import type { PlayerRow } from '../data/db'
 import { usePlayers, useTactics } from '../data/hooks'
 import { roleShort, type RoleDef } from '../data/roles'
 import { attrColor, attrNumber, formatAttr, scoreTextColor } from '../lib/attributes'
-import { PROFILE_COLUMNS } from '../data/attributeInfo'
+import { ATTRIBUTE_INFO, PROFILE_COLUMNS } from '../data/attributeInfo'
 import { KEY_ROW, PREFERRED_ROW } from '../lib/roleMarks'
 import { useCurrentCareer } from '../lib/career'
 import { attributeLabel } from '../data/config'
@@ -274,6 +274,47 @@ export function Tactics() {
         <Placeholder>Import your save to bring in your tactics, or create one.</Placeholder>
       )}
     </>
+  )
+}
+
+/**
+ * A drop-down with a clear (×) button inside the box, shown while something is picked.
+ */
+function ClearableSelect({
+  value,
+  onChange,
+  label,
+  className,
+  children,
+}: {
+  value: string
+  onChange: (v: string | null) => void
+  label: string
+  className?: string
+  children: ReactNode
+}) {
+  return (
+    <div className={clsx('relative min-w-0', className)}>
+      <select
+        aria-label={label}
+        value={value}
+        onChange={(e) => onChange(e.target.value || null)}
+        className={clsx(field, value && 'pr-16')}
+      >
+        {children}
+      </select>
+      {value && (
+        <button
+          type="button"
+          aria-label={`Clear ${label.toLowerCase()}`}
+          title="Clear"
+          onClick={() => onChange(null)}
+          className="absolute top-1/2 right-8 grid size-7 -translate-y-1/2 place-items-center rounded-md text-muted hover:bg-bg/60 hover:text-text"
+        >
+          <X className="size-3.5" aria-hidden />
+        </button>
+      )}
+    </div>
   )
 }
 
@@ -712,16 +753,23 @@ function TacticEditor({ tactic }: { tactic: TacticRow }) {
               open={open.tactic}
               onToggle={() => setOpen({ ...open, tactic: !open.tactic })}
             >
-              <label className="grid gap-1 text-sm">
-                <span className="text-muted">Name</span>
+              <div className="grid items-start gap-2 sm:grid-cols-2">
                 <input
+                  aria-label="Name"
+                  placeholder="Name"
                   value={form.name}
                   onChange={(e) => setForm({ ...form, name: e.target.value })}
                   className={field}
+                  title={
+                    tactic.save_index !== null
+                      ? 'From your save: every import brings in its shape, roles and instructions as they are in FM. Your preferred XI, replacements and notes stay.'
+                      : undefined
+                  }
                 />
-              </label>
-              <div className="grid grid-cols-2 gap-2">
-                <label className="grid min-w-0 gap-1 text-sm">
+                <ComplexityInfo slots={form.slots} team={team} />
+              </div>
+              <div className="grid gap-2 sm:grid-cols-3">
+                <label className="grid min-w-0 gap-0.5 text-xs">
                   <span className="text-muted">Style</span>
                   <select
                     value={style?.code ?? (form.style ? '' : 'NULL')}
@@ -737,7 +785,7 @@ function TacticEditor({ tactic }: { tactic: TacticRow }) {
                     ))}
                   </select>
                 </label>
-                <label className="grid min-w-0 gap-1 text-sm">
+                <label className="grid min-w-0 gap-0.5 text-xs">
                   <span className="text-muted">Mentality</span>
                   <select
                     value={form.mentality ?? ''}
@@ -753,6 +801,21 @@ function TacticEditor({ tactic }: { tactic: TacticRow }) {
                     ))}
                   </select>
                 </label>
+                <label className="grid min-w-0 gap-0.5 text-xs">
+                  <span className="text-muted">
+                    Formation {phase === 'ip' ? 'in possession' : 'out of possession'}
+                  </span>
+                  <select
+                    value={formation}
+                    onChange={(e) => e.target.value && applyFormation(e.target.value)}
+                    className={field}
+                  >
+                    <option value="">{formation ? 'Custom' : 'Pick a formation…'}</option>
+                    {Object.keys(FORMATIONS).map((f) => (
+                      <option key={f}>{f}</option>
+                    ))}
+                  </select>
+                </label>
               </div>
               {form.mentality && (
                 <FmAboutLine about={config.fmCodes.mentalityTexts[form.mentality]} />
@@ -765,65 +828,31 @@ function TacticEditor({ tactic }: { tactic: TacticRow }) {
                   <StyleInfo style={cleanSlate} current={cleanSlate.name} slots={form.slots} />
                 )
               )}
-              <ComplexityInfo slots={form.slots} team={team} />
-              <label className="grid gap-1 text-sm">
-                <span className="text-muted">
-                  Formation {phase === 'ip' ? 'in possession' : 'out of possession'}
-                </span>
-                <select
-                  value={formation}
-                  onChange={(e) => e.target.value && applyFormation(e.target.value)}
-                  className={field}
-                >
-                  <option value="">{formation ? 'Custom' : 'Pick a formation…'}</option>
-                  {Object.keys(FORMATIONS).map((f) => (
-                    <option key={f}>{f}</option>
-                  ))}
-                </select>
-              </label>
-              <label className="grid gap-1 text-sm">
-                <span className="text-muted">Notes</span>
-                <textarea
-                  value={form.notes ?? ''}
-                  onChange={(e) => setForm({ ...form, notes: e.target.value })}
-                  rows={2}
-                  className="rounded-lg border border-border bg-surface-2 px-3 py-2 text-base md:text-sm"
-                />
-              </label>
-              {tactic.save_index !== null && (
-                <p className="text-xs text-muted">
-                  From your save: every import brings in its shape, roles and instructions as they
-                  are in FM. Your preferred XI and notes stay.
-                </p>
-              )}
-              <div className="grid gap-1">
-                <Button variant="ghost" onClick={download} disabled={problems.length > 0}>
-                  <Download className="size-4" aria-hidden /> Export to FM (.fmf)
-                </Button>
-                {problems.length > 0 ? (
-                  <ul className="list-disc pl-5 text-xs text-amber-300">
-                    {problems.slice(0, 6).map((p) => (
-                      <li key={p}>{p}</li>
-                    ))}
-                    {problems.length > 6 && <li>and {problems.length - 6} more</li>}
-                  </ul>
-                ) : (
-                  <p className="text-xs text-muted">
-                    Save the file in FM's tactics folder, then in FM open Tactics and choose Load
-                    Tactic. The players are picked in your save, not in the file.
-                  </p>
-                )}
-              </div>
+              <textarea
+                aria-label="Notes"
+                placeholder="Notes"
+                value={form.notes ?? ''}
+                onChange={(e) => setForm({ ...form, notes: e.target.value })}
+                rows={Math.min(6, Math.max(1, (form.notes ?? '').split('\n').length))}
+                className="min-h-11 rounded-lg border border-border bg-surface-2 px-3 py-2.5 text-base md:text-sm"
+              />
               <div className="flex flex-wrap items-center gap-2">
                 <Button onClick={() => save.mutate()} disabled={!dirty || save.isPending}>
                   {save.isPending ? 'Saving…' : 'Save'}
                 </Button>
+                <Button
+                  variant="ghost"
+                  onClick={download}
+                  disabled={problems.length > 0}
+                  title="Save the file in FM's tactics folder, then in FM choose Load Tactic"
+                >
+                  <Download className="size-4" aria-hidden /> Export .fmf
+                </Button>
                 <Button variant="ghost" onClick={() => copy.mutate()} disabled={copy.isPending}>
-                  <Copy className="size-4" aria-hidden />{' '}
-                  {copy.isPending ? 'Copying…' : 'Copy tactic'}
+                  <Copy className="size-4" aria-hidden /> {copy.isPending ? 'Copying…' : 'Copy'}
                 </Button>
                 <Button variant="ghost" onClick={() => setForm(tactic)} disabled={!dirty}>
-                  Undo changes
+                  <Undo2 className="size-4" aria-hidden /> Undo changes
                 </Button>
                 <Button
                   variant="danger"
@@ -847,6 +876,15 @@ function TacticEditor({ tactic }: { tactic: TacticRow }) {
                 </Button>
                 <ErrorText error={save.error ?? remove.error ?? copy.error} />
               </div>
+              {problems.length > 0 && (
+                <ul className="list-disc pl-5 text-xs text-amber-300">
+                  <li className="-ml-5 list-none font-semibold">Export needs:</li>
+                  {problems.slice(0, 6).map((p) => (
+                    <li key={p}>{p}</li>
+                  ))}
+                  {problems.length > 6 && <li>and {problems.length - 6} more</li>}
+                </ul>
+              )}
             </Section>
             <Section
               title="Instructions"
@@ -1206,7 +1244,7 @@ function PositionPopup({
   onClose: () => void
 }) {
   const config = useConfig()
-  const [tab, setTab] = useState<'players' | 'role' | 'instructions'>('players')
+  const [tab, setTab] = useState<'role' | 'instructions' | 'players'>('role')
   const roleId = roleIdOf(slot, phase)
   const role = roles.find((r) => r.id === roleId) ?? null
   // Players able to play the position first (FM rating, Settings > Tactics), then by role fit
@@ -1250,11 +1288,10 @@ function PositionPopup({
           <X className="size-4" aria-hidden />
         </button>
       </div>
-      <select
-        aria-label="Player"
+      <ClearableSelect
+        label="Player"
         value={slot.player ?? ''}
-        onChange={(e) => onChange({ player: e.target.value || null })}
-        className={field}
+        onChange={(v) => onChange({ player: v })}
       >
         <option value="">No player</option>
         {(
@@ -1277,14 +1314,14 @@ function PositionPopup({
             </optgroup>
           ) : null
         })}
-      </select>
+      </ClearableSelect>
       {replacements}
       <div className="flex border-b border-border" role="tablist">
         {(
           [
-            ['players', 'Players'],
             ['role', 'Role'],
             ['instructions', 'Instructions'],
+            ['players', 'Players'],
           ] as const
         ).map(([t, label]) => (
           <button
@@ -1740,10 +1777,14 @@ function backupProblems(slot: TacticSlot, slots: TacticSlot[], squad: PlayerRow[
   return [...new Set(out)]
 }
 
+/** Colours of the starter, 1st and 2nd replacement in the comparison. */
+const SLOT_COLOURS = ['#4aa3ff', '#f5a623', '#c084fc']
+
 /**
- * The position's starter and his replacements side by side: fit for the slot, FM's rating at
- * the position and every attribute, the role's key and preferred ones marked. With only a
- * starter it is his full attribute list.
+ * The position's starter and his replacements side by side, laid out like FM's attribute
+ * screen (Technical, Mental, Physical columns), each attribute with one value per player: the
+ * best marked ▲, all the same =. The role's key and preferred attributes are marked. With only
+ * a starter it is his attribute screen.
  */
 function SlotCompare({
   slot,
@@ -1763,31 +1804,80 @@ function SlotCompare({
   const [roleOnly, setRoleOnly] = useState(false)
   const byId = new Map(squad.map((p) => [p.id, p]))
   const cols = [
-    { label: 'Starter', id: slot.player ?? null },
-    ...backupsOf(slots[index] ?? slot).map((id, k) => ({ label: k === 0 ? '1st' : '2nd', id })),
+    { label: 'Starter', id: slot.player ?? null, colour: SLOT_COLOURS[0] },
+    ...backupsOf(slots[index] ?? slot).map((id, k) => ({
+      label: k === 0 ? '1st' : '2nd',
+      id,
+      colour: SLOT_COLOURS[k + 1],
+    })),
   ]
     .map((c) => ({ ...c, p: c.id ? (byId.get(c.id) ?? null) : null }))
-    .filter((c) => c.p)
+    .filter((c): c is typeof c & { p: PlayerRow } => !!c.p)
   if (!cols.length)
     return <p className="text-sm text-muted">Pick a player or a replacement to see them here.</p>
+  const many = cols.length > 1
   const key = new Set(role?.key ?? [])
   const pref = new Set(role?.preferred ?? [])
-  const sections = PROFILE_COLUMNS[slot.position === 'GK' ? 'goalkeepers' : 'outfield']
-    .flat()
-    .filter((x) => x.label !== 'Hidden')
-    .map((x) => ({
-      ...x,
-      attributes: roleOnly ? x.attributes.filter((a) => key.has(a) || pref.has(a)) : x.attributes,
+  const columns = PROFILE_COLUMNS[slot.position === 'GK' ? 'goalkeepers' : 'outfield']
+    .map((col) =>
+      col
+        .filter((x) => x.label !== 'Hidden')
+        .map((x) => ({
+          ...x,
+          attributes: roleOnly
+            ? x.attributes.filter((a) => key.has(a) || pref.has(a))
+            : x.attributes,
+        }))
+        .filter((x) => x.attributes.length),
+    )
+    .filter((col) => col.length)
+  const grid = { gridTemplateColumns: `minmax(0,1fr) repeat(${cols.length}, 2.6rem)` }
+  const abbr = (a: string) => ATTRIBUTE_INFO[a]?.abbr ?? attributeLabel(config, a).slice(0, 3)
+  const cell = (a: string) => {
+    const vals = cols.map((c) => attrNumber(c.p.attributes[a]))
+    const known = vals.filter((v): v is number => v !== null)
+    const top = known.length ? Math.max(...known) : null
+    const same = many && known.length === cols.length && known.every((v) => v === known[0])
+    const unique = many && !same && top !== null && known.filter((v) => v === top).length === 1
+    return cols.map((c, k) => ({
+      text: formatAttr(c.p.attributes[a]),
+      colour: attrColor(c.p.attributes[a]),
+      best: unique && vals[k] === top,
+      same,
     }))
-    .filter((x) => x.attributes.length)
-  const best = (a: string) => {
-    const vals = cols.map((c) => attrNumber(c.p!.attributes[a]))
-    const top = Math.max(...vals.map((v) => v ?? -1))
-    return cols.length > 1 && vals.filter((v) => v === top).length === 1 ? top : null
   }
   const pos = slot.position
   return (
-    <div className="grid gap-2">
+    <div className="grid gap-3">
+      {/* Who is in which column, with fit and FM rating at the position */}
+      <ul className="grid gap-1">
+        {cols.map((c) => {
+          const fit = slotScore(c.p, slot, ctx)
+          const rated = positionRating(c.p, pos)
+          return (
+            <li key={c.label} className="flex items-center gap-2 text-sm">
+              <span
+                className="size-2.5 shrink-0 rounded-full"
+                style={{ backgroundColor: c.colour }}
+              />
+              <span className="w-12 shrink-0 text-xs text-muted">{c.label}</span>
+              <span className="min-w-0 flex-1 truncate font-semibold">{c.p.name}</span>
+              <span className="text-xs text-muted">
+                {rated !== null ? `rated ${rated}` : playsPosition(c.p, pos) ? 'plays here' : ''}
+              </span>
+              <span
+                className={clsx(
+                  'w-8 text-right font-semibold tabular-nums',
+                  fit !== null && scoreTextColor(fit),
+                )}
+                title="Fit for this slot (0–100)"
+              >
+                {fit ?? '–'}
+              </span>
+            </li>
+          )
+        })}
+      </ul>
       {role && (
         <label className="flex min-h-9 items-center gap-2 text-sm text-muted">
           <input
@@ -1798,92 +1888,72 @@ function SlotCompare({
           Only {roleShort(role)} key and preferred attributes
         </label>
       )}
-      <div className="overflow-x-auto">
-        <table className="w-full text-sm">
-          <thead>
-            <tr className="text-left text-xs text-muted">
-              <th className="py-1 pr-2 font-normal" />
-              {cols.map((c) => (
-                <th key={c.label} className="py-1 pr-2 text-right font-normal">
-                  <span className="block">{c.label}</span>
-                  <span className="block truncate font-semibold text-text">{shortName(c.p!)}</span>
-                </th>
-              ))}
-            </tr>
-          </thead>
-          <tbody>
-            <tr className="border-t border-border/50">
-              <td className="py-1 pr-2 text-muted">Fit here</td>
-              {cols.map((c) => {
-                const v = slotScore(c.p!, slot, ctx)
-                return (
-                  <td
-                    key={c.label}
-                    className={clsx(
-                      'py-1 pr-2 text-right font-semibold tabular-nums',
-                      v !== null && scoreTextColor(v),
-                    )}
-                  >
-                    {v ?? '–'}
-                  </td>
-                )
-              })}
-            </tr>
-            <tr>
-              <td className="py-1 pr-2 text-muted">Rated at {pos ?? '?'}</td>
-              {cols.map((c) => (
-                <td key={c.label} className="py-1 pr-2 text-right tabular-nums">
-                  {positionRating(c.p!, pos) ?? (playsPosition(c.p!, pos) ? 'yes' : '–')}
-                </td>
-              ))}
-            </tr>
-            {sections.map((sec) => (
-              <Fragment key={sec.label}>
-                <tr>
-                  <td
-                    colSpan={cols.length + 1}
-                    className="pt-3 pb-1 text-xs font-semibold tracking-wide text-muted uppercase"
-                  >
+      <div className="grid gap-x-4 gap-y-3 sm:grid-cols-2 xl:grid-cols-3">
+        {columns.map((col, ci) => (
+          <div key={ci} className="grid content-start gap-3">
+            {col.map((sec) => (
+              <div key={sec.label} className="grid content-start">
+                <div
+                  className="grid items-end gap-x-1 border-b border-border pb-1 text-xs"
+                  style={grid}
+                >
+                  <span className="font-semibold tracking-wide text-muted uppercase">
                     {sec.label}
-                  </td>
-                </tr>
-                {sec.attributes.map((a) => {
-                  const top = best(a)
-                  return (
-                    <tr
-                      key={a}
-                      className={clsx(
-                        'border-t border-border/40',
-                        key.has(a) ? KEY_ROW : pref.has(a) && PREFERRED_ROW,
-                      )}
-                    >
-                      <td className="py-0.5 pr-2 pl-2">{attributeLabel(config, a)}</td>
-                      {cols.map((c) => {
-                        const v = c.p!.attributes[a]
-                        return (
-                          <td
-                            key={c.label}
-                            className={clsx(
-                              'py-0.5 pr-2 text-right tabular-nums',
-                              attrColor(v),
-                              top !== null && attrNumber(v) === top && 'font-bold underline',
-                            )}
+                  </span>
+                  {many &&
+                    cols.map((c) => (
+                      <span key={c.label} className="flex justify-end" title={c.p.name}>
+                        <span
+                          className="size-2 rounded-full"
+                          style={{ backgroundColor: c.colour }}
+                        />
+                      </span>
+                    ))}
+                </div>
+                {sec.attributes.map((a) => (
+                  <div
+                    key={a}
+                    className={clsx(
+                      'grid items-center gap-x-1 border-b border-border/30 py-0.5 pl-1.5 text-sm',
+                      key.has(a) ? KEY_ROW : pref.has(a) && PREFERRED_ROW,
+                    )}
+                    style={grid}
+                  >
+                    <span className="truncate" title={attributeLabel(config, a)}>
+                      {/* Full names when one player fits, short ones beside others */}
+                      <span className={clsx(many && 'sm:hidden')}>{attributeLabel(config, a)}</span>
+                      {many && <span className="hidden sm:inline">{abbr(a)}</span>}
+                    </span>
+                    {cell(a).map((v, k) => (
+                      <span
+                        key={k}
+                        className={clsx(
+                          'text-right whitespace-nowrap tabular-nums',
+                          v.colour,
+                          v.best && 'font-bold',
+                        )}
+                      >
+                        {v.text}
+                        {many && (
+                          <span
+                            className="inline-block w-2.5 text-center text-[10px] text-muted"
+                            aria-label={v.best ? 'best' : v.same ? 'all the same' : undefined}
                           >
-                            {formatAttr(v)}
-                          </td>
-                        )
-                      })}
-                    </tr>
-                  )
-                })}
-              </Fragment>
+                            {v.best ? '▲' : v.same ? '=' : ''}
+                          </span>
+                        )}
+                      </span>
+                    ))}
+                  </div>
+                ))}
+              </div>
             ))}
-          </tbody>
-        </table>
+          </div>
+        ))}
       </div>
       <p className="text-xs text-muted">
-        Green rows: the role&apos;s key attributes; blue: preferred. Underlined: the best of the
-        players shown.
+        Green rows: the role&apos;s key attributes; blue: preferred. ▲ the best of the players
+        shown, = all the same.
       </p>
     </div>
   )
@@ -1921,45 +1991,44 @@ function BackupPicker({
   const problems = backupProblems(slot, slots, squad)
   return (
     <div className="grid gap-1">
-      <div className="grid grid-cols-[minmax(0,1fr)_minmax(0,1fr)_auto] gap-1">
-        {backups.map((b, k) => (
-          <select
-            key={k}
-            aria-label={`${k === 0 ? '1st' : '2nd'} replacement`}
-            value={b ?? ''}
-            onChange={(e) =>
-              onChange(backups.map((x, j) => (j === k ? e.target.value || null : x)))
-            }
-            className="min-h-10 min-w-0 rounded-lg border border-border bg-surface-2 px-2 text-base md:text-sm"
-          >
-            <option value="">{k === 0 ? '1st replacement' : '2nd replacement'}</option>
-            {b && !byId.has(b) && <option value={b}>(not in the list)</option>}
-            <optgroup label="Plays the position">
-              {options
-                .filter((o) => o.plays)
-                .map((o) => (
-                  <option key={o.p.id} value={o.p.id}>
-                    {label(o)}
-                  </option>
-                ))}
-            </optgroup>
-            <optgroup label="Others">
-              {options
-                .filter((o) => !o.plays)
-                .map((o) => (
-                  <option key={o.p.id} value={o.p.id}>
-                    {label(o)}
-                  </option>
-                ))}
-            </optgroup>
-          </select>
-        ))}
+      <div className="flex items-start gap-1">
+        <div className="grid min-w-0 flex-1 gap-1 sm:grid-cols-2">
+          {backups.map((b, k) => (
+            <ClearableSelect
+              key={k}
+              label={`${k === 0 ? '1st' : '2nd'} replacement`}
+              value={b ?? ''}
+              onChange={(v) => onChange(backups.map((x, j) => (j === k ? v : x)))}
+            >
+              <option value="">{k === 0 ? '1st replacement' : '2nd replacement'}</option>
+              {b && !byId.has(b) && <option value={b}>(not in the list)</option>}
+              <optgroup label="Plays the position">
+                {options
+                  .filter((o) => o.plays)
+                  .map((o) => (
+                    <option key={o.p.id} value={o.p.id}>
+                      {label(o)}
+                    </option>
+                  ))}
+              </optgroup>
+              <optgroup label="Others">
+                {options
+                  .filter((o) => !o.plays)
+                  .map((o) => (
+                    <option key={o.p.id} value={o.p.id}>
+                      {label(o)}
+                    </option>
+                  ))}
+              </optgroup>
+            </ClearableSelect>
+          ))}
+        </div>
         <button
           type="button"
           onClick={suggest}
           title="Suggest replacements"
           aria-label="Suggest replacements"
-          className="grid size-10 place-items-center rounded-lg border border-border text-muted hover:bg-surface-2 hover:text-text"
+          className="grid size-11 shrink-0 place-items-center rounded-lg border border-border text-muted hover:bg-surface-2 hover:text-text"
         >
           <Wand2 className="size-4" aria-hidden />
         </button>
@@ -1985,12 +2054,12 @@ function StyleInfo({
   const used = new Set(slots.flatMap((s) => [s.role, s.roleOop]).filter(Boolean))
   const preferred = matchRoles(style, config.roles)
   return (
-    <div className="grid gap-1 rounded-lg border border-border bg-surface-2/50 p-2 text-xs">
+    <div className="grid gap-1 rounded-lg border border-border bg-surface-2/50 px-2 text-xs">
       <button
         type="button"
         aria-expanded={open}
         onClick={() => setOpen(!open)}
-        className="flex items-center gap-1 text-left"
+        className="flex min-h-[2.6rem] items-center gap-1 text-left"
       >
         <span className="font-semibold">{current ?? style.name}</span>
         {style.summary.length > 0 && (
@@ -2072,12 +2141,12 @@ function ComplexityInfo({ slots, team }: { slots: TacticSlot[]; team: number[] }
   const c = tacticComplexity(slots, team, config)
   const heavy = c.players.flatMap((p) => p.items.filter((x) => x.points >= 3)).map((x) => x.label)
   return (
-    <div className="grid gap-1 rounded-lg border border-border bg-surface-2/50 p-2 text-xs">
+    <div className="grid gap-1 rounded-lg border border-border bg-surface-2/50 px-2 text-xs">
       <button
         type="button"
         aria-expanded={open}
         onClick={() => setOpen(!open)}
-        className="flex items-center gap-1 text-left"
+        className="flex min-h-[2.6rem] items-center gap-1 text-left"
       >
         <span className="font-semibold">Complexity</span>
         <span className="min-w-0 flex-1 truncate text-muted">
@@ -2090,7 +2159,7 @@ function ComplexityInfo({ slots, team }: { slots: TacticSlot[]; team: number[] }
         />
       </button>
       {heavy.length > 0 && (
-        <p className="text-amber-300">
+        <p className="pb-1.5 text-amber-300">
           Hardest to learn: {[...new Set(heavy)].join(', ')} (3 points each).
         </p>
       )}
@@ -2139,12 +2208,12 @@ function RatingGuide({ role, complexity }: { role: RoleDef | null; complexity?: 
   const down = items.filter(([, v]) => v < 0).sort((a, b) => a[1] - b[1])
   const fmt = (v: number) => `${v > 0 ? '+' : ''}${(v / 1000).toFixed(v % 10 ? 3 : 2)}`
   return (
-    <div className="grid gap-1 rounded-lg border border-border bg-surface-2/50 p-2 text-xs">
+    <div className="grid gap-1 rounded-lg border border-border bg-surface-2/50 px-2 text-xs">
       <button
         type="button"
         aria-expanded={open}
         onClick={() => setOpen(!open)}
-        className="flex items-center gap-1 text-left"
+        className="flex min-h-[2.6rem] items-center gap-1 text-left"
       >
         <span className="font-semibold">How FM rates {role?.name ?? 'this role'}</span>
         {complexity !== undefined && <span className="text-muted">· complexity {complexity}</span>}
