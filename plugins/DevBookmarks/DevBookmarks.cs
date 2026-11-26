@@ -29,9 +29,15 @@ namespace ProjectFM.Dev
             // laid the bar out again without them
             Reset();
             settle = 2;
-            L = log; next = 0; L.LogInfo("dev bookmarks 0.3: FM's width limits lifted; FM's own widths read after a reset"); }
+            L = log; next = 0; L.LogInfo("dev bookmarks 0.4: raise FM's CurrentMaxBookmarks to what fits, bar sized to the bookmarks"); }
 
-        public static void Stop() => Reset();
+        public static void Stop()
+        {
+            Reset();
+            // FM's own maximum back
+            try { if (fmMax >= 0 && module_ != null) module_.m_currentMaxBookmarks.Value = fmMax; } catch { }
+            fmMax = -1;
+        }
 
         private static void Reset()
         {
@@ -72,29 +78,65 @@ namespace ProjectFM.Dev
                 }
                 float lastRight = RightmostTab(tabs);
                 if (lastRight <= 0) continue;
-                // The bar keeps its right edge: its width is everything from the last tab (plus
-                // a gap) to there. Worked out afresh each time, never added up (0.1 ran away).
-                float target = Math.Max(origArea, area.worldBound.xMax - lastRight - Gap);
-                float newExtra = target - origArea;
-                if (recountAt > 0 && Time.realtimeSinceStartup > recountAt)
+                // How many fit: the free space from the last tab (plus a gap) to the bar's right
+                // edge, less the bar's own parts ("(+N)", the arrow), over the bookmarks' width
+                var view = Find(list, "View");
+                var widths = new List<float>();
+                if (view != null)
+                    for (int i = 0; i < view.childCount; i++)
+                        if (view[i].worldBound.width > 0) widths.Add(view[i].worldBound.width);
+                if (widths.Count == 0) continue;
+                float avg = 0; foreach (var w in widths) avg += w; avg /= widths.Count;
+                float fixedParts = area.worldBound.width - list.worldBound.width;
+                float room = area.worldBound.xMax - lastRight - Gap - fixedParts;
+                var module = Module();
+                if (module == null) continue;
+                int total = Total(module);
+                int fit = Math.Max(1, (int)Math.Floor(room / (avg + 4f)));
+                int want = total > 0 ? Math.Min(fit, total) : fit;
+                var max = module.m_currentMaxBookmarks;
+                if (max != null && want != max.Value)
                 {
-                    recountAt = 0;
-                    L.LogInfo($"dev bookmarks: a second later: bar drawn {area.worldBound.width:0}px, list drawn {list.worldBound.width:0}px; {Counts(area, list)}");
+                    int before = max.Value;
+                    if (fmMax < 0) fmMax = before;
+                    // Through FM's own value, which tells the bookmark bar it changed
+                    max.Value = want;
+                    try { module.UpdateBookmarkOverflowIndicator(); } catch (Exception e) { L.LogWarning("dev bookmarks: overflow: " + e.Message); }
+                    L.LogInfo($"dev bookmarks: room {room:0}px, bookmark ~{avg:0}px: max bookmarks {before} -> {want} (of {total})");
+                    recountAt = Time.realtimeSinceStartup + 1f;
                 }
-                if (Math.Abs(newExtra - extra) < 4f) continue;
-                recountAt = Time.realtimeSinceStartup + 1f;
-                extra = newExtra;
-                // Width and the limits FM's styles put on it (0.2 asked for 1030px, FM drew 717px)
-                foreach (var (e, w) in new[] { (area, origArea + extra), (list, origList + extra) })
+                // The bar as wide as its bookmarks, so they stay on the right by "(+N)"
+                float sum = 8f; foreach (var w in widths) sum += w + 4f;
+                float listW = Math.Min(sum, Math.Max(room, origList));
+                if (Math.Abs(listW - extra) < 4f) continue;
+                extra = listW;
+                foreach (var (e, w) in new[] { (area, listW + fixedParts), (list, listW) })
                 {
                     e.style.width = new StyleLength(w);
                     e.style.maxWidth = new StyleLength(w);
                     e.style.minWidth = new StyleLength(w);
                 }
-                Refresh(list);
-                var msg = $"dev bookmarks: last tab ends at {lastRight:0}px, bar {origArea + extra:0}px (+{extra:0}px), drawn {area.worldBound.width:0}px, list drawn {list.worldBound.width:0}px, parent {area.parent?.worldBound.width:0}px; {Counts(area, list)}";
+                var msg = $"dev bookmarks: last tab ends at {lastRight:0}px, list set to {listW:0}px; {Counts(area, list)}";
                 if (msg != lastLog) { lastLog = msg; L.LogInfo(msg); }
             }
+        }
+
+        private static GameWorldTabsAndBookmarksModule module_;
+        private static int fmMax = -1;
+
+        private static GameWorldTabsAndBookmarksModule Module()
+        {
+            if (module_ != null) return module_;
+            foreach (var m in Resources.FindObjectsOfTypeAll<GameWorldTabsAndBookmarksModule>()) { module_ = m; break; }
+            if (module_ == null) L.LogWarning("dev bookmarks: FM's bookmarks module not found");
+            return module_;
+        }
+
+        /// <summary>How many bookmarks you have chosen (shown plus behind "(+N)").</summary>
+        private static int Total(GameWorldTabsAndBookmarksModule m)
+        {
+            try { return m.CurrentSelectedBookmarksList.Value.Bookmarks.Count; } catch { }
+            return 0;
         }
 
         /// <summary>Asks FM's list to lay its bookmarks out again for the new width.</summary>
