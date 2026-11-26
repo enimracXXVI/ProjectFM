@@ -9,60 +9,49 @@ namespace ProjectFM.Dev
 {
     /// <summary>
     /// Bookmarks test module (run by ProjectFM Dev Loader; F10 reloads it). FM caps the bookmarks
-    /// under Continue with its own maximum (4 at the user's resolution) and resets it whenever it
-    /// works it out again. This hooks the two places FM works it out, so FM itself uses the higher
-    /// number: it draws once, counts the hidden ones ("+N") itself, and nothing redraws per screen.
-    /// The bar is then sized once to its bookmarks, so they stay on the right.
+    /// under Continue with its own maximum and resets it whenever it works it out again. This
+    /// hooks the places FM works it out so FM uses ours: it starts by showing all your bookmarks
+    /// and takes one away while they do not fit in the smallest room seen on any screen (the
+    /// longest tab row). The result is kept for labels on and for labels off. "(+N)" is
+    /// corrected, and the bar is sized to its bookmarks so they stay on the right.
     /// </summary>
     public static class Entry
     {
         private static ManualLogSource L;
         private static Harmony harmony;
         private static float next;
-        private static int fmMax = -1;
-        private static string lastLog;
-
-        /// <summary>
-        /// How many bookmarks FM may show: as many as fit in the smallest room seen on any screen
-        /// (the longest tab row), so the bar never runs into the tabs and does not change from
-        /// screen to screen. Starts at FM's own until measured.
-        /// </summary>
-        private static int Max = -1;
-        private static float minRoom = float.MaxValue;
         private const float Gap = 24f;
+        private const int All = 12;               // "show them all" (FM shows fewer if you have fewer)
+
+        private static int Max = -1;              // ours, given to FM
+        private static int fmMax = 4;             // FM's own, learned when FM works it out
+        private static float minRoom = float.MaxValue;
+        private static int items;                 // bookmarks FM gives the bar now
         private static int lastCorrected = -1;
-        private const int MeasureMax = 12;
-        private static List<float> measured;   // every bookmark's width, in order (current label mode)
-        private static readonly Dictionary<bool, List<float>> byLabels = new Dictionary<bool, List<float>>();
-        private static bool? labels;            // FM's "Show bookmark labels" when last looked
-        private static bool measuring;
+        private static readonly Dictionary<bool, int> capBy = new Dictionary<bool, int>(); // labels -> max
+        private static bool? labels;              // labels mode in use
+        private static bool? seen;                // last value read (FM flips it briefly)
+        private static float seenSince;
+        private static string lastLog;
 
         public static void Start(ManualLogSource log)
         {
             L = log;
             next = 0;
-            L.LogInfo("dev bookmarks 0.9: measured again when labels are turned on or off (both kept)");
+            L.LogInfo("dev bookmarks 0.10: all shown, one taken away while they do not fit; per labels mode");
             try
             {
                 harmony = new Harmony("projectfm.dev.bookmarks");
-                var post = new HarmonyMethod(typeof(Entry).GetMethod(nameof(AfterFm)));
                 foreach (var name in new[] { "UpdateMaxBookmarks", "TryUpdateMaxBookmarksWithLabels" })
                 {
                     var m = AccessTools.Method(typeof(GameWorldTabsAndBookmarksModule), name);
-                    if (m == null) { L.LogWarning($"dev bookmarks: FM's {name} not found"); continue; }
-                    harmony.Patch(m, postfix: post);
-                    L.LogInfo($"dev bookmarks: hooked FM's {name}");
+                    if (m != null) harmony.Patch(m, postfix: new HarmonyMethod(typeof(Entry).GetMethod(nameof(AfterFm))));
                 }
                 var ind = AccessTools.Method(typeof(GameWorldTabsAndBookmarksModule), "UpdateBookmarkOverflowIndicator");
-                if (ind != null)
-                {
-                    harmony.Patch(ind, postfix: new HarmonyMethod(typeof(Entry).GetMethod(nameof(AfterOverflow))));
-                    L.LogInfo("dev bookmarks: hooked FM's UpdateBookmarkOverflowIndicator");
-                }
+                if (ind != null) harmony.Patch(ind, postfix: new HarmonyMethod(typeof(Entry).GetMethod(nameof(AfterOverflow))));
+                L.LogInfo("dev bookmarks: hooked FM's maximum and overflow count");
             }
             catch (Exception e) { L.LogWarning("dev bookmarks: hook: " + e); }
-            try { fmMax = Module()?.m_currentMaxBookmarks?.Value ?? 4; } catch { fmMax = 4; }
-            L.LogInfo($"dev bookmarks: FM's own maximum {fmMax}");
         }
 
         public static void Stop()
@@ -70,15 +59,9 @@ namespace ProjectFM.Dev
             try { harmony?.UnpatchSelf(); } catch { }
             harmony = null;
             var m = Module();
-            try { if (fmMax >= 0 && m != null) { m.m_currentMaxBookmarks.Value = fmMax; m.UpdateBookmarkOverflowIndicator(); } } catch { }
-            fmMax = -1;
-            Max = -1;
-            minRoom = float.MaxValue;
-            lastCorrected = -1;
-            measured = null;
-            measuring = false;
-            byLabels.Clear();
-            labels = null;
+            try { if (m != null) { m.m_currentMaxBookmarks.Value = fmMax; m.UpdateBookmarkOverflowIndicator(); } } catch { }
+            Max = -1; fmMax = 4; minRoom = float.MaxValue; items = 0; lastCorrected = -1;
+            capBy.Clear(); labels = null; seen = null; lastLog = null;
             foreach (var root in Roots())
             {
                 var area = Find(root, "Bookmarks");
@@ -93,160 +76,127 @@ namespace ProjectFM.Dev
             }
         }
 
-        /// <summary>Runs right after FM has worked out its maximum: ours replaces it.</summary>
+        /// <summary>Right after FM has worked out its maximum: note FM's, put ours back.</summary>
         public static void AfterFm(GameWorldTabsAndBookmarksModule __instance)
         {
-            try { Apply(__instance); } catch { }
+            try
+            {
+                var max = __instance.m_currentMaxBookmarks;
+                if (max == null || Max < 0 || max.Value == Max) return;
+                fmMax = max.Value;
+                max.Value = Max;
+            }
+            catch { }
         }
 
-        /// <summary>
-        /// FM counts the hidden bookmarks against its own maximum (4), not the one it uses: with
-        /// 6 bookmarks all shown it still said "(+2)". The real count is that less the extra room.
-        /// </summary>
         public static void AfterOverflow(GameWorldTabsAndBookmarksModule __instance)
         {
             try
             {
                 var o = __instance.m_overflowingBookmarksCount;
-                if (o == null || fmMax < 0) return;
-                if (Max < 0 || o.Value == lastCorrected) return;
-                Correct(o);
+                if (o != null && Max >= 0 && o.Value != lastCorrected) Correct(o);
             }
             catch { }
         }
 
-        private static void Apply(GameWorldTabsAndBookmarksModule m)
+        /// <summary>
+        /// FM counts hidden bookmarks as your total less its own maximum. All shown (fewer than
+        /// ours): none hidden. Otherwise your total less ours.
+        /// </summary>
+        private static void Correct(SI.Core.ValueWithChangeNotify<int> o)
         {
-            var max = m?.m_currentMaxBookmarks;
-            if (max == null || Max < 0 || max.Value == Max) return;
-            max.Value = Max;
-            try { m.UpdateBookmarkOverflowIndicator(); } catch { }
+            int real = items > 0 && items < Max ? 0 : Math.Max(0, o.Value + fmMax - Max);
+            lastCorrected = real;
+            if (real != o.Value) o.Value = real;
+        }
+
+        private static void SetMax(GameWorldTabsAndBookmarksModule m, int value, string why)
+        {
+            if (value == Max) return;
+            Max = value;
+            L.LogInfo($"dev bookmarks: maximum {value} ({why})");
+            try
+            {
+                var max = m.m_currentMaxBookmarks;
+                if (max != null && max.Value != value) max.Value = value;
+                m.UpdateBookmarkOverflowIndicator();
+            }
+            catch { }
         }
 
         public static void Tick()
         {
             if (Time.realtimeSinceStartup < next) return;
             next = Time.realtimeSinceStartup + 0.5f;
+            var m = Module();
+            if (m == null) return;
             foreach (var root in Roots())
             {
                 var area = Find(root, "Bookmarks");
                 var list = area == null ? null : Find(area, "BookmarksList");
                 var view = list == null ? null : Find(list, "View");
                 if (area == null || view == null || area.worldBound.width <= 0) continue;
-                int items = 0;
+
+                // Labels on or off: act once FM's value has stayed the same for a second
+                bool? now = null;
+                try { now = m.m_areBookmarkLabelsVisible?.Value; } catch { }
+                if (now != seen) { seen = now; seenSince = Time.realtimeSinceStartup; }
+                if (now.HasValue && now != labels && Time.realtimeSinceStartup - seenSince > 1f)
+                {
+                    labels = now;
+                    SetMax(m, capBy.TryGetValue(now.Value, out var c) ? c : All, $"labels {(now.Value ? "on" : "off")}");
+                    continue;
+                }
+                if (!labels.HasValue) continue;
+                if (Max < 0) { SetMax(m, All, "start"); continue; }
+
                 try { items = list.TryCast<SI.Bindable.StreamedObjectList>()?.ItemCount ?? 0; } catch { }
                 var widths = new List<float>();
                 for (int i = 0; i < view.childCount; i++)
                     if (view[i].worldBound.width > 0) widths.Add(view[i].worldBound.width);
-                if (items == 0 || widths.Count == 0) continue;
+                if (items == 0 || widths.Count < items) continue; // FM still drawing
+                float sum = 8f; foreach (var w in widths) sum += w + 4f;
                 float fixedParts = area.worldBound.width - list.worldBound.width;
 
                 // The room on this screen: from the last tab (plus a gap) to the bar's right edge
                 var tabs = Find(root, "SecondaryNavigationBarTabs");
                 float lastRight = tabs == null ? 0 : RightmostTab(tabs);
-                bool newRoom = false;
                 if (lastRight > 0)
                 {
                     float room = area.worldBound.xMax - lastRight - Gap - fixedParts;
-                    if (room > 50 && room < minRoom - 4f) { minRoom = room; newRoom = true; }
-                }
-                var m = Module();
-                if (m == null) continue;
-
-                // Labels on or off change every bookmark's width: use (or take) that mode's widths
-                bool? nowLabels = null;
-                try { nowLabels = m.m_areBookmarkLabelsVisible?.Value; } catch { }
-                if (nowLabels.HasValue && nowLabels != labels)
-                {
-                    if (labels.HasValue && measured != null) byLabels[labels.Value] = measured;
-                    labels = nowLabels;
-                    measuring = false;
-                    measured = byLabels.TryGetValue(nowLabels.Value, out var known) ? known : null;
-                    newRoom = true;
-                    L.LogInfo($"dev bookmarks: labels {(nowLabels.Value ? "on" : "off")}: {(measured != null ? "widths known" : "measuring")}");
+                    if (room > 50 && room < minRoom - 4f) minRoom = room;
                 }
 
-                // First every bookmark is drawn once (up to 12) to measure it
-                if (measured == null && !measuring)
+                // Too many for the room: one fewer (FM redraws; checked again next time)
+                if (minRoom < float.MaxValue && sum > minRoom && items > fmMax && items > 1)
                 {
-                    measuring = true;
-                    Max = MeasureMax;
-                    Apply(m);
+                    SetMax(m, items - 1, $"{sum:0}px do not fit in {minRoom:0}px");
+                    capBy[labels.Value] = Max;
                     continue;
                 }
-                if (measuring)
-                {
-                    if (widths.Count < items) continue; // still drawing
-                    measured = new List<float>(widths);
-                    if (labels.HasValue) byLabels[labels.Value] = measured;
-                    measuring = false;
-                    newRoom = true;
-                    L.LogInfo($"dev bookmarks: measured {measured.Count} bookmarks: {string.Join(", ", measured.ConvertAll(w => w.ToString("0")))} px");
-                }
-                // As many as fit in the smallest room by their real widths, in order
-                if (newRoom && measured != null && minRoom < float.MaxValue)
-                {
-                    float used = 8f; int fit = 0;
-                    foreach (var w in measured)
-                    {
-                        if (used + w + 4f > minRoom) break;
-                        used += w + 4f; fit++;
-                    }
-                    int want = Math.Max(fmMax, fit);
-                    if (want != Max)
-                    {
-                        L.LogInfo($"dev bookmarks: smallest room so far {minRoom:0}px: {want} bookmarks fit");
-                        Max = want;
-                        Apply(m);
-                        try { m.UpdateBookmarkOverflowIndicator(); } catch { }
-                        continue;
-                    }
-                }
-                // "(+N)": FM writes your total less its own maximum; ours replaces it
+                capBy[labels.Value] = Max;
+
+                // "(+N)" again when FM writes a new one (adding a bookmark)
                 try
                 {
                     var o = m.m_overflowingBookmarksCount;
-                    if (o != null && !measuring && o.Value != lastCorrected) Correct(o);
+                    if (o != null && o.Value != lastCorrected) Correct(o);
                 }
                 catch { }
-                float target;
-                if (widths.Count < items)
-                {
-                    // Not all drawn yet: room for all of them, at the widest one's width
-                    float widest = 0; foreach (var w in widths) widest = Math.Max(widest, w);
-                    target = items * (widest + 4f) + 8f;
-                }
-                else
-                {
-                    // All drawn: exactly their width, so they sit on the right by "(+N)"
-                    target = 8f; foreach (var w in widths) target += w + 4f;
-                }
-                if (Math.Abs(target - list.worldBound.width) < 4f) continue;
-                foreach (var (e, w) in new[] { (area, target + fixedParts), (list, target) })
-                {
-                    e.style.width = new StyleLength(w);
-                    e.style.maxWidth = new StyleLength(w);
-                    e.style.minWidth = new StyleLength(w);
-                }
-                string more = "?";
+
+                // The bar exactly as wide as its bookmarks, so they sit on the right by "(+N)"
+                if (Math.Abs(sum - list.worldBound.width) >= 4f)
+                    foreach (var (e, w) in new[] { (area, sum + fixedParts), (list, sum) })
+                    {
+                        e.style.width = new StyleLength(w);
+                        e.style.maxWidth = new StyleLength(w);
+                        e.style.minWidth = new StyleLength(w);
+                    }
+                string more = "";
                 try { more = Find(area, "BookmarksText")?.TryCast<TextElement>()?.text ?? ""; } catch { }
-                var msg = $"dev bookmarks: {items} bookmarks, {widths.Count} drawn, bar {target:0}px, more text '{more}'";
+                var msg = $"dev bookmarks: labels {(labels.Value ? "on" : "off")}, {items} shown, {sum:0}px, smallest room {minRoom:0}px, more '{more}'";
                 if (msg != lastLog) { lastLog = msg; L.LogInfo(msg); }
             }
-        }
-
-        /// <summary>FM's count is your total less its own maximum: the real one uses ours.</summary>
-        private static void Correct(SI.Core.ValueWithChangeNotify<int> o)
-        {
-            int total = o.Value + fmMax;
-            if (measured != null && total > measured.Count && measured.Count < MeasureMax && total <= MeasureMax)
-            {
-                measured = null; // a bookmark was added since it was measured: measure again
-                byLabels.Clear();
-            }
-            int real = Math.Max(0, total - Max);
-            lastCorrected = real;
-            if (real != o.Value) o.Value = real;
         }
 
         /// <summary>Where the second bar's last visible tab (or its More button) ends.</summary>
