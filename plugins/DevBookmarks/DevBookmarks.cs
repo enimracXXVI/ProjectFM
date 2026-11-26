@@ -38,7 +38,7 @@ namespace ProjectFM.Dev
         {
             L = log;
             next = 0;
-            L.LogInfo("dev bookmarks 0.10: all shown, one taken away while they do not fit; per labels mode");
+            L.LogInfo("dev bookmarks 0.11: bar opened up when FM cannot draw them all; \"(+N)\" checked every frame");
             try
             {
                 harmony = new Harmony("projectfm.dev.bookmarks");
@@ -124,12 +124,43 @@ namespace ProjectFM.Dev
             catch { }
         }
 
+        private static float starvedSince = -1;
+
+        /// <summary>The bar at the full room (or FM's own width), so FM can draw every bookmark.</summary>
+        private static void Open(VisualElement area, VisualElement list)
+        {
+            float fixedParts = area.worldBound.width - list.worldBound.width;
+            foreach (var e in new[] { area, list })
+            {
+                if (minRoom < float.MaxValue)
+                {
+                    float w = e == list ? minRoom : minRoom + fixedParts;
+                    e.style.width = new StyleLength(w);
+                    e.style.maxWidth = new StyleLength(w);
+                    e.style.minWidth = new StyleLength(w);
+                }
+                else
+                {
+                    e.style.width = new StyleLength(StyleKeyword.Null);
+                    e.style.maxWidth = new StyleLength(StyleKeyword.Null);
+                    e.style.minWidth = new StyleLength(StyleKeyword.Null);
+                }
+            }
+        }
+
         public static void Tick()
         {
-            if (Time.realtimeSinceStartup < next) return;
-            next = Time.realtimeSinceStartup + 0.5f;
             var m = Module();
             if (m == null) return;
+            // Every frame: FM writes its own "(+N)" when screens change; ours replaces it at once
+            try
+            {
+                var o = m.m_overflowingBookmarksCount;
+                if (o != null && Max >= 0 && o.Value != lastCorrected) Correct(o);
+            }
+            catch { }
+            if (Time.realtimeSinceStartup < next) return;
+            next = Time.realtimeSinceStartup + 0.5f;
             foreach (var root in Roots())
             {
                 var area = Find(root, "Bookmarks");
@@ -145,6 +176,7 @@ namespace ProjectFM.Dev
                 {
                     labels = now;
                     SetMax(m, capBy.TryGetValue(now.Value, out var c) ? c : All, $"labels {(now.Value ? "on" : "off")}");
+                    Open(area, list); // the other mode's width no longer fits
                     continue;
                 }
                 if (!labels.HasValue) continue;
@@ -154,7 +186,26 @@ namespace ProjectFM.Dev
                 var widths = new List<float>();
                 for (int i = 0; i < view.childCount; i++)
                     if (view[i].worldBound.width > 0) widths.Add(view[i].worldBound.width);
-                if (items == 0 || widths.Count < items) continue; // FM still drawing
+                if (items == 0) continue;
+                if (widths.Count < items)
+                {
+                    // FM cannot draw them all in the bar as it is (labels just turned on): open it
+                    if (starvedSince < 0) starvedSince = Time.realtimeSinceStartup;
+                    else if (Time.realtimeSinceStartup - starvedSince > 0.6f)
+                    {
+                        starvedSince = -1;
+                        bool full = minRoom < float.MaxValue && Math.Abs(list.worldBound.width - minRoom) < 4f;
+                        // Already at the full room and still not all drawn: too many, one fewer
+                        if (full && items > fmMax && items > 1)
+                        {
+                            SetMax(m, items - 1, "not all drawn in the full room");
+                            if (labels.HasValue) capBy[labels.Value] = Max;
+                        }
+                        else Open(area, list);
+                    }
+                    continue;
+                }
+                starvedSince = -1;
                 float sum = 8f; foreach (var w in widths) sum += w + 4f;
                 float fixedParts = area.worldBound.width - list.worldBound.width;
 
