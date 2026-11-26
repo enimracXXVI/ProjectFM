@@ -29,7 +29,7 @@ namespace ProjectFM.Dev
         {
             L = log;
             next = 0;
-            L.LogInfo("dev bookmarks 0.5: FM's maximum raised where FM works it out; bar sized once");
+            L.LogInfo("dev bookmarks 0.6: also corrects FM's \"(+N)\" count");
             try
             {
                 harmony = new Harmony("projectfm.dev.bookmarks");
@@ -41,9 +41,16 @@ namespace ProjectFM.Dev
                     harmony.Patch(m, postfix: post);
                     L.LogInfo($"dev bookmarks: hooked FM's {name}");
                 }
+                var ind = AccessTools.Method(typeof(GameWorldTabsAndBookmarksModule), "UpdateBookmarkOverflowIndicator");
+                if (ind != null)
+                {
+                    harmony.Patch(ind, postfix: new HarmonyMethod(typeof(Entry).GetMethod(nameof(AfterOverflow))));
+                    L.LogInfo("dev bookmarks: hooked FM's UpdateBookmarkOverflowIndicator");
+                }
             }
             catch (Exception e) { L.LogWarning("dev bookmarks: hook: " + e); }
             Apply(Module());
+            try { Module()?.UpdateBookmarkOverflowIndicator(); } catch { }
         }
 
         public static void Stop()
@@ -73,11 +80,27 @@ namespace ProjectFM.Dev
             try { Apply(__instance); } catch { }
         }
 
+        /// <summary>
+        /// FM counts the hidden bookmarks against its own maximum (4), not the one it uses: with
+        /// 6 bookmarks all shown it still said "(+2)". The real count is that less the extra room.
+        /// </summary>
+        public static void AfterOverflow(GameWorldTabsAndBookmarksModule __instance)
+        {
+            try
+            {
+                var o = __instance.m_overflowingBookmarksCount;
+                if (o == null || fmMax < 0) return;
+                int real = Math.Max(0, o.Value - (Max - fmMax));
+                if (real != o.Value) o.Value = real;
+            }
+            catch { }
+        }
+
         private static void Apply(GameWorldTabsAndBookmarksModule m)
         {
             var max = m?.m_currentMaxBookmarks;
             if (max == null || max.Value == Max) return;
-            if (fmMax < 0) fmMax = max.Value;
+            fmMax = max.Value;
             max.Value = Max;
             try { m.UpdateBookmarkOverflowIndicator(); } catch { }
         }
