@@ -9,6 +9,7 @@ using BepInEx.Unity.IL2CPP;
 using Il2CppInterop.Runtime.Injection;
 using UnityEngine;
 using UnityEngine.UIElements;
+using SI.Bindable;
 
 namespace ProjectFM.ConditionRings
 {
@@ -16,7 +17,7 @@ namespace ProjectFM.ConditionRings
     /// Shows condition and match sharpness as coloured rings with FM's own percentage in them,
     /// in place of the level icons in FM27's player tables. Reads only what FM already shows.
     /// </summary>
-    [BepInPlugin("projectfm.conditionrings", "ProjectFM Condition Rings", "1.3.0")]
+    [BepInPlugin("projectfm.conditionrings", "ProjectFM Condition Rings", "1.4.0")]
     public class Plugin : BasePlugin
     {
         internal static ManualLogSource L;
@@ -441,7 +442,9 @@ namespace ProjectFM.ConditionRings
             }
             if (ring != null && restyle) { ring.RemoveFromHierarchy(); ring = null; }
             bool injured = !sharp && cls.Contains("injured");
-            int? pct = PercentNear(e, sharp ? "KojuroSharp" : "KojuroPct");
+            // A number from a skin next to the icon, else FM's own value read through a hidden
+            // text bound to the same data the MrTini23 skin shows (player.Condition, binding.Sharpness)
+            int? pct = PercentNear(e, sharp ? "KojuroSharp" : "KojuroPct") ?? BoundValue(e, sharp);
             int value = pct ?? FromLevel(cls, sharp);
 
             if (ring == null)
@@ -462,6 +465,53 @@ namespace ProjectFM.ConditionRings
             Paint(ring, colour, text);
             return true;
         }
+
+        private const string ValueName = "pfm-value";
+
+        /// <summary>FM's condition or sharpness for the cell, from a hidden bound text.</summary>
+        private static int? BoundValue(VisualElement icon, bool sharp)
+        {
+            var parent = icon.parent;
+            if (parent == null) return null;
+            SIText text = null;
+            for (int i = 0; i < parent.childCount; i++)
+                if (parent[i].name == ValueName) { text = parent[i].TryCast<SIText>(); break; }
+            if (text == null)
+            {
+                try
+                {
+                    text = new SIText { name = ValueName };
+                    var method = new BindingMethod<SIText>();
+                    method.m_kind = BindingMethodKind.Direct;
+                    var direct = new DirectBinding();
+                    direct.Path = new BindingPath(sharp ? "binding.Sharpness" : "player.Condition");
+                    method.m_direct = direct;
+                    text.TextBinding = method;
+                    var st = text.style;
+                    st.position = new StyleEnum<Position>(Position.Absolute);
+                    st.width = new StyleLength(0f);
+                    st.height = new StyleLength(0f);
+                    st.opacity = new StyleFloat(0f);
+                    st.overflow = new StyleEnum<Overflow>(Overflow.Hidden);
+                    text.pickingMode = PickingMode.Ignore;
+                    parent.Add(text);
+                    try { text.BindToData(); } catch { }
+                }
+                catch (Exception ex)
+                {
+                    if (!boundFailed) { boundFailed = true; Plugin.L.LogWarning("rings: can't read FM's value: " + ex.Message); }
+                    return null;
+                }
+            }
+            var raw = text.text;
+            if (string.IsNullOrEmpty(raw)) return null;
+            var digits = new string(raw.Where(char.IsDigit).ToArray());
+            if (digits.Length == 0 || digits.Length > 3) return null;
+            if (!boundLogged) { boundLogged = true; Plugin.L.LogInfo($"rings: FM's {(sharp ? "sharpness" : "condition")} reads \"{raw}\""); }
+            return int.Parse(digits, CultureInfo.InvariantCulture);
+        }
+
+        private static bool boundFailed, boundLogged;
 
         private static VisualElement MakeRing()
         {
