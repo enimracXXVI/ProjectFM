@@ -23,7 +23,7 @@ namespace ProjectFM.Dev
         private const float Size = 34f;
         private static bool first = true;
 
-        public static void Start(ManualLogSource log) { L = log; next = 0; added = 0; first = true; L.LogInfo("dev faces 0.7: picture and arrows end at the role row's top; both arrows one size"); }
+        public static void Start(ManualLogSource log) { L = log; next = 0; added = 0; first = true; measuredLogged = false; L.LogInfo("dev faces 0.8: role bar found from what is drawn under the shirt row; first card measured in the log"); }
 
         public static void Stop()
         {
@@ -119,8 +119,7 @@ namespace ProjectFM.Dev
             // The role row (the coloured bar with the role names) under the shirt: the shirt
             // runs behind it, so its top is where everything above has to end
             var card = row.parent;
-            var roleRow = card == null ? null : Child(card, "IsSuggestedSubBorder");
-            float bottom = roleRow != null && roleRow.worldBound.height > 1f ? roleRow.worldBound.yMin : sb.yMax;
+            float bottom = BarTop(card, row, sb);
             float room = bottom - sb.yMin; // visible height beside the shirt
 
             // Arrows: one column right of the shirt, the same size, the pair as tall as that room
@@ -157,6 +156,46 @@ namespace ProjectFM.Dev
             // Picture: left of the shirt, its bottom on the role row's top
             var rb = row.worldBound;
             Move(face, sb.xMin - rb.xMin - Size - 2f, bottom - rb.yMin - Size);
+        }
+
+        private static bool measuredLogged;
+
+        /// <summary>
+        /// The top of the role bar: the highest visible thing drawn in the card after the shirt
+        /// row (the bar overlaps the shirt, so the shirt's bottom is not it). The shirt's bottom
+        /// when nothing is found.
+        /// </summary>
+        private static float BarTop(VisualElement card, VisualElement row, Rect shirt)
+        {
+            float top = float.MaxValue;
+            string what = "nothing";
+            if (card != null)
+            {
+                bool after = false;
+                for (int i = 0; i < card.childCount; i++)
+                {
+                    var c = card[i];
+                    if (c == row) { after = true; continue; }
+                    if (!after) continue;
+                    void Walk(VisualElement e, int depth)
+                    {
+                        if (depth > 8) return;
+                        try { if (e.resolvedStyle.display == DisplayStyle.None) return; } catch { }
+                        var b = e.worldBound;
+                        // Something with a real box that starts below the shirt's top
+                        if (b.width > 20f && b.height > 4f && b.yMin > shirt.yMin + 4f && b.yMin < top)
+                        { top = b.yMin; what = (e.name ?? "") + " " + b; }
+                        for (int k = 0; k < e.childCount; k++) Walk(e[k], depth + 1);
+                    }
+                    Walk(c, 0);
+                }
+            }
+            if (!measuredLogged)
+            {
+                measuredLogged = true;
+                L.LogInfo($"dev faces: first card: shirt {shirt}, row {row.worldBound}, card {card?.worldBound}, bar top {(top == float.MaxValue ? "not found" : top.ToString("0"))} from '{what}'");
+            }
+            return top == float.MaxValue ? shirt.yMax : top;
         }
 
         private static void Move(VisualElement e, float x, float y)
