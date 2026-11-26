@@ -17,7 +17,7 @@ namespace ProjectFM.ConditionRings
     /// Shows condition and match sharpness as coloured rings with FM's own percentage in them,
     /// in place of the level icons in FM27's player tables. Reads only what FM already shows.
     /// </summary>
-    [BepInPlugin("projectfm.conditionrings", "ProjectFM Condition Rings", "1.5.0")]
+    [BepInPlugin("projectfm.conditionrings", "ProjectFM Condition Rings", "1.6.0")]
     public class Plugin : BasePlugin
     {
         internal static ManualLogSource L;
@@ -43,6 +43,7 @@ namespace ProjectFM.ConditionRings
         public bool ShowNumber = true;
         public bool Bold = true;
         public bool FatigueNumber = true;
+        public bool MoraleText = true;
         public float Size = 24f;
         public float Border = 2.5f;
         public float FontSize = 9f;
@@ -104,6 +105,7 @@ namespace ProjectFM.ConditionRings
             var add = new List<string>();
             if (!seen.Contains("bold")) add.AddRange(new[] { "# The number in bold", "Bold = true" });
             if (!seen.Contains("fatiguenumber")) add.AddRange(new[] { "# Fatigue as a number instead of FM's icon", "FatigueNumber = true" });
+            if (!seen.Contains("moraletext")) add.AddRange(new[] { "# Morale: FM's word next to its arrow", "MoraleText = true" });
             if (add.Count > 0) try { File.AppendAllLines(Path, add); } catch { }
             return s;
         }
@@ -123,6 +125,7 @@ namespace ProjectFM.ConditionRings
                 case "shownumber": ShowNumber = Yes(v); break;
                 case "bold": Bold = Yes(v); break;
                 case "fatiguenumber": FatigueNumber = Yes(v); break;
+                case "moraletext": MoraleText = Yes(v); break;
                 case "size": Size = Math.Clamp(Num(v), 10f, 60f); break;
                 case "border": Border = Math.Clamp(Num(v), 0f, 10f); break;
                 case "fontsize": FontSize = Math.Clamp(Num(v), 5f, 30f); break;
@@ -157,6 +160,8 @@ namespace ProjectFM.ConditionRings
                 $"Bold = {B(Bold)}",
                 "# Fatigue as a number instead of FM's icon",
                 $"FatigueNumber = {B(FatigueNumber)}",
+                "# Morale: FM's word next to its arrow",
+                $"MoraleText = {B(MoraleText)}",
                 "",
                 "# Look (pixels)",
                 $"Size = {F(Size)}",
@@ -422,6 +427,7 @@ namespace ProjectFM.ConditionRings
         {
             if (HandleSkinned(e)) return true;
             if (HandleFatigue(e)) return true;
+            if (HandleMorale(e)) return true;
             string cls;
             bool sharp;
             if (e.name == "ConditionIcon")
@@ -493,7 +499,11 @@ namespace ProjectFM.ConditionRings
         private bool HandleFatigue(VisualElement e)
         {
             if (e.childCount != 0 || e.parent == null) return false;
-            if (ClassStarting(e, "game-concepts-fatigue") == null) return false;
+            var fcls = ClassStarting(e, "game-concepts-fatigue");
+            if (fcls == null || HasClass(e, Skip)) return false;
+            // Only in table cells: elsewhere (the condition tooltip's Energy part) the same icon
+            // is not fed a number, and 1.5 printed "FM.UI.PersonReference" there
+            if (!InTableCell(e)) return false;
             var parent = e.parent;
             SIText text = null;
             for (int i = 0; i < parent.childCount; i++)
@@ -532,12 +542,102 @@ namespace ProjectFM.ConditionRings
                     return false;
                 }
             }
+            var raw = text.text;
+            if (!string.IsNullOrEmpty(raw))
+            {
+                if (!int.TryParse(raw.Trim(), NumberStyles.Integer, CultureInfo.InvariantCulture, out var n))
+                {
+                    // Not a number here: FM's icon back, and left alone from now on
+                    text.RemoveFromHierarchy();
+                    e.style.display = DisplayStyle.Flex;
+                    e.AddToClassList(Skip);
+                    return true;
+                }
+                NoteFatigue(fcls, n);
+            }
             e.style.display = DisplayStyle.None;
-            if (!fatigueLogged && !string.IsNullOrEmpty(text.text)) { fatigueLogged = true; Plugin.L.LogInfo($"rings: FM's fatigue reads \"{text.text}\""); }
             return true;
         }
 
-        private static bool fatigueFailed, fatigueLogged;
+        private static bool fatigueFailed;
+        private const string Skip = "pfm-skip";
+
+        private static bool InTableCell(VisualElement e)
+        {
+            int d = 0;
+            for (var p = e.parent; p != null && d < 12; p = p.parent, d++)
+            {
+                if (HasClass(p, "sitooltip")) return false;
+                if (HasClass(p, "streamed-table__cell")) return true;
+            }
+            return false;
+        }
+
+        // Which fatigue numbers FM draws with which icon, to colour the numbers like FM
+        private static readonly SortedDictionary<string, (int min, int max)> fatigueLevels = new SortedDictionary<string, (int, int)>();
+        private static float fatigueLogAt;
+
+        private static void NoteFatigue(string cls, int n)
+        {
+            bool changed = false;
+            if (fatigueLevels.TryGetValue(cls, out var r))
+            {
+                if (n < r.min) { r.min = n; changed = true; }
+                if (n > r.max) { r.max = n; changed = true; }
+                fatigueLevels[cls] = r;
+            }
+            else { fatigueLevels[cls] = (n, n); changed = true; }
+            if (changed && Time.realtimeSinceStartup > fatigueLogAt)
+            {
+                fatigueLogAt = Time.realtimeSinceStartup + 5f;
+                var parts = new List<string>();
+                foreach (var kv in fatigueLevels) parts.Add($"{kv.Key}: {kv.Value.min} to {kv.Value.max}");
+                Plugin.L.LogInfo("rings: FM's fatigue icons so far: " + string.Join(", ", parts));
+            }
+        }
+
+        private const string MoraleName = "pfm-morale";
+
+        /// <summary>
+        /// Morale with its word: FM's morale cell without text (the table's) gets the text FM's
+        /// own morale cell with text shows, bound to binding.MoraleString, next to the arrow.
+        /// </summary>
+        private bool HandleMorale(VisualElement e)
+        {
+            if (e.name != "Morale" || e.parent == null || e.parent.name != "HasPlayer") return false;
+            SIText text = null;
+            for (int i = 0; i < e.childCount; i++)
+                if (e[i].name == MoraleName) { text = e[i].TryCast<SIText>(); break; }
+            if (!S.MoraleText) { text?.RemoveFromHierarchy(); return true; }
+            if (text != null) return true;
+            try
+            {
+                text = new SIText { name = MoraleName };
+                var method = new BindingMethod<SIText>();
+                method.m_kind = BindingMethodKind.Direct;
+                var direct = new DirectBinding();
+                direct.Path = new BindingPath("binding.MoraleString");
+                method.m_direct = direct;
+                text.TextBinding = method;
+                // FM's own morale-with-text cell styles it like this
+                foreach (var c in new[] { "text-regular", "white", "padding-left-global-padding-small" }) text.AddToClassList(c);
+                text.style.unityTextAlign = new StyleEnum<TextAnchor>(TextAnchor.MiddleLeft);
+                text.style.whiteSpace = new StyleEnum<WhiteSpace>(WhiteSpace.NoWrap);
+                text.pickingMode = PickingMode.Ignore;
+                // The arrow sits in a layer filling the cell: make room beside it
+                e.style.flexDirection = new StyleEnum<FlexDirection>(FlexDirection.Row);
+                e.style.alignItems = new StyleEnum<Align>(Align.Center);
+                e.Add(text);
+                try { text.BindToData(); } catch { }
+            }
+            catch (Exception ex)
+            {
+                if (!moraleFailed) { moraleFailed = true; Plugin.L.LogWarning("rings: morale text: " + ex.Message); }
+            }
+            return true;
+        }
+
+        private static bool moraleFailed;
 
         // Which condition percentages FM draws with which heart (its icon level), to match FM
         private static readonly SortedDictionary<string, (int min, int max)> levels = new SortedDictionary<string, (int, int)>();
