@@ -1,5 +1,7 @@
 using System;
 using System.Collections.Generic;
+using System.IO;
+using System.Linq;
 using BepInEx;
 using BepInEx.Logging;
 using BepInEx.Unity.IL2CPP;
@@ -12,11 +14,12 @@ namespace ProjectFM.StaffOverview
 {
     /// <summary>
     /// Staff Overview: under each card (Coaching, Recruitment, Medical) adds FM's own staff
-    /// contract table for that department and FM's team comparison block, fed by FM's own data,
-    /// the way the MrTini23 skin does in its screen file, but at run time and without changing
-    /// any game file.
+    /// contract table for that department and FM's team comparison, fed by FM's own data (the
+    /// pieces and data the MrTini23 skin wires in its screen file, added at run time without
+    /// changing game files). The roles list, the staff list and the comparison fold with a
+    /// chevron; folds are saved in StaffOverview.cfg next to the plugin.
     /// </summary>
-    [BepInPlugin("projectfm.staffoverview", "ProjectFM Staff Overview", "0.4.0")]
+    [BepInPlugin("projectfm.staffoverview", "ProjectFM Staff Overview", "1.0.0")]
     public class Plugin : BasePlugin
     {
         internal static ManualLogSource L;
@@ -34,57 +37,261 @@ namespace ProjectFM.StaffOverview
     {
         public Adder(IntPtr ptr) : base(ptr) { }
 
-        private const string Mark = "pfm-staff";
         private float next;
         private int errors;
-        private bool listedTemplates;
-        private readonly Dictionary<string, VisualTreeAsset> templates = new Dictionary<string, VisualTreeAsset>();
-
-        // FM's card name -> the department's comparison block and its data (from FM's own
-        // Coaching / Recruitment / Medical Team tabs)
-        // FM's asset ids (Addressables GUIDs, as FM's own screen files reference them)
-        private const string TableGuid = "b00fa0597031b5642ba1e26ca3fb6ee0"; // ClubStaffTeamContractBlock
-
-        private static readonly (string card, string block, string guid, string data)[] Cards =
-        {
-            ("ClubCoachingStaff", "ClubStaffCoachingTeamComparisonBlock", "bb6a535ad4ad38446ac0e1b3552b4c85", "team.StaffCoachingSubGroupComparisonAttributes"),
-            ("ClubRecruitmentStaff", "ClubStaffRecruitmentTeamComparisonBlock", "1a3bc8c395c7a6f44983a8f52f4322de", "team.StaffRecruitmentSubGroupComparisonAttributes"),
-            ("ClubMedicalStaff", "ClubStaffMedicalTeamComparisonBlock", "9e54f89e398f44d41a54ed08d9c42a85", "team.StaffMedicalSubGroupComparisonAttributes"),
-        };
 
         private void Update()
         {
             if (Time.realtimeSinceStartup < next) return;
             next = Time.realtimeSinceStartup + 0.5f;
-            try
-            {
-                Pass();
-                errors = 0;
-            }
+            try { Staff.Tick(); errors = 0; }
             catch (Exception e)
             {
                 if (++errors <= 5) Plugin.L.LogWarning("staff overview: " + e);
                 if (errors >= 5) next = Time.realtimeSinceStartup + 10f;
             }
         }
+    }
 
-        private VisualTreeAsset Template(string name)
+    internal static class Staff
+    {
+        private const string Mark = "pfm-staff";
+        private const string CompareName = "pfm-staff-compare";
+        private const string FoldName = "pfm-fold";
+        private static readonly string[] CardNames = { "ClubCoachingStaff", "ClubRecruitmentStaff", "ClubMedicalStaff" };
+
+        // FM's asset ids (Addressables GUIDs, as FM's own screen files reference them)
+        private const string TableGuid = "b00fa0597031b5642ba1e26ca3fb6ee0"; // ClubStaffTeamContractBlock
+        private static readonly Dictionary<string, (string guid, string data)> Compare = new Dictionary<string, (string, string)>
         {
-            if (templates.TryGetValue(name, out var t) && t != null) return t;
-            foreach (var a in Resources.FindObjectsOfTypeAll<VisualTreeAsset>())
-                if (a != null && a.name == name) { templates[name] = a; return a; }
-            if (!listedTemplates)
-            {
-                listedTemplates = true;
-                var found = new List<string>();
-                foreach (var a in Resources.FindObjectsOfTypeAll<VisualTreeAsset>())
-                    if (a != null && a.name.StartsWith("ClubStaff")) found.Add(a.name);
-                Plugin.L.LogWarning($"staff overview: template {name} not loaded; ClubStaff templates in memory: {string.Join(", ", found)}");
-            }
-            return null;
+            ["ClubCoachingStaff"] = ("bb6a535ad4ad38446ac0e1b3552b4c85", "team.StaffCoachingSubGroupComparisonAttributes"),
+            ["ClubRecruitmentStaff"] = ("1a3bc8c395c7a6f44983a8f52f4322de", "team.StaffRecruitmentSubGroupComparisonAttributes"),
+            ["ClubMedicalStaff"] = ("9e54f89e398f44d41a54ed08d9c42a85", "team.StaffMedicalSubGroupComparisonAttributes"),
+        };
+
+        // ---- Folds, saved next to the plugin ----
+        private static readonly string ConfigPath = Path.Combine(
+            Path.GetDirectoryName(typeof(Staff).Assembly.Location) ?? Paths.PluginPath, "StaffOverview.cfg");
+        private static Dictionary<string, bool> folds;
+
+        private static bool Default(string key) => !key.EndsWith("/roles"); // roles open, the rest folded
+
+        private static bool IsFolded(string key)
+        {
+            LoadFolds();
+            return folds.TryGetValue(key, out var f) ? f : Default(key);
         }
 
-        private static VisualElement Find(VisualElement e, string name, int depth)
+        private static void SetFolded(string key, bool folded)
+        {
+            LoadFolds();
+            folds[key] = folded;
+            try
+            {
+                var lines = new List<string>
+                {
+                    "# ProjectFM Staff Overview: which parts of each Staff Overview card are folded.",
+                    "# folded or open. Delete this file to go back to the defaults (roles open, the rest folded).",
+                };
+                foreach (var card in CardNames)
+                    foreach (var part in new[] { "roles", "staff", "compare" })
+                    {
+                        var k = card + "/" + part;
+                        lines.Add($"{k} = {(IsFolded(k) ? "folded" : "open")}");
+                    }
+                File.WriteAllLines(ConfigPath, lines);
+            }
+            catch (Exception e) { Plugin.L.LogWarning("staff overview: can't save folds: " + e.Message); }
+        }
+
+        private static void LoadFolds()
+        {
+            if (folds != null) return;
+            folds = new Dictionary<string, bool>();
+            try
+            {
+                if (!File.Exists(ConfigPath)) return;
+                foreach (var raw in File.ReadAllLines(ConfigPath))
+                {
+                    var line = raw.Trim();
+                    if (line.Length == 0 || line.StartsWith("#")) continue;
+                    var eq = line.IndexOf('=');
+                    if (eq < 0) continue;
+                    var v = line.Substring(eq + 1).Trim().ToLowerInvariant();
+                    folds[line.Substring(0, eq).Trim()] = v.StartsWith("fold") || v == "true" || v == "yes";
+                }
+            }
+            catch (Exception e) { Plugin.L.LogWarning("staff overview: can't read folds: " + e.Message); }
+        }
+
+        // ---- Adding the pieces ----
+        public static void Tick()
+        {
+            foreach (var root in Roots())
+                foreach (var name in CardNames)
+                {
+                    var card = Find(root, name);
+                    var board = card == null ? null : Find(card, "SIVisible_IsClub");
+                    var parent = board?.parent;
+                    if (parent == null || Find(parent, Mark) != null) continue;
+                    var box = new VisualElement { name = Mark };
+                    parent.Insert(parent.IndexOf(board) + 1, box);
+                    try { Add(box, parent, card, name); }
+                    catch (Exception e) { Plugin.L.LogWarning($"staff overview: {name}: {e}"); }
+                }
+        }
+
+        /// <summary>
+        /// A mapping list filled through FM's own List.Add, called by reflection: the interop's
+        /// generic Add passes the boxed struct where FM expects the value, which left mappings blank.
+        /// </summary>
+        private static Il2CppSystem.Collections.Generic.List<RemapInfo> Maps(params (string from, string to)[] maps)
+        {
+            var list = new Il2CppSystem.Collections.Generic.List<RemapInfo>();
+            var add = list.GetIl2CppType().GetMethod("Add");
+            foreach (var (from, to) in maps)
+            {
+                var m = new RemapInfo();
+                m.from = from;
+                m.to = BindingPath.Create(to);
+                var args = new Il2CppInterop.Runtime.InteropTypes.Arrays.Il2CppReferenceArray<Il2CppSystem.Object>(1);
+                args[0] = m;
+                add.Invoke(list, args);
+            }
+            return list;
+        }
+
+        private static VisualElement Build(string guid)
+        {
+            var r = new UnityEngine.AddressableAssets.AssetReferenceT<VisualTreeAsset>(guid);
+            return SI.Core.VisualTreeAssetExtensions.Instantiate(r);
+        }
+
+        private static void Grow(VisualElement e, bool grow = true)
+        {
+            e.style.alignSelf = new StyleEnum<Align>(Align.Stretch);
+            e.style.flexGrow = new StyleFloat(grow ? 1f : 0f);
+            e.style.flexShrink = new StyleFloat(1f);
+            e.style.flexBasis = grow ? new StyleLength(0f) : new StyleLength(StyleKeyword.Auto);
+            e.style.minHeight = new StyleLength(0f);
+            e.style.width = new StyleLength(new Length(100f, LengthUnit.Percent));
+        }
+
+        private static void Keep(VisualElement e)
+        {
+            e.style.alignSelf = new StyleEnum<Align>(Align.Stretch);
+            e.style.flexShrink = new StyleFloat(0f);
+            e.style.width = new StyleLength(new Length(100f, LengthUnit.Percent));
+        }
+
+        private static void Add(VisualElement box, VisualElement parent, VisualElement card, string name)
+        {
+            // As the MrTini23 skin lays it out: the table takes the card's free height, the
+            // comparison keeps its own height after it
+            Grow(box);
+            box.AddToClassList("margin-top-global-gap-large");
+            var tr = new BindingRemapper();
+            tr.Mappings = Maps(
+                ("personlist", "staffsubgroup.StaffSubGroupPersonListFiltered"),
+                ("filter", "team.StaffListFilter"),
+                ("isAllStaffTab", "const.False"),
+                ("showQuickFlicks", "const.False"),
+                ("showBlockAppearance", "const.False"));
+            Grow(tr);
+            box.Add(tr);
+            var table = Build(TableGuid);
+            if (table != null) { Grow(table); tr.Add(table); }
+
+            var (guid, data) = Compare[name];
+            var cr = new BindingRemapper { name = CompareName };
+            cr.Mappings = Maps(("attributes", data));
+            Keep(cr);
+            cr.AddToClassList("margin-top-global-gap-large");
+            parent.Insert(parent.IndexOf(box) + 1, cr);
+            var cmp = Build(guid);
+            if (cmp != null) { Keep(cmp); cr.Add(cmp); }
+
+            BindableElementUtils.BindHierarchy(box);
+            BindableElementUtils.BindHierarchy(cr);
+
+            // Fold buttons: roles list (card title row), staff list (after Filter), comparison
+            var header = Find(card, name.Replace("Club", "") + "Header");
+            var roles = Find(card, "StreamedTable_JobsList");
+            if (header != null && roles != null)
+            {
+                header.style.flexGrow = new StyleFloat(1f);
+                header.Add(Fold(name + "/roles", () => new List<VisualElement> { roles }));
+            }
+            var tableHeader = table == null ? null : Find(table, "Header");
+            if (tableHeader?.parent != null)
+            {
+                var holder = tableHeader.parent;
+                tableHeader.Add(Fold(name + "/staff", () => Others(holder, tableHeader), folded =>
+                {
+                    foreach (var e in new[] { box, tr, table }) Grow(e, !folded);
+                }));
+            }
+            var heading = cmp == null ? null : Find(cmp, "FullHeadingFrame");
+            if (heading?.parent != null)
+            {
+                var block = heading.parent;
+                heading.Add(Fold(name + "/compare", () => Others(block, heading)));
+            }
+            Plugin.L.LogInfo($"staff overview: {name}: table {(table != null ? "added" : "missing")}, comparison {(cmp != null ? "added" : "missing")}");
+        }
+
+        private static List<VisualElement> Others(VisualElement holder, VisualElement keep)
+        {
+            var list = new List<VisualElement>();
+            for (int i = 0; i < holder.childCount; i++)
+                if (holder[i] != keep) list.Add(holder[i]);
+            return list;
+        }
+
+        /// <summary>A chevron button that shows or hides some parts of the card.</summary>
+        private static Button Fold(string key, Func<List<VisualElement>> parts, Action<bool> after = null)
+        {
+            var b = new Button { name = FoldName, tooltip = "Show or hide" };
+            var icon = new VisualElement();
+            icon.AddToClassList("ui-concepts-chevron-down_small");
+            icon.style.width = new StyleLength(16f);
+            icon.style.height = new StyleLength(16f);
+            b.Add(icon);
+            var st = b.style;
+            st.backgroundColor = new StyleColor(new Color(1f, 1f, 1f, 0.06f));
+            st.borderTopWidth = st.borderBottomWidth = st.borderLeftWidth = st.borderRightWidth = new StyleFloat(0f);
+            st.borderTopLeftRadius = st.borderTopRightRadius = st.borderBottomLeftRadius = st.borderBottomRightRadius = new StyleLength(6f);
+            st.width = new StyleLength(28f);
+            st.height = new StyleLength(28f);
+            st.paddingLeft = st.paddingRight = st.paddingTop = st.paddingBottom = new StyleLength(0f);
+            st.marginLeft = new StyleLength(StyleKeyword.Auto);
+            st.alignItems = new StyleEnum<Align>(Align.Center);
+            st.justifyContent = new StyleEnum<Justify>(Justify.Center);
+            st.alignSelf = new StyleEnum<Align>(Align.Center);
+            st.flexShrink = new StyleFloat(0f);
+            void Apply()
+            {
+                bool folded = IsFolded(key);
+                foreach (var e in parts()) e.style.display = folded ? DisplayStyle.None : DisplayStyle.Flex;
+                after?.Invoke(folded);
+                icon.style.rotate = new StyleRotate(new Rotate(new Angle(folded ? -90f : 0f, AngleUnit.Degree)));
+            }
+            b.add_clicked((Il2CppSystem.Action)new Action(() =>
+            {
+                SetFolded(key, !IsFolded(key));
+                Apply();
+            }));
+            Apply();
+            return b;
+        }
+
+        private static IEnumerable<VisualElement> Roots()
+        {
+            foreach (var doc in UnityEngine.Object.FindObjectsOfType<UIDocument>())
+                if (doc.rootVisualElement != null) yield return doc.rootVisualElement;
+        }
+
+        private static VisualElement Find(VisualElement e, string name, int depth = 0)
         {
             if (e.name == name) return e;
             if (depth > 60) return null;
@@ -94,171 +301,6 @@ namespace ProjectFM.StaffOverview
                 if (r != null) return r;
             }
             return null;
-        }
-
-        private float checkAt;
-
-        private void Check()
-        {
-            foreach (var doc in UnityEngine.Object.FindObjectsOfType<UIDocument>())
-            {
-                var root = doc.rootVisualElement;
-                if (root == null) continue;
-                foreach (var c in Cards)
-                {
-                    var card = Find(root, c.card, 0);
-                    var box = card == null ? null : Find(card, Mark, 0);
-                    if (box == null) continue;
-                    var view = Find(box, "View", 0);
-                    var panes = Find(box, "column-headers", 0);
-                    var data = Find(box, "HasDataCheck", 0);
-                    LogProbes(box, c.card);
-                    Plugin.L.LogInfo($"staff overview: {c.card}: table rows {view?.childCount ?? -1}, columns {panes?.childCount ?? -1}, comparison parts {data?.childCount ?? -1}");
-                }
-            }
-        }
-
-        private static void LogProbes(VisualElement e, string card)
-        {
-            if (e.name != null && e.name.StartsWith("pfm-probe:"))
-            {
-                var t = e.TryCast<SIText>();
-                Plugin.L.LogInfo($"staff overview: {card}: {e.name.Substring(10)} = \"{t?.text}\" (inside a remapper: {e.parent?.GetIl2CppType().Name == "BindingRemapper"})");
-                return;
-            }
-            for (int i = 0; i < e.childCount; i++) LogProbes(e[i], card);
-        }
-
-        private void Pass()
-        {
-            if (checkAt > 0 && Time.realtimeSinceStartup > checkAt) { checkAt = 0; Check(); }
-            foreach (var doc in UnityEngine.Object.FindObjectsOfType<UIDocument>())
-            {
-                var root = doc.rootVisualElement;
-                if (root == null) continue;
-                foreach (var c in Cards)
-                {
-                    var card = Find(root, c.card, 0);
-                    if (card == null) continue;
-                    var board = Find(card, "SIVisible_IsClub", 0);
-                    var parent = board?.parent;
-                    if (parent == null) continue;
-                    bool done = false;
-                    for (int i = 0; i < parent.childCount; i++)
-                        if (parent[i].name == Mark) { done = true; break; }
-                    if (done) continue;
-                    Add(parent, parent.IndexOf(board) + 1, c.card, c.block, c.guid, c.data);
-                }
-            }
-        }
-
-        /// <summary>A small text bound to one data path, to see what FM gives there.</summary>
-        private static SIText Probe(string path)
-        {
-            var t = new SIText { name = "pfm-probe:" + path };
-            var method = new BindingMethod<SIText>();
-            method.m_kind = BindingMethodKind.Direct;
-            var direct = new DirectBinding();
-            direct.Path = BindingPath.Create(path);
-            method.m_direct = direct;
-            t.TextBinding = method;
-            t.style.fontSize = new StyleLength(9f);
-            t.style.opacity = new StyleFloat(0.5f);
-            return t;
-        }
-
-        private static readonly string[] OuterProbes =
-        {
-            "staffsubgroup.StaffSubGroupCountFeedbackString",
-            "staffsubgroup.StaffSubGroupPersonListFiltered",
-            "staffsubgroup",
-            "team",
-            "team.StaffListFilter",
-            "team.StaffCoachingSubGroupComparisonAttributes",
-            "subgrouptype",
-        };
-
-        private static BindingRemapper Remapper(params (string from, string to)[] maps)
-        {
-            var r = new BindingRemapper();
-            var list = new Il2CppSystem.Collections.Generic.List<RemapInfo>();
-            foreach (var (from, to) in maps)
-            {
-                // As FM reads them from its screen files: the path parsed by Create, then the
-                // mapping finished the way Unity finishes a loaded one
-                var m = new RemapInfo();
-                m.from = from;
-                m.to = BindingPath.Create(to);
-                try { m.OnAfterDeserialize(); } catch { }
-                list.Add(m);
-            }
-            r.Mappings = list;
-            return r;
-        }
-
-        /// <summary>
-        /// Builds one of FM's templates the way FM does (SI's loader resolves the templates nested
-        /// in it), falling back to Unity's own when that fails.
-        /// </summary>
-        private VisualElement Build(string name, string guid)
-        {
-            try
-            {
-                var r = new UnityEngine.AddressableAssets.AssetReferenceT<VisualTreeAsset>(guid);
-                var e = SI.Core.VisualTreeAssetExtensions.Instantiate(r);
-                if (e != null) return e;
-                Plugin.L.LogWarning($"staff overview: FM's loader gave nothing for {name}");
-            }
-            catch (Exception ex) { Plugin.L.LogWarning($"staff overview: FM's loader failed for {name}: {ex.Message}"); }
-            return Template(name)?.Instantiate();
-        }
-
-        private void Add(VisualElement parent, int at, string card, string block, string guid, string data)
-        {
-            var table = Build("ClubStaffTeamContractBlock", TableGuid);
-            var compare = Build(block, guid);
-            var box = new VisualElement { name = Mark };
-            foreach (var cls in new[] { "align-self-stretch", "margin-top-global-gap-large", "flex-grow-class", "flex-basis-0" })
-                box.AddToClassList(cls);
-            parent.Insert(at, box);
-            // Test readers (0.4): what the card's data holds, outside and inside the remappers
-            foreach (var path in OuterProbes) box.Add(Probe(path));
-
-            if (table != null)
-            {
-                // As FM's All Staff tab feeds it, narrowed to this card's department
-                var r = Remapper(
-                    ("personlist", "staffsubgroup.StaffSubGroupPersonListFiltered"),
-                    ("filter", "team.StaffListFilter"),
-                    ("isAllStaffTab", "const.False"),
-                    ("showQuickFlicks", "const.False"),
-                    ("showBlockAppearance", "const.False"));
-                r.AddToClassList("align-self-stretch");
-                r.AddToClassList("flex-grow-class");
-                box.Add(r);
-                r.Add(Probe("personlist"));
-                r.Add(Probe("filter"));
-                var t = table;
-                t.AddToClassList("align-self-stretch");
-                t.AddToClassList("flex-grow-class");
-                r.Add(t);
-            }
-            if (compare != null)
-            {
-                var r = Remapper(("attributes", data));
-                r.AddToClassList("align-self-stretch");
-                r.AddToClassList("margin-top-global-gap-large");
-                box.Add(r);
-                r.Add(Probe("attributes"));
-                var t = compare;
-                t.AddToClassList("align-self-stretch");
-                r.Add(t);
-            }
-            // Ask FM to bind the new pieces to the card's data, as it does for its own screens
-            try { BindableElementUtils.BindHierarchy(box); }
-            catch (Exception e) { Plugin.L.LogWarning($"staff overview: binding ({card}): {e.Message}"); }
-            checkAt = Time.realtimeSinceStartup + 3f;
-            Plugin.L.LogInfo($"staff overview: {card}: list {(table != null ? "added" : "missing")}, comparison {(compare != null ? "added" : "missing")}");
         }
     }
 }
