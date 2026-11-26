@@ -1,47 +1,58 @@
 using System;
 using System.Collections.Generic;
 using BepInEx.Logging;
+using HarmonyLib;
 using UnityEngine;
 using UnityEngine.UIElements;
 
 namespace ProjectFM.Dev
 {
     /// <summary>
-    /// Bookmarks test module (run by ProjectFM Dev Loader; F10 reloads it). FM gives the bookmark
-    /// bar under Continue a fixed width and counts the rest as "(+N)". This widens the bar into
-    /// the free space after the last tab of the second bar, keeping a gap, and follows it as
-    /// the tabs change from screen to screen.
+    /// Bookmarks test module (run by ProjectFM Dev Loader; F10 reloads it). FM caps the bookmarks
+    /// under Continue with its own maximum (4 at the user's resolution) and resets it whenever it
+    /// works it out again. This hooks the two places FM works it out, so FM itself uses the higher
+    /// number: it draws once, counts the hidden ones ("+N") itself, and nothing redraws per screen.
+    /// The bar is then sized once to its bookmarks, so they stay on the right.
     /// </summary>
     public static class Entry
     {
         private static ManualLogSource L;
+        private static Harmony harmony;
         private static float next;
-        private static float origArea = -1, origList = -1, extra;
-        private const float Gap = 24f;
+        private static int fmMax = -1;
         private static string lastLog;
 
-        private static int settle;
-        private static float recountAt;
+        /// <summary>How many bookmarks FM may show (it shows fewer when you have fewer).</summary>
+        private const int Max = 8;
 
         public static void Start(ManualLogSource log)
         {
-            // Clear whatever an earlier version set, and read FM's widths only once it has
-            // laid the bar out again without them
-            Reset();
-            settle = 2;
-            L = log; next = 0; L.LogInfo("dev bookmarks 0.4: raise FM's CurrentMaxBookmarks to what fits, bar sized to the bookmarks"); }
+            L = log;
+            next = 0;
+            L.LogInfo("dev bookmarks 0.5: FM's maximum raised where FM works it out; bar sized once");
+            try
+            {
+                harmony = new Harmony("projectfm.dev.bookmarks");
+                var post = new HarmonyMethod(typeof(Entry).GetMethod(nameof(AfterFm)));
+                foreach (var name in new[] { "UpdateMaxBookmarks", "TryUpdateMaxBookmarksWithLabels" })
+                {
+                    var m = AccessTools.Method(typeof(GameWorldTabsAndBookmarksModule), name);
+                    if (m == null) { L.LogWarning($"dev bookmarks: FM's {name} not found"); continue; }
+                    harmony.Patch(m, postfix: post);
+                    L.LogInfo($"dev bookmarks: hooked FM's {name}");
+                }
+            }
+            catch (Exception e) { L.LogWarning("dev bookmarks: hook: " + e); }
+            Apply(Module());
+        }
 
         public static void Stop()
         {
-            Reset();
-            // FM's own maximum back
-            try { if (fmMax >= 0 && module_ != null) module_.m_currentMaxBookmarks.Value = fmMax; } catch { }
+            try { harmony?.UnpatchSelf(); } catch { }
+            harmony = null;
+            var m = Module();
+            try { if (fmMax >= 0 && m != null) { m.m_currentMaxBookmarks.Value = fmMax; m.UpdateBookmarkOverflowIndicator(); } } catch { }
             fmMax = -1;
-        }
-
-        private static void Reset()
-        {
-            // Give FM its own widths back
             foreach (var root in Roots())
             {
                 var area = Find(root, "Bookmarks");
@@ -54,8 +65,21 @@ namespace ProjectFM.Dev
                     e.style.minWidth = new StyleLength(StyleKeyword.Null);
                 }
             }
-            origArea = origList = -1;
-            extra = 0;
+        }
+
+        /// <summary>Runs right after FM has worked out its maximum: ours replaces it.</summary>
+        public static void AfterFm(GameWorldTabsAndBookmarksModule __instance)
+        {
+            try { Apply(__instance); } catch { }
+        }
+
+        private static void Apply(GameWorldTabsAndBookmarksModule m)
+        {
+            var max = m?.m_currentMaxBookmarks;
+            if (max == null || max.Value == Max) return;
+            if (fmMax < 0) fmMax = max.Value;
+            max.Value = Max;
+            try { m.UpdateBookmarkOverflowIndicator(); } catch { }
         }
 
         public static void Tick()
@@ -66,134 +90,48 @@ namespace ProjectFM.Dev
             {
                 var area = Find(root, "Bookmarks");
                 var list = area == null ? null : Find(area, "BookmarksList");
-                var tabs = Find(root, "SecondaryNavigationBarTabs");
-                if (area == null || list == null || tabs == null) continue;
-                if (area.worldBound.width <= 0) continue;
-                if (settle > 0) { settle--; continue; }
-                if (origArea < 0)
-                {
-                    origArea = area.resolvedStyle.width;
-                    origList = list.resolvedStyle.width;
-                    L.LogInfo($"dev bookmarks: FM's widths: area {origArea:0}px, list {origList:0}px");
-                }
-                float lastRight = RightmostTab(tabs);
-                if (lastRight <= 0) continue;
-                // How many fit: the free space from the last tab (plus a gap) to the bar's right
-                // edge, less the bar's own parts ("(+N)", the arrow), over the bookmarks' width
-                var view = Find(list, "View");
+                var view = list == null ? null : Find(list, "View");
+                if (area == null || view == null || area.worldBound.width <= 0) continue;
+                int items = 0;
+                try { items = list.TryCast<SI.Bindable.StreamedObjectList>()?.ItemCount ?? 0; } catch { }
                 var widths = new List<float>();
-                if (view != null)
-                    for (int i = 0; i < view.childCount; i++)
-                        if (view[i].worldBound.width > 0) widths.Add(view[i].worldBound.width);
-                if (widths.Count == 0) continue;
-                float avg = 0; foreach (var w in widths) avg += w; avg /= widths.Count;
+                for (int i = 0; i < view.childCount; i++)
+                    if (view[i].worldBound.width > 0) widths.Add(view[i].worldBound.width);
+                if (items == 0 || widths.Count == 0) continue;
                 float fixedParts = area.worldBound.width - list.worldBound.width;
-                float room = area.worldBound.xMax - lastRight - Gap - fixedParts;
-                var module = Module();
-                if (module == null) continue;
-                int total = Total(module);
-                int fit = Math.Max(1, (int)Math.Floor(room / (avg + 4f)));
-                int want = total > 0 ? Math.Min(fit, total) : fit;
-                var max = module.m_currentMaxBookmarks;
-                if (max != null && want != max.Value)
+                float target;
+                if (widths.Count < items)
                 {
-                    int before = max.Value;
-                    if (fmMax < 0) fmMax = before;
-                    // Through FM's own value, which tells the bookmark bar it changed
-                    max.Value = want;
-                    try { module.UpdateBookmarkOverflowIndicator(); } catch (Exception e) { L.LogWarning("dev bookmarks: overflow: " + e.Message); }
-                    L.LogInfo($"dev bookmarks: room {room:0}px, bookmark ~{avg:0}px: max bookmarks {before} -> {want} (of {total})");
-                    recountAt = Time.realtimeSinceStartup + 1f;
+                    // Not all drawn yet: room for all of them, at the widest one's width
+                    float widest = 0; foreach (var w in widths) widest = Math.Max(widest, w);
+                    target = items * (widest + 4f) + 8f;
                 }
-                // The bar as wide as its bookmarks, so they stay on the right by "(+N)"
-                float sum = 8f; foreach (var w in widths) sum += w + 4f;
-                float listW = Math.Min(sum, Math.Max(room, origList));
-                if (Math.Abs(listW - extra) < 4f) continue;
-                extra = listW;
-                foreach (var (e, w) in new[] { (area, listW + fixedParts), (list, listW) })
+                else
+                {
+                    // All drawn: exactly their width, so they sit on the right by "(+N)"
+                    target = 8f; foreach (var w in widths) target += w + 4f;
+                }
+                if (Math.Abs(target - list.worldBound.width) < 4f) continue;
+                foreach (var (e, w) in new[] { (area, target + fixedParts), (list, target) })
                 {
                     e.style.width = new StyleLength(w);
                     e.style.maxWidth = new StyleLength(w);
                     e.style.minWidth = new StyleLength(w);
                 }
-                var msg = $"dev bookmarks: last tab ends at {lastRight:0}px, list set to {listW:0}px; {Counts(area, list)}";
+                string more = "?";
+                try { more = Find(area, "BookmarksText")?.TryCast<TextElement>()?.text ?? ""; } catch { }
+                var msg = $"dev bookmarks: {items} bookmarks, {widths.Count} drawn, bar {target:0}px, more text '{more}'";
                 if (msg != lastLog) { lastLog = msg; L.LogInfo(msg); }
             }
         }
 
         private static GameWorldTabsAndBookmarksModule module_;
-        private static int fmMax = -1;
 
         private static GameWorldTabsAndBookmarksModule Module()
         {
             if (module_ != null) return module_;
             foreach (var m in Resources.FindObjectsOfTypeAll<GameWorldTabsAndBookmarksModule>()) { module_ = m; break; }
-            if (module_ == null) L.LogWarning("dev bookmarks: FM's bookmarks module not found");
             return module_;
-        }
-
-        /// <summary>How many bookmarks you have chosen (shown plus behind "(+N)").</summary>
-        private static int Total(GameWorldTabsAndBookmarksModule m)
-        {
-            try { return m.CurrentSelectedBookmarksList.Value.Bookmarks.Count; } catch { }
-            return 0;
-        }
-
-        /// <summary>Asks FM's list to lay its bookmarks out again for the new width.</summary>
-        private static void Refresh(VisualElement list)
-        {
-            try
-            {
-                var v = Find(list, "VirtualisedList") ?? FirstOfType(list, "VirtualisedList");
-                var vl = v?.TryCast<SI.UI.VirtualisedList>();
-                vl?.Controller?.Refresh();
-            }
-            catch (Exception e) { L.LogWarning("dev bookmarks: refresh: " + e.Message); }
-        }
-
-        private static VisualElement FirstOfType(VisualElement e, string type, int depth = 0)
-        {
-            try { if (e.GetIl2CppType().Name == type) return e; } catch { }
-            if (depth > 10) return null;
-            for (int i = 0; i < e.childCount; i++)
-            {
-                var r = FirstOfType(e[i], type, depth + 1);
-                if (r != null) return r;
-            }
-            return null;
-        }
-
-        /// <summary>How many bookmarks FM gives the list, how many it draws, and its "(+N)".</summary>
-        private static string Counts(VisualElement area, VisualElement list)
-        {
-            string items = "?", drawn = "?", more = "?";
-            try { items = list.TryCast<SI.Bindable.StreamedObjectList>()?.ItemCount.ToString() ?? "?"; } catch { }
-            try { drawn = (Find(list, "View")?.childCount ?? -1).ToString(); } catch { }
-            try { more = Find(area, "BookmarksText")?.TryCast<TextElement>()?.text ?? "(none)"; } catch { }
-            return $"bookmarks in the list {items}, drawn {drawn}, more text {more}";
-        }
-
-        /// <summary>Where the second bar's last visible tab (or its More button) ends.</summary>
-        private static float RightmostTab(VisualElement tabs)
-        {
-            float right = 0;
-            void Walk(VisualElement e, int depth)
-            {
-                if (depth > 30) return;
-                bool shown;
-                try { shown = e.resolvedStyle.display != DisplayStyle.None && e.resolvedStyle.visibility == Visibility.Visible; }
-                catch { shown = true; }
-                if (!shown) return;
-                if (e.ClassListContains("streamed-object-list-item") || e.name == "SecondaryTabDropdownButton")
-                {
-                    var b = e.worldBound;
-                    if (b.width > 0 && b.xMax > right) right = b.xMax;
-                    return;
-                }
-                for (int i = 0; i < e.childCount; i++) Walk(e[i], depth + 1);
-            }
-            Walk(tabs, 0);
-            return right;
         }
 
         private static IEnumerable<VisualElement> Roots()
