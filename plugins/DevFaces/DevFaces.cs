@@ -23,7 +23,7 @@ namespace ProjectFM.Dev
         private const float Size = 34f;
         private static bool first = true;
 
-        public static void Start(ManualLogSource log) { L = log; next = 0; added = 0; first = true; L.LogInfo("dev faces 0.3: fixed size and pixel offset (0.2 froze FM)"); }
+        public static void Start(ManualLogSource log) { L = log; next = 0; added = 0; first = true; L.LogInfo("dev faces 0.4: picture lined up just left of the shirt and its arrows"); }
 
         public static void Stop()
         {
@@ -39,7 +39,8 @@ namespace ProjectFM.Dev
             foreach (var root in Roots())
                 foreach (var row in FindAll(root, "ShirtAndIcons"))
                 {
-                    if (Child(row, Mark) != null) continue;
+                    var face = Child(row, Mark);
+                    if (face != null) { Place(face, row); continue; }
                     if (first) L.LogInfo("dev faces: adding the first picture");
                     try { Add(row); now++; }
                     catch (Exception e) { L.LogWarning("dev faces: " + e.Message); return; }
@@ -77,6 +78,34 @@ namespace ProjectFM.Dev
             if (pic != null) { Fill(pic); pic.pickingMode = PickingMode.Ignore; remap.Add(pic); }
             BindableElementUtils.BindHierarchy(wrap);
             return wrap;
+        }
+
+        /// <summary>
+        /// Just left of the leftmost thing beside the shirt (the out-of-possession arrow, or the
+        /// shirt), level with the shirt. Only the picture moves, never the card's contents.
+        /// </summary>
+        private static void Place(VisualElement face, VisualElement row)
+        {
+            var inner = Child(row, "ShirtAndRoleMovements");
+            if (inner == null) return;
+            float left = float.MaxValue, top = float.MaxValue;
+            for (int i = 0; i < inner.childCount; i++)
+            {
+                var c = inner[i];
+                var b = c.worldBound;
+                if (b.width <= 1f || b.height <= 1f) continue;
+                try { if (c.resolvedStyle.display == DisplayStyle.None) continue; } catch { }
+                left = Math.Min(left, b.xMin);
+                string type = "";
+                try { type = c.GetIl2CppType().Name; } catch { }
+                if (type == "FMTacticsShirt") top = b.yMin;
+            }
+            if (left == float.MaxValue) return;
+            var rb = row.worldBound;
+            float x = left - rb.xMin - Size - 2f;
+            float y = top == float.MaxValue ? 0f : top - rb.yMin;
+            if (Math.Abs(face.resolvedStyle.left - x) > 1f) face.style.left = new StyleLength(x);
+            if (Math.Abs(face.resolvedStyle.top - y) > 1f) face.style.top = new StyleLength(y);
         }
 
         private static void Fill(VisualElement e)
