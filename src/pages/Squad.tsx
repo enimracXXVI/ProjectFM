@@ -12,9 +12,10 @@ import { TeamBadge, TeamSelect } from '../components/TeamSelect'
 import { Tooltip } from '../components/Tooltip'
 import { PageHeader, Placeholder } from '../components/ui'
 import { FIELD_INFO, isGoalkeeper } from '../data/attributeInfo'
-import { attributeLabel, tableSections } from '../data/config'
+import { attributeLabel, isLoanedIn, tableSections } from '../data/config'
 import type { PlayerRow } from '../data/db'
 import { TEAMS, teamOf, type Team } from '../data/teams'
+import { loanNameStyle, loanRowStyle } from '../lib/loanStyle'
 import { usePlayers } from '../data/hooks'
 import { attrColor, attrNumber, formatAttr, scoreTextColor } from '../lib/attributes'
 import { useCurrentCareer } from '../lib/career'
@@ -402,13 +403,20 @@ export function Squad() {
                     'block rounded-xl border border-border bg-surface p-3 active:bg-surface-2',
                     !p.in_squad && 'opacity-50',
                   )}
+                  style={isLoanedIn(p) ? loanRowStyle(config.loanColors) : undefined}
                 >
                   <div className="@container flex items-center gap-2">
                     <span className="w-6 shrink-0 text-right text-sm text-muted tabular-nums">
                       {p.squad_number ?? ''}
                     </span>
                     <Face id={p.fm_uid} className="size-7" />
-                    <span className="min-w-0 truncate font-semibold">{p.name}</span>
+                    <span
+                      className="min-w-0 truncate font-semibold"
+                      style={isLoanedIn(p) ? loanNameStyle(config.loanColors) : undefined}
+                      title={isLoanedIn(p) ? `On loan from ${p.extra['Loan from']}` : undefined}
+                    >
+                      {p.name}
+                    </span>
                     <CopyName name={p.name} className="-my-1" />
                     <TeamBadge player={p} />
                     <StatusChip code={p.extra.status} />
@@ -586,15 +594,26 @@ export function Squad() {
                       // Fade former players' cells (not the row: the frozen cell must stay opaque)
                       !p.in_squad && '[&>td]:text-muted [&>td>*]:opacity-50',
                     )}
+                    style={isLoanedIn(p) ? loanRowStyle(config.loanColors) : undefined}
                   >
-                    <td className="sticky left-0 z-[1] bg-surface px-4 py-2.5 whitespace-nowrap shadow-[inset_-1px_0_0_var(--color-border)] group-hover:bg-surface-2">
+                    <td
+                      className="sticky left-0 z-[1] bg-surface px-4 py-2.5 whitespace-nowrap shadow-[inset_-1px_0_0_var(--color-border)] group-hover:bg-surface-2"
+                      style={isLoanedIn(p) ? loanRowStyle(config.loanColors) : undefined}
+                    >
                       <span className="inline-flex items-center gap-1 align-middle">
                         <Link
                           to={`/squad/${p.id}`}
                           className="inline-flex items-center gap-2 font-medium hover:text-accent"
                         >
                           <Face id={p.fm_uid} className="size-6" />
-                          {p.name}
+                          <span
+                            style={isLoanedIn(p) ? loanNameStyle(config.loanColors) : undefined}
+                            title={
+                              isLoanedIn(p) ? `On loan from ${p.extra['Loan from']}` : undefined
+                            }
+                          >
+                            {p.name}
+                          </span>
                         </Link>
                         <CopyName name={p.name} />
                       </span>{' '}

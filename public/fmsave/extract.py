@@ -291,7 +291,7 @@ def _leagues(save, clubs):
     return league_of, {str(k): v for k, v in leagues.items()}
 
 
-def _dump(save, club_uid, club_name, extras):
+def _dump(save, club_uid, club_name, extras, loaned_out=frozenset()):
     """Every player in the same shape as a ProjectFM Reader dump.json (players only).
 
     Nations are FM database ids (`natDb`); the app turns them into names.
@@ -362,6 +362,9 @@ def _dump(save, club_uid, club_name, extras):
         }
         if p.club_uid in women_clubs:
             row["women"] = True
+        # The managed club's players out on loan at other clubs
+        if p.uid in loaned_out:
+            row["loanedOut"] = True
         number, morale = extras.get(p.uid, (None, None))
         if number is not None:
             row["squadNo"] = number
@@ -957,8 +960,13 @@ def _loan_info(c, club_uid):
     Sporting) only show as a chain record of the managed club without terms of its own."""
     try:
         chain = list(c.chain or ())
+        # The latest record of another club without terms of its own: the loan spell
         spell = next(
-            (e for e in chain if not e.has_terms and e.club_uid is not None and e.club_uid != c.club_uid),
+            (
+                e
+                for e in reversed(chain)
+                if not e.has_terms and e.club_uid is not None and e.club_uid != c.club_uid
+            ),
             None,
         )
         if not c.on_loan and not (spell and c.club_uid != club_uid and spell.club_uid == club_uid):
@@ -999,7 +1007,23 @@ def extract(path):
         if not clubs:
             raise ValueError("No managed club found in this save.")
         club_uid = clubs[0].club_uid
-        players = save.players().where(club_uid=club_uid)
+        players = list(save.players().where(club_uid=club_uid))
+        # By player, not by the contract's club: that is empty on some contracts
+        try:
+            contracts = list(save.contracts())
+            contracts_error = None
+        except Exception as e:  # never lose the squad import over one part of the save
+            contracts, contracts_error = [], str(e)
+        # Players the club owns who are out on loan (fmsave flags these loans)
+        loaned_out = {
+            c.player_uid for c in contracts if c.on_loan and c.club_uid == club_uid
+        }
+        mine = {p.uid for p in players}
+        if loaned_out - mine:
+            try:
+                players += [p for p in save.players() if p.uid in loaned_out and p.uid not in mine]
+            except Exception:
+                loaned_out = set()
         uid_to_unique = {p.uid: _pid(p) for p in players}
         out = {
             "reader": READER_VERSION,
@@ -1029,12 +1053,8 @@ def extract(path):
                 # Trait bit numbers (FM's player traits); names are the app's
                 "traits": [t.raw for t in (getattr(p, "traits", None) or ())],
             })
-        # By player, not by the contract's club: that is empty on some contracts
-        try:
-            contracts = list(save.contracts())
-        except Exception as e:  # never lose the squad import over one part of the save
-            contracts = []
-            out["contractsError"] = str(e)
+        if contracts_error:
+            out["contractsError"] = contracts_error
         for c in contracts:
             uid = uid_to_unique.get(c.player_uid)
             if uid is None:
@@ -1072,7 +1092,7 @@ def extract(path):
             row = asdict(st)
             row["uniqueId"] = uid
             out["stats"].append(row)
-        out["dump"] = _dump(save, club_uid, clubs[0].club_name, extras)
+        out["dump"] = _dump(save, club_uid, clubs[0].club_name, extras, frozenset(loaned_out))
         try:
             out["tactics"] = _tactics(save, club_uid)
         except Exception as e:

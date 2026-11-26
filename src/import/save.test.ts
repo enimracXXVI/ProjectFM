@@ -73,7 +73,7 @@ describe('contractFields: loans and agreed contracts (reader 27)', () => {
     expect(out['On loan at']).toBe('A.C.F. Fiorentina')
     expect(out.Signed).toBe('6/10/2025')
     expect(out['Loan expires']).toBe('Not in the save')
-    expect(out['Loan wage paid']).toContain('(75%)')
+    expect(out['Loan wage paid']).toMatch(/\(75%\)$/)
   })
   it('lists contracts agreed to start later', () => {
     const out = contractFields({
@@ -81,5 +81,17 @@ describe('contractFields: loans and agreed contracts (reader 27)', () => {
       future: [{ club: 'A.C.F. Fiorentina', start: '2027-06-30', end: '2031-06-30', wage: 56720 }],
     })
     expect(out['Agreed contract']).toMatch(/^A\.C\.F\. Fiorentina from 30\/6\/2027 to 30\/6\/2031/)
+  })
+  it('takes the latest agreed contract, keeping an earlier one aside', () => {
+    // Dodo: Flamengo is the agreed move (in game); a Juventus record is also in the save
+    const out = contractFields({
+      ...base,
+      future: [
+        { club: 'Juventus F.C.', start: '2027-07-01', end: '2031-06-30', wage: 31377 },
+        { club: 'Flamengo', start: '2027-07-20', end: '2030-12-31', wage: 40509 },
+      ],
+    })
+    expect(out['Agreed contract']).toMatch(/^Flamengo from 20\/7\/2027/)
+    expect(out['Agreed contract']).toContain('also in the save: Juventus')
   })
 })

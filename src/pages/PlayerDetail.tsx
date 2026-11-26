@@ -22,7 +22,7 @@ import { statGroup } from '../data/columns'
 import { eur } from '../lib/money'
 import { mediaHandling } from '../lib/mediaHandling'
 import { isGoalkeeper } from '../data/attributeInfo'
-import { attributeLabel } from '../data/config'
+import { attributeLabel, isLoanedIn } from '../data/config'
 import type { PlayerRow } from '../data/db'
 import { usePlayer, useSnapshots } from '../data/hooks'
 import { HIDDEN_PLAYER_ATTRS, PERSONALITY_KEYS } from '../import/dump'
@@ -221,8 +221,8 @@ function ContractAndStats({
     </>
   )
   // On loan here: the owning club holds the contract (as FM and sortitoutsi show it)
-  const loanedIn = !!p.extra['Loan from'] && p.extra['Loan from'] !== club
-  const loanedOut = !!p.extra['On loan at'] && p.extra['On loan at'] !== club
+  const loanedIn = isLoanedIn(p)
+  const loanedOut = p.extra.team === 'loan' && !!p.extra['On loan at']
   const contract: InfoRow[] = [
     { label: 'Club', value: loanedIn ? p.extra['Loan from'] : ourClub },
     ...(loanedIn ? [{ label: 'On loan at', value: ourClub }] : []),

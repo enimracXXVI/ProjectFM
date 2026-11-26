@@ -15,7 +15,7 @@ namespace ProjectFM.ConditionRings
     /// Shows condition and match sharpness as coloured rings with FM's own percentage in them,
     /// in place of the level icons in FM27's player tables. Reads only what FM already shows.
     /// </summary>
-    [BepInPlugin("projectfm.conditionrings", "ProjectFM Condition Rings", "1.1.0")]
+    [BepInPlugin("projectfm.conditionrings", "ProjectFM Condition Rings", "1.2.0")]
     public class Plugin : BasePlugin
     {
         internal static ManualLogSource L;
@@ -30,7 +30,7 @@ namespace ProjectFM.ConditionRings
     }
 
     /// <summary>
-    /// The user's settings, in BepInEx\config\ProjectFM\ConditionRings.cfg. The file is checked
+    /// The user's settings, in ConditionRings.cfg next to the plugin (BepInEx\plugins\ProjectFM\ConditionRings). The file is checked
     /// every 2 seconds (only its saved time) and read again when it changes, so edits show in game
     /// without a restart.
     /// </summary>
@@ -53,7 +53,9 @@ namespace ProjectFM.ConditionRings
         public Color Text = Hex("#FFFFFF");
 
         public static readonly string Path =
-            System.IO.Path.Combine(BepInEx.Paths.ConfigPath, "ProjectFM", "ConditionRings.cfg");
+            System.IO.Path.Combine(
+                System.IO.Path.GetDirectoryName(typeof(Settings).Assembly.Location) ?? BepInEx.Paths.PluginPath,
+                "ConditionRings.cfg");
 
         public static Color Hex(string h)
         {

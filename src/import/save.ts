@@ -165,20 +165,24 @@ export function contractFields(c: SaveData['contracts'][number]): Record<string,
     out['Loan expires'] = c.loan.end ? fmDate(c.loan.end) : 'Not in the save'
     if (c.loan.wage != null) {
       const share = c.wage ? Math.round((c.loan.wage / c.wage) * 100) : null
+      // Checked on the user's save: Njie 100%, Pote 75%, Mastantuono 50%, Jiménez 30%
       out['Loan wage paid'] =
-        `${fmEuro(c.loan.wage * 52 * EUR_PER_GBP)} p/a${share !== null ? ` (${share}%)` : ''} (?)`
+        `${fmEuro(c.loan.wage * 52 * EUR_PER_GBP)} p/a${share !== null ? ` (${share}%)` : ''}`
     }
   }
-  if (c.future?.length)
+  if (c.future?.length) {
+    // The latest record is the agreed move (Drăguşin and Njie to Fiorentina, Dodo to Flamengo:
+    // checked in game); an earlier one (Dodo to Juventus) is not explained yet
+    const text = (f: NonNullable<typeof c.future>[number]) =>
+      `${f.club ?? '?'} from ${fmDate(f.start)}${f.end ? ` to ${fmDate(f.end)}` : ''}${
+        f.wage != null ? `, ${fmEuro(f.wage * 52 * EUR_PER_GBP)} p/a` : ''
+      }`
+    const all = [...c.future].sort((a, b) => a.start.localeCompare(b.start))
+    const last = all[all.length - 1]
     out['Agreed contract'] =
-      c.future
-        .map(
-          (f) =>
-            `${f.club ?? '?'} from ${fmDate(f.start)}${f.end ? ` to ${fmDate(f.end)}` : ''}${
-              f.wage != null ? `, ${fmEuro(f.wage * 52 * EUR_PER_GBP)} p/a` : ''
-            }`,
-        )
-        .join('; ') + ' (?)'
+      text(last) +
+      (all.length > 1 ? ` (also in the save: ${all.slice(0, -1).map(text).join('; ')} (?))` : '')
+  }
   return out
 }
 

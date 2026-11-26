@@ -87,7 +87,7 @@ export function Staff() {
           options={[
             ['all', `All (${all.length})`],
             // Staff are never youth candidates
-            ...TEAMS.filter(([t]) => t !== 'yc').map(
+            ...TEAMS.filter(([t]) => t !== 'yc' && t !== 'loan').map(
               ([t, label]) =>
                 [t, `${label} (${all.filter((s) => teamOfStaff(s) === t).length})`] as [
                   Team,

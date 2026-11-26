@@ -55,6 +55,8 @@ export interface DumpPerson {
   basedIn?: string | null
   /** At a women's club (reader 26). */
   women?: boolean
+  /** Owned by the managed club and out on loan elsewhere (reader 27). */
+  loanedOut?: boolean
   lastName?: string | null
   commonName?: string | null
   job?: string
@@ -407,7 +409,8 @@ export interface DumpSummary {
 export function summarizeDump(dump: Dump, knownUids: number[]): DumpSummary {
   const club = dump.meta.myClub
   if (!club) throw new Error('This dump does not say which club you manage.')
-  const mine = dump.players.filter((p) => p.club === club && p.name !== '?')
+  // Players out on loan are the club's too (reader 27)
+  const mine = dump.players.filter((p) => (p.club === club || p.loanedOut) && p.name !== '?')
   const scouts = dump.staff.filter(
     (s) => s.club === club && (s.jobId === JOB_SCOUT || s.jobId === JOB_CHIEF_SCOUT),
   )
@@ -424,7 +427,9 @@ export function summarizeDump(dump: Dump, knownUids: number[]): DumpSummary {
       squadNo: readerSquadNumber(p),
       // FM team slot from the save: 0 first team, 1 U20, 2 U18, 3 youth candidates (seen after
       // the user's 2027 youth intake)
-      team: (['first', 'u21', 'u18', 'yc'] as const)[p.teamType ?? 0] ?? 'first',
+      team: p.loanedOut
+        ? ('loan' as const)
+        : ((['first', 'u21', 'u18', 'yc'] as const)[p.teamType ?? 0] ?? 'first'),
     })),
     scouts: scouts.map(staffFromDump),
     clubOf,

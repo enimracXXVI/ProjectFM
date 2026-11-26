@@ -7,6 +7,8 @@ export const TEAMS = [
   ['u18', 'U18'],
   // Youth candidates: a youth intake's players until they are offered contracts (FM's 4th team)
   ['yc', 'YC'],
+  // The club's players out on loan at other clubs (from the save)
+  ['loan', 'On loan'],
 ] as const
 
 export type Team = (typeof TEAMS)[number][0]

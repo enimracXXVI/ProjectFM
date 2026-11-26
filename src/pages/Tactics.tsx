@@ -349,7 +349,9 @@ function TacticEditor({ tactic }: { tactic: TacticRow }) {
   const { data: players } = usePlayers(career.id)
   const [youth, setYouth] = useState(false)
   // First team by default; U20 and U18 players on request
-  const squad = (players ?? []).filter((p) => p.in_squad && (youth || !p.extra.team))
+  const squad = (players ?? []).filter(
+    (p) => p.in_squad && p.extra.team !== 'loan' && (youth || !p.extra.team),
+  )
   const [form, setFormRaw] = useState(tactic)
   // Undo / redo of every edit since the tactic was opened
   const [past, setPast] = useState<TacticRow[]>([])

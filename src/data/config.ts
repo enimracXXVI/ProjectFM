@@ -85,6 +85,17 @@ export const DEFAULT_PICTURES: Pictures = {
 export type Layout = Record<Role, AttributeSection[][]>
 
 /** Everything the user can customise in Settings. */
+/** How Squad marks players on loan at the club. */
+export interface LoanColors {
+  mode: 'name' | 'row' | 'off'
+  color: string
+}
+export const DEFAULT_LOAN_COLORS: LoanColors = { mode: 'name', color: '#7dd3fc' }
+
+/** Players at the club on loan from another (not the club's own players out on loan). */
+export const isLoanedIn = (p: { extra: Record<string, string> }) =>
+  !!p.extra['Loan from'] && p.extra.team !== 'loan'
+
 export interface AppConfig {
   statuses: Record<string, StatusInfo>
   attributes: Record<string, AttributeInfo>
@@ -145,6 +156,8 @@ export interface AppConfig {
   briefingLowFit: number
   /** Colours marking a role's key and preferred attributes. */
   roleColors: { key: string; preferred: string }
+  /** How Squad marks players on loan at the club: their name, the whole row, or nothing. */
+  loanColors: LoanColors
   /** How the save numbers the roles players train (Squad > Training). */
   trainingRoleCodes: TrainingRoleCodes
   /** Picking a player for a tactic slot: FM position rating (1–20) that counts as able to play there. */
@@ -225,6 +238,7 @@ export const DEFAULT_CONFIG: AppConfig = {
   briefingLowFit: 55,
   positionMin: 15,
   roleColors: DEFAULT_ROLE_COLORS,
+  loanColors: DEFAULT_LOAN_COLORS,
   trainingRoleCodes: DEFAULT_TRAINING_ROLE_CODES,
   roleWarnings: DEFAULT_ROLE_WARNINGS,
   trainingSessions: DEFAULT_TRAINING_SESSIONS,
@@ -330,6 +344,7 @@ export function mergeConfig(stored: Stored): AppConfig {
     briefingLowFit: stored.briefingLowFit ?? DEFAULT_CONFIG.briefingLowFit,
     positionMin: stored.positionMin ?? DEFAULT_CONFIG.positionMin,
     roleColors: { ...DEFAULT_CONFIG.roleColors, ...stored.roleColors },
+    loanColors: { ...DEFAULT_CONFIG.loanColors, ...stored.loanColors },
     trainingRoleCodes: isTrainingRoleCodes(stored.trainingRoleCodes)
       ? stored.trainingRoleCodes
       : DEFAULT_TRAINING_ROLE_CODES,
