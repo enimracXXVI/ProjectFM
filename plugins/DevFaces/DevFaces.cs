@@ -23,7 +23,7 @@ namespace ProjectFM.Dev
         private const float Size = 34f;
         private static bool first = true;
 
-        public static void Start(ManualLogSource log) { L = log; next = 0; added = 0; first = true; measuredLogged = false; L.LogInfo("dev faces 0.8: role bar found from what is drawn under the shirt row; first card measured in the log"); }
+        public static void Start(ManualLogSource log) { L = log; next = 0; added = 0; first = true; measuredLogged = false; L.LogInfo("dev faces 0.9: no circle; picture and arrows kept inside the card"); }
 
         public static void Stop()
         {
@@ -76,10 +76,8 @@ namespace ProjectFM.Dev
             st.left = new StyleLength(-(Size + 2f));
             st.top = new StyleLength(0f);
             st.width = st.height = st.minWidth = st.maxWidth = st.minHeight = st.maxHeight = new StyleLength(Size);
-            var rr = new StyleLength(Size / 2f);
-            st.borderTopLeftRadius = st.borderTopRightRadius = st.borderBottomLeftRadius = st.borderBottomRightRadius = rr;
-            st.overflow = new StyleEnum<Overflow>(Overflow.Hidden);
-            st.backgroundColor = new StyleColor(new Color(0f, 0f, 0f, 0.25f));
+
+
             row.Add(wrap);
 
             var remap = new BindingRemapper();
@@ -139,7 +137,11 @@ namespace ProjectFM.Dev
             if (arrows.Count > 0 && room > 4f)
             {
                 float f = Math.Min(1f, room / 2f / tallest); // same in every view: room for two
-                float x = sb.xMax - ib.xMin + 2f, y = sb.yMin - ib.yMin;
+                float aw = 0f; foreach (var a in arrows) aw = Math.Max(aw, a.resolvedStyle.width * f);
+                var rbox = row.worldBound;
+                // Right of the shirt, but not past the card's right edge
+                float ax = Math.Min(sb.xMax + 1f, rbox.xMax - aw);
+                float x = ax - ib.xMin, y = sb.yMin - ib.yMin;
                 foreach (var arrow in arrows)
                 {
                     var sc = arrow.resolvedStyle.scale.value;
@@ -153,9 +155,10 @@ namespace ProjectFM.Dev
                 }
             }
 
-            // Picture: left of the shirt, its bottom on the role row's top
+            // Picture: left of the shirt but inside the card (overlapping the shirt a little if
+            // need be), its bottom on the role bar's top
             var rb = row.worldBound;
-            Move(face, sb.xMin - rb.xMin - Size - 2f, bottom - rb.yMin - Size);
+            Move(face, Math.Max(0f, sb.xMin - rb.xMin - Size - 2f), bottom - rb.yMin - Size);
         }
 
         private static bool measuredLogged;
