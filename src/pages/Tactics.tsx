@@ -8,6 +8,7 @@ import {
   LockOpen,
   Plus,
   Redo2,
+  Save as SaveIcon,
   Trash2,
   Undo2,
   Upload,
@@ -662,19 +663,21 @@ function TacticEditor({ tactic }: { tactic: TacticRow }) {
                 </span>
                 <span
                   className={clsx(
-                    'block truncate border-t border-border/60 text-[9px]',
+                    'mt-0.5 block border-t border-border/60 pt-0.5 text-[9px]',
                     backupProblems(s, form.slots, squad).length ? 'text-amber-300' : 'text-muted',
                   )}
                   title="Replacements"
                 >
-                  ↳{' '}
-                  {backupsOf(s)
-                    .filter(Boolean)
-                    .map((id) => {
-                      const b = squad.find((x) => x.id === id)
-                      return b ? shortName(b) : '?'
-                    })
-                    .join(', ') || '–'}
+                  {backupsOf(s).map((id, k) => {
+                    const b = id ? squad.find((x) => x.id === id) : null
+                    return (
+                      <span key={k} className={clsx('block truncate', !id && 'opacity-60')}>
+                        {id
+                          ? `${k + 1}. ${b ? shortName(b) : '?'}`
+                          : `No ${k === 0 ? '1st' : '2nd'} replacement`}
+                      </span>
+                    )
+                  })}
                 </span>
               </button>
             )
@@ -698,7 +701,7 @@ function TacticEditor({ tactic }: { tactic: TacticRow }) {
             <Wand2 className="size-4" aria-hidden /> Fill empty replacements
           </Button>
           <span className="text-xs text-muted">
-            ↳ under each player: his 1st and 2nd replacement (tap him to change them)
+            Under each player: his 1st and 2nd replacement (tap him to change them)
           </span>
         </div>
         <p className="text-center text-xs text-muted">
@@ -836,27 +839,45 @@ function TacticEditor({ tactic }: { tactic: TacticRow }) {
                 rows={Math.min(6, Math.max(1, (form.notes ?? '').split('\n').length))}
                 className="min-h-11 rounded-lg border border-border bg-surface-2 px-3 py-2.5 text-base md:text-sm"
               />
-              <div className="flex flex-wrap items-center gap-2">
-                <Button onClick={() => save.mutate()} disabled={!dirty || save.isPending}>
-                  {save.isPending ? 'Saving…' : 'Save'}
+              {/* Same-size buttons; on phones Delete lines up under Copy */}
+              <div className="grid grid-cols-3 gap-2 sm:grid-cols-5">
+                <Button
+                  className="px-2"
+                  onClick={() => save.mutate()}
+                  disabled={!dirty || save.isPending}
+                >
+                  <SaveIcon className="size-4" aria-hidden /> {save.isPending ? 'Saving…' : 'Save'}
                 </Button>
                 <Button
                   variant="ghost"
+                  className="px-2"
                   onClick={download}
                   disabled={problems.length > 0}
-                  title="Save the file in FM's tactics folder, then in FM choose Load Tactic"
+                  title="Export to FM (.fmf): save the file in FM's tactics folder, then in FM choose Load Tactic"
                 >
-                  <Download className="size-4" aria-hidden /> Export .fmf
+                  <Download className="size-4" aria-hidden /> Export
                 </Button>
-                <Button variant="ghost" onClick={() => copy.mutate()} disabled={copy.isPending}>
+                <Button
+                  variant="ghost"
+                  className="px-2"
+                  onClick={() => copy.mutate()}
+                  disabled={copy.isPending}
+                  title="Copy tactic"
+                >
                   <Copy className="size-4" aria-hidden /> {copy.isPending ? 'Copying…' : 'Copy'}
                 </Button>
-                <Button variant="ghost" onClick={() => setForm(tactic)} disabled={!dirty}>
-                  <Undo2 className="size-4" aria-hidden /> Undo changes
+                <Button
+                  variant="ghost"
+                  className="px-2"
+                  onClick={() => setForm(tactic)}
+                  disabled={!dirty}
+                  title="Undo changes since the last save"
+                >
+                  <Undo2 className="size-4" aria-hidden /> Undo
                 </Button>
                 <Button
                   variant="danger"
-                  className="ml-auto"
+                  className="col-start-3 px-2 sm:col-start-auto"
                   onClick={async () => {
                     if (
                       await confirm({
@@ -874,8 +895,8 @@ function TacticEditor({ tactic }: { tactic: TacticRow }) {
                 >
                   <Trash2 className="size-4" aria-hidden /> Delete
                 </Button>
-                <ErrorText error={save.error ?? remove.error ?? copy.error} />
               </div>
+              <ErrorText error={save.error ?? remove.error ?? copy.error} />
               {problems.length > 0 && (
                 <ul className="list-disc pl-5 text-xs text-amber-300">
                   <li className="-ml-5 list-none font-semibold">Export needs:</li>
@@ -1983,7 +2004,7 @@ function BackupPicker({
     .map((p) => ({ p, score: slotScore(p, slot, ctx), plays: playsPosition(p, slot.position) }))
     .sort((a, b) => Number(b.plays) - Number(a.plays) || (b.score ?? -1) - (a.score ?? -1))
   const label = (o: (typeof options)[number]) =>
-    `${shortName(o.p)} · ${o.score ?? '–'}${injured(o.p) ? ' · injured' : ''}${xi.has(o.p.id) ? ' · starts' : ''}`
+    `${shortName(o.p)} · ${o.score ?? '–'}${injured(o.p) ? ' · injured' : ''}${xi.has(o.p.id) ? ' · in the XI' : ''}`
   const suggest = () => {
     const cleared = slots.map((s, j) => (j === index ? { ...s, backups: [] } : s))
     onChange(suggestBackups(cleared, squad, ctx, (p) => !injured(p))[index])
@@ -2006,7 +2027,7 @@ function BackupPicker({
                 {options
                   .filter((o) => o.plays)
                   .map((o) => (
-                    <option key={o.p.id} value={o.p.id}>
+                    <option key={o.p.id} value={o.p.id} disabled={xi.has(o.p.id)}>
                       {label(o)}
                     </option>
                   ))}
@@ -2015,7 +2036,7 @@ function BackupPicker({
                 {options
                   .filter((o) => !o.plays)
                   .map((o) => (
-                    <option key={o.p.id} value={o.p.id}>
+                    <option key={o.p.id} value={o.p.id} disabled={xi.has(o.p.id)}>
                       {label(o)}
                     </option>
                   ))}
@@ -2134,6 +2155,12 @@ function StyleInfo({
   )
 }
 
+/** "Passing risk: Take more risks" reads as "Passing risk (Take more risks)". */
+const plainItem = (label: string) => {
+  const i = label.indexOf(': ')
+  return i < 0 ? label : `${label.slice(0, i)} (${label.slice(i + 2)})`
+}
+
 /** FM's complexity points for the tactic, with what costs most. */
 function ComplexityInfo({ slots, team }: { slots: TacticSlot[]; team: number[] }) {
   const config = useConfig()
@@ -2141,14 +2168,22 @@ function ComplexityInfo({ slots, team }: { slots: TacticSlot[]; team: number[] }
   const c = tacticComplexity(slots, team, config)
   const heavy = c.players.flatMap((p) => p.items.filter((x) => x.points >= 3)).map((x) => x.label)
   return (
-    <div className="grid gap-1 rounded-lg border border-border bg-surface-2/50 px-2 text-xs">
+    <div className="grid content-start gap-1 rounded-lg border border-border bg-surface-2/50 px-2 pb-px text-xs">
       <button
         type="button"
         aria-expanded={open}
         onClick={() => setOpen(!open)}
-        className="flex min-h-[2.6rem] items-center gap-1 text-left"
+        className="flex min-h-[calc(2.75rem-3px)] items-center gap-1 text-left"
       >
         <span className="font-semibold">Complexity</span>
+        {heavy.length > 0 && (
+          <span
+            className="grid size-4 shrink-0 place-items-center rounded-full bg-amber-400/20 text-[10px] font-bold text-amber-300"
+            title="Has instructions that are hard to learn: open for details"
+          >
+            !
+          </span>
+        )}
         <span className="min-w-0 flex-1 truncate text-muted">
           · team {c.team.points}/{c.team.max} · players {c.playerAverage.toFixed(1)}/{c.playerMax}{' '}
           on average
@@ -2158,13 +2193,13 @@ function ComplexityInfo({ slots, team }: { slots: TacticSlot[]; team: number[] }
           aria-hidden
         />
       </button>
-      {heavy.length > 0 && (
-        <p className="pb-1.5 text-amber-300">
-          Hardest to learn: {[...new Set(heavy)].join(', ')} (3 points each).
-        </p>
-      )}
       {open && (
         <>
+          {heavy.length > 0 && (
+            <p className="text-amber-300">
+              Hardest to learn (3 points each): {[...new Set(heavy)].map(plainItem).join(', ')}
+            </p>
+          )}
           <p className="text-muted">
             FM&apos;s points from its match data: more points take longer for the squad to learn.
             FM&apos;s own badge also weighs your players and the opponent.
@@ -2174,16 +2209,17 @@ function ComplexityInfo({ slots, team }: { slots: TacticSlot[]; team: number[] }
               .sort((a, b) => b.points - a.points)
               .map((x) => (
                 <li key={x.label} className="flex justify-between gap-2">
-                  <span>{x.label}</span>
+                  <span>{plainItem(x.label)}</span>
                   <span className="tabular-nums">{x.points}</span>
                 </li>
               ))}
           </ul>
-          <ul className="grid gap-0.5 border-t border-border pt-1">
+          <ul className="grid gap-0.5 border-t border-border pt-1 pb-2">
             {c.players.map((p) => (
               <li key={p.slot} className="flex justify-between gap-2">
                 <span className="truncate">
-                  {slots[p.slot].position ?? '?'}: {p.items.map((x) => x.label).join(', ') || '–'}
+                  {slots[p.slot].position ?? '?'}:{' '}
+                  {p.items.map((x) => plainItem(x.label)).join(', ') || '–'}
                 </span>
                 <span className="tabular-nums">{p.points}</span>
               </li>
