@@ -18,7 +18,7 @@ namespace ProjectFM.Bookmarks
         private const uint ScreenUid = 83254784;
         private static float next;
         private static string guid;
-        private static bool searched, failed;
+        private static bool failed;
 
         public static void Tick()
         {
@@ -45,7 +45,8 @@ namespace ProjectFM.Bookmarks
                 if (items[i].name == "TrainingBookmark") training = items[i];
             }
             if (training == null) return;
-            if (!searched) { searched = true; guid = FindGuid(); Entry.Info($"bookmarks: Individual Training screen {(guid == null ? "not found in FM's catalogue" : "is " + guid)}"); }
+            // Searching FM's catalogue for the screen's key crashed FM (1.1); the copy keeps the Training
+            // screen's references and only takes the Individual Training screen's id
 
             var b = UnityEngine.Object.Instantiate(training);
             b.name = Mark;
@@ -68,36 +69,6 @@ namespace ProjectFM.Bookmarks
             }
             items.Add(b);
             Entry.Info($"bookmarks: Individual Training added to '{list.name}' ({items.Count} bookmarks)");
-        }
-
-        /// <summary>FM's catalogue key for its Individual Training screen id.</summary>
-        private static string FindGuid()
-        {
-            var type = Il2CppType.Of<PanelID>();
-            var locators = Addressables.ResourceLocators.GetEnumerator();
-            var lm = locators.Cast<Il2CppSystem.Collections.IEnumerator>();
-            while (lm.MoveNext())
-            {
-                var loc = locators.Current;
-                if (loc == null) continue;
-                var keys = loc.Keys.GetEnumerator();
-                var km = keys.Cast<Il2CppSystem.Collections.IEnumerator>();
-                while (km.MoveNext())
-                {
-                    var k = keys.Current;
-                    var ks = k?.ToString();
-                    if (ks == null || ks.Length != 32) continue;
-                    Il2CppSystem.Collections.Generic.IList<UnityEngine.ResourceManagement.ResourceLocations.IResourceLocation> found;
-                    if (!loc.Locate(k, type, out found) || found == null) continue;
-                    var coll = found.Cast<Il2CppSystem.Collections.Generic.ICollection<UnityEngine.ResourceManagement.ResourceLocations.IResourceLocation>>();
-                    if (coll.Count == 0) continue;
-                    var first = found[0];
-                    var id = first.InternalId ?? "";
-                    var pk = first.PrimaryKey ?? "";
-                    if (id.Contains(ScreenName) || pk.Contains(ScreenName)) return ks;
-                }
-            }
-            return null;
         }
     }
 }
