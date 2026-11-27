@@ -12,7 +12,7 @@ using UnityEngine.UIElements;
 
 namespace ProjectFM.Training
 {
-    [BepInPlugin("projectfm.training", "ProjectFM Training", "1.2.0")]
+    [BepInPlugin("projectfm.training", "ProjectFM Training", "1.3.0")]
     public class Plugin : BasePlugin
     {
         internal static ManualLogSource L;
@@ -296,6 +296,7 @@ namespace ProjectFM.Training
 
         public static void Abort()
         {
+            Unhide();
             CloseMenus();
             queue.Clear();
             step = 0;
@@ -325,9 +326,10 @@ namespace ProjectFM.Training
             if (step == 5) { if (Time.realtimeSinceStartup >= wait) { step = 1; NextPlayer(); } return; }
             string want = step == 2 ? "Interaction" : step == 3 ? (praise ? "Praise" : "Warn") : null;
             var entry = step == 4 ? FindEntry(t => t.Contains("Training") && (praise ? t.StartsWith("Praise") : t.StartsWith("Critici"))) : FindEntry(t => t == want);
+            Hide();
             if (entry != null)
             {
-                Select(entry);
+                if (step == 4) Click(entry); else Select(entry);
                 if (step == 4) { done++; Plugin.L.LogInfo($"training: {who}: done"); Pause(); }
                 else { step++; deadline = Time.realtimeSinceStartup + 2f; }
                 return;
@@ -341,7 +343,48 @@ namespace ProjectFM.Training
             }
         }
 
-        private static void Pause() { step = 5; wait = Time.realtimeSinceStartup + 0.6f; }
+        private static void Pause() { step = 5; wait = Time.realtimeSinceStartup + 0.6f; Unhide(); }
+
+        // FM's menu works unseen: its floating menus are made see-through while the buttons use it
+        private static readonly List<VisualElement> hidden = new();
+
+        private static void Hide()
+        {
+            foreach (var doc in UnityEngine.Object.FindObjectsOfType<UIDocument>())
+            {
+                var root = doc.rootVisualElement;
+                if (root == null) continue;
+                foreach (var f in root.Query<VisualElement>((string)null, "floating-element").ToList())
+                {
+                    if (f.resolvedStyle.opacity == 0f) continue;
+                    f.style.opacity = 0f;
+                    hidden.Add(f);
+                }
+            }
+        }
+
+        private static void Unhide()
+        {
+            foreach (var f in hidden) try { f.style.opacity = new StyleFloat(StyleKeyword.Null); } catch { }
+            hidden.Clear();
+        }
+
+        /// <summary>The last entry: FM acts on a click (selecting it only highlights it).</summary>
+        private static void Click(VisualElement entry)
+        {
+            var pos = entry.worldBound.center;
+            var down = new Event { type = EventType.MouseDown, button = 0, mousePosition = pos, clickCount = 1 };
+            var up = new Event { type = EventType.MouseUp, button = 0, mousePosition = pos, clickCount = 1 };
+            var e = entry.TryCast<SI.UI.CascadingMenu.EntryElement>();
+            if (e != null)
+            {
+                try { e.OnClick(ClickEvent.GetPooled(up)); return; }
+                catch (Exception ex) { Plugin.L.LogWarning("training: click: " + ex.Message); }
+            }
+            entry.SendEvent(PointerDownEvent.GetPooled(down));
+            entry.SendEvent(PointerUpEvent.GetPooled(up));
+            entry.SendEvent(ClickEvent.GetPooled(up));
+        }
 
         private static void RightClick(VisualElement target)
         {
