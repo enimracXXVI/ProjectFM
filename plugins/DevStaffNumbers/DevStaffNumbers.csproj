@@ -1,0 +1,6 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <AssemblyName>ProjectFM.Dev</AssemblyName>
+    <Version>0.3.0</Version>
+  </PropertyGroup>
+</Project>
