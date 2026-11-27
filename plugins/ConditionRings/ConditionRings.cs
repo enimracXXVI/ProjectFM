@@ -17,7 +17,7 @@ namespace ProjectFM.ConditionRings
     /// Shows condition and match sharpness as coloured rings with FM's own percentage in them,
     /// in place of the level icons in FM27's player tables. Reads only what FM already shows.
     /// </summary>
-    [BepInPlugin("projectfm.conditionrings", "ProjectFM Condition Rings", "1.11.0")]
+    [BepInPlugin("projectfm.conditionrings", "ProjectFM Condition Rings", "1.12.0")]
     public class Plugin : BasePlugin
     {
         internal static ManualLogSource L;
@@ -408,7 +408,7 @@ namespace ProjectFM.ConditionRings
         // the match. The bottom squad bar holds the match players with their live condition: it is
         // read there by shirt number and shown in the rows of the same shirt number.
         private static readonly Dictionary<int, int> live = new Dictionary<int, int>();
-        private static readonly string[] LivePaths = { "binding.Condition", "matchplayer.Condition", "player.Condition", "binding.MatchPlayer.Condition" };
+        private static readonly string[] LivePaths = { "playerinfo.Condition", "binding.Condition", "matchplayer.Condition", "player.Condition", "binding.MatchPlayer.Condition" };
         private static string livePath;
         private static bool liveLogged;
 
@@ -610,6 +610,8 @@ namespace ProjectFM.ConditionRings
             {
                 var t = FirstTextElement(e, 0);
                 if (t != null && !IsWhite(t.resolvedStyle.color)) colour = t.resolvedStyle.color;
+                // No colour from FM: FM's heart level for condition, the sharpness level for sharpness
+                else colour = (sharp ? S.LevelColour("sharpness-" + Math.Max(1, (int)Math.Ceiling(value / 100.0 * 7)), true) : S.LevelColour(LevelClassFor(value), false)) ?? colour;
             }
             Paint(ring, colour, S.ShowNumber ? value.ToString(CultureInfo.InvariantCulture) : "");
             return true;
@@ -1041,7 +1043,7 @@ namespace ProjectFM.ConditionRings
                     if (tc != null) for (int i = 0; i < tc.Count; i++) names.Add("text:" + tc[i]);
                     NoteColour(sharp ? "sharpness" : "condition", string.Join(" ", names), c);
                     // White is FM's plain text colour: no colour came through, the bands decide
-                    if (!(c.r > 0.95f && c.g > 0.95f && c.b > 0.95f)) fmColour = c;
+                    if (!IsWhite(c)) fmColour = c;
                 }
             }
             var raw = text.text;
@@ -1063,7 +1065,8 @@ namespace ProjectFM.ConditionRings
                 Plugin.L.LogInfo($"rings: FM's {what} colour: classes '{classes}' give {hex}");
         }
 
-        private static bool IsWhite(Color c) => c.r > 0.95f && c.g > 0.95f && c.b > 0.95f;
+        /// <summary>White or grey: FM's plain text colour, not a colour FM chose for the value.</summary>
+        private static bool IsWhite(Color c) => Math.Max(c.r, Math.Max(c.g, c.b)) - Math.Min(c.r, Math.Min(c.g, c.b)) < 0.12f;
 
         private static TextElement FirstTextElement(VisualElement e, int depth)
         {
