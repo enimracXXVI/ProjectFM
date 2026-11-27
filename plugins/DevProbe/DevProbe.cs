@@ -17,7 +17,7 @@ namespace ProjectFM.Dev
         private static ManualLogSource L;
         private static bool done;
 
-        public static void Start(ManualLogSource log) { L = log; done = false; L.LogInfo("dev probe 0.1: writing FM's property list"); }
+        public static void Start(ManualLogSource log) { L = log; done = false; L.LogInfo("dev probe 0.2: writing FM's property list with names"); }
         public static void Stop() { }
 
         public static void Tick()
@@ -59,6 +59,7 @@ namespace ProjectFM.Dev
                         {
                             var p = item.GetValue(list, new object[] { i });
                             uint id = (uint)p.GetType().GetProperty("ID").GetValue(p);
+                            string nm = Name(p);
                             string d = "", k = "";
                             try { d = desc?.Invoke(null, new object[] { id }) as string ?? ""; } catch { }
                             try
@@ -71,7 +72,7 @@ namespace ProjectFM.Dev
                                 }
                             }
                             catch { }
-                            lines.Add($"  {id} {Tag(id)} | {d} | {k}");
+                            lines.Add($"  {nm} | {id} {Tag(id)} | {d} | {k}");
                             props++;
                         }
                     }
@@ -80,6 +81,20 @@ namespace ProjectFM.Dev
             }
             File.WriteAllLines(file, lines);
             L.LogInfo($"dev probe: {props} properties of {types} kinds written to {file}");
+        }
+
+        private static MethodInfo getName;
+        private static string Name(object p)
+        {
+            try
+            {
+                if (getName == null)
+                    getName = typeof(SI.Bindable.Reference.Core.IdentifierUtils).GetMethod("GetName").MakeGenericMethod(p.GetType());
+                var n = getName.Invoke(null, new[] { p }) as string;
+                if (!string.IsNullOrEmpty(n)) return n;
+            }
+            catch { }
+            try { return p.ToString(); } catch { return "?"; }
         }
 
         // FM's ids are often four letters packed into a number (e.g. PCAB)
