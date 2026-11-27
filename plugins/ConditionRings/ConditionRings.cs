@@ -17,7 +17,7 @@ namespace ProjectFM.ConditionRings
     /// Shows condition and match sharpness as coloured rings with FM's own percentage in them,
     /// in place of the level icons in FM27's player tables. Reads only what FM already shows.
     /// </summary>
-    [BepInPlugin("projectfm.conditionrings", "ProjectFM Condition Rings", "1.7.0")]
+    [BepInPlugin("projectfm.conditionrings", "ProjectFM Condition Rings", "1.8.0")]
     public class Plugin : BasePlugin
     {
         internal static ManualLogSource L;
@@ -44,6 +44,24 @@ namespace ProjectFM.ConditionRings
         public bool Bold = true;
         public bool FatigueNumber = true;
         public bool MoraleText = true;
+        public bool FatigueFmColours = true;
+        public Color FatigueFresh = Hex("#33A854");
+        public Color FatigueLow = Hex("#8CC24A");
+        public Color FatigueMedium = Hex("#F5D423");
+        public Color FatigueHigh = Hex("#F5A623");
+        public Color FatigueVeryHigh = Hex("#EB4236");
+
+        /// <summary>Colour for FM's fatigue level (its icon class), used when FM's own colour is not there.</summary>
+        public Color FatigueColour(string cls)
+        {
+            var c = cls.ToLowerInvariant();
+            if (c.Contains("fresh")) return FatigueFresh;
+            if (c.Contains("very") || c.Contains("extreme") || c.Contains("exhaust") || c.Contains("severe")) return FatigueVeryHigh;
+            if (c.Contains("high")) return FatigueHigh;
+            if (c.Contains("medium") || c.Contains("moderate")) return FatigueMedium;
+            if (c.Contains("low")) return FatigueLow;
+            return Text;
+        }
         public float Size = 24f;
         public float Border = 2.5f;
         public float FontSize = 9f;
@@ -106,9 +124,22 @@ namespace ProjectFM.ConditionRings
             if (!seen.Contains("bold")) add.AddRange(new[] { "# The number in bold", "Bold = true" });
             if (!seen.Contains("fatiguenumber")) add.AddRange(new[] { "# Fatigue as a number instead of FM's icon", "FatigueNumber = true" });
             if (!seen.Contains("moraletext")) add.AddRange(new[] { "# Morale: FM's word next to its arrow", "MoraleText = true" });
+            if (!seen.Contains("fatiguefmcolours")) add.AddRange(FatigueLines(s));
             if (add.Count > 0) try { File.AppendAllLines(Path, add); } catch { }
             return s;
         }
+
+        private static string[] FatigueLines(Settings s) => new[]
+        {
+            "# Fatigue number colours: true uses FM's own colour for each level (as the MrTini23 skin does);",
+            "# false, or when FM's colour is not there, uses these colours by FM's fatigue level",
+            $"FatigueFmColours = {(s.FatigueFmColours ? "true" : "false")}",
+            $"FatigueFresh = {ToHex(s.FatigueFresh)}",
+            $"FatigueLow = {ToHex(s.FatigueLow)}",
+            $"FatigueMedium = {ToHex(s.FatigueMedium)}",
+            $"FatigueHigh = {ToHex(s.FatigueHigh)}",
+            $"FatigueVeryHigh = {ToHex(s.FatigueVeryHigh)}",
+        };
 
         private static bool Yes(string v) =>
             v.Equals("true", StringComparison.OrdinalIgnoreCase) || v.Equals("yes", StringComparison.OrdinalIgnoreCase) ||
@@ -126,6 +157,12 @@ namespace ProjectFM.ConditionRings
                 case "bold": Bold = Yes(v); break;
                 case "fatiguenumber": FatigueNumber = Yes(v); break;
                 case "moraletext": MoraleText = Yes(v); break;
+                case "fatiguefmcolours": FatigueFmColours = Yes(v); break;
+                case "fatiguefresh": FatigueFresh = Hex(v); break;
+                case "fatiguelow": FatigueLow = Hex(v); break;
+                case "fatiguemedium": FatigueMedium = Hex(v); break;
+                case "fatiguehigh": FatigueHigh = Hex(v); break;
+                case "fatigueveryhigh": FatigueVeryHigh = Hex(v); break;
                 case "size": Size = Math.Clamp(Num(v), 10f, 60f); break;
                 case "border": Border = Math.Clamp(Num(v), 0f, 10f); break;
                 case "fontsize": FontSize = Math.Clamp(Num(v), 5f, 30f); break;
@@ -181,7 +218,8 @@ namespace ProjectFM.ConditionRings
                 $"Amber = {ToHex(Amber)}",
                 $"Red = {ToHex(Red)}",
                 $"Text = {ToHex(Text)}",
-            });
+                "",
+            }.Concat(FatigueLines(this)));
         }
     }
 
@@ -516,14 +554,17 @@ namespace ProjectFM.ConditionRings
             var parent = e.parent;
             SIText text = null;
             for (int i = 0; i < parent.childCount; i++)
+            {
                 if (parent[i].name == FatigueName) { text = parent[i].TryCast<SIText>(); break; }
+                if (parent[i].name == FatigueSetterName && parent[i].childCount > 0) { text = parent[i][0].TryCast<SIText>(); break; }
+            }
             if (!S.FatigueNumber)
             {
-                if (text != null) text.RemoveFromHierarchy();
+                if (text != null) Outer(text).RemoveFromHierarchy();
                 e.style.display = DisplayStyle.Flex;
                 return true;
             }
-            if (text != null && restyle) { text.RemoveFromHierarchy(); text = null; }
+            if (text != null && restyle) { Outer(text).RemoveFromHierarchy(); text = null; }
             if (text == null)
             {
                 try
@@ -538,12 +579,21 @@ namespace ProjectFM.ConditionRings
                     var st = text.style;
                     st.fontSize = new StyleLength(S.FontSize + 3f);
                     st.unityFontStyleAndWeight = new StyleEnum<FontStyle>(S.Bold ? FontStyle.Bold : FontStyle.Normal);
-                    st.color = new StyleColor(S.Text);
                     st.unityTextAlign = new StyleEnum<TextAnchor>(TextAnchor.MiddleCenter);
                     st.alignSelf = new StyleEnum<Align>(Align.Center);
                     text.pickingMode = PickingMode.Ignore;
-                    parent.Insert(parent.IndexOf(e) + 1, text);
+                    // FM's own colour for the value: a style setter running FM's fatigue style
+                    // table on the value, as the MrTini23 skin's fatigue cell does
+                    var setter = S.FatigueFmColours ? FatigueColourSetter() : null;
+                    if (setter != null)
+                    {
+                        setter.Add(text);
+                        parent.Insert(parent.IndexOf(e) + 1, setter);
+                        try { setter.BindToData(); } catch { }
+                    }
+                    else parent.Insert(parent.IndexOf(e) + 1, text);
                     try { text.BindToData(); } catch { }
+                    fatigueSince[text.Pointer] = Time.realtimeSinceStartup;
                 }
                 catch (Exception ex)
                 {
@@ -557,18 +607,73 @@ namespace ProjectFM.ConditionRings
                 if (!int.TryParse(raw.Trim(), NumberStyles.Integer, CultureInfo.InvariantCulture, out var n))
                 {
                     // Not a number here: FM's icon back, and left alone from now on
-                    text.RemoveFromHierarchy();
+                    Outer(text).RemoveFromHierarchy();
                     e.style.display = DisplayStyle.Flex;
                     e.AddToClassList(Skip);
                     return true;
                 }
                 NoteFatigue(fcls, n);
+                // FM's colour came through (the setter added a class)? Else the level's colour from the settings
+                bool fmColour = false;
+                var holder = text.parent;
+                if (holder != null && holder.name == FatigueSetterName)
+                {
+                    var cl = holder.GetClasses().TryCast<Il2CppSystem.Collections.Generic.List<string>>();
+                    fmColour = cl != null && cl.Count > baseSetterClasses;
+                }
+                if (fmColour) text.style.color = new StyleColor(StyleKeyword.Null);
+                else if (!fatigueSince.TryGetValue(text.Pointer, out var at) || Time.realtimeSinceStartup - at > 1.5f)
+                    text.style.color = new StyleColor(S.FatigueColour(fcls));
             }
             e.style.display = DisplayStyle.None;
             return true;
         }
 
         private static bool fatigueFailed;
+        private const string FatigueSetterName = "pfm-fatigue-colour";
+        private const int baseSetterClasses = 0;
+        private static readonly Dictionary<IntPtr, float> fatigueSince = new Dictionary<IntPtr, float>();
+
+        private static VisualElement Outer(SIText text) =>
+            text.parent != null && text.parent.name == FatigueSetterName ? text.parent : text;
+
+        // FM's fatigue style table (the asset FM picks the fatigue icon with) run on "binding";
+        // the same function and arguments the MrTini23 skin's PlayerFatigueIconCell uses
+        private static readonly byte[] FatigueStyleArgs = Convert.FromBase64String(
+            "BSEAAAAfU0kuQmluZGFibGUuQmluZGluZ0tleVZpc3VhbEFyZwBQAAAAKlNJLlZpc3VhbFNjcmlwdGluZy5Bc3NldFJlZmVyZW5jZVZpc3VhbEFyZyBiZTE0NzkzNmIxMzQ5YTM0Y2E2NzIyZWYwODljYzI0OAEAAQAvAAAAIlNJLlZpc3VhbFNjcmlwdGluZy5TdHJpbmdWaXN1YWxBcmcBClN0eWxlQ2xhc3MlAAAAI1NJLlZpc3VhbFNjcmlwdGluZy5Cb29sZWFuVmlzdWFsQXJnAUgAAAA+U0kuVmlzdWFsU2NyaXB0aW5nLkdlbmVyaWNWaXN1YWxBcmdgMVtTSS5CaW5kYWJsZS5CaW5kaW5nUGF0aF0BB2JpbmRpbmc=");
+        private static bool setterFailed;
+
+        private static SIStyleSetter FatigueColourSetter()
+        {
+            try
+            {
+                var setter = new SIStyleSetter { name = FatigueSetterName };
+                setter.pickingMode = PickingMode.Ignore;
+                setter.style.alignSelf = new StyleEnum<Align>(Align.Center);
+                var cfg = new SI.VisualScripting.DataDrivenVisualRunnerConfig<SI.VisualScripting.VisualArgs<BindingBag, SIStyleSetter>, SI.VisualScripting.VisualArgs>();
+                var guid = new SI.Core.AssetGUID("ccad53b4192c2ed41ad18bae0726dbe4");
+                cfg.m_target = guid;
+                var vin = new SI.VisualScripting.VariableVisualArgs();
+                vin.m_argumentBytes = FatigueStyleArgs;
+                vin.OnAfterDeserialize();
+                var din = new SI.VisualScripting.DataDrivenVisualArgs<SI.VisualScripting.VisualArgs<BindingBag, SIStyleSetter>>();
+                din.m_variable = vin;
+                cfg.m_inputs = din;
+                var vout = new SI.VisualScripting.VariableVisualArgs();
+                vout.m_argumentBytes = new byte[0];
+                vout.OnAfterDeserialize();
+                var dout = new SI.VisualScripting.DataDrivenVisualArgs<SI.VisualScripting.VisualArgs>();
+                dout.m_variable = vout;
+                cfg.m_outputs = dout;
+                setter.m_bindFunction = cfg;
+                return setter;
+            }
+            catch (Exception ex)
+            {
+                if (!setterFailed) { setterFailed = true; Plugin.L.LogWarning("rings: FM's fatigue colours not available, using the settings' colours: " + ex.Message); }
+                return null;
+            }
+        }
         private const string Skip = "pfm-skip";
 
         private static bool InTableCell(VisualElement e)
