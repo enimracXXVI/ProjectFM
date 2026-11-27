@@ -17,7 +17,7 @@ namespace ProjectFM.ConditionRings
     /// Shows condition and match sharpness as coloured rings with FM's own percentage in them,
     /// in place of the level icons in FM27's player tables. Reads only what FM already shows.
     /// </summary>
-    [BepInPlugin("projectfm.conditionrings", "ProjectFM Condition Rings", "1.6.0")]
+    [BepInPlugin("projectfm.conditionrings", "ProjectFM Condition Rings", "1.7.0")]
     public class Plugin : BasePlugin
     {
         internal static ManualLogSource L;
@@ -430,7 +430,16 @@ namespace ProjectFM.ConditionRings
             if (HandleMorale(e)) return true;
             string cls;
             bool sharp;
-            if (e.name == "ConditionIcon")
+            string path = null;
+            if (e.name == "Image" && e.parent != null && e.parent.name == "Fitness")
+            {
+                // Match screens (team talk): the heart is an image in "Fitness", fed by the match player
+                cls = ClassStarting(e, "scaling-icons-condition-level-");
+                if (cls == null) return false;
+                sharp = false;
+                path = "binding.Condition";
+            }
+            else if (e.name == "ConditionIcon")
             {
                 cls = ClassStarting(e, "scaling-icons-condition-level-");
                 if (cls == null) return false;
@@ -466,7 +475,7 @@ namespace ProjectFM.ConditionRings
             bool injured = !sharp && cls.Contains("injured");
             // A number from a skin next to the icon, else FM's own value read through a hidden
             // text bound to the same data the MrTini23 skin shows (player.Condition, binding.Sharpness)
-            int? pct = PercentNear(e, sharp ? "KojuroSharp" : "KojuroPct") ?? BoundValue(e, sharp);
+            int? pct = PercentNear(e, sharp ? "KojuroSharp" : "KojuroPct") ?? BoundValue(e, sharp, path);
             if (!sharp && pct.HasValue) NoteLevel(cls, pct.Value);
             int value = pct ?? FromLevel(cls, sharp);
 
@@ -664,7 +673,7 @@ namespace ProjectFM.ConditionRings
         }
 
         /// <summary>FM's condition or sharpness for the cell, from a hidden bound text.</summary>
-        private static int? BoundValue(VisualElement icon, bool sharp)
+        private static int? BoundValue(VisualElement icon, bool sharp, string path = null)
         {
             var parent = icon.parent;
             if (parent == null) return null;
@@ -679,7 +688,7 @@ namespace ProjectFM.ConditionRings
                     var method = new BindingMethod<SIText>();
                     method.m_kind = BindingMethodKind.Direct;
                     var direct = new DirectBinding();
-                    direct.Path = new BindingPath(sharp ? "binding.Sharpness" : "player.Condition");
+                    direct.Path = new BindingPath(path ?? (sharp ? "binding.Sharpness" : "player.Condition"));
                     method.m_direct = direct;
                     text.TextBinding = method;
                     var st = text.style;
