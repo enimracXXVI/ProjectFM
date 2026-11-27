@@ -17,7 +17,7 @@ namespace ProjectFM.ConditionRings
     /// Shows condition and match sharpness as coloured rings with FM's own percentage in them,
     /// in place of the level icons in FM27's player tables. Reads only what FM already shows.
     /// </summary>
-    [BepInPlugin("projectfm.conditionrings", "ProjectFM Condition Rings", "1.9.1")]
+    [BepInPlugin("projectfm.conditionrings", "ProjectFM Condition Rings", "1.10.0")]
     public class Plugin : BasePlugin
     {
         internal static ManualLogSource L;
@@ -49,6 +49,26 @@ namespace ProjectFM.ConditionRings
         public bool TextOnly;
         /// <summary>Condition and sharpness in FM's own colours (else the percentage bands below).</summary>
         public bool FmColours = true;
+        // Colour by FM's own icon level (heart 1-5, sharpness 1-7), as FM's icons show it
+        public Color Level5 = Hex("#33A854");
+        public Color Level4 = Hex("#8CC24A");
+        public Color Level3 = Hex("#F5D423");
+        public Color Level2 = Hex("#F5A623");
+        public Color Level1 = Hex("#EB4236");
+
+        /// <summary>Colour for FM's icon level: hearts 1..5, sharpness 1..7 (scaled to 1..5).</summary>
+        public Color? LevelColour(string cls, bool sharpness)
+        {
+            if (cls == null) return null;
+            foreach (var p in cls.Split('-'))
+                if (int.TryParse(p, out var n) && n > 0 && n < 10)
+                {
+                    int l = sharpness ? (int)Math.Ceiling(n / 7.0 * 5) : n;
+                    return l >= 5 ? Level5 : l == 4 ? Level4 : l == 3 ? Level3 : l == 2 ? Level2 : Level1;
+                }
+            return null;
+        }
+
         public Color FatigueFresh = Hex("#33A854");
         public Color FatigueLow = Hex("#8CC24A");
         public Color FatigueMedium = Hex("#F5D423");
@@ -130,6 +150,7 @@ namespace ProjectFM.ConditionRings
             if (!seen.Contains("moraletext")) add.AddRange(new[] { "# Morale: FM's word next to its arrow", "MoraleText = true" });
             if (!seen.Contains("fatiguefmcolours")) add.AddRange(FatigueLines(s));
             if (!seen.Contains("style")) add.AddRange(StyleLines(s));
+            else if (!seen.Contains("level5")) add.AddRange(new[] { "# Colours for FM's levels, best (5) to worst (1)", $"Level5 = {ToHex(s.Level5)}", $"Level4 = {ToHex(s.Level4)}", $"Level3 = {ToHex(s.Level3)}", $"Level2 = {ToHex(s.Level2)}", $"Level1 = {ToHex(s.Level1)}" });
             if (add.Count > 0) try { File.AppendAllLines(Path, add); } catch { }
             return s;
         }
@@ -138,8 +159,15 @@ namespace ProjectFM.ConditionRings
         {
             "# Condition and sharpness as a coloured ring (ring) or as coloured text only (text)",
             $"Style = {(s.TextOnly ? "text" : "ring")}",
-            "# Condition and sharpness in FM's own colours (true), or by the percentages GreenFrom/LimeFrom/AmberFrom (false)",
+            "# Condition and sharpness coloured by FM's own level (its heart / sharpness icon) (true),",
+            "# or by the percentages GreenFrom/LimeFrom/AmberFrom (false)",
             $"FmColours = {(s.FmColours ? "true" : "false")}",
+            "# Colours for FM's levels, best (5) to worst (1)",
+            $"Level5 = {ToHex(s.Level5)}",
+            $"Level4 = {ToHex(s.Level4)}",
+            $"Level3 = {ToHex(s.Level3)}",
+            $"Level2 = {ToHex(s.Level2)}",
+            $"Level1 = {ToHex(s.Level1)}",
         };
 
         private static string[] FatigueLines(Settings s) => new[]
@@ -173,6 +201,11 @@ namespace ProjectFM.ConditionRings
                 case "fatiguefmcolours": FatigueFmColours = Yes(v); break;
                 case "style": TextOnly = v.Trim().Equals("text", StringComparison.OrdinalIgnoreCase); break;
                 case "fmcolours": FmColours = Yes(v); break;
+                case "level5": Level5 = Hex(v); break;
+                case "level4": Level4 = Hex(v); break;
+                case "level3": Level3 = Hex(v); break;
+                case "level2": Level2 = Hex(v); break;
+                case "level1": Level1 = Hex(v); break;
                 case "fatiguefresh": FatigueFresh = Hex(v); break;
                 case "fatiguelow": FatigueLow = Hex(v); break;
                 case "fatiguemedium": FatigueMedium = Hex(v); break;
@@ -476,7 +509,7 @@ namespace ProjectFM.ConditionRings
             if (S.FmColours)
             {
                 var t = FirstTextElement(e, 0);
-                if (t != null) colour = t.resolvedStyle.color;
+                if (t != null && !IsWhite(t.resolvedStyle.color)) colour = t.resolvedStyle.color;
             }
             Paint(ring, colour, S.ShowNumber ? value.ToString(CultureInfo.InvariantCulture) : "");
             return true;
@@ -553,7 +586,8 @@ namespace ProjectFM.ConditionRings
                 if (s.name == (sharp ? "KojuroSharp" : "KojuroPct")) s.style.display = DisplayStyle.None;
             }
 
-            var colour = injured ? S.Red : (S.FmColours && fm.HasValue ? fm.Value : S.ColourFor(value));
+            // FM's own colour when its style table gives one, else the colour of FM's icon level
+            var colour = injured ? S.Red : !S.FmColours ? S.ColourFor(value) : fm ?? S.LevelColour(cls, sharp) ?? S.ColourFor(value);
             var text = injured ? "INJ" : (pct.HasValue && S.ShowNumber ? Math.Max(0, value).ToString(CultureInfo.InvariantCulture) : "");
             Paint(ring, colour, text);
             return true;
@@ -922,6 +956,8 @@ namespace ProjectFM.ConditionRings
             if (colourNoted.Count < 40 && colourNoted.Add(what + classes + hex))
                 Plugin.L.LogInfo($"rings: FM's {what} colour: classes '{classes}' give {hex}");
         }
+
+        private static bool IsWhite(Color c) => c.r > 0.95f && c.g > 0.95f && c.b > 0.95f;
 
         private static TextElement FirstTextElement(VisualElement e, int depth)
         {

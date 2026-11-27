@@ -5,6 +5,7 @@ using System.IO;
 using BepInEx;
 using BepInEx.Logging;
 using BepInEx.Unity.IL2CPP;
+using HarmonyLib;
 using Il2CppInterop.Runtime.Attributes;
 using Il2CppInterop.Runtime.Injection;
 using Il2CppInterop.Runtime.InteropTypes.Arrays;
@@ -13,7 +14,7 @@ using UnityEngine;
 
 namespace ProjectFM.MatchColumns
 {
-    [BepInPlugin("projectfm.matchcolumns", "ProjectFM Match Columns", "1.0.1")]
+    [BepInPlugin("projectfm.matchcolumns", "ProjectFM Match Columns", "1.1.0")]
     public class Plugin : BasePlugin
     {
         internal static ManualLogSource L;
@@ -24,6 +25,15 @@ namespace ProjectFM.MatchColumns
             Settings.Load();
             ClassInjector.RegisterTypeInIl2Cpp<Runner>();
             AddComponent<Runner>();
+            // Patch FM's match tables the moment their views load, before FM draws them
+            try
+            {
+                var h = new Harmony("projectfm.matchcolumns");
+                var post = new HarmonyMethod(typeof(Runner).GetMethod(nameof(Runner.AfterLoad)));
+                h.Patch(AccessTools.Method(typeof(StreamedTableViewSettings), "OnEnable"), postfix: post);
+                h.Patch(AccessTools.Method(typeof(StreamedTableViewSettingsCollection), "OnEnable"), postfix: post);
+            }
+            catch (Exception e) { L.LogWarning("match columns: can't hook FM's table loading: " + e.Message); }
             L.LogInfo($"match columns: team talk {Settings.Names(Settings.TeamTalk)}; match stats view {Settings.Names(Settings.StatsView)}");
         }
     }
@@ -92,6 +102,15 @@ namespace ProjectFM.MatchColumns
     public class Runner : MonoBehaviour
     {
         public Runner(IntPtr ptr) : base(ptr) { }
+        internal static Runner Instance;
+        private void Awake() { Instance = this; }
+
+        /// <summary>FM just loaded a table view or view list: add the columns and view now.</summary>
+        public static void AfterLoad()
+        {
+            try { Instance?.Patch(); }
+            catch (Exception e) { Plugin.L.LogWarning("match columns: on load: " + e.Message); }
+        }
         private const string Prefix = "pfm-";
         private const int ViewNameId = 13702; // FM's "Fitness and Injuries"
         private static readonly string[] TalkViews = { "TeamTalksTablePreMatch", "TeamTalksTableHalfTime", "TeamTalksTableFullTime" };
@@ -113,7 +132,7 @@ namespace ProjectFM.MatchColumns
         }
 
         [HideFromIl2Cpp]
-        private void Patch()
+        internal void Patch()
         {
             TableTemplate players = null, talk = null, stats = null;
             foreach (var t in Resources.FindObjectsOfTypeAll<TableTemplate>())
@@ -164,7 +183,7 @@ namespace ProjectFM.MatchColumns
                 }
                 Plugin.L.LogInfo($"match columns: {n} columns added to the view '{s.name}'");
             }
-            if (Settings.StatsView.Count == 0 || !statsReady) return;
+            if (Settings.StatsView.Count == 0) return;
             foreach (var c in Resources.FindObjectsOfTypeAll<StreamedTableViewSettingsCollection>())
             {
                 if (c == null || c.name != StatsCollection || !done.Add(c.Pointer)) continue;
