@@ -17,7 +17,7 @@ namespace ProjectFM.ConditionRings
     /// Shows condition and match sharpness as coloured rings with FM's own percentage in them,
     /// in place of the level icons in FM27's player tables. Reads only what FM already shows.
     /// </summary>
-    [BepInPlugin("projectfm.conditionrings", "ProjectFM Condition Rings", "1.10.0")]
+    [BepInPlugin("projectfm.conditionrings", "ProjectFM Condition Rings", "1.11.0")]
     public class Plugin : BasePlugin
     {
         internal static ManualLogSource L;
@@ -50,6 +50,8 @@ namespace ProjectFM.ConditionRings
         /// <summary>Condition and sharpness in FM's own colours (else the percentage bands below).</summary>
         public bool FmColours = true;
         // Colour by FM's own icon level (heart 1-5, sharpness 1-7), as FM's icons show it
+        // Live condition (match tables): FM's heart level from these percentages (5 and 4 seen in FM; 3 and 2 not yet (?))
+        public int Heart5From = 86, Heart4From = 77, Heart3From = 68, Heart2From = 59;
         public Color Level5 = Hex("#33A854");
         public Color Level4 = Hex("#8CC24A");
         public Color Level3 = Hex("#F5D423");
@@ -149,6 +151,7 @@ namespace ProjectFM.ConditionRings
             if (!seen.Contains("fatiguenumber")) add.AddRange(new[] { "# Fatigue as a number instead of FM's icon", "FatigueNumber = true" });
             if (!seen.Contains("moraletext")) add.AddRange(new[] { "# Morale: FM's word next to its arrow", "MoraleText = true" });
             if (!seen.Contains("fatiguefmcolours")) add.AddRange(FatigueLines(s));
+            if (!seen.Contains("heart5from")) add.AddRange(new[] { "# Live condition in match tables: FM's heart level from these percentages (3 and 2 are guesses)", $"Heart5From = {s.Heart5From}", $"Heart4From = {s.Heart4From}", $"Heart3From = {s.Heart3From}", $"Heart2From = {s.Heart2From}" });
             if (!seen.Contains("style")) add.AddRange(StyleLines(s));
             else if (!seen.Contains("level5")) add.AddRange(new[] { "# Colours for FM's levels, best (5) to worst (1)", $"Level5 = {ToHex(s.Level5)}", $"Level4 = {ToHex(s.Level4)}", $"Level3 = {ToHex(s.Level3)}", $"Level2 = {ToHex(s.Level2)}", $"Level1 = {ToHex(s.Level1)}" });
             if (add.Count > 0) try { File.AppendAllLines(Path, add); } catch { }
@@ -202,6 +205,10 @@ namespace ProjectFM.ConditionRings
                 case "style": TextOnly = v.Trim().Equals("text", StringComparison.OrdinalIgnoreCase); break;
                 case "fmcolours": FmColours = Yes(v); break;
                 case "level5": Level5 = Hex(v); break;
+                case "heart5from": Heart5From = (int)Num(v); break;
+                case "heart4from": Heart4From = (int)Num(v); break;
+                case "heart3from": Heart3From = (int)Num(v); break;
+                case "heart2from": Heart2From = (int)Num(v); break;
                 case "level4": Level4 = Hex(v); break;
                 case "level3": Level3 = Hex(v); break;
                 case "level2": Level2 = Hex(v); break;
@@ -396,9 +403,102 @@ namespace ProjectFM.ConditionRings
             return 0;
         }
 
+        // ---- Live condition in match tables ----
+        // Match stats rows only reach the player's club record, whose condition FM updates after
+        // the match. The bottom squad bar holds the match players with their live condition: it is
+        // read there by shirt number and shown in the rows of the same shirt number.
+        private static readonly Dictionary<int, int> live = new Dictionary<int, int>();
+        private static readonly string[] LivePaths = { "binding.Condition", "matchplayer.Condition", "player.Condition", "binding.MatchPlayer.Condition" };
+        private static string livePath;
+        private static bool liveLogged;
+
+        private static void ReadLive(VisualElement root)
+        {
+            foreach (var block in FindNamed(root, "BindingRoot_SquadOverviewPlayerBlock"))
+            {
+                var shirt = FindNamed(block, "fm-tactics-shirt-number");
+                if (shirt.Count == 0) continue;
+                var nt = shirt[0].TryCast<TextElement>()?.text;
+                if (!int.TryParse(nt?.Trim(), out var number)) continue;
+                var icon = FindNamed(block, "Conditionicon");
+                var host = icon.Count > 0 ? icon[0].parent : null;
+                if (host == null) continue;
+                int? value = null;
+                for (int i = 0; i < LivePaths.Length && value == null; i++)
+                {
+                    if (livePath != null && LivePaths[i] != livePath) continue;
+                    var t = HiddenText(host, "pfm-live-" + i, LivePaths[i]);
+                    var raw = t?.text;
+                    if (string.IsNullOrEmpty(raw)) continue;
+                    var digits = new string(raw.Where(char.IsDigit).ToArray());
+                    if (digits.Length == 0 || digits.Length > 3) continue;
+                    value = int.Parse(digits, CultureInfo.InvariantCulture);
+                    if (livePath == null)
+                    {
+                        livePath = LivePaths[i];
+                        Plugin.L.LogInfo($"rings: live condition read from the bottom bar as {livePath} (\"{raw}\")");
+                    }
+                }
+                if (value.HasValue) live[number] = value.Value;
+            }
+            if (live.Count > 0 && !liveLogged) { liveLogged = true; Plugin.L.LogInfo($"rings: live condition for {live.Count} players on the bottom bar"); }
+        }
+
+        private static SIText HiddenText(VisualElement parent, string name, string path)
+        {
+            for (int i = 0; i < parent.childCount; i++)
+                if (parent[i].name == name) return parent[i].TryCast<SIText>();
+            try
+            {
+                var text = new SIText { name = name };
+                var method = new BindingMethod<SIText>();
+                method.m_kind = BindingMethodKind.Direct;
+                var direct = new DirectBinding();
+                direct.Path = new BindingPath(path);
+                method.m_direct = direct;
+                text.TextBinding = method;
+                var st = text.style;
+                st.position = new StyleEnum<Position>(Position.Absolute);
+                st.width = new StyleLength(0f);
+                st.height = new StyleLength(0f);
+                st.opacity = new StyleFloat(0f);
+                st.overflow = new StyleEnum<Overflow>(Overflow.Hidden);
+                text.pickingMode = PickingMode.Ignore;
+                parent.Add(text);
+                try { text.BindToData(); } catch { }
+                return text;
+            }
+            catch { return null; }
+        }
+
+        private static List<VisualElement> FindNamed(VisualElement e, string name, List<VisualElement> acc = null, int depth = 0)
+        {
+            acc ??= new List<VisualElement>();
+            if (e.name == name) { acc.Add(e); return acc; }
+            if (depth > 60) return acc;
+            for (int i = 0; i < e.childCount; i++) FindNamed(e[i], name, acc, depth + 1);
+            return acc;
+        }
+
+        /// <summary>The live condition for a table row's player, by his shirt number, if on the bottom bar.</summary>
+        private static int? LiveFor(VisualElement icon)
+        {
+            if (live.Count == 0 || icon.parent == null) return null;
+            var t = HiddenText(icon.parent, "pfm-shirt", "player.SquadNumber");
+            if (t == null || !int.TryParse(t.text?.Trim(), out var n)) return null;
+            return live.TryGetValue(n, out var v) ? v : (int?)null;
+        }
+
+        /// <summary>FM's heart level for a condition percentage (FM: level 5 from 86%, level 4 from 77%).</summary>
+        private static string LevelClassFor(int pct) =>
+            "level-" + (pct >= S.Heart5From ? 5 : pct >= S.Heart4From ? 4 : pct >= S.Heart3From ? 3 : pct >= S.Heart2From ? 2 : 1);
+
         private int Pass()
         {
             int count = 0;
+            live.Clear();
+            foreach (var d in UnityEngine.Object.FindObjectsOfType<UIDocument>())
+                if (d.rootVisualElement != null) try { ReadLive(d.rootVisualElement); } catch { }
             var docs = UnityEngine.Object.FindObjectsOfType<UIDocument>();
             var stack = new Stack<VisualElement>();
             foreach (var doc in docs)
@@ -571,6 +671,12 @@ namespace ProjectFM.ConditionRings
             Color? fm = null;
             int? pct = PercentNear(e, sharp ? "KojuroSharp" : "KojuroPct") ?? BoundValue(e, sharp, path, out fm);
             if (!sharp && pct.HasValue) NoteLevel(cls, pct.Value);
+            // Match tables: the live condition from the bottom bar, coloured by its heart level
+            if (!sharp && path == null && e.name == "ConditionIcon")
+            {
+                var lv = LiveFor(e);
+                if (lv.HasValue) { pct = lv; fm = null; if (!injured) cls = LevelClassFor(lv.Value); }
+            }
             int value = pct ?? FromLevel(cls, sharp);
 
             if (ring == null)
