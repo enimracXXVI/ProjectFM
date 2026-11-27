@@ -17,7 +17,7 @@ namespace ProjectFM.ConditionRings
     /// Shows condition and match sharpness as coloured rings with FM's own percentage in them,
     /// in place of the level icons in FM27's player tables. Reads only what FM already shows.
     /// </summary>
-    [BepInPlugin("projectfm.conditionrings", "ProjectFM Condition Rings", "1.8.0")]
+    [BepInPlugin("projectfm.conditionrings", "ProjectFM Condition Rings", "1.9.0")]
     public class Plugin : BasePlugin
     {
         internal static ManualLogSource L;
@@ -45,6 +45,10 @@ namespace ProjectFM.ConditionRings
         public bool FatigueNumber = true;
         public bool MoraleText = true;
         public bool FatigueFmColours = true;
+        /// <summary>"ring" or "text": condition and sharpness as a coloured ring or as coloured text only.</summary>
+        public bool TextOnly;
+        /// <summary>Condition and sharpness in FM's own colours (else the percentage bands below).</summary>
+        public bool FmColours = true;
         public Color FatigueFresh = Hex("#33A854");
         public Color FatigueLow = Hex("#8CC24A");
         public Color FatigueMedium = Hex("#F5D423");
@@ -125,9 +129,18 @@ namespace ProjectFM.ConditionRings
             if (!seen.Contains("fatiguenumber")) add.AddRange(new[] { "# Fatigue as a number instead of FM's icon", "FatigueNumber = true" });
             if (!seen.Contains("moraletext")) add.AddRange(new[] { "# Morale: FM's word next to its arrow", "MoraleText = true" });
             if (!seen.Contains("fatiguefmcolours")) add.AddRange(FatigueLines(s));
+            if (!seen.Contains("style")) add.AddRange(StyleLines(s));
             if (add.Count > 0) try { File.AppendAllLines(Path, add); } catch { }
             return s;
         }
+
+        private static string[] StyleLines(Settings s) => new[]
+        {
+            "# Condition and sharpness as a coloured ring (ring) or as coloured text only (text)",
+            $"Style = {(s.TextOnly ? "text" : "ring")}",
+            "# Condition and sharpness in FM's own colours (true), or by the percentages GreenFrom/LimeFrom/AmberFrom (false)",
+            $"FmColours = {(s.FmColours ? "true" : "false")}",
+        };
 
         private static string[] FatigueLines(Settings s) => new[]
         {
@@ -158,6 +171,8 @@ namespace ProjectFM.ConditionRings
                 case "fatiguenumber": FatigueNumber = Yes(v); break;
                 case "moraletext": MoraleText = Yes(v); break;
                 case "fatiguefmcolours": FatigueFmColours = Yes(v); break;
+                case "style": TextOnly = v.Trim().Equals("text", StringComparison.OrdinalIgnoreCase); break;
+                case "fmcolours": FmColours = Yes(v); break;
                 case "fatiguefresh": FatigueFresh = Hex(v); break;
                 case "fatiguelow": FatigueLow = Hex(v); break;
                 case "fatiguemedium": FatigueMedium = Hex(v); break;
@@ -219,7 +234,7 @@ namespace ProjectFM.ConditionRings
                 $"Red = {ToHex(Red)}",
                 $"Text = {ToHex(Text)}",
                 "",
-            }.Concat(FatigueLines(this)));
+            }.Concat(StyleLines(this)).Concat(FatigueLines(this)));
         }
     }
 
@@ -456,7 +471,14 @@ namespace ProjectFM.ConditionRings
             }
             e.style.display = DisplayStyle.None;
             int value = int.Parse(digits, CultureInfo.InvariantCulture);
-            Paint(ring, S.ColourFor(value), S.ShowNumber ? value.ToString(CultureInfo.InvariantCulture) : "");
+            // The skin's text carries FM's colour already
+            Color colour = S.ColourFor(value);
+            if (S.FmColours)
+            {
+                var t = FirstTextElement(e, 0);
+                if (t != null) colour = t.resolvedStyle.color;
+            }
+            Paint(ring, colour, S.ShowNumber ? value.ToString(CultureInfo.InvariantCulture) : "");
             return true;
         }
 
@@ -513,7 +535,8 @@ namespace ProjectFM.ConditionRings
             bool injured = !sharp && cls.Contains("injured");
             // A number from a skin next to the icon, else FM's own value read through a hidden
             // text bound to the same data the MrTini23 skin shows (player.Condition, binding.Sharpness)
-            int? pct = PercentNear(e, sharp ? "KojuroSharp" : "KojuroPct") ?? BoundValue(e, sharp, path);
+            Color? fm = null;
+            int? pct = PercentNear(e, sharp ? "KojuroSharp" : "KojuroPct") ?? BoundValue(e, sharp, path, out fm);
             if (!sharp && pct.HasValue) NoteLevel(cls, pct.Value);
             int value = pct ?? FromLevel(cls, sharp);
 
@@ -530,7 +553,7 @@ namespace ProjectFM.ConditionRings
                 if (s.name == (sharp ? "KojuroSharp" : "KojuroPct")) s.style.display = DisplayStyle.None;
             }
 
-            var colour = injured ? S.Red : S.ColourFor(value);
+            var colour = injured ? S.Red : (S.FmColours && fm.HasValue ? fm.Value : S.ColourFor(value));
             var text = injured ? "INJ" : (pct.HasValue && S.ShowNumber ? Math.Max(0, value).ToString(CultureInfo.InvariantCulture) : "");
             Paint(ring, colour, text);
             return true;
@@ -637,24 +660,53 @@ namespace ProjectFM.ConditionRings
         private static VisualElement Outer(SIText text) =>
             text.parent != null && text.parent.name == FatigueSetterName ? text.parent : text;
 
-        // FM's fatigue style table (the asset FM picks the fatigue icon with) run on "binding";
-        // the same function and arguments the MrTini23 skin's PlayerFatigueIconCell uses
-        private static readonly byte[] FatigueStyleArgs = Convert.FromBase64String(
-            "BSEAAAAfU0kuQmluZGFibGUuQmluZGluZ0tleVZpc3VhbEFyZwBQAAAAKlNJLlZpc3VhbFNjcmlwdGluZy5Bc3NldFJlZmVyZW5jZVZpc3VhbEFyZyBiZTE0NzkzNmIxMzQ5YTM0Y2E2NzIyZWYwODljYzI0OAEAAQAvAAAAIlNJLlZpc3VhbFNjcmlwdGluZy5TdHJpbmdWaXN1YWxBcmcBClN0eWxlQ2xhc3MlAAAAI1NJLlZpc3VhbFNjcmlwdGluZy5Cb29sZWFuVmlzdWFsQXJnAUgAAAA+U0kuVmlzdWFsU2NyaXB0aW5nLkdlbmVyaWNWaXN1YWxBcmdgMVtTSS5CaW5kYWJsZS5CaW5kaW5nUGF0aF0BB2JpbmRpbmc=");
+        // FM's style tables (the assets FM picks its icons with), run on a value by FM's style
+        // function, as the MrTini23 skin's cells do: fatigue, condition and sharpness
+        private const string StyleFunction = "ccad53b4192c2ed41ad18bae0726dbe4";
+        private const string FatigueTable = "be147936b1349a34ca6722ef089cc248";
+        private const string ConditionTable = "256d604ac1ad51a4eaf752c77ba39ef6";
+        private const string SharpnessTable = "70baf4c8a65a164498f94427cab0d21c";
+
+        /// <summary>FM's serialised arguments for its style function: key, table, column, flag, path.</summary>
+        private static byte[] StyleArgs(string table, string column, string path)
+        {
+            var o = new List<byte> { 5 };
+            void Arg(string type, byte[] payload)
+            {
+                var t = System.Text.Encoding.ASCII.GetBytes(type);
+                o.AddRange(BitConverter.GetBytes(1 + t.Length + payload.Length));
+                o.Add((byte)t.Length);
+                o.AddRange(t);
+                o.AddRange(payload);
+            }
+            byte[] Str(string v) { var b = System.Text.Encoding.ASCII.GetBytes(v); var r = new List<byte> { 1, (byte)b.Length }; r.AddRange(b); return r.ToArray(); }
+            Arg("SI.Bindable.BindingKeyVisualArg", new byte[] { 0 });
+            var g = new List<byte> { (byte)table.Length };
+            g.AddRange(System.Text.Encoding.ASCII.GetBytes(table));
+            g.AddRange(new byte[] { 1, 0, 1, 0 });
+            Arg("SI.VisualScripting.AssetReferenceVisualArg", g.ToArray());
+            Arg("SI.VisualScripting.StringVisualArg", Str(column));
+            Arg("SI.VisualScripting.BooleanVisualArg", new byte[] { 1 });
+            Arg("SI.VisualScripting.GenericVisualArg`1[SI.Bindable.BindingPath]", Str(path));
+            return o.ToArray();
+        }
+
         private static bool setterFailed;
 
-        private static SIStyleSetter FatigueColourSetter()
+        private static SIStyleSetter FatigueColourSetter() => StyleSetter(FatigueSetterName, StyleArgs(FatigueTable, "StyleClass", "binding"));
+
+        private static SIStyleSetter StyleSetter(string name, byte[] args)
         {
             try
             {
-                var setter = new SIStyleSetter { name = FatigueSetterName };
+                var setter = new SIStyleSetter { name = name };
                 setter.pickingMode = PickingMode.Ignore;
                 setter.style.alignSelf = new StyleEnum<Align>(Align.Center);
                 var cfg = new SI.VisualScripting.DataDrivenVisualRunnerConfig<SI.VisualScripting.VisualArgs<BindingBag, SIStyleSetter>, SI.VisualScripting.VisualArgs>();
-                var guid = new SI.Core.AssetGUID("ccad53b4192c2ed41ad18bae0726dbe4");
+                var guid = new SI.Core.AssetGUID(StyleFunction);
                 cfg.m_target = guid;
                 var vin = new SI.VisualScripting.VariableVisualArgs();
-                vin.m_argumentBytes = FatigueStyleArgs;
+                vin.m_argumentBytes = args;
                 vin.OnAfterDeserialize();
                 var din = new SI.VisualScripting.DataDrivenVisualArgs<SI.VisualScripting.VisualArgs<BindingBag, SIStyleSetter>>();
                 din.m_variable = vin;
@@ -670,7 +722,7 @@ namespace ProjectFM.ConditionRings
             }
             catch (Exception ex)
             {
-                if (!setterFailed) { setterFailed = true; Plugin.L.LogWarning("rings: FM's fatigue colours not available, using the settings' colours: " + ex.Message); }
+                if (!setterFailed) { setterFailed = true; Plugin.L.LogWarning("rings: FM's colours not available, using the settings' colours: " + ex.Message); }
                 return null;
             }
         }
@@ -778,13 +830,27 @@ namespace ProjectFM.ConditionRings
         }
 
         /// <summary>FM's condition or sharpness for the cell, from a hidden bound text.</summary>
-        private static int? BoundValue(VisualElement icon, bool sharp, string path = null)
+        private static int? BoundValue(VisualElement icon, bool sharp, string path = null) => BoundValue(icon, sharp, path, out _);
+
+        private const string HolderName = "pfm-value-holder";
+
+        /// <summary>
+        /// FM's condition or sharpness for the cell, from a hidden text bound to it; the text sits in
+        /// a style setter running FM's own condition/sharpness table, so it also carries FM's colour.
+        /// </summary>
+        private static int? BoundValue(VisualElement icon, bool sharp, string path, out Color? fmColour)
         {
+            fmColour = null;
             var parent = icon.parent;
             if (parent == null) return null;
+            path ??= sharp ? "binding.Sharpness" : "player.Condition";
             SIText text = null;
+            VisualElement holder = null;
             for (int i = 0; i < parent.childCount; i++)
+            {
                 if (parent[i].name == ValueName) { text = parent[i].TryCast<SIText>(); break; }
+                if (parent[i].name == HolderName && parent[i].childCount > 0) { holder = parent[i]; text = parent[i][0].TryCast<SIText>(); break; }
+            }
             if (text == null)
             {
                 try
@@ -793,17 +859,21 @@ namespace ProjectFM.ConditionRings
                     var method = new BindingMethod<SIText>();
                     method.m_kind = BindingMethodKind.Direct;
                     var direct = new DirectBinding();
-                    direct.Path = new BindingPath(path ?? (sharp ? "binding.Sharpness" : "player.Condition"));
+                    direct.Path = new BindingPath(path);
                     method.m_direct = direct;
                     text.TextBinding = method;
-                    var st = text.style;
+                    text.pickingMode = PickingMode.Ignore;
+                    holder = S.FmColours ? StyleSetter(HolderName, sharp ? StyleArgs(SharpnessTable, "StyleClass", path) : StyleArgs(ConditionTable, "TextColourStyle", path)) : null;
+                    VisualElement hidden = (VisualElement)holder ?? text;
+                    var st = hidden.style;
                     st.position = new StyleEnum<Position>(Position.Absolute);
                     st.width = new StyleLength(0f);
                     st.height = new StyleLength(0f);
                     st.opacity = new StyleFloat(0f);
                     st.overflow = new StyleEnum<Overflow>(Overflow.Hidden);
-                    text.pickingMode = PickingMode.Ignore;
-                    parent.Add(text);
+                    hidden.pickingMode = PickingMode.Ignore;
+                    if (holder != null) { holder.Add(text); parent.Add(holder); try { holder.TryCast<SIStyleSetter>().BindToData(); } catch { } }
+                    else parent.Add(text);
                     try { text.BindToData(); } catch { }
                 }
                 catch (Exception ex)
@@ -811,6 +881,11 @@ namespace ProjectFM.ConditionRings
                     if (!boundFailed) { boundFailed = true; Plugin.L.LogWarning("rings: can't read FM's value: " + ex.Message); }
                     return null;
                 }
+            }
+            if (holder != null)
+            {
+                var cl = holder.GetClasses().TryCast<Il2CppSystem.Collections.Generic.List<string>>();
+                if (cl != null && cl.Count > 0) fmColour = text.resolvedStyle.color;
             }
             var raw = text.text;
             if (string.IsNullOrEmpty(raw)) return null;
@@ -821,6 +896,15 @@ namespace ProjectFM.ConditionRings
         }
 
         private static bool boundFailed, boundLogged;
+
+        private static TextElement FirstTextElement(VisualElement e, int depth)
+        {
+            var t = e.TryCast<TextElement>();
+            if (t != null) return t;
+            if (depth > 4) return null;
+            for (int i = 0; i < e.childCount; i++) { var r = FirstTextElement(e[i], depth + 1); if (r != null) return r; }
+            return null;
+        }
 
         private static VisualElement MakeRing()
         {
@@ -836,7 +920,7 @@ namespace ProjectFM.ConditionRings
             s.borderTopRightRadius = r;
             s.borderBottomLeftRadius = r;
             s.borderBottomRightRadius = r;
-            var w = new StyleFloat(S.Border);
+            var w = new StyleFloat(S.TextOnly ? 0f : S.Border);
             s.borderTopWidth = w;
             s.borderBottomWidth = w;
             s.borderLeftWidth = w;
@@ -846,7 +930,7 @@ namespace ProjectFM.ConditionRings
             s.alignSelf = new StyleEnum<Align>(Align.Center);
             var label = new Label { name = "pfm-ring-label" };
             var ls = label.style;
-            ls.fontSize = new StyleLength(S.FontSize);
+            ls.fontSize = new StyleLength(S.TextOnly ? S.FontSize + 3f : S.FontSize);
             ls.unityFontStyleAndWeight = new StyleEnum<FontStyle>(S.Bold ? FontStyle.Bold : FontStyle.Normal);
             ls.unityTextAlign = new StyleEnum<TextAnchor>(TextAnchor.MiddleCenter);
             ls.paddingLeft = new StyleLength(0f);
@@ -870,11 +954,17 @@ namespace ProjectFM.ConditionRings
             s.borderBottomColor = c;
             s.borderLeftColor = c;
             s.borderRightColor = c;
-            s.backgroundColor = new StyleColor(new Color(colour.r, colour.g, colour.b, S.Fill));
+            s.backgroundColor = new StyleColor(S.TextOnly ? Color.clear : new Color(colour.r, colour.g, colour.b, S.Fill));
             if (ring.childCount > 0)
             {
                 var label = ring[0].TryCast<Label>();
-                if (label != null && label.text != text) label.text = text;
+                if (label != null)
+                {
+                    if (label.text != text) label.text = text;
+                    // Text only: the number itself in the colour (a dot when the number is off)
+                    label.style.color = new StyleColor(S.TextOnly ? colour : S.Text);
+                    if (S.TextOnly && text.Length == 0) label.text = "●";
+                }
             }
         }
     }
