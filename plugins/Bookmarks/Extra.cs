@@ -73,6 +73,47 @@ namespace ProjectFM.Bookmarks
             catch (Exception e) { Entry.Log("bookmarks: screen key: " + e.Message); }
         }
 
+        private static bool named, described;
+
+        /// <summary>
+        /// The bookmark's name: FM's own title of its Individual Training screen (FM shows bookmark
+        /// names from its text ids, so a plain text stays empty). The screen id is only read once
+        /// FM has it in memory (after Individual Training has been open once), never loaded.
+        /// </summary>
+        private static void Name()
+        {
+            if (named || made.Count == 0) return;
+            foreach (var p in Resources.FindObjectsOfTypeAll<PanelID>())
+            {
+                if (p == null || p.name != ScreenName) continue;
+                foreach (var b in made) if (b != null) b.m_displayValue = p.m_title;
+                named = true;
+                Entry.Info("bookmarks: Individual Training bookmark named with FM's own screen title");
+                return;
+            }
+        }
+
+        /// <summary>Logs how FM's own bookmarks for a tab inside a screen are set up (to fix the tab underline).</summary>
+        private static void Describe(Il2CppSystem.Collections.Generic.List<BookmarkInfo> items)
+        {
+            if (described) return;
+            described = true;
+            foreach (var want in new[] { "TrainingBookmark", "PlayerShortlistBookmark", "FirstTeamBookmark", "NewsAroundTheWorldBookmark", Mark })
+                for (int i = 0; i < items.Count; i++)
+                {
+                    var b = items[i];
+                    if (b == null || b.name != want) continue;
+                    var ev = b.m_openEvent;
+                    string evs = "none";
+                    if (ev != null)
+                    {
+                        var pr = ev.m_panelReference;
+                        evs = $"panel {pr.asset?.AssetGUID} kind {pr.kind} binding '{pr.binding?.m_path}' anchor {ev.m_anchor} args {(ev.m_argumentBindings == null ? 0 : ev.m_argumentBindings.Count)} rebind {ev.m_rebindMethod} existing {ev.m_checkForExistingOpenedPanel}";
+                    }
+                    Entry.Info($"bookmarks: FM's '{want}': uid {b.m_panelUID}, panel {b.m_panelIDRef?.AssetGUID}, main {b.m_mainPanelIDRef?.AssetGUID}, text id {b.m_displayValue.GameID}, open: {evs}");
+                }
+        }
+
         private static void Point(BookmarkInfo b)
         {
             if (guid == null || b == null) return;
@@ -88,6 +129,7 @@ namespace ProjectFM.Bookmarks
         public static void Tick()
         {
             CheckKeys();
+            Name();
             if (failed || Time.realtimeSinceStartup < next) return;
             next = Time.realtimeSinceStartup + 3f;
             var mods = Resources.FindObjectsOfTypeAll<GameWorldTabsAndBookmarksModule>();
@@ -106,8 +148,12 @@ namespace ProjectFM.Bookmarks
             try { Add(__instance); } catch (Exception e) { Entry.Log("bookmarks: Individual Training bookmark: " + e.Message); }
         }
 
+        /// <summary>Bookmarks.cfg: IndividualTrainingBookmark = 0 leaves FM's list alone.</summary>
+        public static bool Enabled = true;
+
         internal static void Add(BookmarksList list)
         {
+            if (!Enabled) return;
             var items = list.m_bookmarks;
             BookmarkInfo training = null;
             for (int i = 0; i < items.Count; i++)
@@ -131,6 +177,7 @@ namespace ProjectFM.Bookmarks
             Point(b);
             made.Add(b);
             items.Add(b);
+            try { Describe(items); } catch (Exception e) { Entry.Log("bookmarks: describe: " + e.Message); }
             Entry.Info($"bookmarks: Individual Training added to '{list.name}' ({items.Count} bookmarks)");
         }
     }

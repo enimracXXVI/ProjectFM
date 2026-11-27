@@ -12,7 +12,7 @@ using UnityEngine.UIElements;
 
 namespace ProjectFM.Bookmarks
 {
-    [BepInPlugin("projectfm.bookmarks", "ProjectFM Bookmarks", "1.2.1")]
+    [BepInPlugin("projectfm.bookmarks", "ProjectFM Bookmarks", "1.3.0")]
     public class Plugin : BasePlugin
     {
         public override void Load()
@@ -75,6 +75,7 @@ namespace ProjectFM.Bookmarks
                         case "smallestroom": if (n > 50) minRoom = n; break;
                         case "maxwithlabels": if (n > 0) capBy[true] = (int)n; break;
                         case "maxwithoutlabels": if (n > 0) capBy[false] = (int)n; break;
+                        case "individualtrainingbookmark": Extra.Enabled = n != 0; break;
                     }
                 }
                 L.LogInfo($"bookmarks: settings read (room {minRoom:0}px, with labels {Get(true)}, without {Get(false)}, limit {limit})");
@@ -97,6 +98,8 @@ namespace ProjectFM.Bookmarks
                 $"SmallestRoom = {(minRoom < float.MaxValue ? minRoom.ToString("0", CultureInfo.InvariantCulture) : "")}",
                 $"MaxWithLabels = {(capBy.TryGetValue(true, out var a) ? a.ToString() : "")}",
                 $"MaxWithoutLabels = {(capBy.TryGetValue(false, out var b) ? b.ToString() : "")}",
+                "# Extra bookmark under All Bookmarks: Individual Training (1 on, 0 off; restart FM)",
+                $"IndividualTrainingBookmark = {(Extra.Enabled ? 1 : 0)}",
             });
             if (text == savedText) return;
             try { File.WriteAllText(ConfigPath, text + "\n"); savedText = text; }
