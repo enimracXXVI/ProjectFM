@@ -17,7 +17,7 @@ namespace ProjectFM.ConditionRings
     /// Shows condition and match sharpness as coloured rings with FM's own percentage in them,
     /// in place of the level icons in FM27's player tables. Reads only what FM already shows.
     /// </summary>
-    [BepInPlugin("projectfm.conditionrings", "ProjectFM Condition Rings", "1.9.0")]
+    [BepInPlugin("projectfm.conditionrings", "ProjectFM Condition Rings", "1.9.1")]
     public class Plugin : BasePlugin
     {
         internal static ManualLogSource L;
@@ -600,7 +600,8 @@ namespace ProjectFM.ConditionRings
                     method.m_direct = direct;
                     text.TextBinding = method;
                     var st = text.style;
-                    st.fontSize = new StyleLength(S.FontSize + 3f);
+                    // The size of FM's own table numbers (goals, assists...): its body-md text class
+                    text.AddToClassList("body-md");
                     st.unityFontStyleAndWeight = new StyleEnum<FontStyle>(S.Bold ? FontStyle.Bold : FontStyle.Normal);
                     st.unityTextAlign = new StyleEnum<TextAnchor>(TextAnchor.MiddleCenter);
                     st.alignSelf = new StyleEnum<Align>(Align.Center);
@@ -643,6 +644,12 @@ namespace ProjectFM.ConditionRings
                 {
                     var cl = holder.GetClasses().TryCast<Il2CppSystem.Collections.Generic.List<string>>();
                     fmColour = cl != null && cl.Count > baseSetterClasses;
+                    if (fmColour)
+                    {
+                        var names = new List<string>();
+                        for (int i = 0; i < cl.Count; i++) names.Add(cl[i]);
+                        NoteColour("fatigue", string.Join(" ", names), text.resolvedStyle.color);
+                    }
                 }
                 if (fmColour) text.style.color = new StyleColor(StyleKeyword.Null);
                 else if (!fatigueSince.TryGetValue(text.Pointer, out var at) || Time.realtimeSinceStartup - at > 1.5f)
@@ -885,7 +892,17 @@ namespace ProjectFM.ConditionRings
             if (holder != null)
             {
                 var cl = holder.GetClasses().TryCast<Il2CppSystem.Collections.Generic.List<string>>();
-                if (cl != null && cl.Count > 0) fmColour = text.resolvedStyle.color;
+                if (cl != null && cl.Count > 0)
+                {
+                    var c = text.resolvedStyle.color;
+                    var names = new List<string>();
+                    for (int i = 0; i < cl.Count; i++) names.Add(cl[i]);
+                    var tc = text.GetClasses().TryCast<Il2CppSystem.Collections.Generic.List<string>>();
+                    if (tc != null) for (int i = 0; i < tc.Count; i++) names.Add("text:" + tc[i]);
+                    NoteColour(sharp ? "sharpness" : "condition", string.Join(" ", names), c);
+                    // White is FM's plain text colour: no colour came through, the bands decide
+                    if (!(c.r > 0.95f && c.g > 0.95f && c.b > 0.95f)) fmColour = c;
+                }
             }
             var raw = text.text;
             if (string.IsNullOrEmpty(raw)) return null;
@@ -896,6 +913,15 @@ namespace ProjectFM.ConditionRings
         }
 
         private static bool boundFailed, boundLogged;
+        private static readonly HashSet<string> colourNoted = new HashSet<string>();
+
+        /// <summary>Logs once which class FM's style table gave and the colour it makes.</summary>
+        private static void NoteColour(string what, string classes, Color c)
+        {
+            var hex = "#" + ((int)(c.r * 255)).ToString("X2") + ((int)(c.g * 255)).ToString("X2") + ((int)(c.b * 255)).ToString("X2");
+            if (colourNoted.Count < 40 && colourNoted.Add(what + classes + hex))
+                Plugin.L.LogInfo($"rings: FM's {what} colour: classes '{classes}' give {hex}");
+        }
 
         private static TextElement FirstTextElement(VisualElement e, int depth)
         {
