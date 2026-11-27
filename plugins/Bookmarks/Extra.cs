@@ -19,7 +19,9 @@ namespace ProjectFM.Bookmarks
         private const string ScreenName = "TeamIndividualTrainingTool";
         private const uint ScreenUid = 83254784;
         private static float next;
-        private static string guid = LoadKey();
+        // FM's key for its Individual Training screen, found in game by 1.2 (which then crashed FM:
+        // loading FM's screen ids to find it is not done any more)
+        private static string guid = LoadKey() ?? "41012275212b88b46957d71fc17c5876";
         private static readonly string KeyFile = Path.Combine(Path.GetDirectoryName(typeof(Extra).Assembly.Location) ?? BepInEx.Paths.PluginPath, "IndividualTraining.key");
         private static readonly List<BookmarkInfo> made = new();
         private static readonly HashSet<string> seenKeys = new();
@@ -43,7 +45,7 @@ namespace ProjectFM.Bookmarks
         /// </summary>
         public static void AfterFill(SI.Bindable.Events.OpenPanelEventContext __instance)
         {
-            if (guid != null) return;
+            return;
             try
             {
                 var k = __instance.m_panelReference.asset?.AssetGUID;
@@ -54,7 +56,7 @@ namespace ProjectFM.Bookmarks
 
         private static void CheckKeys()
         {
-            if (guid != null || toCheck.Count == 0) return;
+            return;
             var k = toCheck.Dequeue();
             try
             {
