@@ -12,7 +12,7 @@ using UnityEngine.UIElements;
 
 namespace ProjectFM.Training
 {
-    [BepInPlugin("projectfm.training", "ProjectFM Training", "2.0.0")]
+    [BepInPlugin("projectfm.training", "ProjectFM Training", "2.1.0")]
     public class Plugin : BasePlugin
     {
         internal static ManualLogSource L;
@@ -32,6 +32,7 @@ namespace ProjectFM.Training
     {
         public static float ListWidth = 45f;
         public static bool RowButtons = true, TopButtons = true;
+        public static Color PraiseColour = new Color(0.20f, 0.66f, 0.33f), CriticiseColour = new Color(0.80f, 0.26f, 0.21f);
         private static readonly string Path = System.IO.Path.Combine(
             System.IO.Path.GetDirectoryName(typeof(Settings).Assembly.Location) ?? Paths.PluginPath, "Training.cfg");
         private static DateTime stamp;
@@ -49,6 +50,9 @@ namespace ProjectFM.Training
                         "# Praise / Criticise Training/Development buttons on each player's row, and above the list for the ticked players",
                         "RowButtons = true",
                         "TopButtons = true",
+                        "# Button colours (#RRGGBB)",
+                        "PraiseColour = #33A854",
+                        "CriticiseColour = #CC4236",
                     });
                 stamp = File.GetLastWriteTimeUtc(Path);
                 foreach (var raw in File.ReadAllLines(Path))
@@ -61,6 +65,7 @@ namespace ProjectFM.Training
                     var v = line.Substring(eq + 1).Trim();
                     bool on = v.Equals("true", StringComparison.OrdinalIgnoreCase) || v == "1" || v.Equals("yes", StringComparison.OrdinalIgnoreCase);
                     if (k == "rowbuttons") RowButtons = on;
+                    if ((k == "praisecolour" || k == "criticisecolour") && ColorUtility.TryParseHtmlString(v, out var c)) { if (k == "praisecolour") PraiseColour = c; else CriticiseColour = c; }
                     if (k == "topbuttons") TopButtons = on;
                     if (k == "listwidth" && float.TryParse(v.Replace(',', '.'), NumberStyles.Float, CultureInfo.InvariantCulture, out var n))
                         ListWidth = Math.Clamp(n, 15f, 85f);
@@ -139,6 +144,7 @@ namespace ProjectFM.Training
                     Bind(top);
                 }
                 else if (top != null && !Settings.TopButtons) top.RemoveFromHierarchy();
+                if (top != null && top.parent != null) Compact(top);
             }
 
             // On each row, after the player's name: FM's buttons for that row's player
@@ -156,6 +162,7 @@ namespace ProjectFM.Training
                     holder.Add(mine);
                     Bind(mine);
                 }
+                Compact(mine);
             }
         }
 
@@ -194,6 +201,47 @@ namespace ProjectFM.Training
         }
 
         private static bool toldButtons;
+
+        /// <summary>
+        /// FM draws each button with its icon and "Praise/Criticise Training/Development": only the
+        /// icon is kept, on green (praise) or red (criticise); FM's full text stays as the tooltip.
+        /// </summary>
+        private static void Compact(VisualElement box)
+        {
+            for (int i = 0; i < box.childCount; i++)
+            {
+                var action = box[i];
+                var colour = i == 0 ? Settings.PraiseColour : Settings.CriticiseColour;
+                Style(action, colour, 0);
+            }
+        }
+
+        private static void Style(VisualElement e, Color colour, int depth)
+        {
+            if (depth > 8) return;
+            var text = e.TryCast<TextElement>();
+            if (text != null && !(e.TryCast<Button>() != null && e.childCount > 0))
+            {
+                var t = text.text;
+                if (!string.IsNullOrEmpty(t))
+                {
+                    if (string.IsNullOrEmpty(e.tooltip)) e.parent.tooltip = t;
+                    e.style.display = DisplayStyle.None;
+                }
+            }
+            if (e.ClassListContains("sibutton") || e.TryCast<Button>() != null)
+            {
+                var st = e.style;
+                st.backgroundColor = colour;
+                var b = new StyleColor(colour);
+                st.borderTopColor = b; st.borderBottomColor = b; st.borderLeftColor = b; st.borderRightColor = b;
+                st.paddingLeft = 4; st.paddingRight = 4; st.paddingTop = 2; st.paddingBottom = 2;
+                st.minWidth = 0; st.width = StyleKeyword.Auto;
+                st.flexGrow = 0; st.flexShrink = 0;
+                st.marginLeft = 1; st.marginRight = 1;
+            }
+            for (int i = 0; i < e.childCount; i++) Style(e[i], colour, depth + 1);
+        }
 
         [HideFromIl2Cpp]
         internal static List<VisualElement> Rows(VisualElement e)
