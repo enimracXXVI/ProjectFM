@@ -12,7 +12,7 @@ using UnityEngine.UIElements;
 
 namespace ProjectFM.Training
 {
-    [BepInPlugin("projectfm.training", "ProjectFM Training", "1.1.0")]
+    [BepInPlugin("projectfm.training", "ProjectFM Training", "1.2.0")]
     public class Plugin : BasePlugin
     {
         internal static ManualLogSource L;
@@ -105,11 +105,14 @@ namespace ProjectFM.Training
                     var block = Find(root, "IndividualTrainingBlock", 0);
                     if (block == null) continue;
                     var list = FindClass(block, "width-30-percent", 0);
-                    if (list == null) continue;
-                    list.style.width = new StyleLength(new Length(Settings.ListWidth, LengthUnit.Percent));
-                    list.style.flexShrink = new StyleFloat(0f);
-                    if (!told) { told = true; Plugin.L.LogInfo($"training: player list widened to {Settings.ListWidth:0}%"); }
-                    AddButtons(list);
+                    if (list != null)
+                    {
+                        list.style.width = new StyleLength(new Length(Settings.ListWidth, LengthUnit.Percent));
+                        list.style.flexShrink = new StyleFloat(0f);
+                        if (!told) { told = true; Plugin.L.LogInfo($"training: player list widened to {Settings.ListWidth:0}%"); }
+                    }
+                    // Detailed and Summary views: each has its own Filter header and table
+                    AddButtons(block);
                 }
                 errors = 0;
             }
@@ -119,16 +122,19 @@ namespace ProjectFM.Training
         [HideFromIl2Cpp]
         private static void AddButtons(VisualElement list)
         {
-            // Above the list, before FM's Filter button: for the ticked players
-            var filter = Find(list, "Filter", 0);
-            var header = filter?.parent;
-            var top = header == null ? null : Child(header, TopMark);
-            if (header != null && Settings.TopButtons && top == null)
+            // Above each table, before FM's Filter button: for the ticked players
+            foreach (var filter in FindAll(list, "Filter"))
             {
-                top = Pair(TopMark, "Praise ticked", "Criticise ticked", true, null);
-                header.Insert(header.IndexOf(filter), top);
+                var header = filter.parent;
+                if (header == null) continue;
+                var top = Child(header, TopMark);
+                if (Settings.TopButtons && top == null)
+                {
+                    top = Pair(TopMark, "Praise ticked", "Criticise ticked", true, null);
+                    header.Insert(header.IndexOf(filter), top);
+                }
+                else if (top != null && !Settings.TopButtons) top.RemoveFromHierarchy();
             }
-            else if (top != null && !Settings.TopButtons) top.RemoveFromHierarchy();
 
             // On each row, after the player's name
             foreach (var row in Rows(list))
@@ -181,11 +187,14 @@ namespace ProjectFM.Training
             var targets = new List<VisualElement>();
             if (ticked)
             {
-                var list = Up(from, "width-30-percent") ?? from.parent?.parent?.parent;
-                foreach (var row in Rows(list))
+                // The table under this header: the nearest parent that holds rows
+                VisualElement scope = from.parent;
+                for (int i = 0; i < 6 && scope != null && Rows(scope).Count == 0; i++) scope = scope.parent;
+                foreach (var row in Rows(scope))
                 {
-                    var t = FindType<SI.Bindable.ExpandedToggle>(row);
-                    if (t != null && t.value) targets.Add(row);
+                    var cell = FindClass(row, "streamed-table__cell", 0);
+                    var t = cell == null ? null : FindType<Toggle>(cell);
+                    if (t != null && t.value && row.resolvedStyle.display != DisplayStyle.None) targets.Add(row);
                 }
                 if (targets.Count == 0) { Plugin.L.LogInfo("training: no players ticked"); return; }
             }
@@ -219,6 +228,16 @@ namespace ProjectFM.Training
             if (depth > 12) return null;
             for (int i = 0; i < e.childCount; i++) { var r = FindType<T>(e[i], depth + 1); if (r != null) return r; }
             return null;
+        }
+
+        [HideFromIl2Cpp]
+        internal static List<VisualElement> FindAll(VisualElement e, string name, List<VisualElement> acc = null, int depth = 0)
+        {
+            acc ??= new List<VisualElement>();
+            if (e.name == name) { acc.Add(e); return acc; }
+            if (depth > 40) return acc;
+            for (int i = 0; i < e.childCount; i++) FindAll(e[i], name, acc, depth + 1);
+            return acc;
         }
 
         internal static VisualElement Up(VisualElement e, string cls)
