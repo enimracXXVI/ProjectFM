@@ -11,7 +11,7 @@ using UnityEngine;
 
 namespace ProjectFM.TeamTalk
 {
-    [BepInPlugin("projectfm.teamtalk", "ProjectFM Team Talk", "1.1.0")]
+    [BepInPlugin("projectfm.teamtalk", "ProjectFM Team Talk", "1.2.0")]
     public class Plugin : BasePlugin
     {
         internal static ManualLogSource L;
@@ -110,12 +110,21 @@ namespace ProjectFM.TeamTalk
                 else if (t.name == "TeamTalkPlayerReactionTableFactory") talk = t;
             }
             if (players != null && !listed) { listed = true; WriteList(players); }
-            if (talk != null && players != null && !doneFactories.Contains(talk.Pointer))
+            // FM unloads its squad table during matches: keep copies of the wanted columns while it is there
+            if (players != null && copies.Count + missing.Count < Settings.Columns.Count) Keep(players);
+            if (talk != null && !doneFactories.Contains(talk.Pointer))
             {
-                doneFactories.Add(talk.Pointer);
-                int added = 0;
-                foreach (var (id, _) in Settings.Columns) if (AddRow(players, talk, id)) added++;
-                Plugin.L.LogInfo($"team talk: {added} columns added to FM's team talk table");
+                if (copies.Count == 0)
+                {
+                    if (!toldWaiting) { toldWaiting = true; Plugin.L.LogInfo("team talk: FM's squad table is not loaded yet; open your squad screen once, then the team talk"); }
+                }
+                else
+                {
+                    doneFactories.Add(talk.Pointer);
+                    int added = 0;
+                    foreach (var (id, _) in Settings.Columns) if (AddRow(talk, id)) added++;
+                    Plugin.L.LogInfo($"team talk: {added} columns added to FM's team talk table");
+                }
             }
             if (talk == null || !doneFactories.Contains(talk.Pointer)) return;
             foreach (var s in Resources.FindObjectsOfTypeAll<StreamedTableViewSettings>())
@@ -160,6 +169,32 @@ namespace ProjectFM.TeamTalk
         }
 
         private readonly HashSet<string> known = new();
+        private readonly Dictionary<string, TableTemplate.RowData> copies = new();
+        private bool toldWaiting;
+
+        /// <summary>Copies of the wanted squad-table columns, already fed by the team talk row's player.</summary>
+        private void Keep(TableTemplate players)
+        {
+            var rows = players.RowDataList;
+            int before = copies.Count;
+            foreach (var (id, _) in Settings.Columns)
+            {
+                if (copies.ContainsKey(id) || missing.Contains(id)) continue;
+                TableTemplate.RowData src = null;
+                for (int i = 0; i < rows.Length; i++) if (rows[i].m_id == id) { src = rows[i]; break; }
+                if (src == null) { if (missing.Add(id)) Plugin.L.LogWarning($"team talk: there is no FM column '{id}' (see TeamTalk-columns.txt)"); continue; }
+                var row = src.MemberwiseClone().Cast<TableTemplate.RowData>();
+                row.m_id = Prefix + id;
+                row.m_sortBinding = new BindingPath(ForTalk(src.m_sortBinding?.m_path ?? ""));
+                row.m_valueBindings = Remaps(src.m_valueBindings, true);
+                row.m_footerValueBindings = Remaps(src.m_footerValueBindings, false);
+                copies[id] = row;
+                widths[id] = src.m_defaultWidth;
+            }
+            if (copies.Count != before) Plugin.L.LogInfo($"team talk: {copies.Count} columns copied from FM's squad table");
+        }
+
+        private readonly HashSet<string> missing = new();
         private readonly Dictionary<string, float> widths = new();
 
         /// <summary>TeamTalk-columns.txt: every FM squad-table column that can be added.</summary>
@@ -189,31 +224,19 @@ namespace ProjectFM.TeamTalk
             return path;
         }
 
-        /// <summary>Copies a squad-table column into the team talk table, fed by the row's player.</summary>
-        private bool AddRow(TableTemplate from, TableTemplate to, string fromId)
+        /// <summary>Adds a kept squad-table column to the team talk table.</summary>
+        private bool AddRow(TableTemplate to, string id)
         {
-            string newId = Prefix + fromId;
+            if (!copies.TryGetValue(id, out var row)) return false;
+            known.Add(id);
             var rows = to.RowDataList;
-            for (int i = 0; i < rows.Length; i++) if (rows[i].m_id == newId) { known.Add(fromId); return false; }
-            TableTemplate.RowData src = null;
-            var fromRows = from.RowDataList;
-            for (int i = 0; i < fromRows.Length; i++) if (fromRows[i].m_id == fromId) { src = fromRows[i]; break; }
-            if (src == null) { Plugin.L.LogWarning($"team talk: there is no FM column '{fromId}' (see TeamTalk-columns.txt)"); return false; }
-            known.Add(fromId);
-            widths[fromId] = src.m_defaultWidth;
-
-            var row = src.MemberwiseClone().Cast<TableTemplate.RowData>();
-            row.m_id = newId;
-            row.m_sortBinding = new BindingPath(ForTalk(src.m_sortBinding?.m_path ?? ""));
-            // FM's own value lists: "binding" now comes from the team talk row's player, "team" from its team
-            row.m_valueBindings = Remaps(src.m_valueBindings, true);
-            row.m_footerValueBindings = Remaps(src.m_footerValueBindings, false);
+            for (int i = 0; i < rows.Length; i++) if (rows[i].m_id == row.m_id) return false;
             var grown = new Il2CppReferenceArray<TableTemplate.RowData>(rows.Length + 1);
             for (int i = 0; i < rows.Length; i++) grown[i] = rows[i];
             grown[rows.Length] = row;
             to.m_rowData = grown;
             var lookup = to.m_rowDataLookup;
-            if (lookup != null) lookup[newId] = row;
+            if (lookup != null) lookup[row.m_id] = row;
             return true;
         }
 
