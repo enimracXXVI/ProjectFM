@@ -34,7 +34,13 @@ namespace ProjectFM.Bookmarks
             catch (Exception e) { failed = true; Entry.Log("bookmarks: Individual Training bookmark: " + e); }
         }
 
-        private static void Add(BookmarksList list)
+        /// <summary>Harmony prefix on BookmarksList.Init: the bookmark is in FM's list before FM builds its views of it.</summary>
+        public static void BeforeInit(BookmarksList __instance)
+        {
+            try { Add(__instance); } catch (Exception e) { Entry.Log("bookmarks: Individual Training bookmark: " + e.Message); }
+        }
+
+        internal static void Add(BookmarksList list)
         {
             var items = list.m_bookmarks;
             BookmarkInfo training = null;

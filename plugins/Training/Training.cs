@@ -12,7 +12,7 @@ using UnityEngine.UIElements;
 
 namespace ProjectFM.Training
 {
-    [BepInPlugin("projectfm.training", "ProjectFM Training", "2.1.0")]
+    [BepInPlugin("projectfm.training", "ProjectFM Training", "2.1.1")]
     public class Plugin : BasePlugin
     {
         internal static ManualLogSource L;
@@ -218,18 +218,25 @@ namespace ProjectFM.Training
 
         private static void Style(VisualElement e, Color colour, int depth)
         {
-            if (depth > 8) return;
+            if (depth > 30) return;
             var text = e.TryCast<TextElement>();
-            if (text != null && !(e.TryCast<Button>() != null && e.childCount > 0))
+            if (text != null && !string.IsNullOrEmpty(text.text))
             {
-                var t = text.text;
-                if (!string.IsNullOrEmpty(t))
+                if (e.childCount == 0)
                 {
-                    if (string.IsNullOrEmpty(e.tooltip)) e.parent.tooltip = t;
+                    // FM's label: hidden, kept as the button's tooltip
+                    if (e.parent != null && string.IsNullOrEmpty(e.parent.tooltip)) e.parent.tooltip = text.text;
                     e.style.display = DisplayStyle.None;
                 }
+                else
+                {
+                    // A button that carries the label itself: no text, the icon child stays
+                    if (string.IsNullOrEmpty(e.tooltip)) e.tooltip = text.text;
+                    text.text = "";
+                }
             }
-            if (e.ClassListContains("sibutton") || e.TryCast<Button>() != null)
+            var n = e.name ?? "";
+            if (e.ClassListContains("sibutton") || e.ClassListContains("unity-button") || e.TryCast<Button>() != null || n.IndexOf("button", StringComparison.OrdinalIgnoreCase) >= 0)
             {
                 var st = e.style;
                 st.backgroundColor = colour;
