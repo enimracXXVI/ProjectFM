@@ -12,7 +12,7 @@ using UnityEngine.UIElements;
 
 namespace ProjectFM.Bookmarks
 {
-    [BepInPlugin("projectfm.bookmarks", "ProjectFM Bookmarks", "1.1.2")]
+    [BepInPlugin("projectfm.bookmarks", "ProjectFM Bookmarks", "1.2.0")]
     public class Plugin : BasePlugin
     {
         public override void Load()
@@ -137,6 +137,8 @@ namespace ProjectFM.Bookmarks
                 if (ind != null) harmony.Patch(ind, postfix: new HarmonyMethod(typeof(Entry).GetMethod(nameof(AfterOverflow))));
                 var init = AccessTools.Method(typeof(SI.Bindable.BookmarksList), "Init");
                 if (init != null) harmony.Patch(init, prefix: new HarmonyMethod(typeof(Extra).GetMethod(nameof(Extra.BeforeInit))));
+                var fill = AccessTools.Method(typeof(SI.Bindable.Events.OpenPanelEventContext), "FillEvent");
+                if (fill != null) harmony.Patch(fill, postfix: new HarmonyMethod(typeof(Extra).GetMethod(nameof(Extra.AfterFill))));
                 L.LogInfo("bookmarks: hooked FM's maximum and overflow count");
             }
             catch (Exception e) { L.LogWarning("bookmarks: hook: " + e); }

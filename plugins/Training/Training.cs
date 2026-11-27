@@ -12,7 +12,7 @@ using UnityEngine.UIElements;
 
 namespace ProjectFM.Training
 {
-    [BepInPlugin("projectfm.training", "ProjectFM Training", "2.1.1")]
+    [BepInPlugin("projectfm.training", "ProjectFM Training", "2.2.0")]
     public class Plugin : BasePlugin
     {
         internal static ManualLogSource L;
@@ -47,9 +47,8 @@ namespace ProjectFM.Training
                         "# ProjectFM Training. Edit while FM runs: applied within 2 seconds.",
                         "# Individual training: width of the player list, in % of the block (FM's own is 30)",
                         "ListWidth = 45",
-                        "# Praise / Criticise Training/Development buttons on each player's row, and above the list for the ticked players",
+                        "# FM's Praise / Criticise Training/Development buttons on each player's row",
                         "RowButtons = true",
-                        "TopButtons = true",
                         "# Button colours (#RRGGBB)",
                         "PraiseColour = #33A854",
                         "CriticiseColour = #CC4236",
@@ -130,22 +129,10 @@ namespace ProjectFM.Training
         [HideFromIl2Cpp]
         private static void AddButtons(VisualElement list)
         {
-            // Above each table, before FM's Filter button: FM's buttons for its ticked players
-            // ("selectedlist" is the training block's own list of selected players)
+            // (FM's buttons for its ticked players went away as soon as more than one was ticked:
+            // removed in 2.2; any left from an older version are taken away)
             foreach (var filter in FindAll(list, "Filter"))
-            {
-                var header = filter.parent;
-                if (header == null) continue;
-                var top = Child(header, TopMark);
-                if (Settings.TopButtons && top == null)
-                {
-                    top = Pair(TopMark, "selectedlist");
-                    header.Insert(header.IndexOf(filter), top);
-                    Bind(top);
-                }
-                else if (top != null && !Settings.TopButtons) top.RemoveFromHierarchy();
-                if (top != null && top.parent != null) Compact(top);
-            }
+                Child(filter.parent, TopMark)?.RemoveFromHierarchy();
 
             // On each row, after the player's name: FM's buttons for that row's player
             foreach (var row in Rows(list))

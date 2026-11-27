@@ -1,4 +1,6 @@
 using System;
+using System.Collections.Generic;
+using System.IO;
 using Il2CppInterop.Runtime;
 using SI.Bindable;
 using UnityEngine;
@@ -17,11 +19,73 @@ namespace ProjectFM.Bookmarks
         private const string ScreenName = "TeamIndividualTrainingTool";
         private const uint ScreenUid = 83254784;
         private static float next;
-        private static string guid;
+        private static string guid = LoadKey();
+        private static readonly string KeyFile = Path.Combine(Path.GetDirectoryName(typeof(Extra).Assembly.Location) ?? BepInEx.Paths.PluginPath, "IndividualTraining.key");
+        private static readonly List<BookmarkInfo> made = new();
+        private static readonly HashSet<string> seenKeys = new();
+        private static readonly Queue<string> toCheck = new();
+
+        private static string LoadKey()
+        {
+            try
+            {
+                var f = Path.Combine(Path.GetDirectoryName(typeof(Extra).Assembly.Location) ?? BepInEx.Paths.PluginPath, "IndividualTraining.key");
+                if (File.Exists(f)) { var k = File.ReadAllText(f).Trim(); if (k.Length == 32) return k; }
+            }
+            catch { }
+            return null;
+        }
+
+        /// <summary>
+        /// Harmony postfix on OpenPanelEventContext.FillEvent: every screen FM opens passes its key
+        /// here. Keys are checked one by one (loading FM's screen id for the key, already in memory)
+        /// until the Individual Training screen's is found; it is then kept in IndividualTraining.key.
+        /// </summary>
+        public static void AfterFill(SI.Bindable.Events.OpenPanelEventContext __instance)
+        {
+            if (guid != null) return;
+            try
+            {
+                var k = __instance.m_panelReference.asset?.AssetGUID;
+                if (!string.IsNullOrEmpty(k) && k.Length == 32 && seenKeys.Add(k)) toCheck.Enqueue(k);
+            }
+            catch { }
+        }
+
+        private static void CheckKeys()
+        {
+            if (guid != null || toCheck.Count == 0) return;
+            var k = toCheck.Dequeue();
+            try
+            {
+                var h = Addressables.LoadAssetAsync<PanelID>(new Il2CppSystem.Object(IL2CPP.ManagedStringToIl2Cpp(k)));
+                var id = h.WaitForCompletion();
+                if (id != null && id.name == ScreenName)
+                {
+                    guid = k;
+                    try { File.WriteAllText(KeyFile, k); } catch { }
+                    Entry.Info($"bookmarks: found FM's Individual Training screen ({k}); the bookmark opens it now");
+                    foreach (var b in made) Point(b);
+                }
+            }
+            catch (Exception e) { Entry.Log("bookmarks: screen key: " + e.Message); }
+        }
+
+        private static void Point(BookmarkInfo b)
+        {
+            if (guid == null || b == null) return;
+            b.m_panelIDRef = new AssetReferenceT<PanelID>(guid);
+            var ev = b.m_openEvent;
+            if (ev == null) return;
+            var pr = ev.m_panelReference;
+            pr.asset = new AssetReferenceT<PanelID>(guid);
+            ev.m_panelReference = pr;
+        }
         private static bool failed;
 
         public static void Tick()
         {
+            CheckKeys();
             if (failed || Time.realtimeSinceStartup < next) return;
             next = Time.realtimeSinceStartup + 3f;
             var mods = Resources.FindObjectsOfTypeAll<GameWorldTabsAndBookmarksModule>();
@@ -58,21 +122,12 @@ namespace ProjectFM.Bookmarks
             b.name = Mark;
             b.hideFlags = HideFlags.DontUnloadUnusedAsset;
             b.m_bookmarkText = "Individual Training";
-            b.m_displayValue = new SI.Translation.TranslationID(0, "Individual Training");
+            // No FM text id for it: -1 with the text itself (0 showed nothing)
+            b.m_displayValue = new SI.Translation.TranslationID(-1, "Individual Training");
             b.m_panelUID = ScreenUid;
             b.m_isDefaultSelection = 0;
-            if (guid != null)
-            {
-                var r = new AssetReferenceT<PanelID>(guid);
-                b.m_panelIDRef = r;
-                var ev = b.m_openEvent;
-                if (ev != null)
-                {
-                    var pr = ev.m_panelReference;
-                    pr.asset = new AssetReferenceT<PanelID>(guid);
-                    ev.m_panelReference = pr;
-                }
-            }
+            Point(b);
+            made.Add(b);
             items.Add(b);
             Entry.Info($"bookmarks: Individual Training added to '{list.name}' ({items.Count} bookmarks)");
         }
