@@ -5,6 +5,7 @@ using System.IO;
 using BepInEx;
 using BepInEx.Logging;
 using BepInEx.Unity.IL2CPP;
+using Il2CppInterop.Runtime.Attributes;
 using Il2CppInterop.Runtime.Injection;
 using Il2CppInterop.Runtime.InteropTypes.Arrays;
 using SI.Bindable;
@@ -12,7 +13,7 @@ using UnityEngine;
 
 namespace ProjectFM.MatchColumns
 {
-    [BepInPlugin("projectfm.matchcolumns", "ProjectFM Match Columns", "1.0.0")]
+    [BepInPlugin("projectfm.matchcolumns", "ProjectFM Match Columns", "1.0.1")]
     public class Plugin : BasePlugin
     {
         internal static ManualLogSource L;
@@ -111,6 +112,7 @@ namespace ProjectFM.MatchColumns
             catch (Exception e) { if (++errors <= 3) Plugin.L.LogWarning("match columns: " + e); }
         }
 
+        [HideFromIl2Cpp]
         private void Patch()
         {
             TableTemplate players = null, talk = null, stats = null;
@@ -142,6 +144,7 @@ namespace ProjectFM.MatchColumns
             Views();
         }
 
+        [HideFromIl2Cpp]
         private void Views()
         {
             foreach (var s in Resources.FindObjectsOfTypeAll<StreamedTableViewSettings>())
@@ -197,6 +200,7 @@ namespace ProjectFM.MatchColumns
         }
 
         /// <summary>Copies of the wanted squad-table columns, made while FM's squad table is loaded.</summary>
+        [HideFromIl2Cpp]
         private void Keep(TableTemplate players)
         {
             if (!listed) { listed = true; WriteList(players); }
@@ -216,6 +220,7 @@ namespace ProjectFM.MatchColumns
             if (kept.Count != before) Plugin.L.LogInfo($"match columns: {kept.Count} columns copied from FM's squad table");
         }
 
+        [HideFromIl2Cpp]
         private static IEnumerable<(string id, float width)> Want()
         {
             foreach (var c in Settings.TeamTalk) yield return c;
@@ -223,6 +228,7 @@ namespace ProjectFM.MatchColumns
         }
 
         /// <summary>Adds the kept columns to a match table, fed by its row's player and team.</summary>
+        [HideFromIl2Cpp]
         private int AddRows(TableTemplate to, List<(string id, float width)> wanted, string player, string team)
         {
             var rows = to.RowDataList;
