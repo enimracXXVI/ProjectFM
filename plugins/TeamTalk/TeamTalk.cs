@@ -11,7 +11,7 @@ using UnityEngine;
 
 namespace ProjectFM.TeamTalk
 {
-    [BepInPlugin("projectfm.teamtalk", "ProjectFM Team Talk", "1.0.0")]
+    [BepInPlugin("projectfm.teamtalk", "ProjectFM Team Talk", "1.1.0")]
     public class Plugin : BasePlugin
     {
         internal static ManualLogSource L;
@@ -22,50 +22,52 @@ namespace ProjectFM.TeamTalk
             Settings.Load();
             ClassInjector.RegisterTypeInIl2Cpp<Runner>();
             AddComponent<Runner>();
-            L.LogInfo($"team talk: loaded (morale = {Settings.Morale}, fatigue = {Settings.Fatigue})");
+            L.LogInfo($"team talk: loaded, {Settings.Columns.Count} extra columns: {string.Join(", ", Settings.Columns.ConvertAll(c => c.id))}");
         }
     }
 
     /// <summary>TeamTalk.cfg next to the plugin.</summary>
     internal static class Settings
     {
-        public static bool Morale = true, Fatigue = true;
-        public static float MoraleWidth = 140, FatigueWidth = 50;
-        private static readonly string Path = System.IO.Path.Combine(
-            System.IO.Path.GetDirectoryName(typeof(Settings).Assembly.Location) ?? Paths.PluginPath, "TeamTalk.cfg");
+        /// <summary>FM squad-table column ids to add, in order, with an optional width.</summary>
+        public static readonly List<(string id, float width)> Columns = new();
+        public static readonly string Folder = System.IO.Path.GetDirectoryName(typeof(Settings).Assembly.Location) ?? Paths.PluginPath;
+        private static readonly string Path = System.IO.Path.Combine(Folder, "TeamTalk.cfg");
 
         public static void Load()
         {
             try
             {
-                if (!File.Exists(Path))
+                if (!File.Exists(Path) || !File.ReadAllText(Path).Contains("Columns"))
                 {
                     File.WriteAllLines(Path, new[]
                     {
-                        "# ProjectFM Team Talk: extra columns in the team talk table. Restart FM after changing.",
-                        "Morale = true",
-                        "MoraleWidth = 140",
-                        "Fatigue = true",
-                        "FatigueWidth = 50",
+                        "# ProjectFM Team Talk: extra columns in the team talk table (pre-match, half time, full time).",
+                        "# Columns: FM squad-table columns to add after Match Sharpness, in order, separated by commas.",
+                        "# Add :width to set a column's width, e.g. morale:140. Leave empty for no extra columns.",
+                        "# All the column names you can use are in TeamTalk-columns.txt (written once FM's tables load).",
+                        "# Restart FM after changing.",
+                        "Columns = morale:140, fatigue-icon:50",
                     });
-                    return;
                 }
                 foreach (var raw in File.ReadAllLines(Path))
                 {
                     var line = raw.Trim();
                     if (line.StartsWith("#")) continue;
                     int eq = line.IndexOf('=');
-                    if (eq < 0) continue;
-                    var k = line.Substring(0, eq).Trim().ToLowerInvariant();
-                    var v = line.Substring(eq + 1).Trim().ToLowerInvariant();
-                    bool on = v == "true" || v == "1" || v == "yes";
-                    float.TryParse(v, System.Globalization.NumberStyles.Float, System.Globalization.CultureInfo.InvariantCulture, out var n);
-                    switch (k)
+                    if (eq < 0 || line.Substring(0, eq).Trim().ToLowerInvariant() != "columns") continue;
+                    foreach (var part in line.Substring(eq + 1).Split(','))
                     {
-                        case "morale": Morale = on; break;
-                        case "fatigue": Fatigue = on; break;
-                        case "moralewidth": if (n > 20) MoraleWidth = n; break;
-                        case "fatiguewidth": if (n > 20) FatigueWidth = n; break;
+                        var p = part.Trim();
+                        if (p.Length == 0) continue;
+                        float w = 0;
+                        int c = p.IndexOf(':');
+                        if (c > 0)
+                        {
+                            float.TryParse(p.Substring(c + 1).Trim(), System.Globalization.NumberStyles.Float, System.Globalization.CultureInfo.InvariantCulture, out w);
+                            p = p.Substring(0, c).Trim();
+                        }
+                        Columns.Add((p.ToLowerInvariant(), w));
                     }
                 }
             }
@@ -74,7 +76,7 @@ namespace ProjectFM.TeamTalk
     }
 
     /// <summary>
-    /// Morale and fatigue in the team talk table (pre-match, half time, full time). FM's team talk
+    /// Extra columns (morale and fatigue by default) in the team talk table (pre-match, half time, full time). FM's team talk
     /// table only knows its own columns, so FM's squad-table morale and fatigue columns are copied
     /// into it, fed with the player of each team talk row (binding.Player.Person), and added to the
     /// three team talk views after Match Sharpness.
@@ -82,7 +84,8 @@ namespace ProjectFM.TeamTalk
     public class Runner : MonoBehaviour
     {
         public Runner(IntPtr ptr) : base(ptr) { }
-        private const string MoraleId = "pfm-morale", FatigueId = "pfm-fatigue";
+        private const string Prefix = "pfm-";
+        private bool listed;
         private static readonly string[] Views = { "TeamTalksTablePreMatch", "TeamTalksTableHalfTime", "TeamTalksTableFullTime" };
         private readonly HashSet<IntPtr> doneFactories = new(), doneViews = new();
         private float next;
@@ -92,7 +95,7 @@ namespace ProjectFM.TeamTalk
         {
             if (Time.realtimeSinceStartup < next) return;
             next = Time.realtimeSinceStartup + 2f;
-            if (!Settings.Morale && !Settings.Fatigue) return;
+            if (Settings.Columns.Count == 0 && listed) return;
             try { Patch(); errors = 0; }
             catch (Exception e) { if (++errors <= 3) Plugin.L.LogWarning("team talk: " + e); }
         }
@@ -106,12 +109,12 @@ namespace ProjectFM.TeamTalk
                 if (t.name == "PlayerTableFactory") players = t;
                 else if (t.name == "TeamTalkPlayerReactionTableFactory") talk = t;
             }
+            if (players != null && !listed) { listed = true; WriteList(players); }
             if (talk != null && players != null && !doneFactories.Contains(talk.Pointer))
             {
                 doneFactories.Add(talk.Pointer);
                 int added = 0;
-                if (Settings.Morale && AddRow(players, talk, "morale", MoraleId, "binding.Player.Person", "binding.Player.Person.morale")) added++;
-                if (Settings.Fatigue && AddRow(players, talk, "fatigue-icon", FatigueId, "binding.Player.Person.fatigue", "binding.Player.Person.fatigue")) added++;
+                foreach (var (id, _) in Settings.Columns) if (AddRow(players, talk, id)) added++;
                 Plugin.L.LogInfo($"team talk: {added} columns added to FM's team talk table");
             }
             if (talk == null || !doneFactories.Contains(talk.Pointer)) return;
@@ -126,8 +129,12 @@ namespace ProjectFM.TeamTalk
                 if (at < 0) at = list.Count;
                 var template = list[Math.Max(0, at - 1)];
                 int n = 0;
-                if (Settings.Fatigue && !Has(list, FatigueId)) { list.Insert(at, Column(template, FatigueId, Settings.FatigueWidth)); n++; }
-                if (Settings.Morale && !Has(list, MoraleId)) { list.Insert(at, Column(template, MoraleId, Settings.MoraleWidth)); n++; }
+                foreach (var (id, width) in Settings.Columns)
+                {
+                    if (!known.Contains(id) || Has(list, Prefix + id)) continue;
+                    list.Insert(at++, Column(template, Prefix + id, width > 0 ? width : widths.GetValueOrDefault(id, 60f)));
+                    n++;
+                }
                 Plugin.L.LogInfo($"team talk: {n} columns added to the view '{s.name}'");
             }
         }
@@ -152,22 +159,55 @@ namespace ProjectFM.TeamTalk
             return c;
         }
 
-        /// <summary>Copies a squad-table column into the team talk table, fed by the given path.</summary>
-        private static bool AddRow(TableTemplate from, TableTemplate to, string fromId, string newId, string bindingPath, string sortPath)
+        private readonly HashSet<string> known = new();
+        private readonly Dictionary<string, float> widths = new();
+
+        /// <summary>TeamTalk-columns.txt: every FM squad-table column that can be added.</summary>
+        private static void WriteList(TableTemplate players)
         {
+            try
+            {
+                var rows = players.RowDataList;
+                var lines = new List<string> { "# Columns you can put in TeamTalk.cfg (FM's squad-table columns), with FM's default width.", "# Not all of them may work in the team talk table; try and see." };
+                var ids = new List<string>();
+                for (int i = 0; i < rows.Length; i++) ids.Add($"{rows[i].m_id} ({rows[i].m_defaultWidth:0})");
+                ids.Sort(StringComparer.Ordinal);
+                lines.AddRange(ids);
+                File.WriteAllLines(System.IO.Path.Combine(Settings.Folder, "TeamTalk-columns.txt"), lines);
+            }
+            catch (Exception e) { Plugin.L.LogWarning("team talk: column list: " + e.Message); }
+        }
+
+        /// <summary>The team talk row's player for a squad-table path: binding.X becomes binding.Player.Person.X.</summary>
+        private static string ForTalk(string path)
+        {
+            if (string.IsNullOrEmpty(path)) return path;
+            if (path.Equals("team", StringComparison.OrdinalIgnoreCase)) return "binding.Team";
+            if (path.Equals("binding", StringComparison.OrdinalIgnoreCase)) return "binding.Player.Person";
+            if (path.StartsWith("binding.", StringComparison.OrdinalIgnoreCase)) return "binding.Player.Person." + path.Substring(8);
+            if (path.StartsWith("team.", StringComparison.OrdinalIgnoreCase)) return "binding.Team." + path.Substring(5);
+            return path;
+        }
+
+        /// <summary>Copies a squad-table column into the team talk table, fed by the row's player.</summary>
+        private bool AddRow(TableTemplate from, TableTemplate to, string fromId)
+        {
+            string newId = Prefix + fromId;
             var rows = to.RowDataList;
-            for (int i = 0; i < rows.Length; i++) if (rows[i].m_id == newId) return false;
+            for (int i = 0; i < rows.Length; i++) if (rows[i].m_id == newId) { known.Add(fromId); return false; }
             TableTemplate.RowData src = null;
             var fromRows = from.RowDataList;
             for (int i = 0; i < fromRows.Length; i++) if (fromRows[i].m_id == fromId) { src = fromRows[i]; break; }
-            if (src == null) { Plugin.L.LogWarning($"team talk: FM's '{fromId}' column not found"); return false; }
+            if (src == null) { Plugin.L.LogWarning($"team talk: there is no FM column '{fromId}' (see TeamTalk-columns.txt)"); return false; }
+            known.Add(fromId);
+            widths[fromId] = src.m_defaultWidth;
 
             var row = src.MemberwiseClone().Cast<TableTemplate.RowData>();
             row.m_id = newId;
-            row.m_sortBinding = new BindingPath(sortPath);
+            row.m_sortBinding = new BindingPath(ForTalk(src.m_sortBinding?.m_path ?? ""));
             // FM's own value lists: "binding" now comes from the team talk row's player, "team" from its team
-            row.m_valueBindings = Remaps(src.m_valueBindings, bindingPath, "binding.Team");
-            row.m_footerValueBindings = Remaps(src.m_footerValueBindings, null, null);
+            row.m_valueBindings = Remaps(src.m_valueBindings, true);
+            row.m_footerValueBindings = Remaps(src.m_footerValueBindings, false);
             var grown = new Il2CppReferenceArray<TableTemplate.RowData>(rows.Length + 1);
             for (int i = 0; i < rows.Length; i++) grown[i] = rows[i];
             grown[rows.Length] = row;
@@ -177,7 +217,7 @@ namespace ProjectFM.TeamTalk
             return true;
         }
 
-        private static Il2CppSystem.Collections.Generic.List<RemapInfo> Remaps(Il2CppSystem.Collections.Generic.List<RemapInfo> src, string binding, string team)
+        private static Il2CppSystem.Collections.Generic.List<RemapInfo> Remaps(Il2CppSystem.Collections.Generic.List<RemapInfo> src, bool change)
         {
             var list = new Il2CppSystem.Collections.Generic.List<RemapInfo>();
             if (src == null) return list;
@@ -186,8 +226,7 @@ namespace ProjectFM.TeamTalk
             for (int i = 0; i < src.Count; i++)
             {
                 var m = src[i];
-                if (binding != null && m.from == "binding") m.to = new BindingPath(binding);
-                else if (team != null && m.from == "team") m.to = new BindingPath(team);
+                if (change && m.to != null) m.to = new BindingPath(ForTalk(m.to.m_path));
                 var args = new Il2CppReferenceArray<Il2CppSystem.Object>(1);
                 args[0] = m;
                 add.Invoke(list, args);

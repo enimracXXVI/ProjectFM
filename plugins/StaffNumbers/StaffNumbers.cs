@@ -12,7 +12,7 @@ using UnityEngine.UIElements;
 
 namespace ProjectFM.StaffNumbers
 {
-    [BepInPlugin("projectfm.staffnumbers", "ProjectFM Staff Numbers", "1.1.0")]
+    [BepInPlugin("projectfm.staffnumbers", "ProjectFM Staff Numbers", "1.2.0")]
     public class Plugin : BasePlugin
     {
         internal static ManualLogSource L;
@@ -30,7 +30,7 @@ namespace ProjectFM.StaffNumbers
     /// <summary>StaffNumbers.cfg next to the plugin.</summary>
     internal static class Settings
     {
-        public static bool WordToo;
+        public static bool WordToo, SwapTables;
         private static readonly string Path = System.IO.Path.Combine(
             System.IO.Path.GetDirectoryName(typeof(Settings).Assembly.Location) ?? Paths.PluginPath, "StaffNumbers.cfg");
 
@@ -45,6 +45,8 @@ namespace ProjectFM.StaffNumbers
                         "# ProjectFM Staff Numbers. Restart FM after changing.",
                         "# WordToo: true shows FM's word after the number, e.g. 13 (Good)",
                         "WordToo = false",
+                        "# SwapTables: true uses FM's plain number cells in staff tables (no colours)",
+                        "SwapTables = false",
                     });
                     return;
                 }
@@ -57,6 +59,7 @@ namespace ProjectFM.StaffNumbers
                     var k = line.Substring(0, eq).Trim().ToLowerInvariant();
                     var v = line.Substring(eq + 1).Trim().ToLowerInvariant();
                     if (k == "wordtoo") WordToo = v == "true" || v == "1" || v == "yes";
+                    if (k == "swaptables") SwapTables = v == "true" || v == "1" || v == "yes";
                 }
             }
             catch (Exception e) { Plugin.L.LogWarning("staff numbers: settings: " + e.Message); }
@@ -128,7 +131,7 @@ namespace ProjectFM.StaffNumbers
             if (Time.realtimeSinceStartup >= nextTables)
             {
                 nextTables = Time.realtimeSinceStartup + 3f;
-                try { Tables.Swap(); }
+                try { if (Settings.SwapTables) Tables.Swap(); }
                 catch (Exception e) { if (++errors <= 3) Plugin.L.LogWarning("staff numbers: tables: " + e.Message); }
             }
             if (Time.realtimeSinceStartup < next) return;
@@ -153,6 +156,7 @@ namespace ProjectFM.StaffNumbers
         private static void Find(VisualElement e, List<VisualElement> acc, int depth)
         {
             if (e.name == "attribute-value" && e.ClassListContains(WordClass)) { acc.Add(e); return; }
+            if (IsTableWord(e)) { acc.Add(e); return; }
             if (depth > 90) return;
             for (int i = 0; i < e.childCount; i++) Find(e[i], acc, depth + 1);
         }
@@ -165,10 +169,29 @@ namespace ProjectFM.StaffNumbers
             return r;
         }
 
+        /// <summary>
+        /// FM's staff table cell with the word (NonPlayerAttributeTableCell): a text in a colour
+        /// setter in "data_display-cell-standard-regular--unpacked", fed by "binding".
+        /// </summary>
+        private static bool IsTableWord(VisualElement e)
+        {
+            if (e.name != "text" || skip.Contains(e.Pointer)) return false;
+            var setter = e.parent;
+            if (setter == null || setter.TryCast<SIStyleSetter>() == null) return false;
+            var cell = setter.parent;
+            if (cell == null || cell.name != "data_display-cell-standard-regular--unpacked") return false;
+            var expect = cell.parent;
+            return expect != null && expect.ClassListContains("margin-right-global-gap-small") && expect.ClassListContains("align-items-start");
+        }
+
+        private static readonly HashSet<IntPtr> skip = new();
+        private static readonly Dictionary<IntPtr, float> since = new();
+
         private static void Handle(VisualElement word)
         {
             var holder = word.parent;
             if (holder == null) return;
+            bool table = word.name == "text";
             SIText num = null;
             for (int i = 0; i < holder.childCount; i++)
                 if (holder[i].name == Mark) { num = holder[i].TryCast<SIText>(); break; }
@@ -178,12 +201,26 @@ namespace ProjectFM.StaffNumbers
                 var m = new BindingMethod<SIText>();
                 m.m_kind = BindingMethodKind.Direct;
                 var d = new DirectBinding();
-                d.Path = new BindingPath("attributebind.PropertyValue");
+                d.Path = new BindingPath(table ? "binding" : "attributebind.PropertyValue");
                 m.m_direct = d;
                 num.TextBinding = m;
                 num.pickingMode = PickingMode.Ignore;
                 holder.Add(num);
                 try { num.BindToData(); } catch { }
+            }
+            if (table)
+            {
+                // Only staff attribute cells hold a 1-20 number; anything else goes back to FM
+                var t = num.TryCast<TextElement>()?.text;
+                if (!int.TryParse(t, out var v) || v < 0 || v > 20)
+                {
+                    if (!since.TryGetValue(num.Pointer, out var at)) { since[num.Pointer] = Time.realtimeSinceStartup; word.style.display = DisplayStyle.Flex; return; }
+                    if (Time.realtimeSinceStartup - at < 1.5f) { word.style.display = DisplayStyle.Flex; return; }
+                    num.RemoveFromHierarchy();
+                    word.style.display = DisplayStyle.Flex;
+                    skip.Add(word.Pointer);
+                    return;
+                }
             }
             // Same look and colour as FM's word (FM changes the colour class as the row is reused)
             var want = Classes(word);
