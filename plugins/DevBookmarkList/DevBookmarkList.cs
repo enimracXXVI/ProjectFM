@@ -48,7 +48,7 @@ namespace ProjectFM.Dev
                 Describe(typeof(GameWorldTabsAndBookmarksModule).GetProperty("m_possibleBookmarks")?.GetValue(m), lines, "  ", 0);
             }
             catch (Exception e) { lines.Add("error: " + e); }
-            var file = Path.Combine(Path.GetDirectoryName(typeof(Entry).Assembly.Location) ?? ".", "bookmarks.txt");
+            var file = Path.Combine(BepInEx.Paths.PluginPath, "ProjectFM", "DevLoader", "bookmarks.txt");
             File.WriteAllLines(file, lines);
             L.LogInfo($"dev bookmark list: {lines.Count} lines written to {file}");
         }
