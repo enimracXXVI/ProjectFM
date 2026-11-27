@@ -12,7 +12,7 @@ using UnityEngine.UIElements;
 
 namespace ProjectFM.StaffNumbers
 {
-    [BepInPlugin("projectfm.staffnumbers", "ProjectFM Staff Numbers", "1.0.0")]
+    [BepInPlugin("projectfm.staffnumbers", "ProjectFM Staff Numbers", "1.1.0")]
     public class Plugin : BasePlugin
     {
         internal static ManualLogSource L;
@@ -64,6 +64,50 @@ namespace ProjectFM.StaffNumbers
     }
 
     /// <summary>
+    /// Staff tables: FM has two cells for each staff attribute column, one with the word
+    /// (NonPlayerAttributeTableCell) and one with the number (NonPlayerAttributeNumberTableCell).
+    /// Every table column using the word cell is switched to the number cell.
+    /// </summary>
+    internal static class Tables
+    {
+        private const string WordCell = "89a40734770aa7640acdd7c492c9ccc6";
+        private const string NumberCell = "605555c0a3e29f249a813977edd10f8d";
+        private static readonly HashSet<IntPtr> done = new();
+        private static VisualTreeAsset numberAsset;
+        private static int swapped;
+
+        public static void Swap()
+        {
+            var all = Resources.FindObjectsOfTypeAll<TableTemplate>();
+            int now = 0;
+            foreach (var t in all)
+            {
+                if (t == null || done.Contains(t.Pointer)) continue;
+                done.Add(t.Pointer);
+                var rows = t.RowDataList;
+                if (rows == null) continue;
+                for (int i = 0; i < rows.Count; i++)
+                {
+                    var r = rows[i];
+                    if (r?.m_uxmlRef == null || r.m_uxmlRef.AssetGUID != WordCell) continue;
+                    var reference = new UnityEngine.AddressableAssets.AssetReferenceT<VisualTreeAsset>(NumberCell);
+                    r.m_uxmlRef = reference;
+                    if (r._Uxml_k__BackingField != null)
+                    {
+                        if (numberAsset == null)
+                        {
+                            numberAsset = SI.Core.VisualTreeAssetExtensions.LoadVisualTreeAsset(reference, out SI.Core.ResourceHandle<VisualTreeAsset> handle);
+                        }
+                        if (numberAsset != null) r._Uxml_k__BackingField = numberAsset;
+                    }
+                    now++;
+                }
+            }
+            if (now > 0) { swapped += now; Plugin.L.LogInfo($"staff numbers: {now} table columns switched to numbers ({swapped} in all)"); }
+        }
+    }
+
+    /// <summary>
     /// Staff attributes as numbers. On a staff profile FM shows each attribute as a word
     /// (Unsuited ... Outstanding) although the row holds the 1-20 value (attributebind.PropertyValue).
     /// This puts a text with that number in place of the word, with FM's own colour for it.
@@ -77,8 +121,16 @@ namespace ProjectFM.StaffNumbers
         private int errors;
         private bool told;
 
+        private float nextTables;
+
         private void Update()
         {
+            if (Time.realtimeSinceStartup >= nextTables)
+            {
+                nextTables = Time.realtimeSinceStartup + 3f;
+                try { Tables.Swap(); }
+                catch (Exception e) { if (++errors <= 3) Plugin.L.LogWarning("staff numbers: tables: " + e.Message); }
+            }
             if (Time.realtimeSinceStartup < next) return;
             next = Time.realtimeSinceStartup + 0.25f;
             try
