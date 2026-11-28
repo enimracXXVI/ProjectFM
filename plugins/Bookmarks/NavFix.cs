@@ -16,7 +16,8 @@ namespace ProjectFM.Bookmarks
         private static PanelID main, sub;
         private static GameWorldTabsAndBookmarksModule module;
         private static float next;
-        private static bool told, failed;
+        private static bool told, seen;
+        private static int errors;
 
         public static void Tick()
         {
@@ -50,6 +51,7 @@ namespace ProjectFM.Bookmarks
                         else if (p.name == Sub) sub = p;
                     }
                 cur ??= sub;
+                if (!seen) { seen = true; Entry.Info($"bookmarks: tab fix: Individual Training open (FM's current screen '{m.CurrentPanel?.Value?.name}', main tab '{m.CurrentMainTab?.Value?.name}', tab '{m.CurrentSecondaryTab?.Value?.name}'; Training id {(main == null ? "not found" : "found")})"); }
                 if (main == null || cur == null) return;
                 if (m.CurrentMainTab.Value?.name != Main) m.CurrentMainTab.Value = main;
                 if (m.CurrentSecondaryTab.Value?.name != Sub) m.CurrentSecondaryTab.Value = cur;
@@ -59,7 +61,7 @@ namespace ProjectFM.Bookmarks
             {
                 // FM replaced one of its objects: look them up again next time
                 module = null; main = null; sub = null;
-                if (!failed) { failed = true; Entry.Log("bookmarks: tab fix: " + e.Message); }
+                if (++errors <= 5) Entry.Log("bookmarks: tab fix: " + e);
             }
         }
 

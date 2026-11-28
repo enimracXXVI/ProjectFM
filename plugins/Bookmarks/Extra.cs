@@ -80,17 +80,41 @@ namespace ProjectFM.Bookmarks
         /// names from its text ids, so a plain text stays empty). The screen id is only read once
         /// FM has it in memory (after Individual Training has been open once), never loaded.
         /// </summary>
+        private static float nextName;
+
+        /// <summary>
+        /// The bookmark's name: the text of the Individual Training entry in FM's Training menu
+        /// (FM's screen title for it is empty). Read from FM's menu lists, never loaded.
+        /// </summary>
         private static void Name()
         {
-            if (named || made.Count == 0) return;
-            foreach (var p in Resources.FindObjectsOfTypeAll<PanelID>())
+            if (named || made.Count == 0 || Time.realtimeSinceStartup < nextName) return;
+            nextName = Time.realtimeSinceStartup + 3f;
+            foreach (var l in Resources.FindObjectsOfTypeAll<PanelSubtabsList>())
             {
-                if (p == null || p.name != ScreenName) continue;
-                foreach (var b in made) if (b != null) b.m_displayValue = p.m_title;
+                if (l == null || l.WasCollected || l.m_submenus == null) continue;
+                var info = FindSubtab(l.m_submenus, 0);
+                if (info == null) continue;
+                foreach (var b in made) if (b != null && !b.WasCollected) b.m_displayValue = info.m_displayValue;
                 named = true;
-                Entry.Info("bookmarks: Individual Training bookmark named with FM's own screen title");
+                Entry.Info($"bookmarks: Individual Training bookmark named from FM's '{l.name}' menu (text id {info.m_displayValue.GameID}, menu uid {info.m_panelUID})");
                 return;
             }
+        }
+
+        private static PanelSubtabInfo FindSubtab(Il2CppSystem.Collections.Generic.List<SIDropdownElement<PanelSubtabInfo>> list, int depth)
+        {
+            if (list == null || depth > 4) return null;
+            for (int i = 0; i < list.Count; i++)
+            {
+                var e = list[i];
+                if (e == null) continue;
+                var info = e.PropertyValue;
+                if (info != null && info.m_panelIDRef != null && info.m_panelIDRef.AssetGUID == guid) return info;
+                var r = FindSubtab(e.ChildList, depth + 1);
+                if (r != null) return r;
+            }
+            return null;
         }
 
         /// <summary>Logs how FM's own bookmarks for a tab inside a screen are set up (to fix the tab underline).</summary>
