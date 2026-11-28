@@ -13,7 +13,7 @@ using UnityEngine.UIElements;
 
 namespace ProjectFM.MatchFaces
 {
-    [BepInPlugin("projectfm.matchfaces", "ProjectFM Match Faces", "1.0.0")]
+    [BepInPlugin("projectfm.matchfaces", "ProjectFM Match Faces", "1.1.0")]
     public class Plugin : BasePlugin
     {
         internal static ManualLogSource L;
@@ -32,6 +32,7 @@ namespace ProjectFM.MatchFaces
     internal static class Settings
     {
         public static float Size = 32f, Gap = 2f;
+        public static bool StatsBox = true;
         private static readonly string Path = System.IO.Path.Combine(
             System.IO.Path.GetDirectoryName(typeof(Settings).Assembly.Location) ?? Paths.PluginPath, "MatchFaces.cfg");
 
@@ -46,6 +47,8 @@ namespace ProjectFM.MatchFaces
                         "# Size of the picture and the gap to the shirt (pixels). Restart FM after changing.",
                         "Size = 32",
                         "Gap = 2",
+                        "# Box with the player's match stats next to FM's menu when you click a player (1 on, 0 off)",
+                        "StatsBox = 1",
                     });
                 foreach (var raw in File.ReadAllLines(Path))
                 {
@@ -57,6 +60,7 @@ namespace ProjectFM.MatchFaces
                     if (!float.TryParse(line.Substring(eq + 1).Trim().Replace(',', '.'), NumberStyles.Float, CultureInfo.InvariantCulture, out var n)) continue;
                     if (k == "size") Size = Math.Clamp(n, 16f, 80f);
                     if (k == "gap") Gap = Math.Clamp(n, -20f, 20f);
+                    if (k == "statsbox") StatsBox = n != 0;
                 }
             }
             catch (Exception e) { Plugin.L.LogWarning("match faces: settings: " + e.Message); }
@@ -101,6 +105,7 @@ namespace ProjectFM.MatchFaces
                     }
                 }
                 if (added > 0 && !told) { told = true; Plugin.L.LogInfo($"match faces: pictures added to the match squad bar ({added})"); }
+                if (Settings.StatsBox) StatsBox.Tick();
                 errors = 0;
             }
             catch (Exception e) { if (++errors <= 3) Plugin.L.LogWarning("match faces: " + e.Message); }
