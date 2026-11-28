@@ -17,7 +17,7 @@ namespace ProjectFM.ConditionRings
     /// Shows condition and match sharpness as coloured rings with FM's own percentage in them,
     /// in place of the level icons in FM27's player tables. Reads only what FM already shows.
     /// </summary>
-    [BepInPlugin("projectfm.conditionrings", "ProjectFM Condition Rings", "1.12.0")]
+    [BepInPlugin("projectfm.conditionrings", "ProjectFM Condition Rings", "1.13.0")]
     public class Plugin : BasePlugin
     {
         internal static ManualLogSource L;
@@ -480,6 +480,33 @@ namespace ProjectFM.ConditionRings
             return acc;
         }
 
+        /// <summary>
+        /// Condition shown as a number (FM's text condition cell: "Content" > style setter > text,
+        /// fed by player.Condition): during a match the number is replaced by the live one of the
+        /// same shirt number from the bottom bar, coloured by its heart level.
+        /// </summary>
+        private static void LiveNumbers(VisualElement root)
+        {
+            foreach (var content in FindNamed(root, "Content"))
+            {
+                if (content.childCount == 0 || content.parent == null) continue;
+                SIText text = null;
+                for (int i = 0; i < content.childCount && text == null; i++)
+                {
+                    var c = content[i];
+                    if (TypeName(c) != "SIStyleSetter") continue;
+                    for (int j = 0; j < c.childCount && text == null; j++) text = c[j].TryCast<SIText>();
+                }
+                if (text == null) continue;
+                var t = HiddenText(content, "pfm-shirt", "player.SquadNumber");
+                if (t == null || !int.TryParse(t.text?.Trim(), out var n) || !live.TryGetValue(n, out var v)) continue;
+                var s = v.ToString(CultureInfo.InvariantCulture);
+                if (text.text != s) text.text = s;
+                var col = S.LevelColour(LevelClassFor(v), false);
+                if (S.FmColours && col.HasValue) text.style.color = new StyleColor(col.Value);
+            }
+        }
+
         /// <summary>The live condition for a table row's player, by his shirt number, if on the bottom bar.</summary>
         private static int? LiveFor(VisualElement icon)
         {
@@ -499,6 +526,9 @@ namespace ProjectFM.ConditionRings
             live.Clear();
             foreach (var d in UnityEngine.Object.FindObjectsOfType<UIDocument>())
                 if (d.rootVisualElement != null) try { ReadLive(d.rootVisualElement); } catch { }
+            if (live.Count > 0)
+                foreach (var d in UnityEngine.Object.FindObjectsOfType<UIDocument>())
+                    if (d.rootVisualElement != null) try { LiveNumbers(d.rootVisualElement); } catch { }
             var docs = UnityEngine.Object.FindObjectsOfType<UIDocument>();
             var stack = new Stack<VisualElement>();
             foreach (var doc in docs)
