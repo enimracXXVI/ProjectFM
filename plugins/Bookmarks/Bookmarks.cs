@@ -12,7 +12,7 @@ using UnityEngine.UIElements;
 
 namespace ProjectFM.Bookmarks
 {
-    [BepInPlugin("projectfm.bookmarks", "ProjectFM Bookmarks", "1.4.0")]
+    [BepInPlugin("projectfm.bookmarks", "ProjectFM Bookmarks", "1.4.1")]
     public class Plugin : BasePlugin
     {
         public override void Load()
@@ -80,7 +80,7 @@ namespace ProjectFM.Bookmarks
                         case "individualtrainingbookmark": Extra.Enabled = n != 0; break;
                     }
                 }
-                L.LogInfo($"bookmarks: settings read (room {minRoom:0}px, with labels {Get(true)}, without {Get(false)}, limit {limit})");
+                L.LogInfo($"bookmarks: settings read (room {minRoom:0}px, with labels {Get(true)}, without {Get(false)}, limit {limit}, Individual Training bookmark {(Extra.Enabled ? "on" : "off")})");
             }
             catch (Exception e) { L.LogWarning("bookmarks: can't read settings: " + e.Message); }
         }

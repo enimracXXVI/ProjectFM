@@ -20,15 +20,17 @@ namespace ProjectFM.Bookmarks
 
         public static void Tick()
         {
-            if (failed || Time.realtimeSinceStartup < next) return;
+            if (Time.realtimeSinceStartup < next) return;
             next = Time.realtimeSinceStartup + 0.3f;
             try
             {
-                if (module == null)
+                if (module == null || module.WasCollected)
                 {
+                    module = null;
                     var mods = Resources.FindObjectsOfTypeAll<GameWorldTabsAndBookmarksModule>();
                     if (mods.Length == 0) return;
-                    module = mods[0];
+                    foreach (var mm in mods) if (mm != null && !mm.WasCollected) { module = mm; break; }
+                    if (module == null) return;
                 }
                 var m = module;
                 // The open screen: FM's current panel, or Individual Training's panel on screen
@@ -38,6 +40,8 @@ namespace ProjectFM.Bookmarks
                     if (!OnScreen()) return;
                     cur = null;
                 }
+                if (main != null && main.WasCollected) main = null;
+                if (sub != null && sub.WasCollected) sub = null;
                 if (main == null || sub == null)
                     foreach (var p in Resources.FindObjectsOfTypeAll<PanelID>())
                     {
@@ -51,7 +55,12 @@ namespace ProjectFM.Bookmarks
                 if (m.CurrentSecondaryTab.Value?.name != Sub) m.CurrentSecondaryTab.Value = cur;
                 if (!told) { told = true; Entry.Info("bookmarks: Individual Training put under the Training tab (FM did not)"); }
             }
-            catch (Exception e) { failed = true; Entry.Log("bookmarks: tab fix: " + e.Message); }
+            catch (Exception e)
+            {
+                // FM replaced one of its objects: look them up again next time
+                module = null; main = null; sub = null;
+                if (!failed) { failed = true; Entry.Log("bookmarks: tab fix: " + e.Message); }
+            }
         }
 
         /// <summary>FM's Individual Training panel is open and visible.</summary>

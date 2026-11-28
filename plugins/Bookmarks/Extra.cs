@@ -133,13 +133,18 @@ namespace ProjectFM.Bookmarks
             if (failed || Time.realtimeSinceStartup < next) return;
             next = Time.realtimeSinceStartup + 3f;
             var mods = Resources.FindObjectsOfTypeAll<GameWorldTabsAndBookmarksModule>();
-            if (mods.Length == 0) return;
             try
             {
-                foreach (var list in new[] { mods[0].m_fmBookmarkList, mods[0].m_fmcBookmarkList })
-                    if (list != null) Add(list);
+                // FM's live module (an early one it throws away can still be listed)
+                foreach (var m in mods)
+                {
+                    if (m == null || m.WasCollected) continue;
+                    foreach (var list in new[] { m.m_fmBookmarkList, m.m_fmcBookmarkList })
+                        if (list != null && !list.WasCollected) Add(list);
+                    break;
+                }
             }
-            catch (Exception e) { failed = true; Entry.Log("bookmarks: Individual Training bookmark: " + e); }
+            catch (Exception e) { Entry.Log("bookmarks: Individual Training bookmark: " + e.Message); }
         }
 
         /// <summary>Harmony prefix on BookmarksList.Init: the bookmark is in FM's list before FM builds its views of it.</summary>
