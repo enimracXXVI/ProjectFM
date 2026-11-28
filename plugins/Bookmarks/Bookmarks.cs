@@ -12,7 +12,7 @@ using UnityEngine.UIElements;
 
 namespace ProjectFM.Bookmarks
 {
-    [BepInPlugin("projectfm.bookmarks", "ProjectFM Bookmarks", "1.5.0")]
+    [BepInPlugin("projectfm.bookmarks", "ProjectFM Bookmarks", "1.5.1")]
     public class Plugin : BasePlugin
     {
         public override void Load()

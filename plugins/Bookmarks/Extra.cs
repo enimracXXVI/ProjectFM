@@ -20,7 +20,8 @@ namespace ProjectFM.Bookmarks
         private const uint ScreenUid = 83254784;
         // FM's text id for "Individual Training" without a club argument (its PlayerEntitySubtabs
         // entry; the Squad/Training menu ones, 35688, need a club and showed "team#1")
-        private const int NameTextId = 39579;
+        private const int NameTextId = 35688; // shows "Individual Trainingteam#1": recognised on screen and rewritten
+        private const string Label = "Individual Training";
         private static float next;
         // FM's key for its Individual Training screen, found in game by 1.2 (which then crashed FM:
         // loading FM's screen ids to find it is not done any more)
@@ -83,7 +84,35 @@ namespace ProjectFM.Bookmarks
         /// names from its text ids, so a plain text stays empty). The screen id is only read once
         /// FM has it in memory (after Individual Training has been open once), never loaded.
         /// </summary>
-        private static float nextName;
+        private static float nextName, nextLabel;
+
+        /// <summary>
+        /// FM only shows bookmark names from its own texts; the one used reads "Individual
+        /// Trainingteam#1". Wherever FM draws it (All Bookmarks, the bookmark bar, tooltips), the
+        /// label is rewritten to "Individual Training".
+        /// </summary>
+        private static void Relabel()
+        {
+            if (made.Count == 0 || Time.realtimeSinceStartup < nextLabel) return;
+            nextLabel = Time.realtimeSinceStartup + 0.4f;
+            foreach (var doc in UnityEngine.Object.FindObjectsOfType<UnityEngine.UIElements.UIDocument>())
+            {
+                var root = doc.rootVisualElement;
+                if (root != null) Walk(root, 0);
+            }
+        }
+
+        private static void Walk(UnityEngine.UIElements.VisualElement e, int depth)
+        {
+            var t = e.TryCast<UnityEngine.UIElements.TextElement>();
+            if (t != null)
+            {
+                var s = t.text;
+                if (s != null && s.Length > Label.Length && s.StartsWith(Label) && s.Contains("team#")) t.text = Label;
+            }
+            if (depth > 60) return;
+            for (int i = 0; i < e.childCount; i++) Walk(e[i], depth + 1);
+        }
 
         /// <summary>
         /// The bookmark's name: the text of the Individual Training entry in FM's Training menu
@@ -167,6 +196,7 @@ namespace ProjectFM.Bookmarks
         public static void Tick()
         {
             CheckKeys();
+            Relabel();
             Name();
             if (failed || Time.realtimeSinceStartup < next) return;
             next = Time.realtimeSinceStartup + 3f;
