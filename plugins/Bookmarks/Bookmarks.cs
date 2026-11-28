@@ -12,7 +12,7 @@ using UnityEngine.UIElements;
 
 namespace ProjectFM.Bookmarks
 {
-    [BepInPlugin("projectfm.bookmarks", "ProjectFM Bookmarks", "1.3.0")]
+    [BepInPlugin("projectfm.bookmarks", "ProjectFM Bookmarks", "1.4.0")]
     public class Plugin : BasePlugin
     {
         public override void Load()
@@ -31,6 +31,8 @@ namespace ProjectFM.Bookmarks
         private void Update()
         {
             try { Entry.Tick(); errors = 0; }
+            catch (Exception e) { if (++errors <= 3) Entry.Log("bookmarks: " + e.Message); }
+            try { NavFix.Tick(); }
             catch (Exception e) { if (++errors <= 3) Entry.Log("bookmarks: " + e.Message); }
             try { Extra.Tick(); }
             catch (Exception e) { if (++errors <= 3) Entry.Log("bookmarks: " + e.Message); }
