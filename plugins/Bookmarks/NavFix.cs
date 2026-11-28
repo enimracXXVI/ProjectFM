@@ -25,12 +25,14 @@ namespace ProjectFM.Bookmarks
             next = Time.realtimeSinceStartup + 0.3f;
             try
             {
-                if (module == null || module.WasCollected)
+                if (module == null)
                 {
-                    module = null;
-                    var mods = Resources.FindObjectsOfTypeAll<GameWorldTabsAndBookmarksModule>();
-                    if (mods.Length == 0) return;
-                    foreach (var mm in mods) if (mm != null && !mm.WasCollected) { module = mm; break; }
+                    // FM keeps an early copy it has thrown away: use the one whose values can be read
+                    foreach (var mm in Resources.FindObjectsOfTypeAll<GameWorldTabsAndBookmarksModule>())
+                    {
+                        try { if (mm == null) continue; var _ = mm.CurrentPanel?.Value; var __ = mm.CurrentMainTab?.Value; module = mm; break; }
+                        catch { }
+                    }
                     if (module == null) return;
                 }
                 var m = module;

@@ -18,6 +18,8 @@ namespace ProjectFM.Bookmarks
         private const string Mark = "PfmIndividualTrainingBookmark";
         private const string ScreenName = "TeamIndividualTrainingTool";
         private const uint ScreenUid = 83254784;
+        // FM's text id of its own "Individual Training" menu entry (SquadSubtabs), found in game
+        private const int NameTextId = 35688;
         private static float next;
         // FM's key for its Individual Training screen, found in game by 1.2 (which then crashed FM:
         // loading FM's screen ids to find it is not done any more)
@@ -200,7 +202,7 @@ namespace ProjectFM.Bookmarks
             b.hideFlags = HideFlags.DontUnloadUnusedAsset;
             b.m_bookmarkText = "Individual Training";
             // No FM text id for it: -1 with the text itself (0 showed nothing)
-            b.m_displayValue = new SI.Translation.TranslationID(-1, "Individual Training");
+            b.m_displayValue = new SI.Translation.TranslationID(NameTextId, "Individual Training");
             b.m_panelUID = ScreenUid;
             b.m_isDefaultSelection = 0;
             Point(b);
