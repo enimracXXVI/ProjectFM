@@ -36,6 +36,7 @@ namespace ProjectFM.Bookmarks
                     if (module == null) return;
                 }
                 var m = module;
+                Note(m);
                 // The open screen: FM's current panel, or Individual Training's panel on screen
                 var cur = m.CurrentPanel?.Value;
                 if (cur == null || cur.name != Sub)
@@ -67,24 +68,36 @@ namespace ProjectFM.Bookmarks
             }
         }
 
-        /// <summary>FM's Individual Training panel is open and visible.</summary>
+        /// <summary>FM's Individual Training panel is open and visible (searched a few levels down).</summary>
         private static bool OnScreen()
         {
             foreach (var doc in UnityEngine.Object.FindObjectsOfType<UnityEngine.UIElements.UIDocument>())
             {
                 var root = doc.rootVisualElement;
-                if (root == null) continue;
-                for (int i = 0; i < root.childCount; i++)
-                {
-                    var layer = root[i];
-                    for (int j = 0; j < layer.childCount; j++)
-                    {
-                        var p = layer[j];
-                        if (p.name == Sub && p.ClassListContains("panel--visible")) return true;
-                    }
-                }
+                if (root != null && Visible(root, 0)) return true;
             }
             return false;
         }
+
+        private static bool Visible(UnityEngine.UIElements.VisualElement e, int depth)
+        {
+            if (e.name == Sub) return e.ClassListContains("panel--visible");
+            if (depth >= 4) return false;
+            for (int i = 0; i < e.childCount; i++) if (Visible(e[i], depth + 1)) return true;
+            return false;
+        }
+
+        private static string lastPanel;
+
+        /// <summary>Logs FM's current screen when it changes (to see what FM has for Individual Training).</summary>
+        private static void Note(GameWorldTabsAndBookmarksModule m)
+        {
+            var n = m.CurrentPanel?.Value?.name;
+            if (n == lastPanel) return;
+            lastPanel = n;
+            if (noted++ < 15) Entry.Info($"bookmarks: FM's current screen '{n}', main tab '{m.CurrentMainTab?.Value?.name}', tab '{m.CurrentSecondaryTab?.Value?.name}'");
+        }
+
+        private static int noted;
     }
 }

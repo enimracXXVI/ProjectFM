@@ -92,16 +92,27 @@ namespace ProjectFM.Bookmarks
         {
             if (named || made.Count == 0 || Time.realtimeSinceStartup < nextName) return;
             nextName = Time.realtimeSinceStartup + 3f;
+            PanelSubtabInfo best = null;
+            string from = null;
             foreach (var l in Resources.FindObjectsOfTypeAll<PanelSubtabsList>())
             {
                 if (l == null || l.WasCollected || l.m_submenus == null) continue;
                 var info = FindSubtab(l.m_submenus, 0);
                 if (info == null) continue;
-                foreach (var b in made) if (b != null && !b.WasCollected) b.m_displayValue = info.m_displayValue;
-                named = true;
-                Entry.Info($"bookmarks: Individual Training bookmark named from FM's '{l.name}' menu (text id {info.m_displayValue.GameID}, menu uid {info.m_panelUID})");
-                return;
+                int args = info.m_translationArgs == null ? 0 : info.m_translationArgs.Length;
+                Entry.Info($"bookmarks: FM's '{l.name}' menu has Individual Training (text id {info.m_displayValue.GameID}, {args} text arguments)");
+                // FM's text with a club argument shows "team#" without it: one without arguments is better
+                if (best == null || args == 0) { best = info; from = l.name; }
             }
+            if (best == null) return;
+            foreach (var b in made)
+                if (b != null && !b.WasCollected)
+                {
+                    b.m_displayValue = best.m_displayValue;
+                    b.m_translationArgs = best.m_translationArgs;
+                }
+            named = true;
+            Entry.Info($"bookmarks: Individual Training bookmark named from FM's '{from}' menu");
         }
 
         private static PanelSubtabInfo FindSubtab(Il2CppSystem.Collections.Generic.List<SIDropdownElement<PanelSubtabInfo>> list, int depth)
